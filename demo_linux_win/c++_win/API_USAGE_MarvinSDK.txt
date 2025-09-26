@@ -1,0 +1,35 @@
+天机-孚晞 控制包 API usage C++
+
+WINDOWS mingw编译:
+
+demo 1: torque_joint_impedance_demo.cpp
+g++ torque_joint_impedance_demo.cpp -o torque_joint -L. -lMarvinSDK -o torque_joint.exe
+torque_joint.exe
+
+demo 2: torque_cart_impedance_demo.cpp
+g++ torque_cart_impedance_demo.cpp -o torque_cart -L. -lMarvinSDK -o torque_cart.exe
+torque_cart.exe
+
+
+demo 3: torque_force_impedance_demo.cpp
+g++ torque_force_impedance_demo.cpp -o torque_force -L. -lMarvinSDK -o torque_force.exe
+torque_force.exe
+
+demo 4: drag_demo.cpp
+g++ drag_demo.cpp -o drag -L. -lMarvinSDK -o drag.exe
+drag.exe
+
+demo5: position_demo.cpp
+g++ position_demo.cpp -o position -L. -lMarvinSDK  -o position.exe
+position.exe
+
+
+demo6: pvt_demo.cpp
+g++ pvt_demo.cpp -o pvt -L. -lMarvinSDK -o pvt.exe
+pvt.exe
+
+
+demo7:eef_485_can_demo.cpp
+g++ eef_485_can_demo.cpp -o demo_485 -L. -lMarvinSDK -o demo_485_can.exe
+demo_485_can.exe
+

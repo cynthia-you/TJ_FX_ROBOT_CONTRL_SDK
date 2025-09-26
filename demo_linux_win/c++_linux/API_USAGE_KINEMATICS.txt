@@ -1,0 +1,14 @@
+天机-孚晞  计算 API usage C++
+
+LINUX：
+demo: my_dd.cpp
+g++ my_dd.cpp -o kine -L. -lKine -Wl,-rpath=.
+./kine
+
+
+
+WIN：
+demo: my_dd.cpp
+g++ my_dd.cpp -o kine -L. -lKine -o kine.exe
+kine.exe
+

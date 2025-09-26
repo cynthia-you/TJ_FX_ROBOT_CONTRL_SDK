@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.5.1-0-g916b5db  Build Version: 1.5.7152.31018
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="Marvin M6-S-L-CCS-696-V3.1 urdf">
+  <link
+    name="Base_L">
+    <inertial>
+      <origin
+        xyz="0.0001427 1.626E-05 0.039067"
+        rpy="0 0 0" />
+      <mass
+        value="1.2946" />
+      <inertia
+        ixx="0.00116453"
+        ixy="1.06E-06"
+        ixz="-8.13E-06"
+        iyy="0.00114921"
+        iyz="3.08E-06"
+        izz="0.00141686" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Base_L.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Base_L.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="Link1_L">
+    <inertial>
+      <origin
+        xyz="0.00001923 0.00600811 -0.03148378"
+        rpy="0 0 0" />
+      <mass
+        value="2.0407" />
+      <inertia
+        ixx="0.00509562"
+        ixy="0.00000262"
+        ixz="0.00000381"
+        iyy="0.00548465"
+        iyz="0.00038437"
+        izz="0.00196968" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link1_L.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0 1 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link1_L.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint1_L"
+    type="revolute">
+    <origin
+      xyz="0 0 0.1745"
+      rpy="0 0 0" />
+    <parent
+      link="Base_L" />
+    <child
+      link="Link1_L" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1067"
+      upper="3.1067"
+      effort="108"
+      velocity="3.1416" />
+  </joint>
+  <link
+    name="Link2_L">
+    <inertial>
+      <origin
+        xyz="-7.03E-06 0.05542024 0.01099501"
+        rpy="0 0 0" />
+      <mass
+        value="1.9432" />
+      <inertia
+        ixx="0.01035460"
+        ixy="-0.00000559"
+        ixz="0.00000206"
+        iyy="0.00316139"
+        iyz="-0.00119042"
+        izz="0.00953530" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link2_L.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0 0 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link2_L.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint2_L"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5708 0 0" />
+    <parent
+      link="Link1_L" />
+    <child
+      link="Link2_L" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2.0944"
+      upper="2.0944"
+      effort="108"
+      velocity="3.1416" />
+  </joint>
+  <link
+    name="Link3_L">
+    <inertial>
+      <origin
+        xyz="0.00874109 0.00190429 -0.05212644"
+        rpy="0 0 0" />
+      <mass
+        value="1.6913" />
+      <inertia
+        ixx="0.01110274"
+        ixy="0.00006153"
+        ixz="0.00002256"
+        iyy="0.01161921"
+        iyz="0.00000886"
+        izz="0.00177973" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link3_L.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link3_L.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint3_L"
+    type="revolute">
+    <origin
+      xyz="0 0.287 0"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="Link2_L" />
+    <child
+      link="Link3_L" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1067"
+      upper="3.1067"
+      effort="66"
+      velocity="3.1416" />
+  </joint>
+  <link
+    name="Link4_L">
+    <inertial>
+      <origin
+        xyz="0.00862861 -0.04583101 0.00996355"
+        rpy="0 0 0" />
+      <mass
+        value="1.5216" />
+      <inertia
+        ixx="0.00527601"
+        ixy="-0.00061432"
+        ixz="-0.00012859"
+        iyy="0.00207991"
+        iyz="0.00068720"
+        izz="0.00489628" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link4_L.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0 1 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link4_L.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint4_L"
+    type="revolute">
+    <origin
+      xyz="0.018 0 0"
+      rpy="-1.5708 0 3.1416" />
+    <parent
+      link="Link3_L" />
+    <child
+      link="Link4_L" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2.5307"
+      upper="1.0472"
+      effort="66"
+      velocity="3.1416" />
+  </joint>
+  <link
+    name="Link5_L">
+    <inertial>
+      <origin
+        xyz="-3.71E-04 -0.00123806 -0.11495257"
+        rpy="0 0 0" />
+      <mass
+        value="2.0099" />
+      <inertia
+        ixx="0.00580179"
+        ixy="-0.00003608"
+        ixz="-0.00004499"
+        iyy="0.00534956"
+        iyz="-0.00000992"
+        izz="0.00216109" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link5_L.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0 0 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link5_L.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint5_L"
+    type="revolute">
+    <origin
+      xyz="0.018 -0.314 0"
+      rpy="-1.5708 0 3.1416" />
+    <parent
+      link="Link4_L" />
+    <child
+      link="Link5_L" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.1067"
+      upper="3.1067"
+      effort="18"
+      velocity="3.1416" />
+  </joint>
+  <link
+    name="Link6_L">
+    <inertial>
+      <origin
+        xyz="0.00028419 0.00512339 -0.00013941"
+        rpy="0 0 0" />
+      <mass
+        value="0.69023365" />
+      <inertia
+        ixx="0.00041498"
+        ixy="0.00000180"
+        ixz="0.00000074"
+        iyy="0.00049605"
+        iyz="-0.00000230"
+        izz="0.00038415" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link6_L.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link6_L.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint6_L"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5708 -1.5708 0" />
+    <parent
+      link="Link5_L" />
+    <child
+      link="Link6_L" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.0472"
+      upper="1.0472"
+      effort="18"
+      velocity="3.1416" />
+  </joint>
+  <link
+    name="Link7_L">
+    <inertial>
+      <origin
+        xyz="-0.00009108 -0.03153255 0.00889371"
+        rpy="0 0 0" />
+      <mass
+        value="0.68606212" />
+      <inertia
+        ixx="0.00155069"
+        ixy="0.00000424"
+        ixz="0.00000027"
+        iyy="0.00079634"
+        iyz="0.00021682"
+        izz="0.00126206" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link7_L.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0 1 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Marvin M6-S-L-CCS-696-V3.1_URDF/meshes/Link7_L.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Joint7_L"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5708 -1.5708 0" />
+    <parent
+      link="Link6_L" />
+    <child
+      link="Link7_L" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.5708"
+      upper="1.5708"
+      effort="18"
+      velocity="3.1416" />
+  </joint>
+</robot>
