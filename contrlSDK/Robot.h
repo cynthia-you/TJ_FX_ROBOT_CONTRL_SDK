@@ -2,9 +2,8 @@
 #define FX_ROBOT_SDK_H_
 #include "FxRtCSDef.h"
 #include "FxType.h"
-#include "CmplOpt.h"
-#include "TCPFileClient.h"
 #include  "ACB.h"
+#include "TCPFileClient.h"
 #ifdef CMPL_WIN
 #include<Windows.h>
 #include < mmiscapi2.h >
