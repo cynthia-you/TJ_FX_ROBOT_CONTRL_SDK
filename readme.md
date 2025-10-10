@@ -18,7 +18,7 @@
 
 ## 三、机器人计算SDK文档：
     [C++](./c++_doc_kine.md)
-    [PYTHON](./python_doc_kine.md)
+    [python_doc_kine.md](python_doc_kine.md)
 
     文档内含DEMO说明
 
