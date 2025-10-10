@@ -104,6 +104,7 @@ jts2jacb_result=kk.joints2JacobMatrix(robot_serial=0,joints=[10,20,30,40,50,60,7
 '''
 直线规划（MOVL）
     #一定要确认robot_serial是左臂0 还是右臂1
+    特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
 '''
 
 # tag_movl=kk.movL(robot_serial=0,start_xyzabc=start,end_xyzabc=end,ref_joints=[10,20,30,40,50,60,70],vel=100,acc=100,save_path='test.txt')
