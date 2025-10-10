@@ -936,10 +936,10 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	m_InsRobot->_tosock_ = socket(AF_INET, SOCK_DGRAM, 0);
 
 	m_InsRobot->m_LinkTag = FX_TRUE;
-	if(m_InsRobot->m_LocalLogTag == true)
-	{
-	    printf("[Marvin SDK]: Robot connected  IP=%d.%d.%d.%d\n", ip1, ip2, ip3, ip4);
-	}
+//	if(m_InsRobot->m_LocalLogTag == true)
+//	{
+//	    printf("[Marvin SDK]: Robot connected  IP=%d.%d.%d.%d\n", ip1, ip2, ip3, ip4);
+//	}
 #ifdef CMPL_WIN
 	m_InsRobot->m_TimeEventID = timeSetEvent(1, 1, CallBackFunc2, (DWORD)NULL, TIME_PERIODIC);    //??1ms�䣤���騰?��?
 #endif
@@ -976,7 +976,10 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	m_InsRobot->m_ip3 = ip3;
 	m_InsRobot->m_ip4 = ip4;
 
-
+	if(m_InsRobot->m_LocalLogTag == true)
+	{
+	    printf("[Marvin SDK]: Robot connected  IP=%d.%d.%d.%d\n", ip1, ip2, ip3, ip4);
+	}
 	return true;
 
 }
@@ -1050,7 +1053,7 @@ long CRobot::OnSetIntPara(char paraName[30], long setValue)
 
     if(m_InsRobot->m_LocalLogTag == true)
     {
-        printf("[Marvin SDK]: Set int parameter: %s, value=%d\n",paraName,setValue);
+        printf("[Marvin SDK]: Set int parameter: %s, value=%ld\n",paraName,setValue);
     }
 
     CRobot::OnSetSend();
@@ -1224,16 +1227,7 @@ long CRobot::OnGetIntPara(char paraName[30], long* retValue)
 
 	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
-	{
 
-	    if (retValue != nullptr) {
-        printf("[Marvin SDK]: Get int parameter: %s, value=%ld\n",paraName, *retValue);
-    } else {
-        printf("[Marvin SDK] retValue is null pointer.\n");
-    }
-
-	}
 	CRobot::OnSetSend();
 
 	for (i = 0; i < 50; i++)
@@ -1246,16 +1240,26 @@ long CRobot::OnGetIntPara(char paraName[30], long* retValue)
 #endif
 
 
-		long ret_s = m_InsRobot->m_DCSS.m_ParaRetSerial;
-		if (ret_s % 100 == serial)
-		{
-			long ret_v = ret_s / 100;
-			if (ret_v == 0)
-			{
-				*retValue = m_InsRobot->m_DCSS.m_ParaValueI;
-			}
-			return ret_v;
-		}
+    long ret_s = m_InsRobot->m_DCSS.m_ParaRetSerial;
+    if (ret_s % 100 == serial)
+    {
+        long ret_v = ret_s / 100;
+        if (ret_v == 0)
+        {
+            *retValue = m_InsRobot->m_DCSS.m_ParaValueI;
+        }
+        if(m_InsRobot->m_LocalLogTag == true)
+        {
+
+            if (retValue != nullptr) {
+            printf("[Marvin SDK]: Get int parameter: %s, value=%ld\n",paraName, *retValue);
+        } else {
+            printf("[Marvin SDK] retValue is null pointer.\n");
+        }
+
+        }
+        return ret_v;
+    }
 	}
 	return -2;
 }
@@ -1322,16 +1326,7 @@ long CRobot::OnGetFloatPara(char paraName[30], double* retValue)
 
 	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-    if(m_InsRobot->m_LocalLogTag == true)
-    {
 
-        if (retValue != nullptr) {
-        printf("[Marvin SDK]: Get float parameter: %s, value=%lf\n",paraName, *retValue);
-    } else {
-        printf("[Marvin SDK] retValue is null pointer.\n");
-    }
-
-    }
 	CRobot::OnSetSend();
 
 	for (i = 0; i < 50; i++)
@@ -1344,19 +1339,31 @@ long CRobot::OnGetFloatPara(char paraName[30], double* retValue)
 #endif
 
 
-		long ret_s = m_InsRobot->m_DCSS.m_ParaRetSerial;
-		if (ret_s % 100 == serial)
-		{
-			long ret_v = ret_s / 100;
-			if (ret_v == 0)
-			{
-				*retValue = m_InsRobot->m_DCSS.m_ParaValueF;
-			}
-			return ret_v;
-		}
+    long ret_s = m_InsRobot->m_DCSS.m_ParaRetSerial;
+    if (ret_s % 100 == serial)
+    {
+        long ret_v = ret_s / 100;
+        if (ret_v == 0)
+        {
+            *retValue = m_InsRobot->m_DCSS.m_ParaValueF;
+        }
+
+            if(m_InsRobot->m_LocalLogTag == true)
+        {
+
+            if (retValue != nullptr) {
+            printf("[Marvin SDK]: Get float parameter: %s, value=%lf\n",paraName, *retValue);
+        } else {
+            printf("[Marvin SDK] retValue is null pointer.\n");
+        }
+
+        }
+        return ret_v;
+    }
 	}
 	return -2;
 }
+
 long CRobot::OnSavePara()
 {
 	if (OnClearSet() == false)

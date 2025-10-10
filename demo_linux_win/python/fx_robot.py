@@ -310,20 +310,22 @@ class Marvin_Robot:
             ....
             #浮点类型参数获取：
             我想获取[R.A0.CTRL]这个参数组里CartJNTDampJ1的值:
-            para=get_float_params('float','R.A0.CTRL.CartJNTDampJ1')
+            para=get_param('float','R.A0.CTRL.CartJNTDampJ1')
 
             #整数类型参数获取：
             我想获取[R.A0.BASIC]这个参数组里Type的值
-            para=get_int_params('int','R.A0.BASIC.Type')
+            para=get_param('int','R.A0.BASIC.Type')
         '''
         try:
             param_buf = (ctypes.c_char * 30)(*paraName.encode('ascii'), 0)  # 显式添加终止符
-            result = ctypes.c_int(0)
+
             if type=='float':
+                result = ctypes.c_double(0)
                 self.robot.OnGetFloatPara(param_buf, ctypes.byref(result))
                 # print(f"parameter:{paraName}, float parameters={result.value}")
                 return result.value
             elif type=='int':
+                result = ctypes.c_int(0)
                 self.robot.OnGetIntPara(param_buf, ctypes.byref(result))
                 # print(f"parameter:{paraName}, int parameters={result.value}")
                 return result.value
@@ -363,11 +365,13 @@ class Marvin_Robot:
 
         try:
             param_buf = (ctypes.c_char * 30)(*paraName.encode('ascii'), 0)  # 显式添加终止符
-            result = ctypes.c_double(value)
+
             if type=='float':
+                result = ctypes.c_double(value)
                 self.robot.OnSetFloatPara(param_buf, result)
                 return True
             elif type=='int':
+                result = ctypes.c_int(0)
                 self.robot.OnSetIntPara(param_buf, result)
                 return True
         except Exception as e:

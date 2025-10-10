@@ -2,10 +2,10 @@
 ## 一、天机协作机器人为7自由度协作机器人MARVIN SDK说明：
 
     1. MARVIN系列机器人的SDK分为控制SDK和机器人计算SDK
-    2. 控制SDK支持win/linux平台下C++/python的使用和开发（后期开源GITHUB）
-    3. 计算SDK支持win/linux下的C++/python的使用（仅提供动态库，若需开发请商询）
-    4. 我司linux下仅有x_86架构机器开发和测试，特殊架构需提供设备编译
-    5. 提供ubuntu-x_86/Windows 上位机控制软件APP
+    2. 控制SDK支持win/linux平台下C++/python的使用和开发（已开源SDK代码）
+    3. 计算SDK支持win/linux下的C++/python的使用（开源运动学SDK代码:正解,逆解,逆解零空间,雅可比矩阵,直线规划movL,工具负载的动力学辨识. 动力学计算接口及浮动机座接口请商询）
+    4. 我司linux下仅有x_86架构机器开发和测试，特殊架构请编译测试
+    5. 提供ubuntu-x_86/Windows 上位机控制软件APP(开源软件代码)
 
     特别说明：为了您更流畅操控我们的机器人，请您务必先查阅文档和案列，使用操作APP后再根据您的控制需求开发业务和生产脚本。
 
@@ -22,18 +22,31 @@
 
 
 ## 四、编译在目标机器
-    demo_linux_win下SO的动态库是ubuntu24.04 x_86  glibc2.39机器编译的,如果你设备a环境相同,可跳过4.1直接使用.
+    demo_linux_win下SO的动态库是ubuntu24.04 x_86  glibc2.39机器编译的,如果你设备环境相同,可跳过4.1直接使用.
+
 ### 4.1 编译
-    编译SO动态库:
-    LINUX设备编译 ./contrlSDK/makefile 生成libMarvinSDK.so
+    4.1.1编译SO动态库:
+    INUX设备编译:
+        控制SDK:  ./contrlSDK/makefile 生成libMarvinSDK.so
+        运动学SDK: ./kinematicsSDK/makefile 生成libKine.so
 
-    编译DLL动态库:
-    在WINDOWS下使用MINGW编译:g++ MarvinSDK.cpp Robot.cpp ACB.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.dll
-    WINDOWS下C++使用
+    4.1.2编译DLL动态库:
+    1)在WINDOWS下使用MINGW编译:
+            控制SDK:  g++ MarvinSDK.cpp Robot.cpp ACB.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.dll
+            运动学SDK: g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
+            WINDOWS下C++使用
 
 
-    或者在LINUX下参考./contrlSDK/makefile_dll文件内指令 生成libMarvinSDK.so
-    该指令生成的DLL PYTHON可调用, 但WINDOWS下C++使用不可
+    2)LINUX下编译神DLL动态库:
+        控制SDK: x86_64-w64-mingw32-g++ MarvinSDK.cpp Robot.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp -Wall -O2 -shared -o libMarvinSDK.dll \
+                -DBUILDING_DLL \
+                -static -static-libgcc -static-libstdc++ \
+                -lws2_32 -lpthread \
+                -lwinmm
+
+                该指令生成的DLL PYTHON可调用, 但WINDOWS下C++使用不可
+
+        运动学SDK: g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll  
 
 ### 4.2 使用
     LINUX:
@@ -41,7 +54,7 @@
             ./demo_linux_win/c++_linux/API_USAGE_KINEMATICS.txt
             ./demo_linux_win/c++_linux/API_USAGE_MarvinSDK.txt
 
-        PYTHON 跨平台
+        PYTHON 代码跨平台, 参考python_doc_contrl.md 和python_doc_kine.md 内的DENO
 
     WINDOWS:
 
@@ -49,7 +62,7 @@
             ./demo_linux_win/c++_win/API_USAGE_KINEMATICS.txt
             ./demo_linux_win/c++_win/API_USAGE_MarvinSDK.txt
 
-        PYTHON 跨平台
+        PYTHON 代码跨平台, 参考python_doc_contrl.md 和python_doc_kine.md 内的DENO
 
 
 ## 五、注意事项
@@ -63,13 +76,14 @@
 
     5.我们的机器有伺服驱动器和控制器两部分，建议您将两个电源连在一个插排上，方便同时上下电和重启， 重启后有30-60秒的热机时间，请等待再操控机器人，以免伺服不响应。
 
-    6.连接结束，请释放机器人，以免在一个进程中，未释放，其他进程连接订阅不生效。
+    6.机器人使用结束必须在代码或者软件释放机器人(代码接口:release, 软件断开机器人按钮或者关闭软件均会释放)，以免在一个进程中，未释放，其他进程连接订阅不生效。
 
     7.在控制SDKc++接口中后缀_A或_B表示， _A 为左臂 _B 为右臂；如果您这只有一条臂则为_A左臂
 
     8.请常用清错：连接机器人小睡半秒后，应清错；获取错误码不为0时，应清错；订阅回来的机器人当前状态有错时候，应清错
 
     9.末端模组（485/can）的控制：务必使用末端模组供应商提供的说明书和测试软件，测试号控制指令以后再使用我司提供的SDK下发控制协议指令。
+
 
 
 ## 六、主要问题和解决

@@ -7,7 +7,7 @@
 
 
 
-## 一、API列表 fx_robot.py
+## 一、API列表 [demo_linux_win/python/fx_robot.py]
   获取SDK版本  
   - SDK_version()
 
@@ -329,6 +329,8 @@
 PVT运行：pvt_demo.py
 
 采集数据：collect_data_demo.py
+
+获取参数: get_param_demo.py
 
 
 

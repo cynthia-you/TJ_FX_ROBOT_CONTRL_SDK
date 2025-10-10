@@ -33,3 +33,8 @@ g++ eef_485_can_demo.cpp -o demo_485 -L. -lMarvinSDK -Wl,-rpath=.
 ./demo_485
 
 
+demo8:get_param_demo.cpp
+g++ get_param_demo.cpp -o demo_get_param -L. -lMarvinSDK -Wl,-rpath=.
+./demo_get_param
+
+
