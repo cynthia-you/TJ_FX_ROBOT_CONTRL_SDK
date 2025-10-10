@@ -59,6 +59,9 @@ while 1:
     time.sleep(0.2)
     if tag>=1:
         logger.info(f"接收信号: {tag}, 接收的HEX数据：{receive_hex_data}")
+        break
+
+robot.release_robot()
 
 
 

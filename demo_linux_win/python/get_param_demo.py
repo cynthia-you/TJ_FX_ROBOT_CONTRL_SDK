@@ -31,8 +31,8 @@ dcss=DCSS()
 robot=Marvin_Robot()
 robot.connect('192.168.1.190')
 '''开启日志以便检查'''
-robot.log_switch('1') #全局日志开关
-robot.local_log_switch('1') # 主要日志
+robot.log_switch('0') #全局日志开关
+robot.local_log_switch('0') # 主要日志
 '''清错'''
 robot.clear_set()
 robot.clear_error('A')

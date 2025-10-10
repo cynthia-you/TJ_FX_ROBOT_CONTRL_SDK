@@ -99,4 +99,17 @@ tag_movl=kk.movL(robot_serial=0,start_xyzabc=pose_6d_1,end_xyzabc=pose_6d_2,ref_
 time.sleep(0.5)
 print('-'*50)
 
+'''
+工具动力学参数辨识
+    #一定确认robot_type参数代表的机型：srs or ccs(十字交叉)
+    ！！！目前仅支持横装方式的辨识！！！
+    #检查数据是否有问题！
+'''
+dyn_para=kk.identify_tool_dyn(robot_type='srs', ipath='./LoadData/')
+print(f'mass(KG):{dyn_para[0]}')
+print(f'mcp(x,y,z) mm:{dyn_para[1:4]}')
+print(f'I(ixx,ixy,ixz,iyy,iyz,izz):{dyn_para[4:]}')
+print('-'*50)
+
+
 
