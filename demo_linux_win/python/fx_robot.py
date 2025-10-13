@@ -371,7 +371,7 @@ class Marvin_Robot:
                 self.robot.OnSetFloatPara(param_buf, result)
                 return True
             elif type=='int':
-                result = ctypes.c_int(0)
+                result = ctypes.c_int(value)
                 self.robot.OnSetIntPara(param_buf, result)
                 return True
         except Exception as e:
