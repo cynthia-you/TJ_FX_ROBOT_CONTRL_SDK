@@ -1,0 +1,2 @@
+libKine.dll: FxRobot.c
+	g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll
