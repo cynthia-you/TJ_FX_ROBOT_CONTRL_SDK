@@ -608,6 +608,8 @@ class Marvin_Kine:
         :param acc:
         :param save_path:
         :return: bool
+                特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
+            2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
         '''
         if robot_serial != 0 and robot_serial != 1:
             raise ValueError("robot_serial must be 0 or 1")
