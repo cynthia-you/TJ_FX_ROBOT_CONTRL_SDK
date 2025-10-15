@@ -190,7 +190,8 @@ movL(robot_serial: int, start_xyzabc: list, end_xyzabc: list, ref_joints: list, 
         :param save_path:
         :return: bool
         '''
-    特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
+        特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
+            2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
 
 ###    2.9 工具动力学参数辨识
 identify_tool_dyn(robot_type: str, ipath: str)
