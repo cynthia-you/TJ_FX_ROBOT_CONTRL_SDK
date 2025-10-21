@@ -45,7 +45,7 @@ typedef struct
 typedef struct
 {
 	FX_INT32 m_RtInSwitch;  	 	///* 实时输入开关 用户实时数据 进行开关设置 0 -  close rt_in ;1- open rt_in*/
-	FX_INT32 m_ImpType;
+	FX_INT32 m_ImpType;				///* 阻抗类型:1 关节阻抗, 2 迪卡尔阻抗, 3 力控 */
 	FX_INT32 m_InFrameSerial;    	///* 输入帧序号   0 -  1000000 取模*/
 	FX_INT16 m_FrameMissCnt;    	///* 丢帧计数*/
 	FX_INT16 m_MaxFrameMissCnt;		///* 开 启 后 最 大 丢 帧 计 数 */
