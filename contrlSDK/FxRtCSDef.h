@@ -10,11 +10,11 @@ typedef enum
 	ARM_STATE_PVT = 2,				//////// PVT
 	ARM_STATE_TORQ = 3,				//////// 扭矩
 
-	ARM_STATE_ERROR = 100,
-	ARM_STATE_TRANS_TO_POSITION = 101,
-	ARM_STATE_TRANS_TO_PVT = 102,
-	ARM_STATE_TRANS_TO_TORQ = 103,
-}ArmState;
+	ARM_STATE_ERROR = 100,       //////// 状态转换出错,需要伺服请错,如果是超限位导致的,切换成位置模式,移动到限位内再切换为阻抗模式.
+	ARM_STATE_TRANS_TO_POSITION = 101, //////// 转位置模式的中间过程
+	ARM_STATE_TRANS_TO_PVT = 102,//////// 转PVT模式的中间过程
+	ARM_STATE_TRANS_TO_TORQ = 103,//////// 转力矩模式的中间过程
+}ArmState;//////// 机器人状态
 
 typedef struct
 {
