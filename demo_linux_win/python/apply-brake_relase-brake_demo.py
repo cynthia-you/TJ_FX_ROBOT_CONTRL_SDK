@@ -1,10 +1,9 @@
 from fx_robot import Marvin_Robot
-from structure_data import DCSS
 import time
 import logging
-
+from structure_data import DCSS
 '''#################################################################
-该DEMO 为订阅机器人双臂数据的案列
+该DEMO 为强制抱闸和强制松闸案例,应对手臂飞车或者撞机急停后扭到一团无法上使能情况,先松闸调整,调整完毕后抱闸再切换成想要的控制模式.
 
 使用逻辑
     1 初始化订阅数据的结构体
@@ -12,9 +11,13 @@ import logging
     3 查验连接是否成功,失败程序直接退出
     4 开启日志以便检查
     5 为了防止伺服有错，先清错
-    6 订阅全部数据
-    7 释放内存使别的程序或者用户可以连接机器人
+    6 左臂强制松闸
+    7 调整完毕,左臂强制抱闸
+    8 右臂强制抱闸
+    9 调整完毕,右臂强制松闸
+    10 任务完成,释放内存使别的程序或者用户可以连接机器人
 '''#################################################################
+
 # 配置日志系统
 logging.basicConfig(format='%(message)s')
 logger = logging.getLogger('debug_printer')
@@ -54,17 +57,34 @@ else:
 robot.log_switch('1') #全局日志开关
 robot.local_log_switch('1') # 主要日志
 
+
 '''清错'''
 robot.clear_set()
 robot.clear_error('A')
+robot.clear_error('B')
 robot.send_cmd()
 time.sleep(1)
 
-'''订阅数据结构体'''
-sub_data=robot.subscribe(dcss)
-print(sub_data)
+
+'''左臂强制松闸'''
+robot.set_param('int','BRAK0',2)
+time.sleep(30) #预留时间去调整手臂的姿态
+
+
+'''调整完毕,左臂强制抱闸'''
+robot.set_param('int','BRAK0',1)
+time.sleep(3)
+
+
+'''右臂强制松闸'''
+robot.set_param('int','BRAK1',2)
+time.sleep(30)#预留时间去调整手臂的姿态
+
+
+'''调整完毕,,右臂强制抱闸'''
+robot.set_param('int','BRAK1',1)
+time.sleep(3)
+
 
 '''释放机器人内存'''
 robot.release_robot()
-
-

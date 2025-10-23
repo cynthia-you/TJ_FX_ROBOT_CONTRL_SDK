@@ -541,11 +541,43 @@ class Marvin_Robot:
         :param path:本机绝对路径
         :return:
         '''
-        self.save_csv_path=path
-        path_char=ctypes.c_char_p(self.save_csv_path)
-        # path_char = ctypes.c_wchar_p(self.save_csv_path)
+        path1='tmp.txt'
+        self.save_data_path = path1.encode('utf-8')
+        path_char = ctypes.c_char_p(self.save_data_path)
+        self.robot.OnSaveGatherData(path_char)
+        import time
+        time.sleep(0.2)
 
-        return self.robot.OnSaveGatherDataCSV(path_char)
+        import csv
+        with open(path1, 'r') as file:
+            lines = file.readlines()
+        processed_data=[]
+        lines = lines[1:]
+        for i, line in enumerate(lines):
+            parts = line.strip().split('$')
+            numbers = []
+            for part in parts:
+                if part:
+                    num_str = part.split()[-1]
+                    numbers.append(num_str)
+            if len(numbers) >= 2:
+                numbers = numbers[2:]
+            processed_data.append(numbers)
+
+        try:
+            with open(path, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(processed_data)
+            print(f"数据已成功保存到: {path}")
+            if os.path.exists(path1):
+                os.remove(path1)
+            return True
+        except Exception as e:
+            print(f"保存失败: {e}")
+            if os.path.exists(path1):
+                os.remove(path1)
+            return False
+
 
     def soft_stop(self, arm:str):
         '''机械臂急停
@@ -611,6 +643,8 @@ class Marvin_Robot:
                    ARM_STATE_POSITION = 1,		//////// 位置跟随
                    ARM_STATE_PVT = 2,			//////// PVT
                    ARM_STATE_TORQ = 3,			//////// 扭矩
+                   ARM_STATE_RELEASE = 4,		//////// 协作释放
+
         :return:
         '''
         try:

@@ -10,30 +10,54 @@ from fx_robot import update_text_file_simple
 使用逻辑
     1 初始化订阅数据的结构体
     2 初始化机器人接口
-    3 开启日志以便检查
-    4 为了防止伺服有错，先清错
-    5 设置位置模式和速度加速度百分比
-    6 确认控制器是否有保存工具信息，如果有：加载保存的数据并生效； 如果无：初始化一个工具文本，并更新工具参数和设置生效
-    7 更新工具和设置生效  
-    8 任务完成，下伺服 释放连接
+    3 查验连接是否成功,失败程序直接退出
+    4 开启日志以便检查
+    5 为了防止伺服有错，先清错
+    6 设置位置模式和速度加速度百分比
+    7 确认控制器是否有保存工具信息，如果有：加载保存的数据并生效； 如果无：初始化一个工具文本，并更新工具参数和设置生效
+    8 更新工具和设置生效  
+    9 任务完成,下使能,释放内存使别的程序或者用户可以连接机器人
 '''#################################################################
 
-
-
-# 配置日志系统
+#配置日志系统
 logging.basicConfig(format='%(message)s')
 logger = logging.getLogger('debug_printer')
 logger.setLevel(logging.INFO)# 一键关闭所有调试打印
 logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
 
-'''1 初始化订阅数据的结构体'''
+'''初始化订阅数据的结构体'''
 dcss=DCSS()
-'''2 初始化机器人接口'''
+
+'''初始化机器人接口'''
 robot=Marvin_Robot()
-robot.connect('192.168.1.190')
+
+
+'''查验连接是否成功'''
+init = robot.connect('192.168.1.190')
+if init==-1:
+    logger.error('failed:端口占用，连接失败!')
+    exit(0)
+else:
+    motion_tag = 0
+    frame_update = None
+    for i in range(5):
+        sub_data = robot.subscribe(dcss)
+        print(f"connect frames :{sub_data['outputs'][0]['frame_serial']}")
+        if sub_data['outputs'][0]['frame_serial'] != 0 and frame_update != sub_data['outputs'][0]['frame_serial']:
+            motion_tag += 1
+            frame_update = sub_data['outputs'][0]['frame_serial']
+        time.sleep(0.1)
+    if motion_tag > 0:
+        logger.info('success:机器人连接成功!')
+    else:
+        logger.error('failed:机器人连接失败!')
+        exit(0)
+
 '''3 开启日志以便检查'''
 robot.log_switch('1') #全局日志开关
 robot.local_log_switch('1') # 主要日志
+
+
 '''4 清错'''
 robot.clear_set()
 robot.clear_error('A')
@@ -91,8 +115,6 @@ else:
 
 
 
-
-
 '''7 更新工具和设置生效
 
 工具信息不变情况，步骤6可全局使用； 如果工具信息改变需要用步骤7更改工具信息， 然后继续使用步骤6的操作。
@@ -123,7 +145,7 @@ else:
 
 
 
-'''8 任务完成，下伺服 释放连接'''
+'''8 任务完成，下使能 释放连接'''
 robot.clear_set()
 robot.set_state(arm='A',state=0)#state=0 下伺服
 robot.send_cmd()

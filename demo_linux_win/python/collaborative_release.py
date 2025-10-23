@@ -1,10 +1,9 @@
 from fx_robot import Marvin_Robot
-from structure_data import DCSS
 import time
 import logging
-
+from structure_data import DCSS
 '''#################################################################
-该DEMO 为订阅机器人双臂数据的案列
+该DEMO 为机器人进入协作释放案列(即关节不为抱死状态,有重力补偿,可以手轻松的扭/拽/拖机器人,用于紧急情况:如机器人卡死抱在一起的姿态,把手臂扭开)
 
 使用逻辑
     1 初始化订阅数据的结构体
@@ -12,9 +11,11 @@ import logging
     3 查验连接是否成功,失败程序直接退出
     4 开启日志以便检查
     5 为了防止伺服有错，先清错
-    6 订阅全部数据
-    7 释放内存使别的程序或者用户可以连接机器人
+    6 设置协作释放模式
+    7 复位以取消协作释放模式
+    8 任务完成，释放内存使别的程序或者用户可以连接机器人
 '''#################################################################
+
 # 配置日志系统
 logging.basicConfig(format='%(message)s')
 logger = logging.getLogger('debug_printer')
@@ -60,11 +61,31 @@ robot.clear_error('A')
 robot.send_cmd()
 time.sleep(1)
 
-'''订阅数据结构体'''
-sub_data=robot.subscribe(dcss)
-print(sub_data)
+
+'''设置协作释放模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=4)#state=4 CR
+robot.send_cmd()
+time.sleep(30) # 预留手拖动调整手臂构型时间
+
+
+'''复位以取消协作释放模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=0)#state=4 CR
+robot.send_cmd()
+time.sleep(1)
 
 '''释放机器人内存'''
 robot.release_robot()
+
+
+
+
+
+
+
+
+
+
 
 
