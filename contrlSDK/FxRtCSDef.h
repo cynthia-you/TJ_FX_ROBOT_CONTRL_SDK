@@ -9,12 +9,15 @@ typedef enum
 	ARM_STATE_POSITION = 1,			//////// 位置跟随
 	ARM_STATE_PVT = 2,				//////// PVT
 	ARM_STATE_TORQ = 3,				//////// 扭矩
+	ARM_STATE_RELEASE = 4,			//////// 释放
 
-	ARM_STATE_ERROR = 100,       //////// 状态转换出错,需要伺服请错,如果是超限位导致的,切换成位置模式,移动到限位内再切换为阻抗模式.
-	ARM_STATE_TRANS_TO_POSITION = 101, //////// 转位置模式的中间过程
-	ARM_STATE_TRANS_TO_PVT = 102,//////// 转PVT模式的中间过程
-	ARM_STATE_TRANS_TO_TORQ = 103,//////// 转力矩模式的中间过程
-}ArmState;//////// 机器人状态
+	ARM_STATE_ERROR = 100, //////// 报错了，清错
+	ARM_STATE_TRANS_TO_POSITION = 101, //////// 正常，切换过程,但是如果一直是这个值就是切换失败.
+	ARM_STATE_TRANS_TO_PVT = 102,//////// 正常，切换过程,但是如果一直是这个值就是切换失败.
+	ARM_STATE_TRANS_TO_TORQ = 103,//////// 正常，切换过程,但是如果一直是这个值就是切换失败.
+	ARM_STATE_TRANS_TO_RELEASE = 104,//////// 正常，切换过程,但是如果一直是这个值就是切换失败.
+	ARM_STATE_TRANS_TO_IDLE = 109, //////// 正常，切换过程,但是如果一直是这个值就是切换失败.
+}ArmState;
 
 typedef struct
 {
@@ -45,7 +48,7 @@ typedef struct
 typedef struct
 {
 	FX_INT32 m_RtInSwitch;  	 	///* 实时输入开关 用户实时数据 进行开关设置 0 -  close rt_in ;1- open rt_in*/
-	FX_INT32 m_ImpType;				///* 阻抗类型:1 关节阻抗, 2 迪卡尔阻抗, 3 力控 */
+	FX_INT32 m_ImpType;				///* 阻抗类型:1关节阻抗 2 迪卡尔阻抗 3力控*/
 	FX_INT32 m_InFrameSerial;    	///* 输入帧序号   0 -  1000000 取模*/
 	FX_INT16 m_FrameMissCnt;    	///* 丢帧计数*/
 	FX_INT16 m_MaxFrameMissCnt;		///* 开 启 后 最 大 丢 帧 计 数 */
@@ -64,8 +67,8 @@ typedef struct
 	FX_FLOAT m_Joint_K[7]; 			///* 关节阻抗刚度K指令*///3
 	FX_FLOAT m_Joint_D[7]; 			///* 关节阻抗阻尼D指令*///3
 
-	FX_INT32 m_DragSpType; 			///* 零空间类型*///5
-	FX_FLOAT m_DragSpPara[6]; 		///* 零空间参数类型*///5
+	FX_INT32 m_DragSpType; 			///* 拖动类型*///5
+	FX_FLOAT m_DragSpPara[6]; 		///* 拖动参数类型*///5
 	
 	FX_INT32 m_Cart_KD_Type;		///* 坐标阻抗类型*/
 	FX_FLOAT m_Cart_K[6]; 			///* 坐标阻抗刚度K指令*///4
