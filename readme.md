@@ -113,11 +113,13 @@
         1,			//////// 位置跟随
         2,				//////// PVT
         3,				//////// 扭矩
+        4,              ////////协作释放
 
         100, //报错了，清错
         ARM_STATE_TRANS_TO_POSITION = 101, //正常，切换瞬间
         ARM_STATE_TRANS_TO_PVT = 102,//正常，切换瞬间
         ARM_STATE_TRANS_TO_TORQ = 103,//正常，切换瞬间
+        ARM_STATE_TRANS_TO_TORQ = 104,//正常，切换瞬间
 
         订阅数据’m_ERRCode‘是7个长度的double, 十进制，
         需要转换为16进制，对照伺服报错的excel看啥错
