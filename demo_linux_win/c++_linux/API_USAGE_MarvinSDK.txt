@@ -1,6 +1,10 @@
 天机-孚晞 控制包 API usage C++
 
 LINUX:
+demo 0 : link_check_demo.cpp
+g++ link_check_demo.cpp -o link -L. -lMarvinSDK -Wl,-rpath=.
+./link
+
 demo 1: torque_joint_impedance_demo.cpp
 g++ torque_joint_impedance_demo.cpp -o torque_joint -L. -lMarvinSDK -Wl,-rpath=.
 ./torque_joint
@@ -28,13 +32,29 @@ g++ pvt_demo.cpp -o pvt -L. -lMarvinSDK -Wl,-rpath=.
 ./pvt
 
 
-demo7:eef_485_can_demo.cpp
-g++ eef_485_can_demo.cpp -o demo_485 -L. -lMarvinSDK -Wl,-rpath=.
+demo7:eef_485_demo.cpp
+g++ eef_485_demo.cpp -o demo_485 -L. -lMarvinSDK -Wl,-rpath=.
 ./demo_485
 
 
-demo8:get_param_demo.cpp
-g++ get_param_demo.cpp -o demo_get_param -L. -lMarvinSDK -Wl,-rpath=.
-./demo_get_param
+demo8:eef_can_demo.cpp
+g++ eef_can_demo.cpp -o demo_can -L. -lMarvinSDK -Wl,-rpath=.
+./demo_can
+
+
+demo8:get_set_param_demo.cpp
+g++ get_set_param_demo.cpp -o demo_get_set_param -L. -lMarvinSDK -Wl,-rpath=.
+./demo_get_set_param
+
+demo9:collaborative_release_demo.cpp
+g++ collaborative_release_demo.cpp -o demo_cr -L. -lMarvinSDK -Wl,-rpath=.
+./demo_cr
+
+
+demo10:apply-brake_release-brake_demo.cpp
+g++ apply-brake_release-brake_demo.cpp -o demo_brake -L. -lMarvinSDK -Wl,-rpath=.
+./demo_brake
+
+
 
 
