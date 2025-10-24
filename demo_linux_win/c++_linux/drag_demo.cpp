@@ -58,6 +58,14 @@ int main()
     OnSetSend();
     usleep(100000);
 
+    //进关节拖动前先设置机器人运动控制模式为关节阻抗
+    OnClearSet();
+    OnSetTargetState_A(3) ; //3:torque mode; 1:position mode
+    OnSetImpType_A(1) ;//type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
+    OnSetSend();
+    usleep(100000);
+
+
 
   //设置拖动类型
   int dgType = 1;
@@ -85,6 +93,10 @@ int main()
   OnSetDragSpace_A(0);
   OnSetSend();
   usleep(100000);
+
+    //  请注意如果是使用坐标拖动的其中一种拖动方式,流程为:
+    //  先进笛卡尔阻抗模式-->选择一种迪卡尔拖动-->拖动-->拖动结束退出拖动.
+    //  再进别的迪卡尔拖动,使用完毕也要退出拖动.
 
  //任务完成,释放内存使别的程序或者用户可以连接机器人
   OnRelease();
