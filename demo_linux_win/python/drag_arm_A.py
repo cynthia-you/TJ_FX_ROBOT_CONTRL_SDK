@@ -64,6 +64,11 @@ robot.clear_error('A')
 robot.send_cmd()
 time.sleep(1)
 
+'''进拖动前先切换关节阻抗模式'''
+robot.clear_set()
+robot.set_impedance_type(arm='A',type=1) #type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
+robot.send_cmd()
+time.sleep(0.5)
 
 
 '''设置拖动模式和参数'''
@@ -94,8 +99,9 @@ logger.info(f'set drag space type={sub_data["inputs"][0]["drag_sp_type"]}')
 logger.info(f'current joint={sub_data["outputs"][0]["fb_joint_pos"]}')
 
 
-'''拖动任务完成，下使能'''
+'''拖动任务完成，退出拖动下使能'''
 robot.clear_set()
+robot.set_drag_space(arm='A',dgType=0)
 robot.set_state(arm='A',state=0)
 robot.send_cmd()
 
