@@ -14,8 +14,9 @@
 
     都已更新到MARVIN_APP
     
-## 一、天机协作机器人为7自由度协作机器人MARVIN SDK说明：
+## 一、天机协作机器人为7自由度协作机器人
 
+    MARVIN SDK说明：
     1. MARVIN系列机器人的SDK分为控制SDK和机器人计算SDK
     2. 控制SDK支持win/linux平台下C++/python的使用和开发（已开源SDK代码）
     3. 计算SDK支持win/linux下的C++/python的使用（开源运动学SDK代码:正解,逆解,逆解零空间,雅可比矩阵,直线规划movL,工具负载的动力学辨识. 动力学计算接口及浮动机座接口请商询）
