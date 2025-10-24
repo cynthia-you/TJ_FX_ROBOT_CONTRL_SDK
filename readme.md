@@ -1,4 +1,19 @@
 # MARVIN_SDK说明
+
+##更新
+### 1.机器人飞车后调整手臂的示例:
+
+    协作释放和松闸调整的方案二选一
+    C++:
+        https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/c%2B%2B_linux/apply-brake_release-brake_demo.cpp
+        https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/c%2B%2B_linux/collaborative_release_demo.cpp
+
+    PYTHON:
+        https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/apply-brake_relase-brake_demo.py
+        https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/collaborative_release.py
+
+    都已更新到MARVIN_APP
+    
 ## 一、天机协作机器人为7自由度协作机器人MARVIN SDK说明：
 
     1. MARVIN系列机器人的SDK分为控制SDK和机器人计算SDK
