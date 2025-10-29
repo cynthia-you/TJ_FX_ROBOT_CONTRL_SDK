@@ -20,7 +20,7 @@ kk=Marvin_Kine()
 !!! 非常重要！！！
 使用前，请一定确认机型，导入正确的配置文件，文件导错，计算会错误啊啊啊,甚至看起来运行正常，但是值错误！！！
 '''
-ini_result=kk.load_config(config_path='ccs.MvKDCfg')
+ini_result=kk.load_config(config_path='ccs_m6.MvKDCfg')
 time.sleep(0.5)
 # print(ini_result)
 # print(type(ini_result['TYPE'][0]))
