@@ -64,7 +64,11 @@ robot.clear_error('A')
 robot.send_cmd()
 time.sleep(1)
 
-'''进拖动前先切换关节阻抗模式'''
+'''进拖动前先切换扭矩模式关节阻抗模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=3) #torque mode
+robot.send_cmd()
+time.sleep(0.5)
 robot.clear_set()
 robot.set_impedance_type(arm='A',type=1) #type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
 robot.send_cmd()
