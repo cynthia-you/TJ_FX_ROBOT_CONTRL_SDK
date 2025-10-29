@@ -1016,11 +1016,11 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 		FX_Robot_Kine_IK(RobotSetial, &sp);
 
 		// Error feedback
-		for (i = 0; i < 7; i++)
+		for (long kk = 0; kk < 7; kk++)
 		{
-			if (sp.m_Output_JntExdTags[i] == FX_TRUE)
+			if (sp.m_Output_JntExdTags[kk] == FX_TRUE)
 			{
-				printf("Joint %d exceed limit \n", i);
+				printf("Joint %d exceed limit \n", kk);
 				return FX_FALSE;
 			}
 		}
@@ -1111,4 +1111,5 @@ bool CAxisPln::OnMovJ(long RobotSetial, double start_joint[7], double end_joint[
 	}
 
 	return true;
+
 }
