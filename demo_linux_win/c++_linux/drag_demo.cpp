@@ -61,6 +61,9 @@ int main()
     //进关节拖动前先设置机器人运动控制模式为关节阻抗
     OnClearSet();
     OnSetTargetState_A(3) ; //3:torque mode; 1:position mode
+    OnSetSend();
+    usleep(100000);
+    OnClearSet();
     OnSetImpType_A(1) ;//type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
     OnSetSend();
     usleep(100000);
