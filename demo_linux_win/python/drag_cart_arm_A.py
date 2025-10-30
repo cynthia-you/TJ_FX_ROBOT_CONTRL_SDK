@@ -66,6 +66,11 @@ time.sleep(1)
 
 '''进拖动前先切换坐标阻抗模式'''
 robot.clear_set()
+robot.set_state(arm='A',state=3) #torque mode
+robot.send_cmd()
+time.sleep(0.5)
+
+robot.clear_set()
 robot.set_impedance_type(arm='A',type=2) #type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
 robot.send_cmd()
 time.sleep(0.5)
@@ -130,8 +135,12 @@ robot.send_cmd()
 '''拖动任务完成，退出拖动下使能'''
 robot.clear_set()
 robot.set_drag_space(arm='A',dgType=0)
+robot.send_cmd()
+time.sleep(0.5)
+robot.clear_set()
 robot.set_state(arm='A',state=0)
 robot.send_cmd()
+time.sleep(0.5)
 
 '''释放机器人内存'''
 robot.release_robot()

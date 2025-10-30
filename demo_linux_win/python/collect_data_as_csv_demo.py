@@ -89,7 +89,10 @@ robot.send_cmd()
 time.sleep(0.5)# 模拟运动时长
 
 '''停止采集'''
+robot.clear_set()
 robot.stop_collect_data()
+robot.send_cmd()
+time.sleep(0.5)
 
 '''保存采集数据'''
 path='aa.csv'
