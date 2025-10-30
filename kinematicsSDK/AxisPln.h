@@ -11,6 +11,7 @@ public:
 	virtual ~CAxisPln();
 
 	bool OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, char* path);
+	bool OnMovL_KeepJ(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, char* path);
 	bool OnMovJ(long RobotSetial, double start_joint[7], double end_joint[7], double vel, double acc, double jerk, char* path);
 protected:
 	bool OnPln(double start_pos, double end_pos, double vel, double acc, double jerk, CPointSet* ret);
@@ -32,12 +33,6 @@ protected:
 	double m_filt_value[500];
 	long m_filt_cnt;
 	long m_filt_pos;
-
-
-	void ABC2Quaternions(double XYZABC[6], double Q[4]);
-	bool QuaternionNorm(double Q[4]);
-	void QuaternionSlerp(double Q_from[4], double Q_to[4], double ratio, double Q_ret[4]);
-	void Quaternions2ABCMatrix(double q[4], double xyz[3], double m[4][4]);
 };
 
 #endif 

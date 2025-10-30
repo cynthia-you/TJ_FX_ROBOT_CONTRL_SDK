@@ -15,6 +15,17 @@ extern "C" void AxisPln_OnMovL(FXSpln spln, long RobotSerial, double start_pos[6
 	}
 }
 
+//void AxisPln_OnMovL_KeepJ(FXSpln spln, long RobotSerial, double start_pos[6], double end_pos[6], double vel, char* path);
+extern "C" void AxisPln_OnMovL_KeepJ(FXSpln spln, long RobotSerial, double start_pos[6], double end_pos[6], double vel, char* path)
+{
+	CAxisPln* obj = static_cast<CAxisPln*>(spln);
+	if (obj)
+	{
+		obj->OnMovL_KeepJ(RobotSerial, start_pos, end_pos, vel, path);
+	}
+}
+
+
 extern "C" void AxisPln_OnMovJ(FXSpln spln, long RobotSerial, double start_joint[7], double end_joint[7], double vel, double acc, double jerk, char* path)
 {
 	CAxisPln* obj = static_cast<CAxisPln*>(spln);

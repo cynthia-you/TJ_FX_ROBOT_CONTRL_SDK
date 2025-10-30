@@ -1,9 +1,9 @@
 //#include "pch.h"
 #include "AxisPln.h"
-#include "FXMath.h"
 #include "math.h"
 #include "O3Polynorm.h"
 #include "FxRobot.h"
+#include "FXMatrix.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -634,152 +634,6 @@ double CAxisPln::OnGetPln(double* ret_v)
 
 }
 
-bool CAxisPln::QuaternionNorm(double Q[4])
-{
-	double qq = FX_Sqrt(Q[0] * Q[0] + Q[1] * Q[1] + Q[2] * Q[2] + Q[3] * Q[3]);
-	if (qq <= FXARM_EPS)
-	{
-		return FX_FALSE;
-	}
-	Q[0] /= qq;
-	Q[1] /= qq;
-	Q[2] /= qq;
-	Q[3] /= qq;
-
-	return true;
-}
-
-void CAxisPln::ABC2Quaternions(double XYZABC[6], double Q[4])
-{
-	Matrix3 Trm;
-	double sa;
-	double sb;
-	double sr;
-	double ca;
-	double cb;
-	double cr;
-
-	FX_SIN_COS_DEG(XYZABC[5], &sa, &ca);
-	FX_SIN_COS_DEG(XYZABC[4], &sb, &cb);
-	FX_SIN_COS_DEG(XYZABC[3], &sr, &cr);
-
-	Trm[0][0] = ca * cb;
-	Trm[0][1] = ca * sb * sr - sa * cr;
-	Trm[0][2] = ca * sb * cr + sa * sr;
-
-	Trm[1][0] = sa * cb;
-	Trm[1][1] = sa * sb * sr + ca * cr;
-	Trm[1][2] = sa * sb * cr - ca * sr;
-
-	Trm[2][0] = -sb;
-	Trm[2][1] = cb * sr;
-	Trm[2][2] = cb * cr;
-
-
-	FX_DOUBLE tr = Trm[0][0] + Trm[1][1] + Trm[2][2];
-	FX_DOUBLE q[4];
-
-	if (tr > 0) {
-		FX_DOUBLE S = FX_Sqrt(tr + 1.0) * 2; //
-		q[3] = 0.25 * S;
-		q[0] = (Trm[2][1] - Trm[1][2]) / S;
-		q[1] = (Trm[0][2] - Trm[2][0]) / S;
-		q[2] = (Trm[1][0] - Trm[0][1]) / S;
-	}
-	else if ((Trm[0][0] > Trm[1][1]) && (Trm[0][0] > Trm[2][2])) {
-		FX_DOUBLE S = FX_Sqrt(1.0 + Trm[0][0] - Trm[1][1] - Trm[2][2]) * 2;
-		q[3] = (Trm[2][1] - Trm[1][2]) / S;
-		q[0] = 0.25 * S;
-		q[1] = (Trm[0][1] + Trm[1][0]) / S;
-		q[2] = (Trm[0][2] + Trm[2][0]) / S;
-	}
-	else if (Trm[1][1] > Trm[2][2]) {
-		FX_DOUBLE S = FX_Sqrt(1.0 + Trm[1][1] - Trm[0][0] - Trm[2][2]) * 2;
-		q[3] = (Trm[0][2] - Trm[2][0]) / S;
-		q[0] = (Trm[0][1] + Trm[1][0]) / S;
-		q[1] = 0.25 * S;
-		q[2] = (Trm[1][2] + Trm[2][1]) / S;
-	}
-	else {
-		FX_DOUBLE S = FX_Sqrt(1.0 + Trm[2][2] - Trm[0][0] - Trm[1][1]) * 2;
-		q[3] = (Trm[1][0] - Trm[0][1]) / S;
-		q[0] = (Trm[0][2] + Trm[2][0]) / S;
-		q[1] = (Trm[1][2] + Trm[2][1]) / S;
-		q[2] = 0.25 * S;
-	}
-	QuaternionNorm(q);
-	Q[0] = q[0];
-	Q[1] = q[1];
-	Q[2] = q[2];
-	Q[3] = q[3];
-}
-
-void CAxisPln::QuaternionSlerp(double Q_from[4], double Q_to[4], double ratio, double Q_ret[4])
-{
-	double omega, cosom, sinom, scale0, scale1;
-	cosom = Q_from[0] * Q_to[0] + Q_from[1] * Q_to[1] + Q_from[2] * Q_to[2] + Q_from[3] * Q_to[3];
-
-	if (cosom < 0.0)
-	{
-		cosom = -cosom;
-		Q_to[0] = -Q_to[0];
-		Q_to[1] = -Q_to[1];
-		Q_to[2] = -Q_to[2];
-		Q_to[3] = -Q_to[3];
-	}
-
-	if ((1.0 + cosom) > 0.001)
-	{
-		omega = acos(cosom);
-		sinom = sin(omega);
-		scale0 = sin((1.0 - ratio) * omega) / sinom;
-		scale1 = sin(ratio * omega) / sinom;
-	}
-	else
-	{
-		scale0 = 1.0 - ratio;
-		scale1 = ratio;
-	}
-	Q_ret[0] = scale0 * Q_from[0] + scale1 * Q_to[0];
-	Q_ret[1] = scale0 * Q_from[1] + scale1 * Q_to[1];
-	Q_ret[2] = scale0 * Q_from[2] + scale1 * Q_to[2];
-	Q_ret[3] = scale0 * Q_from[3] + scale1 * Q_to[3];
-}
-
-void CAxisPln::Quaternions2ABCMatrix(double q[4], double xyz[3], double m[4][4])
-{
-	double d11, d12, d13, d14, d22, d23, d24, d33, d34;
-	d11 = q[0] * q[0];
-	d12 = q[0] * q[1];
-	d13 = q[0] * q[2];
-	d14 = q[0] * q[3];
-	d22 = q[1] * q[1];
-	d23 = q[1] * q[2];
-	d24 = q[1] * q[3];
-	d33 = q[2] * q[2];
-	d34 = q[2] * q[3];
-
-	m[0][0] = 1 - 2 * d22 - 2 * d33;
-	m[0][1] = 2 * (d12 - d34);
-	m[0][2] = 2 * (d13 + d24);
-	m[0][3] = xyz[0];
-
-	m[1][0] = 2 * (d12 + d34);
-	m[1][1] = 1 - 2 * d11 - 2 * d33;
-	m[1][2] = 2 * (d23 - d14);
-	m[1][3] = xyz[1];
-
-	m[2][0] = 2 * (d13 - d24);
-	m[2][1] = 2 * (d23 + d14);
-	m[2][2] = 1 - 2 * d11 - 2 * d22;
-	m[2][3] = xyz[2];
-
-	m[3][0] = 0;
-	m[3][1] = 0;
-	m[3][2] = 0;
-	m[3][3] = 1;
-}
-
 bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, char* path)
 {
 	///////determine same points
@@ -813,8 +667,8 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 	//Cuter Euler-Angle
 	double Q_start[4] = { 0 };
 	double Q_end[4] = { 0 };
-	ABC2Quaternions(start_pos, Q_start);
-	ABC2Quaternions(end_pos, Q_end);
+	FX_ABC2Quaternions(start_pos, Q_start);
+	FX_ABC2Quaternions(end_pos, Q_end);
 	
 	CPointSet out;
 	out.OnInit(PotT_9d);
@@ -831,7 +685,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 		if ((same_tag[3] + same_tag[4] + same_tag[5]) < 3)
 		{
 			double ratio = i / (double)(max_num - 1);
-			QuaternionSlerp(Q_start, Q_end, ratio, &tmp[3]);
+			FX_QuaternionSlerp(Q_start, Q_end, ratio, &tmp[3]);
 		}
 		else
 		{
@@ -967,9 +821,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 			}
 		}
 	}
-//	char apth[] = "D:\\cccc\\SPMOVL\\OutPVT.txt";
-//	char* ppp = apth;
-//	out.OnSave(ppp);
+
 	////////////////////InvKine//////////////
 	FX_InvKineSolvePara sp;
 
@@ -983,7 +835,6 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 	double tmppoints[7] = { 0 };
 	double TCP[4][4];
 	double ret_joints[9] = { 0 };
-
 	//initial 
 	for (i = 0; i < 4; i++)
 	{
@@ -1004,7 +855,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 		tmppoints[5] = pp[5];
 		tmppoints[6] = pp[6];
 
-		Quaternions2ABCMatrix(&tmppoints[3], &tmppoints[0], TCP);
+		FX_Quaternions2ABCMatrix(&tmppoints[3], &tmppoints[0], TCP);
 		for (dof = 0; dof < 4; dof++)
 		{
 			for (j = 0; j < 4; j++)
@@ -1046,6 +897,203 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 	//char apth[] = "D:\\cccc\\SPMOVL\\OutPVT.txt";
 	char* pp = path;
 	final_points.OnSave(path);
+
+	return true;
+}
+
+bool CAxisPln::OnMovL_KeepJ(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, char* path)
+{
+	CPointSet retJoints;
+
+	FX_INT32L i, j;
+	retJoints.OnInit(PotT_9d);
+	retJoints.OnEmpty();
+	Matrix4 pg_start;
+	Matrix4 pg_stop;
+	Matrix3 nspg_start;
+	Matrix3 nspg_stop;
+	FX_Robot_Kine_FK_NSP(RobotSerial, startjoints, pg_start, nspg_start);
+	FX_Robot_Kine_FK_NSP(RobotSerial, stopjoints, pg_stop, nspg_stop);
+
+	CPointSet pset;
+	pset.OnInit(PotT_40d);
+
+	Quaternion q_start;
+	Quaternion q_stop;
+
+	Quaternion q_nsp_start;
+	Quaternion q_nsp_stop;
+
+	FX_Matrix2Quaternion4(pg_start, q_start);
+	FX_Matrix2Quaternion4(pg_stop, q_stop);
+
+	FX_Matrix2Quaternion3(nspg_start, q_nsp_start);
+	FX_Matrix2Quaternion3(nspg_stop, q_nsp_stop);
+
+	double dx = pg_start[0][3] - pg_stop[0][3];
+	double dy = pg_start[1][3] - pg_stop[1][3];
+	double dz = pg_start[2][3] - pg_stop[2][3];
+	double length_pos = sqrt(dx * dx + dy * dy + dz * dz);
+	if (vel < 0.1)
+	{
+		vel = 0.1;
+	}
+	FX_DOUBLE cut_step = vel * 0.02;
+
+	long tnum = length_pos / cut_step + 2;
+	double dnum = tnum;
+	double input[40];
+	for (i = 0; i < 40; i++)
+	{
+		input[i] = 0;
+	}
+	for (i = 0; i <= tnum; i++)
+	{
+		double r = i;
+		r /= dnum;
+		input[0] = pg_start[0][3] * (1.0 - r) + r * pg_stop[0][3];
+		input[1] = pg_start[1][3] * (1.0 - r) + r * pg_stop[1][3];
+		input[2] = pg_start[2][3] * (1.0 - r) + r * pg_stop[2][3];
+		FX_QuaternionSlerp(q_start, q_stop, r, &input[3]);
+		Quaternion nspq;
+		FX_QuaternionSlerp(q_nsp_start, q_nsp_stop, r, nspq);
+		Matrix3 tmpm;
+		FX_Quaternions2Matrix3(nspq, tmpm);
+		input[7] = tmpm[0][0];
+		input[8] = tmpm[1][0];
+		input[9] = tmpm[2][0];
+
+		pset.OnSetPoint(input);
+	}
+
+	FX_INT32L num = 0;
+	num = pset.OnGetPointNum();
+	FX_InvKineSolvePara sp;
+	sp.m_DGR1 = 10;
+	sp.m_DGR2 = 10;
+	sp.m_DGR3 = 10;
+	//printf("[s] ----- ");
+	double last_joint[7];
+	for (i = 0; i < 7; i++)
+	{
+		//printf("%.2lf ", startjoints[i]);
+		last_joint[i] = startjoints[i];
+		sp.m_Input_IK_RefJoint[i] = startjoints[i];
+		sp.m_Output_RetJoint[i] = startjoints[i];
+	}
+
+	//printf("\n");
+
+	bool _jext = false;
+
+	for (i = 0; i < num; i++)
+	{
+		double* p = pset.OnGetPoint(i);
+		FX_Quaternions2ABCMatrix(&p[3], &p[0], sp.m_Input_IK_TargetTCP);
+		sp.m_Input_IK_ZSPPara[0] = p[7];
+		sp.m_Input_IK_ZSPPara[1] = p[8];
+		sp.m_Input_IK_ZSPPara[2] = p[9];
+		sp.m_Input_IK_ZSPType = 1;
+
+		for (j = 0; j < 7; j++)
+		{
+			sp.m_Input_IK_RefJoint[j] = last_joint[j];
+		}
+
+		if (FX_Robot_Kine_IK(RobotSerial, &sp) == FX_FALSE)
+		{
+			return false;
+		}
+
+		for (j = 0; j < 7; j++)
+		{
+			p[j + 10] = sp.m_Output_RetJoint[j];
+			last_joint[j] = sp.m_Output_RetJoint[j];
+		}
+
+
+		if (sp.m_Output_IsJntExd == FX_TRUE)
+		{
+			_jext = true;
+			double cur_ext = sp.m_Output_JntExdABS;
+
+			double old_ext = cur_ext;
+			long dir = 1;
+			sp.m_Input_ZSP_Angle = 0.01;
+			FX_Robot_Kine_IK_NSP(RobotSerial, &sp);
+			double t_ext1 = sp.m_Output_JntExdABS;
+			sp.m_Input_ZSP_Angle = -0.01;
+			FX_Robot_Kine_IK_NSP(RobotSerial, &sp);
+			double t_ext2 = sp.m_Output_JntExdABS;
+
+			if (t_ext2 < t_ext1)
+			{
+				if (cur_ext < t_ext2)
+				{
+					//printf("A\n");
+					return false;
+				}
+				dir = -1;
+				old_ext = cur_ext;
+			}
+			else
+			{
+
+				if (cur_ext < t_ext1)
+				{
+					//printf("B\n");
+					return false;
+				}
+			}
+
+			sp.m_Input_ZSP_Angle = dir;
+			while (cur_ext > 0.00001)
+			{
+				FX_Robot_Kine_IK_NSP(RobotSerial, &sp);
+				cur_ext = sp.m_Output_JntExdABS;
+				//printf("<%lf/%lf> \n ", cur_ext,sp.m_Input_ZSP_Angle);
+				if (FX_Fabs(sp.m_Input_ZSP_Angle) > 360)
+				{
+					printf("\n\n no result\n");
+					return false;
+				}
+
+				//printf("%.2lf  -->\n ", cur_ext);
+
+				sp.m_Input_ZSP_Angle += dir;
+
+
+
+			}
+
+			//printf("---------------------\n");
+
+			sp.m_Input_ZSP_Angle -= dir;
+			p[17] = sp.m_Input_ZSP_Angle;
+			//printf("[%d]<%lf>   ----- ", i, p[17]);
+
+
+		}
+		else
+		{
+			//printf("[%d] ----- ", i);
+		}
+
+
+		for (j = 0; j < 7; j++)
+		{
+			p[j + 19] = sp.m_Output_RetJoint[j];
+		}
+
+		retJoints.OnSetPoint(&p[19]);
+	}
+
+	long final_num = retJoints.OnGetPointNum();
+	char* pp = path;
+	if (retJoints.OnSave(path) == false)
+	{
+		printf("num= %d false\n",final_num);
+	}
 
 	return true;
 }
@@ -1111,5 +1159,4 @@ bool CAxisPln::OnMovJ(long RobotSetial, double start_joint[7], double end_joint[
 	}
 
 	return true;
-
 }

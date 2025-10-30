@@ -79,7 +79,7 @@ FX_VOID   FX_SIN_COS_DEG(FX_DOUBLE DegAngle, FX_DOUBLE* retSin, FX_DOUBLE* retCo
 FX_DOUBLE FX_ATan2(FX_DOUBLE dy, FX_DOUBLE dx);
 FX_DOUBLE FX_ACOS(FX_DOUBLE x);
 ///////////////////////////////////////////////////////////////////////////////
-FX_DOUBLE FX_Sqrt(FX_DOUBLE ix);
+FX_DOUBLE FX_Sqrt(FX_DOUBLE x);
 FX_DOUBLE FX_3Root(FX_DOUBLE ix);
 ///////////////////////////////////////////////////////////////////////////////
 FX_DOUBLE FX_MinDif_Circle(FX_DOUBLE refv, FX_DOUBLE* v);

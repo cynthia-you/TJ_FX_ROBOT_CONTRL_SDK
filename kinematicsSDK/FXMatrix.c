@@ -2678,160 +2678,6 @@ FX_VOID FX_PGTranXYZABC2PG(FX_DOUBLE xyzabc[6], FX_DOUBLE pg[4][4])
 
 
 //////////////////////////////////////////////////
-
-
-
-FX_VOID FX_QuatMult(FX_DOUBLE q1[4], FX_DOUBLE q2[4], FX_DOUBLE q[4])
-{
-	FX_DOUBLE aw, ax, ay, az;
-	FX_DOUBLE bw, bx, by, bz;
-	aw = q1[3];
-	ax = q1[0];
-	ay = q1[1];
-	az = q1[2];
-
-	bw = q2[3];
-	bx = q2[0];
-	by = q2[1];
-	bz = q2[2];
-	q[0] = aw * bx + ax * bw + ay * bz - az * by;
-	q[1] = aw * by + ay * bw + az * bx - ax * bz;
-	q[2] = aw * bz + az * bw + ax * by - ay * bx;
-
-	q[3] = aw * bw - ax * bx - ay * by - az * bz;
-}
-
-FX_BOOL FX_QuaternionNorm(FX_DOUBLE q[4])
-{
-	FX_DOUBLE qq = FX_Sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
-	if (qq <= FXARM_EPS)
-	{
-		return FX_FALSE;
-	}
-	q[0] /= qq;
-	q[1] /= qq;
-	q[2] /= qq;
-	q[3] /= qq;
-	return FX_TRUE;
-}
-
-
-FX_DOUBLE FX_QuaternionSqrtNorm(FX_DOUBLE q[4])
-{
-	FX_DOUBLE qq = FX_Sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
-	return qq;
-}
-
-
-
-FX_VOID FX_QuaternionConj(FX_DOUBLE q[4], FX_DOUBLE retq[4])
-{
-	retq[0] = -q[0];
-	retq[1] = -q[1];
-	retq[2] = -q[2];
-	retq[3] = q[3];
-}
-
-
-FX_BOOL FX_QuaternionInverse(FX_DOUBLE q[4], FX_DOUBLE retqInv[4])
-{
-	FX_DOUBLE n2 = FX_QuaternionSqrtNorm(q);
-	if (n2 > FXARM_TINYV)
-	{
-		retqInv[0] = -q[0] / n2;
-		retqInv[1] = -q[1] / n2;
-		retqInv[2] = -q[2] / n2;
-		retqInv[3] = q[3] / n2;
-		return FX_TRUE;
-	}
-	else
-	{
-		retqInv[0] = 1;
-		retqInv[1] = 0;
-		retqInv[2] = 0;
-		retqInv[3] = 0;
-		return FX_FALSE;
-	}
-
-}
-
-
-FX_VOID FX_Matrix2Quaternion(Matrix3 m, Vect4 q)
-{
-	FX_INT32L i = 0;
-	FX_INT32L j = 0;
-	FX_INT32L k = 0;
-	FX_DOUBLE t = m[0][0] + m[1][1] + m[2][2];
-
-	if (t > (0))
-	{
-		t = FX_Sqrt(t + (1.0));
-		q[3] = (0.5) * t;
-		t = (0.5) / t;
-		q[0] = (m[2][1] - m[1][2]) * t;
-		q[1] = (m[0][2] - m[2][0]) * t;
-		q[2] = (m[1][0] - m[0][1]) * t;
-
-	}
-	else
-	{
-		i = 0;
-		if (m[1][1] > m[0][0])
-		{
-			i = 1;
-		}
-		if (m[2][2] > m[i][i])
-		{
-			i = 2;
-		}
-		j = (i + 1) % 3;
-		k = (j + 1) % 3;
-
-		t = FX_Sqrt(m[i][i] - m[j][j] - m[k][k] + (1.0));
-		q[i] = (0.5) * t;
-		t = (0.5) / t;
-		q[3] = (m[k][j] - m[j][k]) * t;
-		q[j] = (m[j][i] + m[i][j]) * t;
-		q[k] = (m[k][i] + m[i][k]) * t;
-	}
-
-}
-
-
-
-FX_VOID  FX_ABC2Q(Vect3 abc, Vect4 retq)
-{
-	FX_DOUBLE angx = abc[0];
-	FX_DOUBLE angy = abc[1];
-	FX_DOUBLE angz = abc[2];
-	FX_DOUBLE sa = 0;
-	FX_DOUBLE sb = 0;
-	FX_DOUBLE sr = 0;
-	FX_DOUBLE ca = 0;
-	FX_DOUBLE cb = 0;
-	FX_DOUBLE cr = 0;
-	Matrix3 pg;
-	FX_SIN_COS_DEG(angx, &sr, &cr);
-	FX_SIN_COS_DEG(angy, &sb, &cb);
-	FX_SIN_COS_DEG(angz, &sa, &ca);
-	pg[0][0] = ca * cb;
-	pg[0][1] = ca * sb * sr - sa * cr;
-	pg[0][2] = ca * sb * cr + sa * sr;
-
-	pg[1][0] = sa * cb;
-	pg[1][1] = sa * sb * sr + ca * cr;
-	pg[1][2] = sa * sb * cr - ca * sr;
-
-	pg[2][0] = -sb;
-	pg[2][1] = cb * sr;
-	pg[2][2] = cb * cr;
-
-	FX_Matrix2Quaternion(pg,retq);
-
-}
-
-
-
 FX_BOOL  FX_RightPsoInv67(FX_DOUBLE m[6][7], FX_DOUBLE invm[7][6])
 {
 	FX_INT32 i, j, k;
@@ -2839,19 +2685,19 @@ FX_BOOL  FX_RightPsoInv67(FX_DOUBLE m[6][7], FX_DOUBLE invm[7][6])
 	FX_DOUBLE FX_MMT[6][6];
 	FX_DOUBLE FX_MMT_INV[6][6];
 
-	for ( i = 0; i < 6; i++)
+	for (i = 0; i < 6; i++)
 	{
-		for ( j = 0; j < 7; j++)
+		for (j = 0; j < 7; j++)
 		{
 			m_t[j][i] = m[i][j];
 		}
 	}
-	for ( i = 0; i < 6; i++)
+	for (i = 0; i < 6; i++)
 	{
 		for (j = 0; j < 6; j++)
 		{
 			FX_MMT[i][j] = 0;
-			for ( k = 0; k < 7; k++)
+			for (k = 0; k < 7; k++)
 			{
 				FX_MMT[i][j] += m[i][k] * m_t[k][j];
 			}
@@ -2877,10 +2723,6 @@ FX_BOOL  FX_RightPsoInv67(FX_DOUBLE m[6][7], FX_DOUBLE invm[7][6])
 
 	return FX_TRUE;
 }
-
-
-
-
 
 FX_VOID PGErr(Matrix4 Td, Matrix4 Te, Vect6 err)
 {
@@ -2912,7 +2754,6 @@ FX_VOID PGErr(Matrix4 Td, Matrix4 Te, Vect6 err)
 	}
 }
 
-
 int Cholesky(double A[6][6], double L[6][6], int n)
 {
 	int i, j, k;
@@ -2941,7 +2782,7 @@ int Cholesky(double A[6][6], double L[6][6], int n)
 	return 0;
 }
 
-void eig( Matrix6 a , Matrix6 v, double eps)
+void eig(Matrix6 a, Matrix6 v, double eps)
 {
 	int n = 6;
 	int i, j, p, q, u, w, t, s;
@@ -3017,13 +2858,13 @@ loop: u = p * n + q; w = p * n + p; t = q * n + p; s = q * n + q;
 
 FX_BOOL generalized_eig(double eps, double A[6][6], double B[6][6], double V[6][6], double D[6])
 {
-	FX_INT32 i, j,tret;
-	Matrix6 G  = { 0 };
-	Matrix6 GInv  = { 0 };
-	Matrix6 GInvT  = { 0 };
-	Matrix6 S  = { 0 };
-	Matrix6 temp  = { 0 };
-	Matrix6 y  = { 0 };
+	FX_INT32 i, j, tret;
+	Matrix6 G = { 0 };
+	Matrix6 GInv = { 0 };
+	Matrix6 GInvT = { 0 };
+	Matrix6 S = { 0 };
+	Matrix6 temp = { 0 };
+	Matrix6 y = { 0 };
 	if (Cholesky(B, G, 6) != 0)
 	{
 		int a = 0;
@@ -3058,4 +2899,361 @@ FX_BOOL generalized_eig(double eps, double A[6][6], double B[6][6], double V[6][
 	}
 
 	return FX_TRUE;
+}
+
+////////////////////////////
+FX_VOID	FX_Vect3AToB(Vect3 A, Vect3 B)
+{
+	B[0] = A[0];
+	B[1] = A[1];
+	B[2] = A[2];
+}
+
+FX_VOID	FX_VectAddToA(Vect3 a, Vect3 b)
+{
+	a[0] += b[0];
+	a[1] += b[1];
+	a[2] += b[2];
+}
+
+FX_VOID	FX_VectAdd(Vect3 a, Vect3 b, Vect3 result)
+{
+	result[0] = a[0] + b[0];
+	result[1] = a[1] + b[1];
+	result[2] = a[2] + b[2];
+}
+
+/////////////////////////////////////////////////////////////Quaternion///////////////
+FX_VOID	FX_QuatMult(Quaternion q1, Quaternion q2, Quaternion q)
+{
+	FX_DOUBLE aw, ax, ay, az;
+	FX_DOUBLE bw, bx, by, bz;
+	aw = q1[3];
+	ax = q1[0];
+	ay = q1[1];
+	az = q1[2];
+
+	bw = q2[3];
+	bx = q2[0];
+	by = q2[1];
+	bz = q2[2];
+	q[0] = aw * bx + ax * bw + ay * bz - az * by;
+	q[1] = aw * by + ay * bw + az * bx - ax * bz;
+	q[2] = aw * bz + az * bw + ax * by - ay * bx;
+
+	q[3] = aw * bw - ax * bx - ay * by - az * bz;
+}
+
+FX_BOOL FX_QuaternionNorm(Quaternion Q)
+{
+	FX_DOUBLE qq = FX_Sqrt(Q[0] * Q[0] + Q[1] * Q[1] + Q[2] * Q[2] + Q[3] * Q[3]);
+	if (qq <= FXARM_EPS)
+	{
+		return FX_FALSE;
+	}
+	Q[0] /= qq;
+	Q[1] /= qq;
+	Q[2] /= qq;
+	Q[3] /= qq;
+
+	return FX_TRUE;
+}
+
+FX_VOID FX_ABC2Quaternions(FX_DOUBLE XYZABC[6], Quaternion Q)
+{
+	Matrix3 Trm;
+	FX_DOUBLE sa;
+	FX_DOUBLE sb;
+	FX_DOUBLE sr;
+	FX_DOUBLE ca;
+	FX_DOUBLE cb;
+	FX_DOUBLE cr;
+
+	FX_SIN_COS_DEG(XYZABC[5], &sa, &ca);
+	FX_SIN_COS_DEG(XYZABC[4], &sb, &cb);
+	FX_SIN_COS_DEG(XYZABC[3], &sr, &cr);
+
+	Trm[0][0] = ca * cb;
+	Trm[0][1] = ca * sb * sr - sa * cr;
+	Trm[0][2] = ca * sb * cr + sa * sr;
+
+	Trm[1][0] = sa * cb;
+	Trm[1][1] = sa * sb * sr + ca * cr;
+	Trm[1][2] = sa * sb * cr - ca * sr;
+
+	Trm[2][0] = -sb;
+	Trm[2][1] = cb * sr;
+	Trm[2][2] = cb * cr;
+
+
+	FX_DOUBLE tr = Trm[0][0] + Trm[1][1] + Trm[2][2];
+	Quaternion q;
+
+	if (tr > 0) {
+		FX_DOUBLE S = FX_Sqrt(tr + 1.0) * 2; //
+		q[3] = 0.25 * S;
+		q[0] = (Trm[2][1] - Trm[1][2]) / S;
+		q[1] = (Trm[0][2] - Trm[2][0]) / S;
+		q[2] = (Trm[1][0] - Trm[0][1]) / S;
+	}
+	else if ((Trm[0][0] > Trm[1][1]) && (Trm[0][0] > Trm[2][2])) {
+		FX_DOUBLE S = FX_Sqrt(1.0 + Trm[0][0] - Trm[1][1] - Trm[2][2]) * 2;
+		q[3] = (Trm[2][1] - Trm[1][2]) / S;
+		q[0] = 0.25 * S;
+		q[1] = (Trm[0][1] + Trm[1][0]) / S;
+		q[2] = (Trm[0][2] + Trm[2][0]) / S;
+	}
+	else if (Trm[1][1] > Trm[2][2]) {
+		FX_DOUBLE S = FX_Sqrt(1.0 + Trm[1][1] - Trm[0][0] - Trm[2][2]) * 2;
+		q[3] = (Trm[0][2] - Trm[2][0]) / S;
+		q[0] = (Trm[0][1] + Trm[1][0]) / S;
+		q[1] = 0.25 * S;
+		q[2] = (Trm[1][2] + Trm[2][1]) / S;
+	}
+	else {
+		FX_DOUBLE S = FX_Sqrt(1.0 + Trm[2][2] - Trm[0][0] - Trm[1][1]) * 2;
+		q[3] = (Trm[1][0] - Trm[0][1]) / S;
+		q[0] = (Trm[0][2] + Trm[2][0]) / S;
+		q[1] = (Trm[1][2] + Trm[2][1]) / S;
+		q[2] = 0.25 * S;
+	}
+	FX_QuaternionNorm(q);
+	Q[0] = q[0];
+	Q[1] = q[1];
+	Q[2] = q[2];
+	Q[3] = q[3];
+}
+
+
+FX_VOID  FX_ABC2Q(Vect3 abc, Vect4 retq)
+{
+	FX_DOUBLE angx = abc[0];
+	FX_DOUBLE angy = abc[1];
+	FX_DOUBLE angz = abc[2];
+	FX_DOUBLE sa = 0;
+	FX_DOUBLE sb = 0;
+	FX_DOUBLE sr = 0;
+	FX_DOUBLE ca = 0;
+	FX_DOUBLE cb = 0;
+	FX_DOUBLE cr = 0;
+	Matrix3 pg;
+	FX_SIN_COS_DEG(angx, &sr, &cr);
+	FX_SIN_COS_DEG(angy, &sb, &cb);
+	FX_SIN_COS_DEG(angz, &sa, &ca);
+	pg[0][0] = ca * cb;
+	pg[0][1] = ca * sb * sr - sa * cr;
+	pg[0][2] = ca * sb * cr + sa * sr;
+
+	pg[1][0] = sa * cb;
+	pg[1][1] = sa * sb * sr + ca * cr;
+	pg[1][2] = sa * sb * cr - ca * sr;
+
+	pg[2][0] = -sb;
+	pg[2][1] = cb * sr;
+	pg[2][2] = cb * cr;
+
+	FX_Matrix2Quaternion3(pg, retq);
+
+}
+
+FX_DOUBLE FX_QuaternionSqrtNorm(Quaternion q)
+{
+	FX_DOUBLE qq = FX_Sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
+	return qq;
+}
+
+FX_VOID FX_QuaternionConj(Quaternion q, Quaternion retq)
+{
+	retq[0] = -q[0];
+	retq[1] = -q[1];
+	retq[2] = -q[2];
+	retq[3] = q[3];
+}
+
+FX_BOOL FX_QuaternionInverse(Quaternion q, Quaternion retqInv)
+{
+	FX_DOUBLE n2 = FX_QuaternionSqrtNorm(q);
+	if (n2 > FXARM_TINYV)
+	{
+		retqInv[0] = -q[0] / n2;
+		retqInv[1] = -q[1] / n2;
+		retqInv[2] = -q[2] / n2;
+		retqInv[3] = q[3] / n2;
+		return FX_TRUE;
+	}
+	else
+	{
+		retqInv[0] = 1;
+		retqInv[1] = 0;
+		retqInv[2] = 0;
+		retqInv[3] = 0;
+		return FX_FALSE;
+	}
+
+}
+
+FX_VOID FX_QuaternionSlerp(Quaternion Q_from, Quaternion Q_to, FX_DOUBLE ratio, Quaternion Q_ret)
+{
+	FX_DOUBLE omega, cosom, sinom, scale0, scale1;
+	cosom = Q_from[0] * Q_to[0] + Q_from[1] * Q_to[1] + Q_from[2] * Q_to[2] + Q_from[3] * Q_to[3];
+
+	if (cosom < 0.0)
+	{
+		cosom = -cosom;
+		Q_to[0] = -Q_to[0];
+		Q_to[1] = -Q_to[1];
+		Q_to[2] = -Q_to[2];
+		Q_to[3] = -Q_to[3];
+	}
+
+	if ((1.0 + cosom) > 0.001)
+	{
+		omega = FX_ACOS(cosom);
+		sinom = FX_SIN_ARC(omega);
+		scale0 = FX_SIN_ARC((1.0 - ratio) * omega) / sinom;
+		scale1 = FX_SIN_ARC(ratio * omega) / sinom;
+	}
+	else
+	{
+		scale0 = 1.0 - ratio;
+		scale1 = ratio;
+	}
+	Q_ret[0] = scale0 * Q_from[0] + scale1 * Q_to[0];
+	Q_ret[1] = scale0 * Q_from[1] + scale1 * Q_to[1];
+	Q_ret[2] = scale0 * Q_from[2] + scale1 * Q_to[2];
+	Q_ret[3] = scale0 * Q_from[3] + scale1 * Q_to[3];
+}
+
+FX_VOID FX_Quaternions2ABCMatrix(Quaternion q, FX_DOUBLE xyz[3], Matrix4 m)
+{
+	FX_DOUBLE d11, d12, d13, d14, d22, d23, d24, d33, d34;
+	d11 = q[0] * q[0];
+	d12 = q[0] * q[1];
+	d13 = q[0] * q[2];
+	d14 = q[0] * q[3];
+	d22 = q[1] * q[1];
+	d23 = q[1] * q[2];
+	d24 = q[1] * q[3];
+	d33 = q[2] * q[2];
+	d34 = q[2] * q[3];
+
+	m[0][0] = 1 - 2 * d22 - 2 * d33;
+	m[0][1] = 2 * (d12 - d34);
+	m[0][2] = 2 * (d13 + d24);
+	m[0][3] = xyz[0];
+
+	m[1][0] = 2 * (d12 + d34);
+	m[1][1] = 1 - 2 * d11 - 2 * d33;
+	m[1][2] = 2 * (d23 - d14);
+	m[1][3] = xyz[1];
+
+	m[2][0] = 2 * (d13 - d24);
+	m[2][1] = 2 * (d23 + d14);
+	m[2][2] = 1 - 2 * d11 - 2 * d22;
+	m[2][3] = xyz[2];
+
+	m[3][0] = 0;
+	m[3][1] = 0;
+	m[3][2] = 0;
+	m[3][3] = 1;
+}
+
+
+
+FX_VOID FX_Quaternions2Matrix3(Quaternion q, Matrix3 m)
+{
+	FX_DOUBLE d11, d12, d13, d14, d22, d23, d24, d33, d34;
+	d11 = q[0] * q[0];
+	d12 = q[0] * q[1];
+	d13 = q[0] * q[2];
+	d14 = q[0] * q[3];
+	d22 = q[1] * q[1];
+	d23 = q[1] * q[2];
+	d24 = q[1] * q[3];
+	d33 = q[2] * q[2];
+	d34 = q[2] * q[3];
+
+	m[0][0] = 1 - 2 * d22 - 2 * d33;
+	m[0][1] = 2 * (d12 - d34);
+	m[0][2] = 2 * (d13 + d24);
+
+
+	m[1][0] = 2 * (d12 + d34);
+	m[1][1] = 1 - 2 * d11 - 2 * d33;
+	m[1][2] = 2 * (d23 - d14);
+
+	m[2][0] = 2 * (d13 - d24);
+	m[2][1] = 2 * (d23 + d14);
+	m[2][2] = 1 - 2 * d11 - 2 * d22;
+
+}
+
+FX_VOID	 FX_Matrix2Quaternion3(Matrix3 m, Quaternion q)
+{
+	FX_DOUBLE tr = m[0][0] + m[1][1] + m[2][2];
+	FX_DOUBLE S;
+
+	if (tr > 0) {
+		S = FX_Sqrt(tr + 1.0) * 2; // S=4*qw 
+		q[3] = 0.25 * S;
+		q[0] = (m[2][1] - m[1][2]) / S;
+		q[1] = (m[0][2] - m[2][0]) / S;
+		q[2] = (m[1][0] - m[0][1]) / S;
+	}
+	else if ((m[0][0] > m[1][1]) && (m[0][0] > m[2][2])) {
+		S = FX_Sqrt(1.0 + m[0][0] - m[1][1] - m[2][2]) * 2; // S=4*qx 
+		q[3] = (m[2][1] - m[1][2]) / S;
+		q[0] = 0.25 * S;
+		q[1] = (m[0][1] + m[1][0]) / S;
+		q[2] = (m[0][2] + m[2][0]) / S;
+	}
+	else if (m[1][1] > m[2][2]) {
+		S = FX_Sqrt(1.0 + m[1][1] - m[0][0] - m[2][2]) * 2; // S=4*qy
+		q[3] = (m[0][2] - m[2][0]) / S;
+		q[0] = (m[0][1] + m[1][0]) / S;
+		q[1] = 0.25 * S;
+		q[2] = (m[1][2] + m[2][1]) / S;
+	}
+	else {
+		S = FX_Sqrt(1.0 + m[2][2] - m[0][0] - m[1][1]) * 2; // S=4*qz
+		q[3] = (m[1][0] - m[0][1]) / S;
+		q[0] = (m[0][2] + m[2][0]) / S;
+		q[1] = (m[1][2] + m[2][1]) / S;
+		q[2] = 0.25 * S;
+	}
+}
+
+FX_VOID	 FX_Matrix2Quaternion4(Matrix4 m, Quaternion q)
+{
+	FX_DOUBLE tr = m[0][0] + m[1][1] + m[2][2];
+	FX_DOUBLE S;
+
+	if (tr > 0) {
+		S = FX_Sqrt(tr + 1.0) * 2; // S=4*qw 
+		q[3] = 0.25 * S;
+		q[0] = (m[2][1] - m[1][2]) / S;
+		q[1] = (m[0][2] - m[2][0]) / S;
+		q[2] = (m[1][0] - m[0][1]) / S;
+	}
+	else if ((m[0][0] > m[1][1]) && (m[0][0] > m[2][2])) {
+		S = FX_Sqrt(1.0 + m[0][0] - m[1][1] - m[2][2]) * 2; // S=4*qx 
+		q[3] = (m[2][1] - m[1][2]) / S;
+		q[0] = 0.25 * S;
+		q[1] = (m[0][1] + m[1][0]) / S;
+		q[2] = (m[0][2] + m[2][0]) / S;
+	}
+	else if (m[1][1] > m[2][2]) {
+		S = FX_Sqrt(1.0 + m[1][1] - m[0][0] - m[2][2]) * 2; // S=4*qy
+		q[3] = (m[0][2] - m[2][0]) / S;
+		q[0] = (m[0][1] + m[1][0]) / S;
+		q[1] = 0.25 * S;
+		q[2] = (m[1][2] + m[2][1]) / S;
+	}
+	else {
+		S = FX_Sqrt(1.0 + m[2][2] - m[0][0] - m[1][1]) * 2; // S=4*qz
+		q[3] = (m[1][0] - m[0][1]) / S;
+		q[0] = (m[0][2] + m[2][0]) / S;
+		q[1] = (m[1][2] + m[2][1]) / S;
+		q[2] = 0.25 * S;
+	}
 }

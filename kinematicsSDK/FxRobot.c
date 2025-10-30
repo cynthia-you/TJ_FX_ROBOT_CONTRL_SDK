@@ -129,9 +129,6 @@ FX_BOOL  FX_Robot_Init_Type(FX_INT32L RobotSerial, FX_INT32L RobotType)
 {
 	FX_LOG_INFO("[FxRobot - FX_Robot_Init_Type]\n");
 
-//    long * tmp = (long *)RobotSerial;
-//	printf("RobotSerial:%ld \n",RobotSerial);
-
 	if (RobotSerial < 0 || RobotSerial >= MAX_RUN_ROBOT_NUM)
 	{
 		return FX_FALSE;
@@ -177,7 +174,7 @@ FX_BOOL  FX_Init_Robot_Kine_DL(FX_INT32L RobotSerial, FX_DOUBLE DH[8][4])
 
 FX_BOOL  FX_Init_Robot_Kine_Pilot_SRS(FX_INT32L RobotSerial, FX_DOUBLE DH[8][4])
 {
-    FX_LOG_INFO("[FxRobot - FX_Init_Robot_Kine_Pilot_SRS]\n");
+	FX_LOG_INFO("[FxRobot - FX_Init_Robot_Kine_Pilot_SRS]\n");
 	FX_INT32 i;
 	
 	FX_DOUBLE L1;
@@ -338,7 +335,6 @@ FX_BOOL  FX_Init_Robot_Kine_Pilot_CCS(FX_INT32L RobotSerial, FX_DOUBLE DH[8][4])
 
 	SPC->cart_len = FX_Sqrt(SPC->L1 * SPC->L1 + SPC->L2 * SPC->L2);
 
-
 	printf("EG:DH[0]=[%lf %lf %lf %lf]\n", DH[0][0], DH[0][1], DH[0][2], DH[0][3]);
 	return FX_TRUE;
 }
@@ -461,8 +457,8 @@ FX_BOOL  FX_Init_Robot_Lmt_SRS(FX_INT32L RobotSerial, FX_DOUBLE PNVA[7][4])
 
 FX_BOOL  FX_Init_Robot_Lmt_CCS(FX_INT32L RobotSerial, FX_DOUBLE PNVA[7][4], FX_DOUBLE J67[4][3])
 {
+	FX_LOG_INFO("[FxRobot - FX_Init_Robot_Lmt_CCS]\n");
 
-    FX_LOG_INFO("[FxRobot - FX_Init_Robot_Lmt_CCS]\n");
 	FX_INT32L i;
 	FX_KineSPC_Pilot* SPC;
 	FX_Robot* pRobot;
@@ -492,6 +488,7 @@ FX_BOOL  FX_Init_Robot_Lmt_CCS(FX_INT32L RobotSerial, FX_DOUBLE PNVA[7][4], FX_D
 FX_BOOL  FX_Robot_Init_Lmt(FX_INT32L RobotSerial, FX_DOUBLE PNVA[7][4], FX_DOUBLE J67[4][3])
 {
 	FX_LOG_INFO("[FxRobot - FX_Robot_Init_Lmt]\n");
+
 	FX_Robot* pRobot;
 	if (RobotSerial < 0 || RobotSerial >= MAX_RUN_ROBOT_NUM)
 	{
@@ -539,7 +536,8 @@ FX_VOID FX_XYZMRot(FX_DOUBLE L[4][4], FX_DOUBLE cosv, FX_DOUBLE sinv, FX_DOUBLE 
 
 FX_BOOL  FX_Robot_Kine_Piolt(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_DOUBLE pgos[4][4])
 {
-    FX_LOG_INFO("[FxRobot - FX_Robot_Kine_Piolt]\n");
+	FX_LOG_INFO("[FxRobot - FX_Robot_Kine_Piolt]\n");
+
 	long i;
 	FX_Robot* pRobot;
 	FX_DOUBLE cosv, sinv;
@@ -549,10 +547,8 @@ FX_BOOL  FX_Robot_Kine_Piolt(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_DOUB
 	}
 	pRobot = (FX_Robot*)&m_Robot[RobotSerial];
 
-
 	for (i = 0; i < 7; i++)
 	{
-
 		FX_SIN_COS_DEG(joints[i], &sinv, &cosv);
 		FX_XYZMRot(pRobot->m_KineBase.m_AxisRotBase[i], cosv, sinv, pRobot->m_KineBase.m_AxisRotTip[i]);
 	}
@@ -571,7 +567,6 @@ FX_BOOL  FX_Robot_Kine_Piolt(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_DOUB
 	return FX_TRUE;
 }
 
-
 FX_BOOL  FX_Robot_Kine_Piolt_NSPG(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_DOUBLE pgos[4][4], Matrix3 nspg)
 {
 	long i;
@@ -586,7 +581,6 @@ FX_BOOL  FX_Robot_Kine_Piolt_NSPG(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX
 
 	for (i = 0; i < 7; i++)
 	{
-
 		FX_SIN_COS_DEG(joints[i], &sinv, &cosv);
 		FX_XYZMRot(pRobot->m_KineBase.m_AxisRotBase[i], cosv, sinv, pRobot->m_KineBase.m_AxisRotTip[i]);
 	}
@@ -604,7 +598,6 @@ FX_BOOL  FX_Robot_Kine_Piolt_NSPG(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX
 
 	{
 		Vect3 zdir;
-		Vect3 ydir;
 		Vect3 xdir;
 
 		zdir[0] = pRobot->m_KineBase.m_JointPG[6][0][3] - pRobot->m_KineBase.m_JointPG[1][0][3];
@@ -1463,14 +1456,11 @@ FX_BOOL FX_SolveJ567ZNYZ(NSPBase* pnspbase, FX_DOUBLE rot_angle, FX_DOUBLE ref[7
 FX_BOOL FX_SolveJ567ZNYX(NSPBase* pnspbase, FX_DOUBLE rot_angle, FX_DOUBLE ref[7], FX_DOUBLE ret_j[7], FX_BOOL* is_degen, FX_DOUBLE dgr)
 {
 	
-	FX_DOUBLE jtmp1[3];
-	FX_DOUBLE jtmp2[3];
 	FX_DOUBLE m1[3][3];
 	FX_DOUBLE m2[3][3];
 	FX_DOUBLE m[3][3];
 	FX_DOUBLE j[3];
 	FX_DOUBLE j1[3];
-	FX_DOUBLE j2[3];
 	FX_DOUBLE udgr = dgr;
 	if (udgr < 0.05)
 	{
@@ -1487,8 +1477,6 @@ FX_BOOL FX_SolveJ567ZNYX(NSPBase* pnspbase, FX_DOUBLE rot_angle, FX_DOUBLE ref[7
 
 	if (FX_Matrix2ZYX(m,j) == FX_TRUE)
 	{
-		FX_DOUBLE err1;
-		FX_DOUBLE err2;
 		*is_degen = FX_FALSE;
 		j1[0] = j[0];
 		j1[1] = -j[1];
@@ -1522,7 +1510,6 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 	FX_DOUBLE ablen;
 	FX_DOUBLE JV4_A;
 	FX_DOUBLE JV4_B;
-	FX_DOUBLE cyclr;
 	FX_DOUBLE  Core[3];
 	FX_DOUBLE ang;
 	FX_BOOL   j4DegTag;
@@ -1672,7 +1659,6 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 		Vect3 min_A_123;
 		Vect3 min_A_567;
 		FX_DOUBLE min_err123_A;
-		FX_DOUBLE min_err4_A;
 		FX_DOUBLE min_err567_A;
 
 
@@ -1761,7 +1747,8 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 					J123_DEG_TAG_A = FX_TRUE;
 					FX_DOUBLE j1_a = solve_para->m_Input_IK_RefJoint[0];
 					FX_DOUBLE j2_a = -solve123[1];
-					FX_DOUBLE j3_a = solve123[2] - j1_a;
+					//FX_DOUBLE j3_a = solve123[2] - j1_a;
+					FX_DOUBLE j3_a = solve_para->m_Input_IK_RefJoint[2];
 					FX_DOUBLE err1;
 
 					err1 = FX_MinDif_Circle(solve_para->m_Input_IK_RefJoint[0], &j1_a)
@@ -2028,7 +2015,9 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 					J123_DEG_TAG_A = FX_TRUE;
 					FX_DOUBLE j1_a = solve_para->m_Input_IK_RefJoint[0];
 					FX_DOUBLE j2_a = -solve123[1];
-					FX_DOUBLE j3_a = solve123[2] - j1_a;
+					//FX_DOUBLE j3_a = solve123[2] - j1_a;
+					FX_DOUBLE j3_a = solve_para->m_Input_IK_RefJoint[2];
+
 					FX_DOUBLE err1;
 
 					err1 = FX_MinDif_Circle(solve_para->m_Input_IK_RefJoint[0], &j1_a)
@@ -2433,14 +2422,32 @@ FX_BOOL  FX_InvKine_Pilot_SRS(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_
 	NSP = &(SPC->m_nsp);
 
 	solve_para->m_Output_IsJntExd = FX_FALSE;
+	solve_para->m_Output_JntExdABS = 0;
+	double exdabs = 0;
 	for ( i = 0; i < 7; i++)
 	{
 		solve_para->m_Output_RunLmtP[i] = pRobot->m_Lmt.m_JLmtPos_P[i];
 		solve_para->m_Output_RunLmtN[i] = pRobot->m_Lmt.m_JLmtPos_N[i];
-		if (solve_para->m_Output_RetJoint[i] < solve_para->m_Output_RunLmtN[i] || solve_para->m_Output_RetJoint[i] > solve_para->m_Output_RunLmtP[i])
+		if (solve_para->m_Output_RetJoint[i] < solve_para->m_Output_RunLmtN[i] )
 		{
 			solve_para->m_Output_IsJntExd = FX_TRUE;
 			solve_para->m_Output_JntExdTags[i] = FX_TRUE;
+			exdabs = FX_Fabs(solve_para->m_Output_RetJoint[i] - solve_para->m_Output_RunLmtN[i]);
+			if (solve_para->m_Output_JntExdABS < exdabs)
+			{
+				solve_para->m_Output_JntExdABS = exdabs;
+			}
+		}
+		else if ( solve_para->m_Output_RetJoint[i] > solve_para->m_Output_RunLmtP[i])
+		{
+			solve_para->m_Output_IsJntExd = FX_TRUE;
+			solve_para->m_Output_JntExdTags[i] = FX_TRUE;
+			exdabs = FX_Fabs(solve_para->m_Output_RetJoint[i] - solve_para->m_Output_RunLmtP[i]);
+			if (solve_para->m_Output_JntExdABS < exdabs)
+			{
+				solve_para->m_Output_JntExdABS = exdabs;
+			}
+
 		}
 		else
 		{
@@ -2469,15 +2476,33 @@ FX_BOOL  FX_InvKine_Pilot_CCS(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
 	NSP = &(SPC->m_nsp);
 
 	solve_para->m_Output_IsJntExd = FX_FALSE;
+	solve_para->m_Output_JntExdABS = 0;
+	double exdabs = 0;
 	for (i = 0; i < 7; i++)
 	{
 		solve_para->m_Output_RunLmtP[i] = pRobot->m_Lmt.m_JLmtPos_P[i];
 		solve_para->m_Output_RunLmtN[i] = pRobot->m_Lmt.m_JLmtPos_N[i];
-//		printf("[%d]:%lf %lf\n",i,solve_para->m_Output_RunLmtN[i] ,solve_para->m_Output_RunLmtP[i] );
-		if (solve_para->m_Output_RetJoint[i] < solve_para->m_Output_RunLmtN[i] || solve_para->m_Output_RetJoint[i] > solve_para->m_Output_RunLmtP[i])
+		if (solve_para->m_Output_RetJoint[i] < solve_para->m_Output_RunLmtN[i] )
 		{
 			solve_para->m_Output_IsJntExd = FX_TRUE;
 			solve_para->m_Output_JntExdTags[i] = FX_TRUE;
+
+			exdabs = FX_Fabs(solve_para->m_Output_RetJoint[i] - solve_para->m_Output_RunLmtN[i]);
+			if (solve_para->m_Output_JntExdABS < exdabs)
+			{
+				solve_para->m_Output_JntExdABS = exdabs;
+			}
+		}
+		else if (solve_para->m_Output_RetJoint[i] > solve_para->m_Output_RunLmtP[i])
+		{
+			solve_para->m_Output_IsJntExd = FX_TRUE;
+			solve_para->m_Output_JntExdTags[i] = FX_TRUE;
+
+			exdabs = FX_Fabs(solve_para->m_Output_RetJoint[i] - solve_para->m_Output_RunLmtP[i]);
+			if (solve_para->m_Output_JntExdABS < exdabs)
+			{
+				solve_para->m_Output_JntExdABS = exdabs;
+			}
 		}
 		else
 		{
@@ -2508,6 +2533,12 @@ FX_BOOL  FX_InvKine_Pilot_CCS(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
 		{
 			solve_para->m_Output_IsJntExd = FX_TRUE;
 			solve_para->m_Output_JntExdTags[6] = FX_TRUE;
+
+			exdabs = FX_Fabs(solve_para->m_Output_RetJoint[6]- solve_para->m_Output_RunLmtP[6]);
+			if (solve_para->m_Output_JntExdABS < exdabs)
+			{
+				solve_para->m_Output_JntExdABS = exdabs;
+			}
 		}
 
 		N = SPC->lmtj67_pn[0] * J6 * J6 + SPC->lmtj67_pn[1] * J6 + SPC->lmtj67_pn[2];
@@ -2520,6 +2551,11 @@ FX_BOOL  FX_InvKine_Pilot_CCS(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
 		{
 			solve_para->m_Output_IsJntExd = FX_TRUE;
 			solve_para->m_Output_JntExdTags[6] = FX_TRUE;
+			exdabs = FX_Fabs(solve_para->m_Output_RetJoint[6] - solve_para->m_Output_RunLmtN[6]);
+			if (solve_para->m_Output_JntExdABS < exdabs)
+			{
+				solve_para->m_Output_JntExdABS = exdabs;
+			}
 		}
 
 
@@ -2547,6 +2583,11 @@ FX_BOOL  FX_InvKine_Pilot_CCS(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
 		{
 			solve_para->m_Output_IsJntExd = FX_TRUE;
 			solve_para->m_Output_JntExdTags[6] = FX_TRUE;
+			exdabs = FX_Fabs(solve_para->m_Output_RetJoint[6] - solve_para->m_Output_RunLmtP[6]);
+			if (solve_para->m_Output_JntExdABS < exdabs)
+			{
+				solve_para->m_Output_JntExdABS = exdabs;
+			}
 		}
 
 		N = SPC->lmtj67_nn[0] * J6 * J6 + SPC->lmtj67_nn[1] * J6 + SPC->lmtj67_nn[2];
@@ -2559,9 +2600,13 @@ FX_BOOL  FX_InvKine_Pilot_CCS(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
 		{
 			solve_para->m_Output_IsJntExd = FX_TRUE;
 			solve_para->m_Output_JntExdTags[6] = FX_TRUE;
+			exdabs = FX_Fabs(solve_para->m_Output_RetJoint[6] - solve_para->m_Output_RunLmtN[6]);
+			if (solve_para->m_Output_JntExdABS < exdabs)
+			{
+				solve_para->m_Output_JntExdABS = exdabs;
+			}
+
 		}
-
-
 		return FX_TRUE;
 	}
 
@@ -2617,6 +2662,9 @@ FX_BOOL  FX_InvKineNSP_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_p
 	{
 		return FX_FALSE;
 	}
+
+	solve_para->m_Output_JntExdABS = 0;
+	FX_DOUBLE exdabs = 0;
 	if (NSP->m_IsCorss == FX_TRUE)
 	{
 		FX_INT32L i;
@@ -2630,10 +2678,25 @@ FX_BOOL  FX_InvKineNSP_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_p
 		{
 			solve_para->m_Output_RunLmtP[i] = pRobot->m_Lmt.m_JLmtPos_P[i];
 			solve_para->m_Output_RunLmtN[i] = pRobot->m_Lmt.m_JLmtPos_N[i];
-			if (solve_para->m_Output_RetJoint[i] < solve_para->m_Output_RunLmtN[i] || solve_para->m_Output_RetJoint[i] > solve_para->m_Output_RunLmtP[i])
+			if (solve_para->m_Output_RetJoint[i] < solve_para->m_Output_RunLmtN[i])
 			{
 				solve_para->m_Output_IsJntExd = FX_TRUE;
 				solve_para->m_Output_JntExdTags[i] = FX_TRUE;
+				exdabs =  FX_Fabs(solve_para->m_Output_RetJoint[i] - solve_para->m_Output_RunLmtN[i]);
+				if (solve_para->m_Output_JntExdABS < exdabs)
+				{
+					solve_para->m_Output_JntExdABS = exdabs;
+				}
+			}
+			else if ( solve_para->m_Output_RetJoint[i] > solve_para->m_Output_RunLmtP[i])
+			{
+				solve_para->m_Output_IsJntExd = FX_TRUE;
+				solve_para->m_Output_JntExdTags[i] = FX_TRUE;
+				exdabs = FX_Fabs(solve_para->m_Output_RetJoint[i] - solve_para->m_Output_RunLmtP[i]);
+				if (solve_para->m_Output_JntExdABS < exdabs)
+				{
+					solve_para->m_Output_JntExdABS = exdabs;
+				}
 			}
 			else
 			{
@@ -2662,6 +2725,11 @@ FX_BOOL  FX_InvKineNSP_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_p
 			{
 				solve_para->m_Output_IsJntExd = FX_TRUE;
 				solve_para->m_Output_JntExdTags[6] = FX_TRUE;
+				exdabs = FX_Fabs(solve_para->m_Output_RetJoint[6] - solve_para->m_Output_RunLmtP[6]);
+				if (solve_para->m_Output_JntExdABS < exdabs)
+				{
+					solve_para->m_Output_JntExdABS = exdabs;
+				}
 			}
 
 			N = SPC->lmtj67_pn[0] * J6 * J6 + SPC->lmtj67_pn[1] * J6 + SPC->lmtj67_pn[2];
@@ -2673,6 +2741,11 @@ FX_BOOL  FX_InvKineNSP_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_p
 			{
 				solve_para->m_Output_IsJntExd = FX_TRUE;
 				solve_para->m_Output_JntExdTags[6] = FX_TRUE;
+				exdabs = FX_Fabs(solve_para->m_Output_RetJoint[6] - solve_para->m_Output_RunLmtN[6]);
+				if (solve_para->m_Output_JntExdABS < exdabs)
+				{
+					solve_para->m_Output_JntExdABS = exdabs;
+				}
 			}
 
 
@@ -2699,6 +2772,11 @@ FX_BOOL  FX_InvKineNSP_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_p
 			{
 				solve_para->m_Output_IsJntExd = FX_TRUE;
 				solve_para->m_Output_JntExdTags[6] = FX_TRUE;
+				exdabs = FX_Fabs(solve_para->m_Output_RetJoint[6] - solve_para->m_Output_RunLmtP[6]);
+				if (solve_para->m_Output_JntExdABS < exdabs)
+				{
+					solve_para->m_Output_JntExdABS = exdabs;
+				}
 			}
 
 			N = SPC->lmtj67_nn[0] * J6 * J6 + SPC->lmtj67_nn[1] * J6 + SPC->lmtj67_nn[2];
@@ -2710,6 +2788,11 @@ FX_BOOL  FX_InvKineNSP_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_p
 			{
 				solve_para->m_Output_IsJntExd = FX_TRUE;
 				solve_para->m_Output_JntExdTags[6] = FX_TRUE;
+				exdabs = FX_Fabs(solve_para->m_Output_RetJoint[6] - solve_para->m_Output_RunLmtN[6]);
+				if (solve_para->m_Output_JntExdABS < exdabs)
+				{
+					solve_para->m_Output_JntExdABS = exdabs;
+				}
 			}
 
 
@@ -2730,10 +2813,26 @@ FX_BOOL  FX_InvKineNSP_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_p
 		{
 			solve_para->m_Output_RunLmtP[i] = pRobot->m_Lmt.m_JLmtPos_P[i];
 			solve_para->m_Output_RunLmtN[i] = pRobot->m_Lmt.m_JLmtPos_N[i];
-			if (solve_para->m_Output_RetJoint[i] < solve_para->m_Output_RunLmtN[i] || solve_para->m_Output_RetJoint[i] > solve_para->m_Output_RunLmtP[i])
+			if (solve_para->m_Output_RetJoint[i] < solve_para->m_Output_RunLmtN[i] )
 			{
 				solve_para->m_Output_IsJntExd = FX_TRUE;
 				solve_para->m_Output_JntExdTags[i] = FX_TRUE;
+				exdabs = FX_Fabs(solve_para->m_Output_RetJoint[i] - solve_para->m_Output_RunLmtN[i]);
+				if (solve_para->m_Output_JntExdABS < exdabs)
+				{
+					solve_para->m_Output_JntExdABS = exdabs;
+				}
+			}
+			else if (solve_para->m_Output_RetJoint[i] > solve_para->m_Output_RunLmtP[i])
+			{
+				solve_para->m_Output_IsJntExd = FX_TRUE;
+				solve_para->m_Output_JntExdTags[i] = FX_TRUE;
+
+				exdabs = FX_Fabs(solve_para->m_Output_RetJoint[i] - solve_para->m_Output_RunLmtP[i]);
+				if (solve_para->m_Output_JntExdABS < exdabs)
+				{
+					solve_para->m_Output_JntExdABS = exdabs;
+				}
 			}
 			else
 			{
@@ -3167,8 +3266,25 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
 	return FX_TRUE;
 }
 
+FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath)
+{
+	FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL - KeepJ]\n");
 
+	Vect7 start_pos;
+	Vect7 end_pos;
+	FX_INT32L i = 0;
 
+	for (i = 0; i < 7; i++)
+	{
+		start_pos[i] = startjoints[i];
+		end_pos[i] = stopjoints[i];
+	}
+
+	FXSpln Spln = AxisPln_Create();
+	AxisPln_OnMovL_KeepJ(Spln, RobotSerial, start_pos, end_pos, vel, OutPutPath);
+
+	return FX_TRUE;
+}
 ////Parameters Identification
 FX_BOOL  FX_Robot_Iden_LoadDyn(FX_INT32L Type, FX_CHAR* path, FX_DOUBLE* mass, Vect3 mr, Vect6 I)
 {

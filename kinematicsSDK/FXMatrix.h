@@ -120,23 +120,16 @@ FX_DOUBLE		FX_VectDot6(Vect6 a, Vect6 b);
 FX_DOUBLE		FX_VectDot7(Vect7 a, Vect7 b);
 FX_DOUBLE		FX_VectDot8(Vect8 a, Vect8 b);
 
-
-
 FX_VOID			FX_SPMatInv77(Matrix7 orgm, Matrix7 invm);
 
-
-FX_BOOL         FX_MatrixNormZX(Vect3 z,Vect3 x,Matrix3 ret_m);
+FX_BOOL         FX_MatrixNormZX(Vect3 z, Vect3 x, Matrix3 ret_m);
 FX_BOOL			FX_VectNorm(Vect3 a);
 FX_VOID			FX_VectCross(Vect3 a, Vect3 b, Vect3 result);
 FX_BOOL			FX_Matrix2ZYZ(Matrix3 m, Vect3  ret);
 FX_BOOL			FX_Matrix2ZYX(Matrix3 m, Vect3  ret);
-FX_BOOL			FX_Matrix2ZYZ_DGR(Matrix3 m,FX_DOUBLE dgr, Vect3  ret);
+FX_BOOL			FX_Matrix2ZYZ_DGR(Matrix3 m, FX_DOUBLE dgr, Vect3  ret);
 
 FX_VOID			FX_MatRotAxis(Vect3 rot_dir, FX_DOUBLE rot_angle, Matrix3 m, Matrix3 m_roted);
-FX_VOID			FX_MMV3(Matrix3 L, Vect3 R, Vect3 Result);
-FX_VOID			FX_MMM33(Matrix3 L, Matrix3 R, Matrix3 Result);
-FX_VOID			FX_M33Copy(Matrix3 src, Matrix3 dst);
-FX_VOID			FX_M33Trans( Matrix3 Org, Matrix3 Result);
 FX_VOID			Tmat(FX_DOUBLE DH[4], Matrix4 T);
 
 
@@ -144,7 +137,6 @@ FX_VOID			FX_PGPointMap(Matrix4 a_to_b, Vect3 in_a, Vect3 ret_in_b);
 FX_VOID			FX_PGVectMap(Matrix4 a_to_b, Vect3 in_a, Vect3 ret_in_b);
 FX_VOID			FX_PGVectMapInv(Matrix4 a_to_b, Vect3 ret_in_a, Vect3 in_b);
 FX_VOID			FX_PGMatrixInv(Matrix4 pg, Matrix4 pginv);
-FX_VOID			FX_MMM44(Matrix4 L, Matrix4 R, Matrix4 Result);
 FX_VOID			FX_PGMult(Matrix4 L, Matrix4 R, Matrix4 Result);
 
 FX_VOID			FX_PGGetGes(PosGes src, Matrix3 ges);
@@ -153,25 +145,37 @@ FX_VOID			FX_PGGetAxisX(PosGes src, Vect3 axis_x);
 FX_VOID			FX_PGGetAxisY(PosGes src, Vect3 axis_y);
 FX_VOID			FX_PGGetAxisZ(PosGes src, Vect3 axis_z);
 FX_VOID			FX_PGTranXYZABC2PG(FX_DOUBLE xyzabc[6], FX_DOUBLE pg[4][4]);
-
-
-
-
+FX_VOID         PGErr(Matrix4 Td, Matrix4 Te, Vect6 err);
 
 FX_BOOL         FX_RightPsoInv67(FX_DOUBLE m[6][7], FX_DOUBLE inv[7][6]);
 
-FX_VOID			FX_QuatMult(FX_DOUBLE q1[4], FX_DOUBLE q2[4], FX_DOUBLE q[4]);
-FX_BOOL			FX_QuaternionNorm(FX_DOUBLE q[4]);
-FX_DOUBLE		FX_QuaternionSqrtNorm(FX_DOUBLE q[4]);
-FX_VOID			FX_QuaternionConj(FX_DOUBLE q[4], FX_DOUBLE retq[4]);
-FX_BOOL			FX_QuaternionInverse(FX_DOUBLE q[4], FX_DOUBLE retqInv[4]);
-FX_VOID			FX_Matrix2Quaternion(Matrix3 m, Vect4 q);
-FX_VOID         FX_ABC2Q(Vect3 abc,Vect4 retq);
+FX_VOID         eig(Matrix6 a, Matrix6 v, double eps);
+FX_BOOL         generalized_eig(double eps, double A[6][6], double B[6][6], double V[6][6], double D[6]);
 
-FX_VOID PGErr(Matrix4 Td, Matrix4 Te, Vect6 err);
-void eig(Matrix6 a, Matrix6 v, double eps);
-FX_BOOL generalized_eig(double eps, double A[6][6], double B[6][6], double V[6][6], double D[6]);
+/////////////////////////////////
+FX_VOID			FX_Vect3AToB(Vect3 A, Vect3 B);
+FX_VOID			FX_VectAdd(Vect3 a, Vect3 b, Vect3 result);
+FX_VOID			FX_VectAddToA(Vect3 a, Vect3 b);
 
+FX_BOOL			FX_Matrix2ZYX_DGR(Matrix3 m, FX_DOUBLE dgr, Vect3  ret);
+
+///////////////////Quaternion
+FX_VOID	FX_QuatMult(Quaternion q1, Quaternion q2, Quaternion q);
+FX_BOOL FX_QuaternionNorm(Quaternion Q);
+FX_VOID FX_ABC2Quaternions(FX_DOUBLE XYZABC[6], Quaternion Q);
+FX_VOID FX_ABC2Q(Vect3 abc, Vect4 retq);
+
+FX_DOUBLE FX_QuaternionSqrtNorm(Quaternion q);
+FX_VOID	FX_QuaternionConj(Quaternion q, Quaternion retq);
+FX_BOOL	FX_QuaternionInverse(Quaternion q, Quaternion retqInv);
+
+FX_VOID FX_QuaternionSlerp(Quaternion Q_from, Quaternion Q_to, FX_DOUBLE ratio, Quaternion Q_ret);
+FX_VOID FX_Quaternions2ABCMatrix(Quaternion q, FX_DOUBLE xyz[3], Matrix4 m);
+FX_VOID FX_Quaternions2Matrix3(Quaternion q, Matrix3 m);
+
+FX_VOID	 FX_Matrix2Quaternion3(Matrix3 m, Quaternion q);//FX_Matrix2Quaternion(Matrix3 m, Vect4 q)
+FX_VOID	 FX_Matrix2Quaternion4(Matrix4 m, Quaternion q);  
+	
 #ifdef __cplusplus
 }
 #endif
