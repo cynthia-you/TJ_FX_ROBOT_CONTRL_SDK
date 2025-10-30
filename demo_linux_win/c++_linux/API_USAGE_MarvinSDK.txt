@@ -56,5 +56,16 @@ g++ apply-brake_release-brake_demo.cpp -o demo_brake -L. -lMarvinSDK -Wl,-rpath=
 ./demo_brake
 
 
+demo11: auto_sensor.cpp
+g++ auto_sensor.cpp -o demo_as -L. -lMarvinSDK -Wl,-rpath=.
+./demo_as
 
+demo12: drag_JointImdedance_save_data_arm_A.cpp
+g++ drag_JointImdedance_save_data_arm_A.cpp -o drag_joint -L. -lMarvinSDK -Wl,-rpath=.
+./drag_joint
+
+
+demo12: drag_CartImdedance_save_data_arm_A.cpp
+g++ drag_CartImdedance_save_data_arm_A.cpp -o drag_cart_y -L. -lMarvinSDK -Wl,-rpath=.
+./drag_cart_y
 
