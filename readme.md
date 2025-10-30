@@ -21,7 +21,9 @@
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/drag_CartImpedance_and_save_data_arm_A.py
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/drag_JointImpedance_and_save_data_arm_A.py
     
-    
+
+### 3.升级版本和参数都发布在releases下
+    https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/Release
 
     都已更新到MARVIN_APP
     
