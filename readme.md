@@ -12,6 +12,17 @@
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/apply-brake_relase-brake_demo.py
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/collaborative_release.py
 
+### 2.拖动并保存数据示例
+    C++:
+        https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/c%2B%2B_linux/drag_JointImdedance_save_data_arm_A.cpp
+        https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/c%2B%2B_linux/drag_CartImdedance_save_data_arm_A.cpp
+
+    PYTHON:
+        https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/drag_CartImpedance_and_save_data_arm_A.py
+        https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/drag_JointImpedance_and_save_data_arm_A.py
+    
+    
+
     都已更新到MARVIN_APP
     
 ## 一、天机协作机器人为7自由度协作机器人
