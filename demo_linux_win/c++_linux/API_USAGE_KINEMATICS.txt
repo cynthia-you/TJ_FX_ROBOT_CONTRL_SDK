@@ -1,11 +1,18 @@
 天机-孚晞  计算 API usage C++
 
 LINUX：
-demo: my_dd.cpp
+demo1: my_dd.cpp
 g++ my_dd.cpp -o kine -L. -lKine -Wl,-rpath=.
 ./kine
 
 
+demo2 movl_demo.cpp
+g++ movl_demo.cpp -o movl -L. -lKine -Wl,-rpath=.
+./movl
+
+demo3 movlkeepj_demo.cpp
+g++ movlkeepj_demo.cpp -o movlkeepj -L. -lKine -Wl,-rpath=.
+./movlkeepj
 
 WIN：
 demo: my_dd.cpp
