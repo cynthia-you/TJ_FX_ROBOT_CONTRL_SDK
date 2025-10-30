@@ -25,7 +25,8 @@
 ### 3.升级版本和参数都发布在releases下
     https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/Release
 
-    都已更新到MARVIN_APP
+    
+## 功能同步更新到MARVIN_APP
     
 ## 一、天机协作机器人为7自由度协作机器人
 
