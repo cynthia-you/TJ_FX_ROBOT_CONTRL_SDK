@@ -608,7 +608,7 @@ class Marvin_Kine:
         :param acc:
         :param save_path:
         :return: bool
-                特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
+        特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
             2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
         '''
         if robot_serial != 0 and robot_serial != 1:
@@ -641,6 +641,46 @@ class Marvin_Kine:
 
         else:
             logger.error(f'Plan MOVL failed!')
+            return False
+
+
+    def movL_KeepJ(self,robot_serial: int,start_joints:list, end_joints:list,vel:float,save_path):
+        '''直线规划保持关节构型（MOVL KeepJ）
+
+        :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
+        :param start_joints:
+        :param end_joints:
+        :param vel:
+        :param save_path:
+        :return: bool
+        特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
+            2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+        '''
+        if robot_serial != 0 and robot_serial != 1:
+            raise ValueError("robot_serial must be 0 or 1")
+
+        Serial = ctypes.c_long(robot_serial)
+
+        path = save_path.encode('utf-8')
+        path_char = ctypes.c_char_p(path)
+
+        s0,s1,s2,s3,s4,s5,s6=start_joints
+        start= (ctypes.c_double * 7)( s0,s1,s2,s3,s4,s5,s6)
+
+        e0,e1,e2,e3,e4,e5,e6=end_joints
+        end= (ctypes.c_double * 7)(e0,e1,e2,e3,e4,e5,e6)
+
+        vel_value=c_double(vel)
+
+        self.kine.FX_Robot_PLN_MOVL_KeepJ.argtypes=[c_long,c_double*7,c_double*7,c_double,c_char_p]
+        self.kine.FX_Robot_PLN_MOVL_KeepJ.restype=c_bool
+        success1=self.kine.FX_Robot_PLN_MOVL_KeepJ(Serial,start,end,vel_value,path_char)
+        if success1:
+            logger.info(f'Plan MOVL KeepJ successful, PATH saved as :{save_path}')
+            return  True
+
+        else:
+            logger.error(f'Plan MOVL KeepJ failed!')
             return False
 
 
