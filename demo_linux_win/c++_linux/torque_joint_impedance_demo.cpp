@@ -31,6 +31,15 @@ int main()
         std::cerr << "failed:端口占用，连接失败!" << std::endl;
         return -1;
     } else {
+
+        //防总线通信异常,先清错
+        usleep(100000);
+        OnClearSet();
+        OnClearErr_A();
+        OnClearErr_B();
+        OnSetSend();
+        usleep(100000);
+
         int motion_tag = 0;
         int frame_update = 0;
 
@@ -88,7 +97,7 @@ int main()
     printf("cmd state of A arm:%d\n",t.m_State[0].m_CmdState);
     printf("error code of A arms:%d\n",t.m_State[0].m_ERRCode);
 
-    printf("CMD of imdepancd:%d\n",t.m_In[0].m_ImpType);
+    printf("CMD of impedance:%d\n",t.m_In[0].m_ImpType);
     printf("CMD of vel and acc:%d %d\n",t.m_In[0].m_Joint_Vel_Ratio,t.m_In[0].m_Joint_Acc_Ratio);
     
     printf("CMD of joint D=[%lf %lf %lf %lf %lf %lf %lf]\n",t.m_In[0].m_Joint_K[0],

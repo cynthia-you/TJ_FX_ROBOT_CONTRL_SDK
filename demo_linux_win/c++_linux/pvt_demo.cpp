@@ -31,6 +31,15 @@ int main()
         std::cerr << "failed:端口占用，连接失败!" << std::endl;
         return -1;
     } else {
+
+        //防总线通信异常,先清错
+        usleep(100000);
+        OnClearSet();
+        OnClearErr_A();
+        OnClearErr_B();
+        OnSetSend();
+        usleep(100000);
+
         int motion_tag = 0;
         int frame_update = 0;
 

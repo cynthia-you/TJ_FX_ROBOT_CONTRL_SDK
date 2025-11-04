@@ -29,10 +29,18 @@ int main()
       std::cerr << "failed:端口占用，连接失败!" << std::endl;
       return -1;
   } else {
-      int motion_tag = 0;
-      int frame_update = 0;
 
-      for (int i = 0; i < 5; i++) {
+        //防总线通信异常,先清错
+        usleep(100000);
+        OnClearSet();
+        OnClearErr_A();
+        OnClearErr_B();
+        OnSetSend();
+        usleep(100000);
+        int motion_tag = 0;
+        int frame_update = 0;
+
+        for (int i = 0; i < 5; i++) {
           OnGetBuf(&t);
           std::cout << "connect frames :" << t.m_Out[0].m_OutFrameSerial << std::endl;
 
@@ -42,15 +50,15 @@ int main()
               frame_update = t.m_Out[0].m_OutFrameSerial;
           }
           usleep(100000);
-      }
+        }
 
-      if (motion_tag > 0) {
+        if (motion_tag > 0) {
           std::cout << "success:机器人连接成功!" << std::endl;
-      } else {
+        } else {
           std::cerr << "failed:机器人连接失败!" << std::endl;
           return -1;
-      }
-  }
+        }
+        }
 
   //为了防止伺服有错，先清错
   OnClearSet();
