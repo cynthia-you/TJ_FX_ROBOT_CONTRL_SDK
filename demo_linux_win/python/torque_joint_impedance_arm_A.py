@@ -112,7 +112,7 @@ logger.info(f'set impedance type={sub_data["inputs"][0]["imp_type"]}')
 
 '''点位1'''
 robot.clear_set()
-joint_cmd_1=[10.,20.,30.,40.,50.,60.,70.]
+joint_cmd_1=[10.,20.,30.,40.,50.,10,10]
 robot.set_joint_cmd_pose(arm='A',joints=joint_cmd_1)
 robot.send_cmd()
 
