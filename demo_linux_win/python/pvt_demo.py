@@ -12,7 +12,7 @@ from structure_data import DCSS
     3 查验连接是否成功,失败程序直接退出
     4 开启日志以便检查
     5 为了防止伺服有错，先清错
-    6 设置位置模式和速度加速度百分比
+    6 设置PVT模式
     7 订阅查看设置是否成功
     8 设置PVT 轨迹本机路径 和PVT号
     9 机器人运动前开始设置保存数据并开始采集数据
@@ -41,6 +41,14 @@ if init==-1:
     logger.error('failed:端口占用，连接失败!')
     exit(0)
 else:
+    '''防总线通信异常,先清错'''
+    time.sleep(0.5)
+    robot.clear_set()
+    robot.clear_error('A')
+    robot.clear_error('B')
+    robot.send_cmd()
+    time.sleep(0.5)
+
     motion_tag = 0
     frame_update = None
     for i in range(5):
@@ -111,12 +119,16 @@ time.sleep(10)#模拟跑轨迹时间
 
 
 '''停止采集'''
+robot.clear_set()
 robot.stop_collect_data()
+robot.send_cmd()
+time.sleep(0.5)
+
 
 '''保存采集数据'''
 
 '''linux'''
-path='aa.txt'
+path='aaa.txt'
 robot.save_collected_data_to_path(path)
 time.sleep(0.5)
 

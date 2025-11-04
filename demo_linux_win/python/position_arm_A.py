@@ -41,9 +41,17 @@ if init==-1:
     logger.error('failed:端口占用，连接失败!')
     exit(0)
 else:
+    '''防总线通信异常,先清错'''
+    time.sleep(0.5)
+    robot.clear_set()
+    robot.clear_error('A')
+    robot.clear_error('B')
+    robot.send_cmd()
+    time.sleep(0.5)
+
     motion_tag = 0
     frame_update = None
-    for i in range(5):
+    for i in range(10):
         sub_data = robot.subscribe(dcss)
         print(f"connect frames :{sub_data['outputs'][0]['frame_serial']}")
         if sub_data['outputs'][0]['frame_serial'] != 0 and frame_update != sub_data['outputs'][0]['frame_serial']:
