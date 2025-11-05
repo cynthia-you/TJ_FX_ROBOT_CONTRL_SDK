@@ -36,7 +36,7 @@ robot=Marvin_Robot()
 
 '''查验连接是否成功'''
 init = robot.connect('192.168.1.190')
-if init==-1:
+if init==0:
     logger.error('failed:端口占用，连接失败!')
     exit(0)
 else:
