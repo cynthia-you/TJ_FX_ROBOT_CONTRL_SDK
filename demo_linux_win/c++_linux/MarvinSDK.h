@@ -185,81 +185,135 @@ typedef enum
 extern "C" {
 #endif
 
-//////////////////////////////////////////////////////////////////////
+    //////// API之间SLEEP至少1毫秒. 个别API如清错建议至少200毫秒,保存文件建议至少1秒 ////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+     //连接机器人
 	 bool OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4);
+	 //释放机器人:只要有连接一定要释放,以便别的程序或者用户控制机器人
 	 bool OnRelease();
 	//////////////////////////////////////////////////////////////////////
-	
+	//获取SDK大版本号
 	 long OnGetSDKVersion();
+	 //升级控制器系统,本地升级包路径
 	 bool OnUpdateSystem(char* local_path);
+	 //下载控制器日志到本地
 	 bool OnDownloadLog(char* local_path);
+	 //本地文件上传到控制器远程目录， 绝对路径
+	 bool OnSendFile(char* local_file, char* remote_file);
+	 //控制器文件从远程传到本地目录， 绝对路径
+	 bool OnRecvFile(char* local_file, char* remote_file);
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	//订阅数据接口,所有数据是结构体.
 	 bool OnGetBuf(DCSS * ret);
-	
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	//软急停
 	 void OnEMG_A();
 	 void OnEMG_B();
 	 void OnEMG_AB();
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	//获取伺服错误
 	 void OnGetServoErr_A(long ErrCode[7]);
 	 void OnGetServoErr_B(long ErrCode[7]);
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	 void OnClearErr_A();
-	 void OnClearErr_B();
+	//SDK日志开关
 	 void OnLogOn();
 	 void OnLogOff();
 	 void OnLocalLogOn();
 	 void OnLocalLogOff();
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	//上传本地PVT轨迹文件存为指定ID
 	 bool OnSendPVT_A(char* local_file, long serial);
 	 bool OnSendPVT_B(char* local_file, long serial);
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //获取 设置 保存机器人配置参数
 	 long OnSetIntPara(char paraName[30],long setValue);
 	 long OnSetFloatPara(char paraName[30], double setValue);
 	 long OnGetIntPara(char paraName[30],long * retValue);
 	 long OnGetFloatPara(char paraName[30],double * retValue);
 	 long OnSavePara();
-
-	 bool OnStartGather(long targetNum, long targetID[35], long recordNum);
-	 bool OnStopGather();
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //自动修正传感器偏移,测试中
+	 long OnAutoRectifySensor();
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //保存数据,该接口后要睡久一点,留够保存数据文件的时间,以防保存出错
 	 bool OnSaveGatherData(char * path);
 	 bool OnSaveGatherDataCSV(char* path);
 
-	
-	////////////////////////////////////////////////////////////////////////////////////////////////
+	 ////////////////////////////////////////////////////////////////////////////////////////////////
+	 //清除缓存指令
 	 bool OnClearSet();
-	
-	 bool OnSetTargetState_A(int state);
+
+	 // 注意 以下的API都要在 OnClearSet() 和 OnSetSend()之间使用 //
+
+	 //清伺服错误,在使用OnLinkTo接口后,立即清错以防总线通讯异常导致
+	 void OnClearErr_A();
+	 void OnClearErr_B();
+
+     //设置保存数据参数并开始保存
+	 bool OnStartGather(long targetNum, long targetID[35], long recordNum);
+	 //停止数据采集,用于提前中止
+	 bool OnStopGather();
+
+	 //设置指定手臂的工具参数:运动学和动力学参数,运动学参数使正解到TCP, 动力学使扭矩模式可以正常使用
 	 bool OnSetTool_A(double kinePara[6], double dynPara[10]);
-	 bool OnSetJointLmt_A(int velRatio, int AccRatio);
-	 bool OnSetJointKD_A(double K[7], double D[7]);
-	 bool OnSetCartKD_A(double K[7], double D[7], int type);
-	 bool OnSetDragSpace_A(int dgType);
-	 bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
-	 bool OnSetJointCmdPos_A(double joint[7]);
-	 bool OnSetForceCmd_A(double force);
-	 bool OnSetPVT_A(int id);
-	 bool OnSetImpType_A(int type);
-	 bool OnSetTargetState_B(int state);
 	 bool OnSetTool_B(double kinePara[6], double dynPara[10]);
+
+	 //切换到控制模式之前先设参数//
+	 //1 设置指定手臂的速度和加速度,注意PVT和拖动不受该速度限制
+	 bool OnSetJointLmt_A(int velRatio, int AccRatio);
 	 bool OnSetJointLmt_B(int velRatio, int AccRatio);
+	 //2 设置指定手臂的关节阻抗参数, 在扭矩模式关节阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(1) 下参数才有意义(以左臂为例)
+	 bool OnSetJointKD_A(double K[7], double D[7]);
 	 bool OnSetJointKD_B(double K[7], double D[7]);
+	 //3 设置指定手臂的迪卡尔阻抗参数, 在扭矩模式迪卡尔阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(2) 下参数才有意义(以左臂为例)
+	 bool OnSetCartKD_A(double K[7], double D[7], int type);
 	 bool OnSetCartKD_B(double K[6], double D[6],int type);
-	 bool OnSetDragSpace_B(int dgType);
+
+
+	 //4 如果使用力控模式,在扭矩模式力控模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(3) 以下两个指令连用
+	 //4.1 设置指定手臂的力控参数
+	 bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
 	 bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
-	 bool OnSetJointCmdPos_B(double joint[7]);
+	 //4.2 设置指定手臂的力值
+	 bool OnSetForceCmd_A(double force);
 	 bool OnSetForceCmd_B(double force);
+
+	 //设置指定手臂的目标状态:0下使能 1位置 2PVT 3扭矩 4协作释放
+	 bool OnSetTargetState_A(int state);
+	 bool OnSetTargetState_B(int state);
+
+	 //设置指定手臂的扭矩类型:1关节 2迪卡尔 3力
+	 bool OnSetImpType_A(int type);
 	 bool OnSetImpType_B(int type);
+
+	 //设置指定手臂的拖动类型,0退出拖动；1关节拖动(进拖动前必须先进关节阻抗模式)；2-5迪卡尔拖动(进每一种迪卡尔拖动前必须先进迪卡尔阻抗模式)
+	 bool OnSetDragSpace_A(int dgType);
+	 bool OnSetDragSpace_B(int dgType);
+
+	 //设置指定手臂的PVT号并立即运行该轨迹,需在PVT模式下,即OnSetTargetState_A(2)才会生效(以左臂为例)
+	 bool OnSetPVT_A(int id);
 	 bool OnSetPVT_B(int id);
 
-	 bool OnSetSend();
+	 //设置指定手臂的目标关节位置:位置模式扭矩模式下的关节指令
+	 bool OnSetJointCmdPos_A(double joint[7]);
+	 bool OnSetJointCmdPos_B(double joint[7]);
 
+     // 注意 以上的API都要在 OnClearSet() 和 OnSetSend()之间使用 //
+     //发送指令给机器人
+	 bool OnSetSend();
+	 ////////////////////////////////////////////////////////////////////////////////////////////////
+
+     // 末端工具通讯用接口//
+     //1 清缓存数据
 	 bool OnClearChDataA();
 	 bool OnClearChDataB();
-
+     //2 获取指定手臂指定通道的数据: ret_ch==1:CANFD  ret_ch==2 COM1  ret_ch==3 COM2
 	 long OnGetChDataA(unsigned char data_ptr[256], long* ret_ch);
 	 bool OnSetChDataA(unsigned char data_ptr[256], long size_int,long set_ch);
-
+     //3 给指定手臂指定通道发送数据
 	 long OnGetChDataB(unsigned char data_ptr[256], long* ret_ch);
 	 bool OnSetChDataB(unsigned char data_ptr[256], long size_int, long set_ch);
-
 
 
 #ifdef __cplusplus
