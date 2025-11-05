@@ -1,8 +1,7 @@
-你好使用MARVIN_APP软件前，有两点需要温馨提示您：
+你好使用MARVIN_APP软件前，需要温馨提示您：
 
-    1.软件同级config/文件夹内请放入独一无二的机型配置文件:ccs 6公斤的机型的计算配置文件为ccs_m6.MvKDCfg,ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg； srs机型为srs.MvKDCfg. 多个*.MvKDCfg会解析出错
+    软件同级config/文件夹内请放入独一无二的机型配置文件:ccs 6公斤的机型的计算配置文件为ccs_m6.MvKDCfg,ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg； srs机型为srs.MvKDCfg. 多个*.MvKDCfg会解析出错
 
-    2.打开软件连接机器人后，可以控制机器人，但是数据不刷新，多点击几次连接机器人和断开机器人会起作用，或者更换一台CPU更好的设备。
 
 
 ## 安装APP:
