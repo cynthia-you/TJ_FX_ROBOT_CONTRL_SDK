@@ -20,12 +20,12 @@
 
 int main()
 {
-  // 初始化订阅数据的结构体
-  DCSS t;
+    // 初始化订阅数据的结构体
+    DCSS t;
 
-  // 查验连接是否成功
-  int init = OnLinkTo(192,168,1,190);
-  if (init == -1) {
+    // 查验连接是否成功
+    bool init = OnLinkTo(192,168,1,190);
+    if (!init) {
       std::cerr << "failed:端口占用，连接失败!" << std::endl;
       return -1;
   } else {

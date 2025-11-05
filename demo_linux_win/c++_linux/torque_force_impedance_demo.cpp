@@ -27,8 +27,8 @@ int main()
     DCSS t;
 
     // 查验连接是否成功
-    int init = OnLinkTo(192,168,1,190);
-    if (init == -1) {
+    bool init = OnLinkTo(192,168,1,190);
+    if (!init) {
         std::cerr << "failed:端口占用，连接失败!" << std::endl;
         return -1;
     } else {

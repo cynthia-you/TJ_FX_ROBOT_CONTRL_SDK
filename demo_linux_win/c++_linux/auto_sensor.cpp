@@ -5,16 +5,25 @@
 #include <iostream>
 #include <cstdlib>
 
+
 ////'''#################################################################
-////该DEMO 为连接n检查案列
+////该DEMO 为关节位置跟随控制案列
 ////
 ////使用逻辑
 ////    1 初始化订阅数据的结构体
 ////    2 查验连接是否成功
-////    3 任务完成，释放内存使别的程序或者用户可以连接机器人
+////    3 为了防止伺服有错，先清错
+////    4 设置位置模式和速度加速度百分比
+////    6 订阅查看设置是否成功
+////    7 下发运动点位
+////    8 订阅查看是否运动到位
+////    9 任务完成，释放内存使别的程序或者用户可以连接机器人
 ////'''#################################################################
-int main() {
-    // 初始化订阅数据的结构体
+
+
+int main()
+{
+  // 初始化订阅数据的结构体
     DCSS dcss;
 
     // 查验连接是否成功
@@ -23,15 +32,6 @@ int main() {
         std::cerr << "failed:端口占用，连接失败!" << std::endl;
         return -1;
     } else {
-
-        //防总线通信异常,先清错
-        usleep(100000);
-        OnClearSet();
-        OnClearErr_A();
-        OnClearErr_B();
-        OnSetSend();
-        usleep(100000);
-
         int motion_tag = 0;
         int frame_update = 0;
 
@@ -51,14 +51,24 @@ int main() {
             std::cout << "success:机器人连接成功!" << std::endl;
         } else {
             std::cerr << "failed:机器人连接失败!" << std::endl;
-            OnRelease();
             return -1;
         }
     }
 
+
+    //为了防止伺服有错，先清错
+    OnClearSet();
+    OnClearErr_A();
+    OnClearErr_B();
+    OnSetSend();
+    usleep(100000);
+
+    OnAutoRectifySensor();
+    usleep(100000);
+
+
     //任务完成,释放内存使别的程序或者用户可以连接机器人
-    usleep(100000);
     OnRelease();
-    usleep(100000);
     return 1;
 }
+
