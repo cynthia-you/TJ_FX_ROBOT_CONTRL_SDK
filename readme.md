@@ -3,11 +3,12 @@
 ## 更新
     1003_34版本添加功能:
     1 内编外编清0，编码器清错。
-    2支持仅位置模式控制 增加了参数R.A0.BASIC.CtrlType和R.A1.BASIC.CtrlType。0表示控制模式都开放，1表示只有位置控制
+    2 支持仅位置模式控制 增加了参数R.A0.BASIC.CtrlType和R.A1.BASIC.CtrlType。0表示控制模式都开放，1表示只有位置控制 (修改在机器人配置文件 *.ini)
     
-    更能已同步更新到MARVIN_APP和FX-StATION
-    
-    1003_34:https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/tag/marvin_tool_1003_34
+    更能已同步更新到MARVIN_APP和FX-STATION
+
+    1003_34地址：
+        https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/tag/marvin_tool_1003_34
 
 ### 机器人电机内外编清零和内编清错示例
     控制器需要升级到1003_34版本
@@ -39,7 +40,7 @@
     
 
 ### 升级版本和参数都发布在releases下
-    [https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/release](https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases)
+    https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/release
 
     
 ## 以上功能同步更新到MARVIN_APP
