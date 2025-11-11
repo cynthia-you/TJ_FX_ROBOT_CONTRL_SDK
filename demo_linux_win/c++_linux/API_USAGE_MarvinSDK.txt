@@ -69,3 +69,7 @@ demo12: drag_CartImdedance_save_data_arm_A.cpp
 g++ drag_CartImdedance_save_data_arm_A.cpp -o drag_cart_y -L. -lMarvinSDK -Wl,-rpath=.
 ./drag_cart_y
 
+
+demo13:motor_encoder_clear_demo.cpp
+g++ motor_encoder_clear_demo.cpp -o motor_clear -L. -lMarvinSDK -Wl,-rpath=.
+./motor_clear
