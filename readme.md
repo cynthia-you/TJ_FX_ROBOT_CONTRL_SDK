@@ -19,8 +19,9 @@
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/motor_encoder_clear_demo.py
     
 ### 机器人飞车后调整手臂的示例:
+    请联系天机技术工程师修改伺服参数。
 
-    协作释放和松闸调整的方案二选一，伺服参数需升级
+    协作释放和松闸调整的方案二选一
     C++:
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/c%2B%2B_linux/apply-brake_release-brake_demo.cpp
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/c%2B%2B_linux/collaborative_release_demo.cpp
