@@ -837,8 +837,8 @@ class App:
             title="选择系统更新文件"
         )
         if file_path:
-            tag1=robot.update_SDK(file_path)
-            # tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")
+            # tag1=robot.update_SDK(file_path)
+            tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")# 代码写的是这个名字
             print(f"file path:{file_path}")
             a = file_path.split('/')[-1].split('.')[0].split('_')
             b = a[2] + '-' + a[3]
