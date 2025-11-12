@@ -9,7 +9,7 @@
     2. MARVIN_APP基础环境:python3, pyinstaller
     3. 运行前请确认:
             3.1. MARVIN_APP基础环境:python3(无特定版本要求), pyinstaller
-            3.2. 确保在 ./contrlSDK  和 ./kinematicsSDK 下的动态库SO: libMarvinSDK.so 和 libKine.so 是当前上位机环境下重新编译生成的(最好是重新编译),SDK源码地址：https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/master/
+            3.2. 确保在 ./contrlSDK  和 ./kinematicsSDK 下的动态库SO: libMarvinSDK.so 和 libKine.so 是当前上位机环境下重新编译生成的(最好是重新编译),SDK源码地址：[https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/master/](https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/tree/master)
             3.3. 将3.2生成的 libMarvinSDK.so 和 libKine.so 替换到./MARVIN_APP_UBUNTU_WINDOWS/python/ 下
     4. 运行APP:
             4.1. 源码运行 UI_FX.py（或者是UI_FX*.py）
