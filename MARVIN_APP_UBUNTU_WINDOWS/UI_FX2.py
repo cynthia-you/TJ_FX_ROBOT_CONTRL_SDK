@@ -219,6 +219,8 @@ class App:
         self.tools_txt='tool_dyn_kine.txt'
         self.tool_result=None
 
+        self.save_tool_data_path=None
+
         # 初始化数据
         self.result = {
             'states': [
@@ -837,8 +839,8 @@ class App:
             title="选择系统更新文件"
         )
         if file_path:
-            # tag1=robot.update_SDK(file_path)
-            tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")# 代码写的是这个名字
+            tag1=robot.update_SDK(file_path)
+            # tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")# 代码写的是这个名字
             print(f"file path:{file_path}")
             a = file_path.split('/')[-1].split('.')[0].split('_')
             b = a[2] + '-' + a[3]
@@ -1672,16 +1674,9 @@ class App:
 
         self.entry_tool_dyn = tk.StringVar(
             value="[0,0,0,0,0,0,0,0,0,0]")
-        self.tool_dyn_entry = tk.Entry(self.identy_tool_frame1, textvariable=self.entry_tool_dyn, width=100)
+        self.tool_dyn_entry = tk.Entry(self.identy_tool_frame1, textvariable=self.entry_tool_dyn , width=100)
         self.tool_dyn_entry.grid(row=0, column=2, padx=5, sticky="ew")
 
-
-        # self.robot_type_choose2= tk.Label(self.identy_tool_frame1, text="右臂动力学参数", bg='white',width=15)
-        # self.robot_type_choose2.grid(row=0, column=3, padx=15)
-        # self.entry_tool_dyn1= tk.StringVar(
-        #     value="[0,0,0,0,0,0,0,0,0,0]")
-        # self.tool_dyn_entry1 = tk.Entry(self.identy_tool_frame1, textvariable=self.entry_tool_dyn1, width=60)
-        # self.tool_dyn_entry1.grid(row=0, column=4, padx=5, sticky="ew")
 
         # 添加横线
         horizontal_line_4 = tk.Frame(parent, height=2, bg="#%02x%02x%02x" % (50, 150, 200))
@@ -3549,25 +3544,26 @@ class App:
         # 格式化数据
         def format_vector6(vector):
             return ", ".join([f"{v:.6f}" for v in vector])
-        # folder_path = filedialog.askdirectory(
-        #     title="选择辨识配置参数的文件夹LoadData",
-        #     mustexist=True
-        # )
-        # if folder_path:
-        folder_path='./LoadData'
+
         print(f"ccs srs:{self.type_select_combobox_1.get()}")
-        print(f"tool data:{folder_path}")
-
-
+        print(f"tool data:{self.save_tool_data_path}")
         if self.type_select_combobox_1.get()=='CCS':
-            result=kk1.identify_tool_dyn(robot_type='ccs',ipath=folder_path)
-            self.entry_tool_dyn.set(format_vector6(result))
-
+            tool_identy_tag,identy_results=kk1.identify_tool_dyn(robot_type=1,ipath=self.save_tool_data_path)
+            print(f'tool_identy_tag:{tool_identy_tag}, identy_results:{identy_results}')
+            if tool_identy_tag==False:
+                messagebox.showerror('wrong', f'工具动力学参数辨识错误提示:{identy_results}')
+            if tool_identy_tag:
+                self.entry_tool_dyn.set(format_vector6(identy_results))
+                messagebox.showinfo('success', '工具动力学参数辨识完成')
 
         else:
-            result=kk1.identify_tool_dyn(robot_type='srs',ipath=folder_path)
-            self.entry_tool_dyn.set(format_vector6(result))
-        messagebox.showinfo('success','工具动力学参数辨识完成')
+            tool_identy_tag,identy_results=kk1.identify_tool_dyn(robot_type=2,ipath=self.save_tool_data_path)
+            print(f'tool_identy_tag:{tool_identy_tag}, identy_results:{identy_results}')
+            if tool_identy_tag==False:
+                messagebox.showerror('wrong', f'工具动力学参数辨识错误提示:{identy_results}')
+            else:
+                self.entry_tool_dyn.set(format_vector6(identy_results))
+                messagebox.showinfo('success','工具动力学参数辨识完成')
 
 
     def data_clear_preprocess(self,input,output):
@@ -3660,6 +3656,7 @@ class App:
             title="选择工具辨识的激励轨迹文件"
         )
         if file_path:
+            self.save_tool_data_path=file_path.split('IdenTraj')[0]
             self.file_path_tool.set(file_path)
 
 
