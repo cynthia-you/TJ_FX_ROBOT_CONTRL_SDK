@@ -14,6 +14,13 @@ demo3 movlkeepj_demo.cpp
 g++ movlkeepj_demo.cpp -o movlkeepj -L. -lKine -Wl,-rpath=.
 ./movlkeepj
 
+
+
+demo4: tool_identy_demo.cpp
+g++ tool_identy_demo.cpp -o identy_tool -L. -lKine -Wl,-rpath=.
+./identy_tool
+
+
 WIN：
 demo: my_dd.cpp
 g++ my_dd.cpp -o kine -L. -lKine -o kine.exe
