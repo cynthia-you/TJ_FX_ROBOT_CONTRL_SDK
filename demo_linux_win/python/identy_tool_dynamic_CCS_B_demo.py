@@ -100,26 +100,21 @@ def collect_identy_data(robot_id, pvt_file, pvt_id, save_path):
 
     logger.info(f'data saved as {save_path} ')
 
-if __name__=="__main__":
-
-    # 配置日志系统
-    logging.basicConfig(format='%(message)s')
-    logger = logging.getLogger('debug_printer')
-    logger.setLevel(logging.INFO)  # 一键关闭所有调试打印
-    logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
-
-    '''初始化订阅数据的结构体'''
-    dcss = DCSS()
-
-    '''初始化机器人接口'''
-    robot = Marvin_Robot()
-
+def run_online():
     '''查验连接是否成功'''
     init = robot.connect('192.168.1.190')
-    if init == -1:
+    if init == 0:
         logger.error('failed:端口占用，连接失败!')
         exit(0)
     else:
+        '''防总线通信异常,先清错'''
+        time.sleep(0.5)
+        robot.clear_set()
+        robot.clear_error('A')
+        robot.clear_error('B')
+        robot.send_cmd()
+        time.sleep(0.5)
+
         motion_tag = 0
         frame_update = None
         for i in range(5):
@@ -135,34 +130,61 @@ if __name__=="__main__":
             logger.error('failed:机器人连接失败!')
             exit(0)
 
-    robot.log_switch('1') #全局日志开关
-    robot.local_log_switch('1') # 主要日志
+    robot.log_switch('1')  # 全局日志开关
+    robot.local_log_switch('1')  # 主要日志
     time.sleep(0.5)
 
     '''
     attention:!!!!!!
-    DEMO 演示的是SRS机型下 左臂 工具动力学辨识流程。 
-    如果是CCS的机型，请修改collect_identy_data中pvt_file传入值， 以及kk.identify_tool_dyn(robot_type='ccs',ipath='./LoadData')
-    
-    
+    如果是CCS的机型，robot_type=1,请修改collect_identy_data中pvt_file传入值， 以及kk.identify_tool_dyn(robot_type=1,ipath='LoadData_ccs_right/LoadData')
+
+
     以下三步要依次反注释运行，一共运行三遍!!!
     '''
 
-    # '''step1 采集左臂带载数据'''
-    # collect_identy_data(robot_id='B',
-    #                     pvt_file="./LoadData/IdenTraj/LoadIdenTraj_MarvinSRS_Left.fmv",
-    #                     pvt_id=3,
-    #                     save_path='./LoadData/LoadData.csv')
-    #
-    # '''step2 采集左臂空载数据'''
-    # collect_identy_data(robot_id='B',
-    #                     pvt_file="./LoadData/IdenTraj/LoadIdenTraj_MarvinSRS_Left.fmv",
-    #                     pvt_id=3,
-    #                     save_path='./LoadData/NoLoadData.csv')
+    '''step1 采集左臂带载数据'''
+    collect_identy_data(robot_id='B',
+                        pvt_file="LoadData_ccs_right/LoadData/IdenTraj/LoadIdenTraj_MarvinCCS_Right.fmv",
+                        pvt_id=3,
+                        save_path='LoadData_ccs_right/LoadData/LoadData.csv')
 
+    '''step2 采集左臂空载数据'''
+    collect_identy_data(robot_id='B',
+                        pvt_file="LoadData_ccs_right/LoadData/IdenTraj/LoadIdenTraj_MarvinCCS_Right.fmv",
+                        pvt_id=3,
+                        save_path='LoadData_ccs_right/LoadData/NoLoadData.csv')
 
-    # '''step3 算法辨识'''
-    # kk=Marvin_Kine()
-    # tool_dynamic_parameters=kk.identify_tool_dyn(robot_type='ccs',ipath='/home/fusion/projects/MARVIN_SDK_V1004_0925/ccs_right/LoadData/')
-    #
-    # robot.release_robot()
+    '''step3 算法辨识'''
+    kk = Marvin_Kine()
+    tool_dynamic_parameters = kk.identify_tool_dyn(robot_type=1, ipath='LoadData_ccs_right/LoadData/')
+    print(tool_dynamic_parameters)
+    robot.release_robot()
+
+def run_offline():
+    kk = Marvin_Kine()
+    tool_dynamic_parameters = kk.identify_tool_dyn(robot_type=1, ipath='LoadData_ccs_right/LoadData/')
+    print(tool_dynamic_parameters)
+
+if __name__=="__main__":
+
+    # 配置日志系统
+    logging.basicConfig(format='%(message)s')
+    logger = logging.getLogger('debug_printer')
+    logger.setLevel(logging.INFO)  # 一键关闭所有调试打印
+    logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
+
+    '''初始化订阅数据的结构体'''
+    dcss = DCSS()
+
+    '''初始化机器人接口'''
+    robot = Marvin_Robot()
+
+    '''如果选择在线采集数据并辨识
+     一定注意函数内部的提示,要三次流程分别反注释运行
+    
+     '''
+    # run_online()
+
+    '''如果选择离线辨识,用CCS 右臂的DEMO数据'''
+    run_offline()
+
