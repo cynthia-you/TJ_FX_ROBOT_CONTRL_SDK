@@ -798,27 +798,33 @@ class Marvin_Kine:
             logger.error(f'Plan MOVL failed!')
             return False
 
-
-    def identify_tool_dyn(self, robot_type: str, ipath: str):
+    def identify_tool_dyn(self, robot_type: int, ipath: str):
         '''工具动力学参数辨识
-        FX_BOOL  FX_Robot_Iden_LoadDyn(FX_INT32L Type,FX_CHAR* path,FX_DOUBLE mass, Vect3 mr, Vect6 I);
-        :param robot_type: str ,机型，从CONFIG导入
+        :param robot_type: int . 1:CCS机型，2:SRS机型
         :param ipath: sting, 相对路径导入工具辨识轨迹数据。
         :return:
             m,mcp,i
+        错误返回参考:
+        //typedef enum {
+        //	LOAD_IDEN_NoErr = 0, // No error
+        //	LOAD_IDEN_CalErr = 1, // Calculation error, 计算错误，需重新采集数据计算
+        //	LOAD_IDEN_OpenSmpDateFieErr = 2, //  Open sample file error 打开采集数据文件错误，须检查采样文件
+        //	LOAD_IDEN_OpenCfgFileErr = 3, // Open config file error 配置文件被修改
+        //	LOAD_IDEN_DataSmpErr = 4 // Data sample error 采集时间不够，缺少有效数据
+        //}LoadIdenErrCode;
         '''
-        if type(robot_type) != str:
-            raise ValueError("robot_type must be string type")
+        if type(robot_type) != int:
+            raise ValueError("robot_type must be int type")
 
         if not os.path.exists(ipath):
             raise ValueError(f"no {ipath}, pls check!")
 
-        if robot_type=='ccs':
-            robot_type=1017
-        elif robot_type=='srs':
-            robot_type=1007
+        if robot_type == 1:
+            print(f'CCS tool identy')
+        elif robot_type == 2:
+            print(f'SRS tool identy')
 
-        robot_type_ = c_long(robot_type)
+        robot_type_ = c_int(robot_type)
         iden_path = ipath.encode('utf-8')
         path_char = ctypes.c_char_p(iden_path)
 
@@ -829,32 +835,30 @@ class Marvin_Kine:
 
         # 设置函数原型
         self.kine.FX_Robot_Iden_LoadDyn.argtypes = [
-            c_long,
+            c_int,
             c_char_p,
             POINTER(c_double),
-            POINTER(c_double*3),
-            POINTER(c_double*6)
+            POINTER(c_double * 3),
+            POINTER(c_double * 6)
         ]
-        self.kine.FX_Robot_Iden_LoadDyn.restype = c_bool
+        self.kine.FX_Robot_Iden_LoadDyn.restype = c_int32
 
         # 调用函数
-        success1 = self.kine.FX_Robot_Iden_LoadDyn(
+        ret_int = self.kine.FX_Robot_Iden_LoadDyn(
             robot_type_,
             path_char,
             mm_ptr,
             mcp_ptr,
             ii_ptr
         )
-
-        if success1:
+        if ret_int == 0:
             logger.info('Identify tool dynamics successful')
 
             # 提取结果
-            dyn_para=[]
+            dyn_para = []
             m_val = mm_ptr.contents.value
             mcp_list = [mcp_ptr[i] for i in range(3)]
             ii_list = [ii_ptr[i] for i in range(6)]
-
             'ixx iyy izz ixy ixz iyz'
 
             dyn_para.append(m_val)
@@ -869,11 +873,19 @@ class Marvin_Kine:
             dyn_para.append(ii_list[2])
 
             logger.info(f'tool dynamics[m,mx,my,mz,ixx,ixy,ixz,iyy,iyz,izz]: {dyn_para}')
-            return dyn_para
+            return True,dyn_para
         else:
             logger.error('Identify tool dynamics failed!')
-            return False
-
+            logger.error(
+                f'identify_tool_dyn 返回错误码:{ret_int}\n ret=1, 计算错误，需重新采集数据计算\n ret=2,打开采集数据文件错误，须检查采样文件\n ret=3,配置文件被修改\n ret=4, 采集时间不够，缺少有效数据')
+            if ret_int == 1:
+                return False,'ret=1, 计算错误，需重新采集数据计算'
+            elif ret_int == 2:
+                return False,'ret=2,打开采集数据文件错误，须检查采样文件'
+            elif ret_int == 3:
+                return False,"ret=3,配置文件被修改"
+            elif ret_int == 4:
+                return False,'ret=4, 采集时间不够，缺少有效数据'
 
 
 
