@@ -70,11 +70,11 @@ static bool strSpliteSRS(const string& str, vector<vector<string>>& loadData)
 	return true;
 }
 
-bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
+LoadIdenErrCode OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 {
 	if (tor == NULL) {
 		printf("tor is null!\n");
-		return false;
+		return LOAD_IDEN_CalErr;
 	}
 	string strUserPath(userPath);
 	string strLDFileName("/LoadData.csv");
@@ -90,14 +90,14 @@ bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 	ifstream ifLoadFile(tmpPath, ios::in);
 	if (!ifLoadFile.is_open()) {
 		cout << "ERROR: file load failed, pls check file!" << endl;
-		return false;
+		return LOAD_IDEN_OpenSmpDateFieErr;
 	}
 	string strLoadDataLine;
 	vector<vector<string>> vecLoadData(7);
 	while (getline(ifLoadFile, strLoadDataLine)) {
 		if (strSpliteSRS(strLoadDataLine, vecLoadData) == false) {
 			cout << "ERROR: parse file failed, pls check file!" << endl;
-			return false;
+			return LOAD_IDEN_OpenSmpDateFieErr;
 		}
 	}
 	ifLoadFile.close();
@@ -115,19 +115,19 @@ bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 	ifstream ifsConFile(strIdenCfgName, ios::in);
 	if (!ifsConFile.is_open()) {
 		cout << "ERROR: load cfg file failed, pls check file<LoadIdenCfg_Marvin_SRS.txt>" << endl;
-		return false;
+		return LOAD_IDEN_OpenCfgFileErr;
 	}
 	string strCfg;
 	if (!getline(ifsConFile, strCfg)) {
 		cout << "Error: load config failed, type-1, pls contact supplier for help." << endl;
-		return false;
+		return LOAD_IDEN_OpenCfgFileErr;
 	}
 	ifsConFile.close();
 	vector<string> vecCon;
 	vecCon = strSplite(strCfg, ',');
 	if (vecCon.size() != 17) {
 		cout << "Error: load config failed, type-2, pls contact supplier for help." << endl;
-		return false;
+		return LOAD_IDEN_OpenCfgFileErr;
 	}
 	const double torTag[7] = { 0, 1111, 2222, 3333, 4444, 5555, 6666 };
     double trajCondation[10] = { 1, 0, 1, 0, 5, 4, 95, 94, 20, -20 };
@@ -140,6 +140,7 @@ bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 	int LoadDataNum = static_cast<int>(vecLoadData.at(DataTag).size());
 	int trajCalTimes = 0;
 	double tor7[7] = { 0 };
+	int dataFlagCount = 0;
 	vecTor.clear();
 	for (i = dataTagPos; i < LoadDataNum; i++) {
 		if (torTag[1] == stod(vecLoadData.at(DataTag).at(i))) {
@@ -166,6 +167,7 @@ bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (2 == trajCalTimes) {
 			trajCalTimes = 0;
+			dataFlagCount++;
 			break;
 		}
 	}
@@ -199,6 +201,7 @@ bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (2 == trajCalTimes) {
 			trajCalTimes = 0;
+			dataFlagCount++;
 			break;
 		}
 	}
@@ -232,6 +235,7 @@ bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (2 == trajCalTimes) {
 			trajCalTimes = 0;
+			dataFlagCount++;
 			break;
 		}
 	}
@@ -265,6 +269,7 @@ bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (2 == trajCalTimes) {
 			trajCalTimes = 0;
+			dataFlagCount++;
 			break;
 		}
 	}
@@ -304,6 +309,7 @@ bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (inrange) {
 			dataTagPos = i;
+			dataFlagCount++;
 			break;
 		}
 	}
@@ -334,6 +340,7 @@ bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 				}
 				else {
 					dataTagPos = i;
+					dataFlagCount++;
 					break;
 				}
 				i++;
@@ -377,10 +384,15 @@ bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (inrange) {
 			dataTagPos = i;
+			dataFlagCount++;
 			break;
 		}
 	}
 	dtemp = 0;
+	if (dataFlagCount != 7) {
+		cout << "ERROR: insufficient effective data, pls check LoadData.csv or NoLoadData.csv" << endl;
+		return LOAD_IDEN_DataSmpErr;
+	}
 	for (int num = 0; num < vecTor.size(); num++) {
 		dtemp += vecTor.at(num);
 	}
@@ -398,30 +410,37 @@ bool OnCalLoadTor_7_MarvinSRS(LoadTor* tor, int isNoLoad, const char *userPath)
 		ofstream ofsConFile(strIdenCfgName);
 		if (!ofsConFile.is_open()) {
 			cout << "ERROR: pls check ./LoadData/CfgFileLoadIdenCfg" << endl;
-			return false;
+			return LOAD_IDEN_OpenCfgFileErr;
 		}
 		for (int i = 0; i < vecCon.size() - 1; i++) {
 			if (!(ofsConFile << vecCon.at(i) << ",")) {
 				cout << "ERROR: pls check ./LoadData/CfgFileLoadIdenCfg" << endl;
-				return false;
+				return LOAD_IDEN_OpenCfgFileErr;
 			}
 		}
 		ofsConFile << vecCon.at(vecCon.size() - 1) << "\n";
 		ofsConFile.close();
 		cout << "Set no-load parameters finished" << endl;
 	}
-	return true;
+	return LOAD_IDEN_NoErr;
 }
 
-bool OnCalLoadDynamic_7_MarvinSRS(LoadDynamic* loadDyn, const char *userPath)
+LoadIdenErrCode OnCalLoadDynamic_7_MarvinSRS(LoadDynamic* loadDyn, const char *userPath)
 {
 	cout << "Calculating load data..." << endl;
 	LoadTor loadTor;
 	memset(&loadTor, 0, sizeof(loadTor));
-	if (OnCalLoadTor_7_MarvinSRS(&loadTor, 0, userPath) == false) {
-		printf("failed to cal load tor\n");
-		return false;
+
+	LoadIdenErrCode retCode = LOAD_IDEN_NoErr;
+	retCode = OnCalLoadTor_7_MarvinSRS(&loadTor, 0, userPath);
+	if (retCode != LOAD_IDEN_NoErr) {
+		return retCode;
 	}
+
+	// if (OnCalLoadTor_7_MarvinSRS(&loadTor, 0, userPath) == false) {
+	// 	printf("failed to cal load tor\n");
+	// 	return false;
+	// }
 	double g = 9.8, pi = 3.1415926;
 	double acc = 1000.0 / 180 * pi;
 	double l4 = 280.0 / 1000.0;
@@ -434,8 +453,8 @@ bool OnCalLoadDynamic_7_MarvinSRS(LoadDynamic* loadDyn, const char *userPath)
 	Me = (fabs(tor4) - fabs(tor6)) / l4;
 	me = Me / g;
 	if (me < 0.001 || me > 50 || isnan(me)) {
-		cout << "ERROR; load identification failed!" << endl;
-		return false;
+		cout << "ERROR:  load identification failed!" << endl;
+		return LOAD_IDEN_CalErr;
 	}
 	le = fabs(tor6) / Me - l7;
 	z = le;
@@ -478,7 +497,7 @@ bool OnCalLoadDynamic_7_MarvinSRS(LoadDynamic* loadDyn, const char *userPath)
 
 	if (loadDyn == NULL) {
 		cout << "ERROR: load identification failed!" << endl;
-		return false;
+		return LOAD_IDEN_CalErr;
 	}
 	loadDyn->m = me;
 	loadDyn->mr[0] = mrx * 1000;
@@ -489,19 +508,7 @@ bool OnCalLoadDynamic_7_MarvinSRS(LoadDynamic* loadDyn, const char *userPath)
     loadDyn->inertia[2] = (izz > 0) ? izz : 0.001;
 	printf(" m=%7.3fkg\n x=%7.3fmm\n y=%7.3fmm\n z=%7.3fmm\n ixx=%7.3f\n iyy=%7.3f\n izz=%7.3f\n", me, mrx, mry, mrz, ixx, iyy, izz);
 	cout << "Load identification calculate successful!"<< endl;
-	if (false) {
-		string strSavePath(userPath + string("/LoadDynPara.txt"));
-		ofstream ofs(strSavePath);
-		if (ofs.is_open() == false) {
-			cout << "Save identification parameters failed" << endl;
-			return false;
-		}
-		ofs << "m   rx   ry   rz   ixx   iyy   izz" << "\n";
-		ofs << me << " , " << mrx << " , " << mry << " , " << mrz << " , " << ixx << " , " << iyy << " , " << izz;
-		ofs.close();
-		cout <<"Save identification parameters successful" << endl;
-	}
-	return true;
+	return LOAD_IDEN_NoErr;
 }
 
 static bool strSpliteCCS(const string& str, vector<vector<string>>& loadData)
@@ -539,11 +546,11 @@ static bool strSpliteCCS(const string& str, vector<vector<string>>& loadData)
 	return true;
 }
 
-bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
+LoadIdenErrCode OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 {
 	if (tor == NULL) {
 		printf("tor is null!\n");
-		return false;
+		return LOAD_IDEN_CalErr;
 	}
 	string strUserPath(userPath);
 	string strLDFileName("/LoadData.csv");
@@ -559,14 +566,14 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 	ifstream ifLoadFile(tmpPath, ios::in);
 	if (!ifLoadFile.is_open()) {
 		cout << "ERROR: open file failed, pls check file! " << endl;
-		return false;
+		return LOAD_IDEN_OpenSmpDateFieErr;
 	}
 	string strLoadDataLine;
 	vector<vector<string>> vecLoadData(9);
 	while (getline(ifLoadFile, strLoadDataLine)) {
 		if (strSpliteCCS(strLoadDataLine, vecLoadData) == false) {
 			cout << "ERROR: parse file failed, pls check file! "<< endl;
-			return false;
+			return LOAD_IDEN_OpenSmpDateFieErr;
 		}
 	}
 	ifLoadFile.close();
@@ -574,19 +581,19 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 	ifstream ifsConFile(strIdenCfgName, ios::in);
 	if (!ifsConFile.is_open()) {
 		cout << "ERROR: open file failed, pls check :LoadIdenCfg_MarvinCCS.txt" << endl;
-		return false;
+		return LOAD_IDEN_OpenCfgFileErr;
 	}
 	string strCfg;
 	if (!getline(ifsConFile, strCfg)) {
 		cout << "Error: load config failed, type-1, pls contact supplier for help." << endl;
-		return false;
+		return LOAD_IDEN_OpenCfgFileErr;
 	}
 	ifsConFile.close();
 	vector<string> vecCon;
 	vecCon = strSplite(strCfg, ',');
 	if (vecCon.size() != 17) {
 		cout << "Error: load config failed, type-2, pls contact supplier for help." << endl;
-		return false;
+		return LOAD_IDEN_OpenCfgFileErr;
 	}
 	const double torTag[7] = { 0, 1111, 2222, 3333, 4444, 5555, 6666 };
 	double trajCondation[10] = { 1, -1, 1, 0, 5, 4, 95, 94, 20, -20 };
@@ -596,8 +603,9 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 	double dtemp = 0;
 	int i;
 	int LoadDataNum = static_cast<int>(vecLoadData.at(0).size());
-	int trajCalTimes = 0;//计算正反两段数据
+	int trajCalTimes = 0;
 	double tor7[7] = { 0 };
+	int dataFlagCount = 0;
 	vecTor.clear();
 	for (i = dataTagPos; i < LoadDataNum; i++) {
 		if (torTag[1] == stod(vecLoadData.at(0).at(i))) {
@@ -624,6 +632,7 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (2 == trajCalTimes) {
 			trajCalTimes = 0;
+			dataFlagCount++;
 			break;
 		}
 	}
@@ -657,6 +666,7 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (2 == trajCalTimes) {
 			trajCalTimes = 0;
+			dataFlagCount++;
 			break;
 		}
 	}
@@ -690,6 +700,7 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (2 == trajCalTimes) {
 			trajCalTimes = 0;
+			dataFlagCount++;
 			break;
 		}
 	}
@@ -723,6 +734,7 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (2 == trajCalTimes) {
 			trajCalTimes = 0;
+			dataFlagCount++;
 			break;
 		}
 	}
@@ -762,6 +774,7 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (inrange) {
 			dataTagPos = i;
+			dataFlagCount++;
 			break;
 		}
 	}
@@ -772,7 +785,6 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 	tor7[4] = dtemp / vecTor.size();
 
 	inrange = false;
-	//iyy6
 	vecTor.clear();
 	for (i = dataTagPos; i < LoadDataNum - 1; i++) {
 		if (torTag[5] == stod(vecLoadData.at(0).at(i))) {
@@ -800,6 +812,7 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (inrange) {
 			dataTagPos = i;
+			dataFlagCount++;
 			break;
 		}
 	}
@@ -837,10 +850,17 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 		}
 		if (inrange) {
 			dataTagPos = i;
+			dataFlagCount++;
 			break;
 		}
 	}
 	dtemp = 0;
+
+	if (dataFlagCount != 7) {
+		cout << "ERROR: insufficient effective data, pls check LoadData.csv or NoLoadData.csv" << endl;
+		return LOAD_IDEN_DataSmpErr;
+	}
+
 	for (int num = 0; num < vecTor.size(); num++) {
 		dtemp += vecTor.at(num);
 	}
@@ -858,30 +878,38 @@ bool OnCalLoadTor_7_MarvinCCS(LoadTor* tor, int isNoLoad, const char *userPath)
 		ofstream ofsConFile(strIdenCfgName, ios::out);
 		if (!ofsConFile.is_open()) {
 			cout << "ERROR: open cfg file failed, pls check LoadIdenCfg" << endl;
-			return false;
+			return LOAD_IDEN_DataSmpErr;
 		}
 		for (int i = 0; i < vecCon.size() - 1; i++) {
 			if (!(ofsConFile << vecCon.at(i) << ",")) {
 				cout << "ERROR: write cfg file failed, pls check LoadIdenCfg" << endl;
-				return false;
+				return LOAD_IDEN_DataSmpErr;
 			}
 		}
 		ofsConFile << vecCon.at(vecCon.size() - 1) << "\n";
 		ofsConFile.close();
 		cout << "Set no-load parameters finished" << endl;
 	}
-	return true;
+	return LOAD_IDEN_NoErr;
 }
 
-bool OnCalLoadDynamic_7_MarvinCCS(LoadDynamic* loadDyn, const char *userPath)
+LoadIdenErrCode OnCalLoadDynamic_7_MarvinCCS(LoadDynamic* loadDyn, const char *userPath)
 {
 	cout << "Calculating load data..." << endl;
 	LoadTor loadTor;
 	memset(&loadTor, 0, sizeof(loadTor));
-	if (OnCalLoadTor_7_MarvinCCS(&loadTor, 0, userPath) == false) {
+	LoadIdenErrCode retCode = LOAD_IDEN_NoErr;
+	retCode = OnCalLoadTor_7_MarvinCCS(&loadTor, 0, userPath);
+	if (retCode != LOAD_IDEN_NoErr) {
 		cout << "ERROR: Calculated load identification parameters failed!"  << endl;
-		return false;
+		return retCode;
 	}
+
+
+	// if (OnCalLoadTor_7_MarvinCCS(&loadTor, 0, userPath) == false) {
+	// 	cout << "ERROR: Calculated load identification parameters failed!"  << endl;
+	// 	return false;
+	// }
 	double g = 9.8, pi = 3.1415926;
 	double acc = 800.0 / 180 * pi;
 	double l4 = 314 / 1000.0;
@@ -895,7 +923,7 @@ bool OnCalLoadDynamic_7_MarvinCCS(LoadDynamic* loadDyn, const char *userPath)
 	me = Me / g;
 	if (me < 0.001 || me > 50 || isnan(me)) {
 		cout << "ERROR: Calculated load identification parameters failed!" << endl;
-		return false;
+		return LOAD_IDEN_CalErr;
 	}
 	le = fabs(tor6) / Me - l7;
 	x = le;
@@ -937,7 +965,7 @@ bool OnCalLoadDynamic_7_MarvinCCS(LoadDynamic* loadDyn, const char *userPath)
 	izz = iczz + me * (x * x + mry * mry);
 	if (loadDyn == NULL) {
 		cout << "ERROR: Calculated load identification parameters failed!" << endl;
-		return false;
+		return LOAD_IDEN_CalErr;
 	}
 	mrx *= 1000;
 	mry *= 1000;
@@ -964,22 +992,10 @@ bool OnCalLoadDynamic_7_MarvinCCS(LoadDynamic* loadDyn, const char *userPath)
     loadDyn->inertia[2] = (izzf > 0) ? izzf : 0.001;
     printf(" m=%7.3fkg\n x=%7.3fmm\n y=%7.3fmm\n z=%7.3fmm\n ixx=%7.3f\n iyy=%7.3f\n izz=%7.3f\n", me, rf[0], rf[1], rf[2], ixxf, iyyf, izzf);
 	cout << "Calculated load identification parameters successful" << endl;
-	if (false) {
-		string strSavePath(userPath + string("/LoadDynPara.txt"));
-		ofstream ofs(strSavePath);
-		if (ofs.is_open() == false) {
-			cout << "ERROR: save identified parameters failed!" << endl;
-			return false;
-		}
-		ofs << "m   rx   ry   rz   ixx   iyy   izz" << "\n";
-		ofs << me << " , " << mrx << " , " << mry << " , " << mrz << " , " << ixx << " , " << iyy << " , " << izz;
-		ofs.close();
-		cout << "Save identified parameters successful" << endl;
-	}
-	return true;
+	return LOAD_IDEN_NoErr;
 }
 
-FX_BOOL OnCalLoadDyn(LoadDynamicPara *DynPara, FX_BOOL IsCCS,  const FX_CHAR* UserPath)
+LoadIdenErrCode OnCalLoadDyn(LoadDynamicPara *DynPara, FX_INT32 RobotType,  const FX_CHAR* UserPath)
 {
 	DynPara->m =    0;
 	DynPara->r[0] = 0;
@@ -991,23 +1007,45 @@ FX_BOOL OnCalLoadDyn(LoadDynamicPara *DynPara, FX_BOOL IsCCS,  const FX_CHAR* Us
 	DynPara->I[3] = 0;
 	DynPara->I[4] = 0;
 	DynPara->I[5] = 0;
-	LoadTor tor; 
+	LoadTor tor;
 	LoadDynamic dy;
-	if (FX_TRUE == IsCCS) {
-		if (OnCalLoadTor_7_MarvinCCS(&tor, 1, UserPath) == false) {
-			return FX_FALSE;
+	LoadIdenErrCode retCode = LOAD_IDEN_NoErr;
+	if (1 == RobotType) {
+		retCode = OnCalLoadTor_7_MarvinCCS(&tor, 1, UserPath);
+		if (retCode != LOAD_IDEN_NoErr) {
+			return retCode;
 		}
-		if (OnCalLoadDynamic_7_MarvinCCS(&dy, UserPath) == false) {
-			return FX_FALSE;
+		retCode = OnCalLoadDynamic_7_MarvinCCS(&dy, UserPath);
+		if (retCode != LOAD_IDEN_NoErr) {
+			return retCode;
 		}
+
+		// if (OnCalLoadTor_7_MarvinCCS(&tor, 1, UserPath) == false) {
+		// 	return FX_FALSE;
+		// }
+		// if (OnCalLoadDynamic_7_MarvinCCS(&dy, UserPath) == false) {
+		// 	return FX_FALSE;
+		// }
 	}
-	else {
-		if (OnCalLoadTor_7_MarvinSRS(&tor, 1, UserPath) == false) {
-			return FX_FALSE;
+	else if (2 == RobotType) {
+		retCode = OnCalLoadTor_7_MarvinSRS(&tor, 1, UserPath);
+		if (retCode != LOAD_IDEN_NoErr) {
+			return retCode;
 		}
-		if (OnCalLoadDynamic_7_MarvinSRS(&dy, UserPath) == false) {
-			return FX_FALSE;
+		retCode = OnCalLoadDynamic_7_MarvinSRS(&dy, UserPath);
+		if (retCode != LOAD_IDEN_NoErr) {
+			return retCode;
 		}
+
+		// if (OnCalLoadTor_7_MarvinSRS(&tor, 1, UserPath) == false) {
+		// 	return FX_FALSE;
+		// }
+		// if (OnCalLoadDynamic_7_MarvinSRS(&dy, UserPath) == false) {
+		// 	return FX_FALSE;
+		// }
+	}
+	else{
+
 	}
 	DynPara->m = dy.m;
 	DynPara->r[0] = dy.mr[0];
@@ -1016,6 +1054,5 @@ FX_BOOL OnCalLoadDyn(LoadDynamicPara *DynPara, FX_BOOL IsCCS,  const FX_CHAR* Us
 	DynPara->I[0] = dy.inertia[0];
 	DynPara->I[1] = dy.inertia[1];
 	DynPara->I[2] = dy.inertia[2];
-	return FX_TRUE;
+	return LOAD_IDEN_NoErr;
 }
-

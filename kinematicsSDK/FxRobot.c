@@ -3285,20 +3285,21 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
 
 	return FX_TRUE;
 }
+
 ////Parameters Identification
-FX_BOOL  FX_Robot_Iden_LoadDyn(FX_INT32L Type, FX_CHAR* path, FX_DOUBLE* mass, Vect3 mr, Vect6 I)
+FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 TYPE, FX_CHAR* path, FX_DOUBLE* mass, Vect3 mr, Vect6 I)
 {
 	FX_LOG_INFO("[FxRobot - FX_Robot_Iden_LoadDyn]\n");
 
 	LoadDynamicPara DynPara;
-	FX_BOOL ISCCS = FX_FALSE;
+//	FX_INT32 robotType = 1;
 
-	if (Type == FX_ROBOT_TYPE_PILOT_CCS)
-	{
-		ISCCS = FX_TRUE;
-	}
+//	if (Type == FX_ROBOT_TYPE_PILOT_CCS)
+//	{
+//		ISCCS = FX_TRUE;
+//	}
 
-	OnCalLoadDyn(&DynPara, ISCCS, path);
+	FX_INT32 ret = OnCalLoadDyn(&DynPara, TYPE, path);
 
 	*mass = DynPara.m;
 
@@ -3313,7 +3314,10 @@ FX_BOOL  FX_Robot_Iden_LoadDyn(FX_INT32L Type, FX_CHAR* path, FX_DOUBLE* mass, V
 	I[4] = DynPara.I[4];
 	I[5] = DynPara.I[5];
 
-	return FX_TRUE;
+
+	printf("FX_Robot_Iden_LoadDyn ret=%d\n",ret);
+
+	return ret;
 }
 
 FX_VOID   FX_XYZABC2Matrix4DEG(FX_DOUBLE xyzabc[6], FX_DOUBLE m[4][4])
