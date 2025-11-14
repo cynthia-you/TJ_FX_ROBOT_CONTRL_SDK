@@ -180,7 +180,7 @@ joints2JacobMatrix(robot_serial: int, joints: list)
 ###    2.8 直线规划（MOVL）
 movL(robot_serial: int, start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, save_path)
 
-    • 输出点位频率为500Hz
+    • 输出点位频率为500Hz，即每20ms执行一行
 
         '''直线规划（MOVL）
 
@@ -198,7 +198,9 @@ movL(robot_serial: int, start_xyzabc: list, end_xyzabc: list, ref_joints: list, 
 
             
 ###    2.9 直线插值规划，约束起始结束关节构型（movL_KeepJ）
-  - movL_KeepJ(self,robot_serial: int,start_joints:list, end_joints:list,vel:float,save_path):
+movL_KeepJ(self,robot_serial: int,start_joints:list, end_joints:list,vel:float,save_path):
+
+    • 输出点位频率为50Hz，即每2ms执行一行
         '''直线规划保持关节构型（MOVL KeepJ）
 
         :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
