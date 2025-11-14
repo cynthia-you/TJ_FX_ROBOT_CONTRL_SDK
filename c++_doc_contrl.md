@@ -33,11 +33,12 @@
         1) 关节阻抗控制/关节阻抗控制位置跟随
         2) 坐标阻抗控制/坐标阻抗控制位置跟随
         3) 力控制/力控制位置跟随
+    ⑤ 协作释放
 
 (3) 控制状态参数（1KHz）
 
     ① 参数
-        1) 目标跟随速度加速度设定
+        1) 目标跟随速度加速度设定，（百分比，值范围0-100）
         2) 关节阻抗参数设定
         3) 坐标阻抗参数设定
         4) 力控制参数设定
@@ -149,10 +150,10 @@ bool OnGetBuf(DCSS * ret);
 
     typedef struct
     {
-        FX_INT32 	m_OutFrameSerial;   	///* 输出帧序号   0 -  1000000 取模*/
+        FX_INT32 	m_OutFrameSerial;   	///* 输出帧序号   0 -  1000000 取模， 通过这个值刷新可判断UDP是否互通可收发数据*/
         FX_FLOAT    m_FB_Joint_Pos[7];		///* 反馈关节位置 */							0-6
         FX_FLOAT    m_FB_Joint_Vel[7];		///* 反馈关节速度 */							10-16
-        FX_FLOAT    m_FB_Joint_PosE[7];		///* 反馈关节位置(外编) */						20-26
+        FX_FLOAT    m_FB_Joint_PosE[7];		///* 反馈关节位置(外编) */					20-26
         FX_FLOAT    m_FB_Joint_Cmd[7];		///* 位置关节指令 */							30-36
         FX_FLOAT    m_FB_Joint_CToq[7];		///* 反馈关节电流 */							40-46
         FX_FLOAT    m_FB_Joint_SToq[7];		///* 反馈关节扭矩 */							50-56
@@ -160,7 +161,7 @@ bool OnGetBuf(DCSS * ret);
         FX_FLOAT    m_EST_Joint_Firc[7];	///* 关节摩檫力估计值 */						60-66
         FX_FLOAT    m_EST_Joint_Firc_Dot[7];	///* 关节力扰动估计值微分 */				70-76
         FX_FLOAT    m_EST_Joint_Force[7];	///* 关节力扰动估计值 */						80-86
-        FX_FLOAT    m_EST_Cart_FN[6];		///* 末端扰动估计值 */							90-95
+        FX_FLOAT    m_EST_Cart_FN[6];		///* 末端扰动估计值 */						90-95
         FX_CHAR     m_TipDI;                ///* 是否按住拖动按钮信号 */	
         FX_CHAR     m_LowSpdFlag;			///* 机器人停止运动标志， 可用于判断是否运动到位。 */	
         FX_CHAR     m_pad[2];               ///* 填充，没有实义 */	
@@ -317,11 +318,14 @@ bool OnGetBuf(DCSS * ret);
         ARM_STATE_POSITION = 1,			//////// 位置跟随
         ARM_STATE_PVT = 2,				//////// PVT
         ARM_STATE_TORQ = 3,				//////// 扭矩
+        ARM_STATE_RELEASE = 4,			//////// 协作释放
     
         ARM_STATE_ERROR = 100, ////报错了，清错
-        ARM_STATE_TRANS_TO_POSITION = 101,
-        ARM_STATE_TRANS_TO_PVT = 102,
-        ARM_STATE_TRANS_TO_TORQ = 103,
+        ARM_STATE_TRANS_TO_POSITION = 101, //////// 正常，切换过程,但是如果一直是这个值就是切换失败.
+        ARM_STATE_TRANS_TO_PVT = 102, //////// 正常，切换过程,但是如果一直是这个值就是切换失败.
+        ARM_STATE_TRANS_TO_TORQ = 103, //////// 正常，切换过程,但是如果一直是这个值就是切换失败.
+        ARM_STATE_TRANS_TO_RELEASE = 104,//////// 正常，切换过程,但是如果一直是这个值就是切换失败.
+	    ARM_STATE_TRANS_TO_IDLE = 109, //////// 正常，切换过程,但是如果一直是这个值就是切换失败.
     }ArmState;
     
 
@@ -465,28 +469,84 @@ bool OnSetSend();
 
     以下指令必须在OnClearSet()和中间OnSetSend()设置生效：
     ////×以下指令可以单条发送，也可以多条一起发送发×/////
-    bool OnSetTargetState_A(int state);
-    bool OnSetTool_A(double kinePara[6], double dynPara[10]);
-    bool OnSetJointLmt_A(int velRatio, int AccRatio);
-    bool OnSetJointKD_A(double K[7], double D[7]);
-    bool OnSetCartKD_A(double K[7], double D[7], int type);
-    bool OnSetDragSpace_A(int dgType);
-    bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
-    bool OnSetJointCmdPos_A(double joint[7]);
-    bool OnSetForceCmd_A(double force);
-    bool OnSetPVT_A(int id);
-    bool OnSetImpType_A(int type);
-    bool OnSetTargetState_B(int state);
-    bool OnSetTool_B(double kinePara[6], double dynPara[10]);
-    bool OnSetJointLmt_B(int velRatio, int AccRatio);
-    bool OnSetJointKD_B(double K[7], double D[7]);
-    bool OnSetCartKD_B(double K[6], double D[6],int type);
-    bool OnSetDragSpace_B(int dgType);
-    bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
-    bool OnSetJointCmdPos_B(double joint[7]);
-    bool OnSetForceCmd_B(double force);
-    bool OnSetImpType_B(int type);
-    bool OnSetPVT_B(int id);
+   // 注意 以下的API都要在 OnClearSet() 和 OnSetSend()之间使用 //
+
+	//清伺服错误,在使用OnLinkTo接口后,立即清错以防总线通讯异常导致
+	//清除左臂错误
+	void OnClearErr_A();
+	//清除右臂错误
+	void OnClearErr_B();
+
+	//设置保存参数开始采集数据
+	bool OnStartGather(long targetNum, long targetID[35], long recordNum);
+	//停止数据采集
+	bool OnStopGather();
+
+    //设置指定手臂的工具参数:运动学和动力学参数,运动学参数使正解到TCP, 动力学使扭矩模式可以正常使用
+    //设置左臂工具的运动学和动力学参数
+	bool OnSetTool_A(double kinePara[6], double dynPara[10]);
+    //设置右臂工具的运动学和动力学参数
+	bool OnSetTool_B(double kinePara[6], double dynPara[10]);
+
+	//切换到控制模式之前先设参数//
+	//1 设置指定手臂的速度和加速度（百分比，值范围0-100）,注意PVT和拖动不受该速度限制
+	//设置左臂运动的速度百分比和加速度百分比
+	bool OnSetJointLmt_A(int velRatio, int AccRatio);
+	//设置右臂运动的速度百分比和加速度百分比
+	bool OnSetJointLmt_B(int velRatio, int AccRatio);
+	//2 设置指定手臂的关节阻抗参数, 在扭矩模式关节阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(1) 下参数才有意义(以左臂为例)
+	//设置左臂工具关节阻抗的刚度和阻尼参数
+	FX_DLL_EXPORT bool OnSetJointKD_A(double K[7], double D[7]);
+	//设置右臂工具关节阻抗的刚度和阻尼参数
+	bool OnSetJointKD_B(double K[7], double D[7]);
+	//3 设置指定手臂的迪卡尔阻抗参数, 在扭矩模式迪卡尔阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(2) 下参数才有意义(以左臂为例)
+	//设置左臂工具笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
+	bool OnSetCartKD_A(double K[7], double D[7], int type);
+	//设置右臂工具笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
+	bool OnSetCartKD_B(double K[6], double D[6],int type);
+	//4 如果使用力控模式,在扭矩模式力控模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(3) 以下两个指令连用
+	//4.1 设置指定手臂的力控参数：力控参数和力控值一起设置才有效果
+	//设置左臂力控参数
+	bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
+	//设置右臂力控参数
+	bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
+	//4.2 设置指定手臂的力值
+	//设置左臂力控目标
+	bool OnSetForceCmd_A(double force);
+	//设置右臂力控目标
+	bool OnSetForceCmd_B(double force);
+
+	//设置指定手臂的目标状态:0下使能 1位置 2PVT 3扭矩 4协作释放
+	//设置左臂模式
+	bool OnSetTargetState_A(int state);
+    //设置右臂模式
+	bool OnSetTargetState_B(int state);
+
+	//设置指定手臂的扭矩类型:1关节 2迪卡尔 3力
+	//设置左臂阻抗类型
+	bool OnSetImpType_A(int type);
+	//设置右臂阻抗类型
+	bool OnSetImpType_B(int type);
+
+	//设置指定手臂的拖动类型,0退出拖动；1关节拖动(进拖动前必须先进关节阻抗模式)；2-5迪卡尔拖动(进每一种迪卡尔拖动前必须先进迪卡尔阻抗模式)
+	//设置左臂工具拖动类型
+	bool OnSetDragSpace_A(int dgType);
+	//设置右臂工具拖动类型
+	bool OnSetDragSpace_B(int dgType);
+
+	//设置指定手臂的目标关节位置:位置模式扭矩模式下的关节指令
+	//设置左臂目标关节角度
+	bool OnSetJointCmdPos_A(double joint[7]);
+	//设置右臂目标关节角度
+	bool OnSetJointCmdPos_B(double joint[7]);
+
+	//设置指定手臂的PVT号并立即运行该轨迹,需在PVT模式下,即OnSetTargetState_A(2)才会生效(以左臂为例)
+	//选择在左臂运行的PVT号并立即n运行轨迹
+	bool OnSetPVT_A(int id);
+	//选择在右臂运行的PVT号并立即n运行轨迹
+	bool OnSetPVT_B(int id);
+
+    // 注意 以上的API都要在 OnClearSet() 和 OnSetSend()之间使用 //
     ////×以下指令可以单条发送，也可以多条一起发送发×/////
 
     DEMO:
@@ -507,6 +567,7 @@ bool OnSetTargetState_B(int state);
     1,	       // 位置跟随
     2,		   // PVT
     3,		   // 扭矩
+    4，        //协作释放，用于机器人撞机扭在一起，位置模式不能用情况下
 
 
 ### (12) 设置指定手臂在扭矩模式下阻抗类型
@@ -650,16 +711,9 @@ bool OnSetDragSpace_B(int dgType);
 
 
 ## 四、案例脚本
-### 4.1 C++开发的使用编译见：c++_win 和  c++_linux 下的 API_USAGE_MarvinSDK.txt
-以下案例见 c++_win 和  c++_linux 下：
+### 4.1 C++开发的使用编译见：demo_linux_win/c++_linux 下的 API_USAGE_MarvinSDK.txt(win下同样适用，源码编译为linMarvinSDK.dll)
 请注意：案例仅为参考使用，实地生产和业务逻辑需要您加油写~~~
-### 位置模式：position_demo.cpp
-### 拖动：drag_demo.cpp
-### 扭矩关节阻抗：torque_joint_impedance_demo.cpp
-### 扭矩迪卡尔阻抗：torque_cart_impedance_demo.cpp
-### 扭矩力控阻抗：torque_force_impedance_demo.cpp
-### 运行PVT和保存数据， 2ms 一个点 ： pvt_demo.cpp
-### 末端 485 CAN 通信： eef_485_can_demo.cpp
+
 
 
 
