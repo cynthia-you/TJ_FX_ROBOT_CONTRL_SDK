@@ -18,7 +18,7 @@
   - fk(robot_serial: int, joints: list)
     
     工具动力学辨识
-  - identify_tool_dyn(robot_type: str, ipath: str)
+  - identify_tool_dyn(robot_type: int, ipath: str)
 
     机器人末端位姿矩阵逆解到7个关节的角度
   - ik(robot_serial: int, pose_mat: list, ref_joints: list)
@@ -40,7 +40,10 @@
 
     直线插值规划
   - movL(robot_serial: int, start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, save_path)
-    
+  - 
+    直线插值规划，约束起始结束关节构型
+  - movL_KeepJ(self,robot_serial: int,start_joints:list, end_joints:list,vel:float,save_path):
+
     移除工具设置
   - remove_tool_kine(robot_serial: int)
 
@@ -182,29 +185,45 @@ movL(robot_serial: int, start_xyzabc: list, end_xyzabc: list, ref_joints: list, 
         '''直线规划（MOVL）
 
         :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param start_xyzabc:
-        :param end_xyzabc:
-        :param ref_joints:
-        :param vel:
-        :param acc:
-        :param save_path:
+        :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
+        :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
+        :param ref_joints:参考关节构型
+        :param vel:规划速度
+        :param acc:规划加速度
+        :param save_path:保存的规划文件的路径
         :return: bool
         '''
         特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
-            2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
 
-###    2.9 工具动力学参数辨识
-identify_tool_dyn(robot_type: str, ipath: str)
+            
+###    2.9 直线插值规划，约束起始结束关节构型（movL_KeepJ）
+  - movL_KeepJ(self,robot_serial: int,start_joints:list, end_joints:list,vel:float,save_path):
+        '''直线规划保持关节构型（MOVL KeepJ）
+
+        :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
+        :param start_joints:起始点各个关节位置（单位：角度）
+        :param end_joints:终点各个关节位置（单位：角度）
+        :param vel:规划速度，百分比，值范围0-100
+        :param save_path:规划文件的保存路径
+        :return: bool
+        特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
+                2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+
+###    2.10 工具动力学参数辨识
+identify_tool_dyn(robot_type: int, ipath: str)
 
         '''工具动力学参数辨识
-        :param robot_type: string ,机型
+        :param robot_type: int. 1:CCS机型，2:SRS机型
         :param ipath: sting, 相对路径导入工具辨识轨迹数据。
         :return:
-            m,mcp,i
+            辨识成功，返回一个长度为10的list:
+                        m,mcp,i
+            辨识失败，返回一串字符文本，请通过文本类容解决错误。
         '''
 
 
-###  2.10 位置姿态4×4矩阵转XYZABC
+###     2.11 位置姿态4×4矩阵转XYZABC
 mat4x4_to_xyzabc(pose_mat:list)
 
     • 输入为4*4的法兰末端位姿矩阵
@@ -216,7 +235,7 @@ mat4x4_to_xyzabc(pose_mat:list)
                 （6,1）位姿信息XYZ及欧拉角ABC（单位：mm/度）
         '''
     
-###     2.11 XYZABC转位置姿态4×4矩阵
+###     2.12 XYZABC转位置姿态4×4矩阵
 xyzabc_to_mat4x4(xyzabc:list)
 
     • 输入为位姿信息XYZ及欧拉角ABC（单位：mm/度）
@@ -236,7 +255,7 @@ xyzabc_to_mat4x4(xyzabc:list)
 请注意：案例仅为参考使用，实地生产和业务逻辑需要您加油写~~~
 ## 3.1综合接口案例脚本:[kine_demo_A_arm.py](python/kine_demo_A_arm.py)[kine_demo_a_arm.py](python/kine_demo_A_arm.py)
 
-## 3.2工具辨识案例：[identy_tool_dynamic_SRS_A_demo.py](python/identy_tool_dynamic_SRS_A_demo.py)
+## 3.2工具辨识案例：[identy_tool_dynamic_SRS_A_demo.py](python/identy_tool_dynamic_SRS_B_demo.py)
 
 ## 3.3十字交叉机型67关节干涉解决案列：
 
