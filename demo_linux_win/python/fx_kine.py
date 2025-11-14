@@ -598,18 +598,18 @@ class Marvin_Kine:
 
 
     def movL(self,robot_serial: int,start_xyzabc:list, end_xyzabc:list,ref_joints:list,vel:float,acc:float,save_path):
-        '''直线规划（MOVL）
+        '''直线规划（MOVL），规划文件的频率500Hz，即每2ms执行一行
 
         :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param start_xyzabc:
-        :param end_xyzabc:
-        :param ref_joints:
-        :param vel:
-        :param acc:
-        :param save_path:
+        :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
+        :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
+        :param ref_joints:参考关节构型
+        :param vel:规划速度
+        :param acc:规划加速度
+        :param save_path:保存的规划文件的路径
         :return: bool
         特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
-            2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
         '''
         if robot_serial != 0 and robot_serial != 1:
             raise ValueError("robot_serial must be 0 or 1")
@@ -645,16 +645,16 @@ class Marvin_Kine:
 
 
     def movL_KeepJ(self,robot_serial: int,start_joints:list, end_joints:list,vel:float,save_path):
-        '''直线规划保持关节构型（MOVL KeepJ）
+        '''直线规划保持关节构型（MOVL KeepJ）, 规划文件的点位频率50Hz，即每20ms执行一行
 
         :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param start_joints:
-        :param end_joints:
-        :param vel:
-        :param save_path:
+        :param start_joints:起始点各个关节位置（单位：角度）
+        :param end_joints:终点各个关节位置（单位：角度）
+        :param vel:规划速度，百分比，值范围0-100
+        :param save_path:规划文件的保存路径
         :return: bool
         特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
-            2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
         '''
         if robot_serial != 0 and robot_serial != 1:
             raise ValueError("robot_serial must be 0 or 1")
@@ -689,15 +689,10 @@ class Marvin_Kine:
         :param robot_type: int . 1:CCS机型，2:SRS机型
         :param ipath: sting, 相对路径导入工具辨识轨迹数据。
         :return:
-            m,mcp,i
-        错误返回参考:
-        //typedef enum {
-        //	LOAD_IDEN_NoErr = 0, // No error
-        //	LOAD_IDEN_CalErr = 1, // Calculation error, 计算错误，需重新采集数据计算
-        //	LOAD_IDEN_OpenSmpDateFieErr = 2, //  Open sample file error 打开采集数据文件错误，须检查采样文件
-        //	LOAD_IDEN_OpenCfgFileErr = 3, // Open config file error 配置文件被修改
-        //	LOAD_IDEN_DataSmpErr = 4 // Data sample error 采集时间不够，缺少有效数据
-        //}LoadIdenErrCode;
+          辨识成功，返回一个长度为10的list:
+                    m,mcp,i
+        辨识失败，返回一串字符文本，请通过文本类容解决错误。
+
         '''
         if type(robot_type) != int:
             raise ValueError("robot_type must be int type")
@@ -727,7 +722,7 @@ class Marvin_Kine:
             POINTER(c_double*3),
             POINTER(c_double*6)
         ]
-        self.kine.FX_Robot_Iden_LoadDyn.restype = c_int32
+        self.kine.FX_Robot_Iden_LoadDyn.restype = c_int
 
         # 调用函数
         ret_int = self.kine.FX_Robot_Iden_LoadDyn(
@@ -772,6 +767,7 @@ class Marvin_Kine:
                 return "ret=3,配置文件被修改"
             elif ret_int==4:
                 return 'ret=4, 采集时间不够，缺少有效数据'
+
 
 
 
