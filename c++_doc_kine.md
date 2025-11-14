@@ -99,27 +99,49 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
 
     特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
 
-###    9. 工具动力学参数辨识
-FX_BOOL  FX_Robot_Iden_LoadDyn(FX_INT32L Type, FX_CHAR* path, FX_DOUBLE mass, Vect3 mr, Vect6 I)
+###    9.直线规划，约束机器人气势和结束的各个关节角度（MOVLJ）
+FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath);
+    • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为包含该段规划的关节点位文件
+    • startjoints:起始点各个关节位置（单位：角度）
+    • stopjointss:终点各个关节位置（单位：角度）
+    • vel：规划速度，百分比，值范围0-100
+    • OutPutPath：规划文件的保存路径
+
+     特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
+            2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+    
+
+###    10. 工具动力学参数辨识
+FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 Type,FX_CHAR* path,FX_DOUBLE* mass, Vect3 mr, Vect6 I);
 
     • 输入当前机型Type(获取机型Type参考导入运动学参数部分)及文件存放路径，输出为工具相对于法兰端的质量、质心及惯量
-    • LoadData文件夹内包含参数辨识的所需文件，只需要输入该文件夹存放的绝对路径，如："/xxxx/xxxx/LoadData"；
-    • 其中 NoLoadData.csv 文件为无负载下采集的数据，只需要在无负载情况下采集一次；LoadData.csv 文件需要在更换末端携带负载后重新采集
+    • Type:  1:CCS机型，2:SRS机型
+    • path:工具辨识轨迹数据, 指定到文件目录LoadData即可（LoadData文件夹内包含参数辨识的所需文件），只需要输入该文件夹存放的绝对/相对路径，如："/xxxx/xxxx/LoadData"；
+    • 函数返回有具体的辨识结果说明：
+        typedef enum {
+        LOAD_IDEN_NoErr = 0, // 成功
+        LOAD_IDEN_CalErr = 1, //  计算错误，需重新采集数据计算
+        LOAD_IDEN_OpenSmpDateFieErr = 2, // 打开采集数据文件错误，须检查采样文件
+        LOAD_IDEN_OpenCfgFileErr = 3, //  配置文件被修改
+        LOAD_IDEN_DataSmpErr = 4 // 采集时间不够，缺少有效数据
+        }LoadIdenErrCode;
+            
+    • 其中 NoLoadData.csv 文件为无负载下采集的数据，在无负载情况下采集；LoadData.csv 文件需要在更换末端携带负载后重新采集（注意左右臂不可同时辨识，需要一根一根的逐一采集空载和带载辨识）
 
-### 10. 位置姿态4×4矩阵转XYZABC
+###    11. 位置姿态4×4矩阵转XYZABC
 FX_BOOL FX_Matrix42XYZABCDEG(FX_DOUBLE m[4][4],FX_DOUBLE xyzabc[6])
 
     • 输入为4*4的法兰末端位姿矩阵
     • 输出位姿信息XYZ及欧拉角ABC（单位：mm/度）
     
-### 11. XYZABC转位置姿态4×4矩阵
+###     12. XYZABC转位置姿态4×4矩阵
 FX_VOID FX_XYZABC2Matrix4DEG(FX_DOUBLE xyzabc[6], FX_DOUBLE m[4][4])
 
     • 输入为位姿信息XYZ及欧拉角ABC（单位：mm/度）
     • 输出4*4的法兰末端位姿矩阵
 
 # 二、案例脚本
-## C++开发的使用编译见：c++linux/API_USAGE_KINMATICS.txt
+## C++开发的使用编译见：demo_linu_win/c++linux/API_USAGE_KINMATICS.txt
 ##DEMO: [my_dd.cpp](c%2B%2B_win/my_dd.cpp)
 
 
