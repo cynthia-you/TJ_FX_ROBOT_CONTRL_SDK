@@ -13,6 +13,8 @@
                  d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
                  
 ## 一、 SDK更新
+
+### 1.1 控制器版本更新
     1003_34版本添加功能:
     1 内编外编清0，编码器清错。
     2 支持仅位置模式控制 增加了参数R.A0.BASIC.CtrlType和R.A1.BASIC.CtrlType。0表示控制模式都开放，1表示只有位置控制 (修改在机器人配置文件 *.ini)
@@ -22,9 +24,9 @@
     1003_34地址：
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/tag/marvin_tool_1003_34
         
-### 更新功能同步到MARVIN_APP
+### 1.2 更新功能同步到MARVIN_APP
 
-### 机器人电机内外编清零和内编清错示例
+### 1.3 机器人电机内外编清零和内编清错示例
     控制器需要升级到1003_34版本
     C++:
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/c%2B%2B_linux/motor_encoder_clear_demo.cpp
@@ -32,7 +34,7 @@
     PYTHON:
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/motor_encoder_clear_demo.py
     
-### 机器人飞车后调整手臂的示例:
+### 1.4 机器人飞车后调整手臂的示例:
     请联系天机技术工程师修改伺服参数。
 
     协作释放和松闸调整的方案二选一
@@ -44,7 +46,7 @@
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/apply-brake_relase-brake_demo.py
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/collaborative_release.py
 
-### 拖动并保存数据示例
+### 1.5 拖动并保存数据示例
     C++:
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/c%2B%2B_linux/drag_JointImdedance_save_data_arm_A.cpp
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/c%2B%2B_linux/drag_CartImdedance_save_data_arm_A.cpp
@@ -54,8 +56,8 @@
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/demo_linux_win/python/drag_JointImpedance_and_save_data_arm_A.py
     
 
-### 升级版本和参数都发布在releases下
-    https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/release
+### 1.6 升级版本和参数都发布在releases下
+    https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases
 
     
 
@@ -84,7 +86,7 @@
     文档内含DEMO说明
 
 
-## 三、编译在目标机器
+## 三、编译方法
     demo_linux_win下SO的动态库是ubuntu24.04 x_86  glibc2.39机器编译的,如果你设备环境相同,可跳过4.1直接使用.
 
 ### 3.1 编译
@@ -121,7 +123,7 @@
 
     WINDOWS:
 
-            C++: 
+        C++: 
             ./demo_linux_win/c++_win/API_USAGE_KINEMATICS.txt
             ./demo_linux_win/c++_win/API_USAGE_MarvinSDK.txt
 
