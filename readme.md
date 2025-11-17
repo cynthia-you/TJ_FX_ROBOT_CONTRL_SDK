@@ -1,6 +1,8 @@
-# MARVIN_SDK说明
+# 本项目为天机MARVIN系列机器人的开源仓库
 
-# !!!ATTENTION!!! 
+# 本文档包含:SDK更新, 简要说明,编译方法, 使用注意, 机器人报错及处理措施
+
+# ATTENTION
      1.  请先熟练使用MARVIN_APP 或者https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/ 下各个版本里的FxStation.exe， 操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
      2.  ./demo_linux_win/ 为c++ 和 python 的接口使用DEMO。每个demo顶部有该DEMO的案例说明和使用逻辑，请您一定先阅读，根据现场情况修改后运行。
          这些demo的使用逻辑和使用参数为研发测试使用开发的，仅供参考，并非实际生产代码。
@@ -10,7 +12,7 @@
                  c.设置目标关节后，测试里小睡几秒等机械臂运行到位，而在生产时可以通过循环订阅机械臂当前位置判断是否走到指定点位或者通过订阅低速标志来判断。
                  d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
                  
-## 更新
+## 一、 SDK更新
     1003_34版本添加功能:
     1 内编外编清0，编码器清错。
     2 支持仅位置模式控制 增加了参数R.A0.BASIC.CtrlType和R.A1.BASIC.CtrlType。0表示控制模式都开放，1表示只有位置控制 (修改在机器人配置文件 *.ini)
@@ -19,6 +21,8 @@
 
     1003_34地址：
         https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/tag/marvin_tool_1003_34
+        
+### 更新功能同步到MARVIN_APP
 
 ### 机器人电机内外编清零和内编清错示例
     控制器需要升级到1003_34版本
@@ -54,9 +58,10 @@
     https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/release
 
     
-## 以上功能同步更新到MARVIN_APP
+
+
     
-## 一、天机协作机器人为7自由度协作机器人
+## 二、简要说明
 
     MARVIN SDK说明：
     1. MARVIN系列机器人的SDK分为控制SDK和机器人计算SDK
@@ -68,27 +73,27 @@
     特别说明：为了您更流畅操控我们的机器人，请您务必先查阅文档和案列，使用操作APP后再根据您的控制需求开发业务和生产脚本。
 
 
-## 二、机器人控制SDK文档：
+## 2.1 机器人控制SDK文档：
     c++_doc_contrl.md
     python_doc_contrl.md
     文档内含DEMO说明
 
-## 三、机器人计算SDK文档：
+## 2.2 机器人计算SDK文档：
     c++_doc_kine.md
     python_doc_kine.md
     文档内含DEMO说明
 
 
-## 四、编译在目标机器
+## 三、编译在目标机器
     demo_linux_win下SO的动态库是ubuntu24.04 x_86  glibc2.39机器编译的,如果你设备环境相同,可跳过4.1直接使用.
 
-### 4.1 编译
-    4.1.1编译SO动态库:
+### 3.1 编译
+    3.1.1编译SO动态库:
     INUX设备编译:
         控制SDK:  ./contrlSDK/makefile 生成libMarvinSDK.so
         运动学SDK: ./kinematicsSDK/makefile 生成libKine.so
 
-    4.1.2编译DLL动态库:
+    3.1.2编译DLL动态库:
     1)在WINDOWS下使用MINGW编译:
             控制SDK:  g++ MarvinSDK.cpp Robot.cpp ACB.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.dll
             运动学SDK: g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
@@ -106,7 +111,7 @@
 
         运动学SDK: g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll  
 
-### 4.2 使用
+### 3.2 使用
     LINUX:
         C++: 
             ./demo_linux_win/c++_linux/API_USAGE_KINEMATICS.txt
@@ -123,7 +128,7 @@
         PYTHON 代码跨平台, 参考python_doc_contrl.md 和python_doc_kine.md 内的DENO
 
 
-## 五、注意事项
+## 四、注意事项
     1.机器人连接通信，通信成功不代表数据已经开始发送和接受。只有在控制器接收到发送数据之后才会向上位机开始1000HZ的周期性状态数据发送。
 
     2.不可将软件和SDK混用，不可将软件和SDK混用，防止端口占用，收发数据失败。
@@ -144,7 +149,7 @@
 
 
 
-## 六、主要问题和解决
+## 五、主要问题和解决
     1 连接相关
     甲方：“诶，我怎么ping不通啊”
     乙方：“请看看网线插上了吗” “有无其他设备和进程占用了” “设置成和机器人控制器同一网段的静态IP了吗”
