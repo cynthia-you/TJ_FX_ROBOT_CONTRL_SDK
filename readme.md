@@ -60,8 +60,6 @@
     https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases
 
     
-
-
     
 ## 二、简要说明
 
@@ -87,7 +85,6 @@
 
 
 ## 三、编译方法
-    demo_linux_win下SO的动态库是ubuntu24.04 x_86  glibc2.39机器编译的,如果你设备环境相同,可跳过4.1直接使用.
 
 ### 3.1 编译
     3.1.1编译SO动态库:
@@ -152,6 +149,11 @@
 
 
 ## 五、主要问题和解决
+### 5.1 marvin sdk&app 问题与解决
+     【腾讯文档】MARVIN SDK&APP 问题收集与解决
+     https://docs.qq.com/sheet/DUmdJck1zQkJVT0tw
+
+### 5.2其他常见问题
     1 连接相关
     甲方：“诶，我怎么ping不通啊”
     乙方：“请看看网线插上了吗” “有无其他设备和进程占用了” “设置成和机器人控制器同一网段的静态IP了吗”
