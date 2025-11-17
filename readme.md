@@ -166,7 +166,7 @@
     或者机器人低速标志sub_data["outputs"][0]["low_speed_flag"]判定，当各个关节速度都小于0.5度/秒时，low_speed_flag=1”
 
     5 机器人状态和错误判定
-    c++: 订阅数据’m_CurState‘的值可以看到当前伺服状态：
+    c++: 订阅数据’m_CurState‘的值(int)可以看到当前机械臂状态：
         0,             //////// 下伺服
         1,			//////// 位置跟随
         2,				//////// PVT
@@ -183,6 +183,23 @@
         需要转换为16进制，对照伺服报错的excel看啥错
         软件已经转了16进制，C++代码接口出来的是原始数据。
 
+        订阅数据’m_ERRCode‘的值(int)可以看到当前机械臂的错误状态：
+             ARM_ERR_BusPhysicAbnoraml = 1, //"总线拓扑异常"
+             ARM_ERR_ServoError = 2,//"伺服故障"
+             ARM_ERR_InvalidPVT = 3,//"PVT异常"
+             ARM_ERR_RequestPositionMode = 4,//"请求进位置失败"
+             ARM_ERR_PositionModeOK = 5,//"进位置失败"
+             ARM_ERR_RequestSensorMode = 6,//"请求进扭矩失败"
+             ARM_ERR_SensorModeOK = 7,//"进扭矩失败"
+             ARM_ERR_RequestEnableServo = 8,//"请求上伺服失败"
+             ARM_ERR_EnableServoOK = 9,//"上伺服失败"
+             ARM_ERR_RequestDisableServo = 10, //"请求下伺服失败
+             ARM_ERR_DisableServoOK = 11, //"下伺服失败"
+             ARM_ERR_InvalidSubState = 12, //"内部错"
+             ARM_ERR_Emcy = 13, //"急停"
+             ARM_DYNA_FLOAT_NO_GYRO = 14,//"配置文件选择了浮动基座选项，但是UMI设置在配置文件未开"
+
+
     python：订阅数据a_state=sub_data["states"][0]["cur_state"]的值可以看到当前伺服状态：
         0,             //////// 下伺服
         1,			//////// 位置跟随
@@ -194,8 +211,26 @@
         ARM_STATE_TRANS_TO_PVT = 102,//正常，切换瞬间
         ARM_STATE_TRANS_TO_TORQ = 103,//正常，切换瞬间
 
+
+
+        订阅数据a_state=sub_data["states"][0]["err_code"]的值可以看到当前伺服状态：
+             ARM_ERR_BusPhysicAbnoraml = 1, //"总线拓扑异常"
+             ARM_ERR_ServoError = 2,//"伺服故障"
+             ARM_ERR_InvalidPVT = 3,//"PVT异常"
+             ARM_ERR_RequestPositionMode = 4,//"请求进位置失败"
+             ARM_ERR_PositionModeOK = 5,//"进位置失败"
+             ARM_ERR_RequestSensorMode = 6,//"请求进扭矩失败"
+             ARM_ERR_SensorModeOK = 7,//"进扭矩失败"
+             ARM_ERR_RequestEnableServo = 8,//"请求上伺服失败"
+             ARM_ERR_EnableServoOK = 9,//"上伺服失败"
+             ARM_ERR_RequestDisableServo = 10, //"请求下伺服失败
+             ARM_ERR_DisableServoOK = 11, //"下伺服失败"
+             ARM_ERR_InvalidSubState = 12, //"内部错"
+             ARM_ERR_Emcy = 13, //"急停"
+             ARM_DYNA_FLOAT_NO_GYRO = 14,//"配置文件选择了浮动基座选项，但是UMI设置在配置文件未开"
+
         获取错误用error_codes=get_servo_error_code('A')
-        对照伺服报错的excel看啥错
+        对照伺服报错的PDF看啥错
         软件和python已经转了16进制，C++代码接口出来的是原始数据。
 
     6 急停后指令不响应
