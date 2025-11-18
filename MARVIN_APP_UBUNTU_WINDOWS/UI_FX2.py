@@ -2454,11 +2454,11 @@ class App:
         self.left_state_main.config(text=f"状态:{self.result['states'][0]['cur_state']}")
         self.left_state_1.config(text=f"拖动按钮:{self.result['outputs'][0]['tip_di'][0]}")
         self.left_state_2.config(text=f"低速标志:{self.result['outputs'][0]['low_speed_flag'][0]}")
-        self.left_state_3.config(text=f"错误码:{self.result['outputs'][0]['err_code'][0]}")
+        self.left_state_3.config(text=f"错误码:{self.result['states'][0]['err_code']}")
         self.right_state_main.config(text=f"状态:{self.result['states'][1]['cur_state']}")
         self.right_state_1.config(text=f"拖动按钮:{self.result['outputs'][1]['tip_di'][0]}")
         self.right_state_2.config(text=f"低速标志:{self.result['outputs'][1]['low_speed_flag'][0]}")
-        self.right_state_3.config(text=f"错误码:{self.result['outputs'][1]['err_code'][0]}")
+        self.right_state_3.config(text=f"错误码:{self.result['states'][1]['err_code']}")
 
         # 根据当前模式获取数据
         key = self.data_keys[self.display_mode]
