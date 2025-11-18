@@ -228,6 +228,7 @@ def update_text_file_simple(mode, data_list, filename):
         # 写回文件
         with open(filename, 'w', encoding='utf-8') as file:
             file.writelines(lines)
+        file.close()
         return True
     except Exception as e:
         print(f"更新文件时出错: {e}")
