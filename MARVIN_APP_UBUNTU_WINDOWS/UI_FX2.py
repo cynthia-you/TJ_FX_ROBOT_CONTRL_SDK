@@ -72,36 +72,36 @@ def NormVect(a):
 
 
 def main_function(vx, vy):
-    """主函数，对应原C++的OnBnClickedButton1函数"""
+    """主函数 - vx和vy是列向量"""
     m_S = ""
 
     if NormVect(vx) < 0.01 or NormVect(vy) < 0.01:
-        return m_S
+        return m_S, [0, 0, 0]
 
     vz = FX_VectCross(vx, vy)
 
     vz_norm = NormVect(vz)
     if vz_norm < 0.99 or vz_norm > 1.01:
-        return m_S
+        return m_S, [0, 0, 0]
 
-    # 格式化输出矩阵
-    m_S += f"{vx[0]:.2f}\t{vy[0]:.2f}\t{vz[0]:.2f}\n"
-    m_S += f"{vx[1]:.2f}\t{vy[1]:.2f}\t{vz[1]:.2f}\n"
-    m_S += f"{vx[2]:.2f}\t{vy[2]:.2f}\t{vz[2]:.2f}\n\n"
-
-    # 构建3x3矩阵
+    # 构建3x3矩阵 - vx, vy, vz 作为列向量
     m_mat = [
-        [vx[0], vy[0], vz[0]],
+        [vx[0], vy[0], vz[0]],  # 第一列: vx, 第二列: vy, 第三列: vz
         [vx[1], vy[1], vz[1]],
         [vx[2], vy[2], vz[2]]
     ]
+
+    # 矩阵形式显示
+    m_S += "矩阵形式（列向量为坐标方向向量）：\n"
+    m_S += f"{m_mat[0][0]:.2f}\t{m_mat[0][1]:.2f}\t{m_mat[0][2]:.2f}\n"
+    m_S += f"{m_mat[1][0]:.2f}\t{m_mat[1][1]:.2f}\t{m_mat[1][2]:.2f}\n"
+    m_S += f"{m_mat[2][0]:.2f}\t{m_mat[2][1]:.2f}\t{m_mat[2][2]:.2f}\n\n"
 
     # 计算ABC角度
     m_abc = [0.0] * 3
     Matrix2ABC(m_mat, m_abc)
 
-    # 添加ABC角度结果
-    m_S += f"ABC：{m_abc[0]:.5f}\t{m_abc[1]:.5f}\t{m_abc[2]:.5f}\n"
+    m_S += f"ABC角度：[{m_abc[0]:.5f}, {m_abc[1]:.5f}, {m_abc[2]:.5f}]\n"
 
     return m_S
 
@@ -487,14 +487,18 @@ class App:
         self.row2_var = tk.StringVar()
         self.row3_var = tk.StringVar()
 
+        # 添加变量追踪，确保选择变化时及时更新
+        self.row2_var.trace('w', lambda *args: self.on_selection_change(2))
+        self.row3_var.trace('w', lambda *args: self.on_selection_change(3))
+
         ttk.Label(parent, text="浮动基座参数计算", font=("Arial", 14, "bold")).pack(pady=10)
 
         # 第一行
         row1_frame = ttk.Frame(parent)
         row1_frame.pack(fill="x", pady=5)
 
-        ttk.Label(row1_frame, text="基座的坐标方向").pack(side="left", padx=10)
-        ttk.Label(row1_frame, text="UMI的坐标方向").pack(side="right", padx=10)
+        ttk.Label(row1_frame, text="基座的坐标方向(x轴和y轴)").pack(side="left", padx=5)
+        ttk.Label(row1_frame, text="UMI的坐标方向(基座与UMI坐标方向重合选项)").pack(side="right", padx=5)
 
         # 第二行和第三行容器
         axis_frame = ttk.Frame(parent)
@@ -583,21 +587,34 @@ class App:
 
         # 更新第二行选择
         row2_val = self.row2_var.get()
-        if row2_val in ["x", "-x"]:
+        if row2_val=="x":
             self.row2_selection[0] = 1
-        elif row2_val in ["y", "-y"]:
+        if row2_val=="-x":
+            self.row2_selection[0] = -1
+        if row2_val=="y":
             self.row2_selection[1] = 1
-        elif row2_val in ["z", "-z"]:
+        if row2_val=="-y":
+            self.row2_selection[1] = -1
+        if row2_val=="z":
             self.row2_selection[2] = 1
+        if row2_val=="-z":
+            self.row2_selection[2] = -1
+
 
         # 更新第三行选择
         row3_val = self.row3_var.get()
-        if row3_val in ["x", "-x"]:
+        if row3_val =="x":
             self.row3_selection[0] = 1
-        elif row3_val in ["y", "-y"]:
+        if row3_val =="-x":
+            self.row3_selection[0] = -1
+        if row3_val =="y":
             self.row3_selection[1] = 1
-        elif row3_val in ["z", "-z"]:
+        if row3_val =="-y":
+            self.row3_selection[1] = -1
+        if row3_val =="z":
             self.row3_selection[2] = 1
+        if row3_val =="-z":
+            self.row3_selection[2] = -1
 
     def apply_mutual_exclusion(self, changed_row):
         """应用互锁逻辑，禁用冲突的选项"""
@@ -634,11 +651,12 @@ class App:
 
     def get_abc_calculation(self):
         """计算函数，返回多行结果"""
-        result = f"基座坐标方向在陀螺仪UMI的旋转为\n"
+        result = f"基座坐标方向在陀螺仪imu的旋转为\n"
         result += "=" * 20 + "\n"
 
         try:
             # 这里调用您的计算函数
+            # print(f'*********{self.row2_selection},{self.row2_selection}')
             abc = main_function(self.row2_selection, self.row3_selection)
             result += abc
             result += "\n"
