@@ -1,6 +1,6 @@
 # 本项目为天机MARVIN系列机器人的开源仓库
 
-# 本文档包含:SDK更新, 简要说明,编译方法, 使用注意, 机器人报错及处理措施
+# 本文档包含:SDK更新， APP更新， 简要说明， 编译方法， 使用注意， 机器人报错及处理措施
 
 # ATTENTION
      1.  请先熟练使用MARVIN_APP 或者https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/ 下各个版本里的FxStation.exe， 操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
@@ -59,9 +59,14 @@
 ### 1.6 升级版本和参数都发布在releases下
     https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases
 
+## 二、APP更新
+
+### 增加浮机参数计算功能
+     MARVIN_APP_1119
+
     
     
-## 二、简要说明
+## 三、简要说明
 
     MARVIN SDK说明：
     1. MARVIN系列机器人的SDK分为控制SDK和机器人计算SDK
@@ -73,26 +78,26 @@
     特别说明：为了您更流畅操控我们的机器人，请您务必先查阅文档和案列，使用操作APP后再根据您的控制需求开发业务和生产脚本。
 
 
-## 2.1 机器人控制SDK文档：
+## 3.1 机器人控制SDK文档：
     c++_doc_contrl.md
     python_doc_contrl.md
     文档内含DEMO说明
 
-## 2.2 机器人计算SDK文档：
+## 3.2 机器人计算SDK文档：
     c++_doc_kine.md
     python_doc_kine.md
     文档内含DEMO说明
 
 
-## 三、编译方法
+## 四、编译方法
 
-### 3.1 编译
-    3.1.1编译SO动态库:
+### 4.1 编译
+    4.1.1编译SO动态库:
     INUX设备编译:
         控制SDK:  ./contrlSDK/makefile 生成libMarvinSDK.so
         运动学SDK: ./kinematicsSDK/makefile 生成libKine.so
 
-    3.1.2编译DLL动态库:
+    4.1.2编译DLL动态库:
     1)在WINDOWS下使用MINGW编译:
             控制SDK:  g++ MarvinSDK.cpp Robot.cpp ACB.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.dll
             运动学SDK: g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
@@ -110,7 +115,7 @@
 
         运动学SDK: g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll  
 
-### 3.2 使用
+### 4.2 使用
     LINUX:
         C++: 
             ./demo_linux_win/c++_linux/API_USAGE_KINEMATICS.txt
@@ -127,7 +132,7 @@
         PYTHON 代码跨平台, 参考python_doc_contrl.md 和python_doc_kine.md 内的DENO
 
 
-## 四、注意事项
+## 五、注意事项
     1.机器人连接通信，通信成功不代表数据已经开始发送和接受。只有在控制器接收到发送数据之后才会向上位机开始1000HZ的周期性状态数据发送。
 
     2.不可将软件和SDK混用，不可将软件和SDK混用，防止端口占用，收发数据失败。
@@ -148,12 +153,12 @@
 
 
 
-## 五、主要问题和解决
-### 5.1 marvin sdk&app 问题与解决
+## 六、主要问题和解决
+### 6.1 marvin sdk&app 问题与解决
      【腾讯文档】MARVIN SDK&APP 问题收集与解决
      https://docs.qq.com/sheet/DUmdJck1zQkJVT0tw
 
-### 5.2其他常见问题
+### 6.2其他常见问题
     1 连接相关
     甲方：“诶，我怎么ping不通啊”
     乙方：“请看看网线插上了吗” “有无其他设备和进程占用了” “设置成和机器人控制器同一网段的静态IP了吗”
