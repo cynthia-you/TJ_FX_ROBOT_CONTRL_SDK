@@ -88,12 +88,14 @@ time.sleep(0.5)
 #计算末端位姿不变、改变零空间（臂角方向）的逆运动学
 ik_nsp_result_structure=kk.ik_nsp(robot_serial=0,pose_mat=fk_mat,ref_joints=[10,10,10,10,10,10,10],
                                   zsp_type=0,zsp_para=[0,0,0,0,0,0],zsp_angle=1,dgr=[0.05,0.05])
-print(f'ik_nsp joints:{ik_nsp_result_structure.m_Output_RetJoint.to_list()}')
-print(f'ik_nsp 当前位姿是否超出位置可达空间（False：未超出；True：超出）: {ik_nsp_result_structure.m_Output_IsOutRange}')
-print(f'ik_nsp 各关节是否发生奇异（False：未奇异；True：奇异）: {ik_nsp_result_structure.m_Output_IsDeg[:]}')
-print(f'ik_nsp 是否有关节超出位置正负限制（False：未超出；True：超出）: {ik_nsp_result_structure.m_Output_IsJntExd}')
-print(f'ik_nsp 各关节是否超出位置正负限制（False：未超出；True：超出）: {ik_nsp_result_structure.m_Output_JntExdTags[:]}')
-time.sleep(0.5)
+if ik_nsp_result_structure:
+    print(f'ik_nsp joints:{ik_nsp_result_structure.m_Output_RetJoint.to_list()}')
+    print(f'ik_nsp 当前位姿是否超出位置可达空间（False：未超出；True：超出）: {ik_nsp_result_structure.m_Output_IsOutRange}')
+    print(f'ik_nsp 各关节是否发生奇异（False：未奇异；True：奇异）: {ik_nsp_result_structure.m_Output_IsDeg[:]}')
+    print(f'ik_nsp 是否有关节超出位置正负限制（False：未超出；True：超出）: {ik_nsp_result_structure.m_Output_IsJntExd}')
+    print(f'ik_nsp 各关节是否超出位置正负限制（False：未超出；True：超出）: {ik_nsp_result_structure.m_Output_JntExdTags[:]}')
+else:
+    print('NO ik_nsp results')
 print('-'*50)
 
 '''
