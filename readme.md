@@ -14,6 +14,23 @@
                  
 ## 一、 SDK更新
 
+### 代码获取控制器版本号
+     C++:
+          char paraName[30]="VERSION";
+          long retValue=0;
+          OnGetIntPara(paraName,&retValue);
+          printf("CONTRL VERSION: %ld\n", retValue);
+
+     PYTHON:
+          ret,version=robot.get_param('int','VERSION')
+          print(f'controller version:{version}')
+
+     显示为1003xx, 如100335, 即大版本号:1003,子版本35
+
+          
+
+     
+
 ### 1.1 控制器版本更新
     1003_34版本添加功能:
     1 内编外编清0，编码器清错。
