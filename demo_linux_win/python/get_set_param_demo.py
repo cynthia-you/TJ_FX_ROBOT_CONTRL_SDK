@@ -82,10 +82,10 @@ robot.send_cmd()
 time.sleep(0.5)
 
 '''read'''
-int_param1=robot.get_param('int','R.A1.L0.BASIC.TorqueMax')
+re_flag,int_param1=robot.get_param('int','R.A1.L0.BASIC.TorqueMax')
 logger.info(f'R.A1.L0.BASIC.TorqueMax:{int_param1}')
 
-float_param1=robot.get_param('float','R.A1.L0.BASIC.SensorK')
+re_flag,float_param1=robot.get_param('float','R.A1.L0.BASIC.SensorK')
 logger.info(f'R.A1.L0.BASIC.SensorK:{float_param1}')
 
 
@@ -96,10 +96,10 @@ time.sleep(1)
 
 
 '''read'''
-int_param2=robot.get_param('int','R.A1.L0.BASIC.TorqueMax')
+re_flag,int_param2=robot.get_param('int','R.A1.L0.BASIC.TorqueMax')
 logger.info(f'R.A1.L0.BASIC.TorqueMax:{int_param2}')
 
-float_param2=robot.get_param('float','R.A1.L0.BASIC.SensorK')
+re_flag,float_param2=robot.get_param('float','R.A1.L0.BASIC.SensorK')
 logger.info(f'R.A1.L0.BASIC.SensorK:{float_param2}')
 
 
@@ -110,10 +110,10 @@ time.sleep(1)
 
 
 '''re-read'''
-int_param_final=robot.get_param('int','R.A1.L0.BASIC.TorqueMax')
+re_flag,int_param_final=robot.get_param('int','R.A1.L0.BASIC.TorqueMax')
 logger.info(f'R.A1.L0.BASIC.TorqueMax:{int_param_final}')
 
-float_param_final=robot.get_param('float','R.A1.L0.BASIC.SensorK')
+re_flag,float_param_final=robot.get_param('float','R.A1.L0.BASIC.SensorK')
 logger.info(f'R.A1.L0.BASIC.SensorK:{float_param_final}')
 
 '''save'''
