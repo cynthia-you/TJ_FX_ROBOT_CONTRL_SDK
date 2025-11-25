@@ -816,53 +816,62 @@ class App:
             robot.release_robot()
 
     def get_ini(self):
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".ini",
-            filetypes=[("ini files", "*.ini"), ("All files", "*.*")],
-            title="保存机器人配置参数文件"
-        )
+        if self.connected:
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".ini",
+                filetypes=[("ini files", "*.ini"), ("All files", "*.*")],
+                title="保存机器人配置参数文件"
+            )
 
-        if file_path:
-            tag = robot.receive_file(file_path, "/home/FUSION/Config/cfg/robot.ini")
-            # tag = robot.receive_file(file_path, "/home/fusion/1.txt")
-            time.sleep(1)
-            if tag:
-                messagebox.showinfo('success', '参数已保存')
+            if file_path:
+                tag = robot.receive_file(file_path, "/home/FUSION/Config/cfg/robot.ini")
+                # tag = robot.receive_file(file_path, "/home/fusion/1.txt")
+                time.sleep(1)
+                if tag:
+                    messagebox.showinfo('success', '参数已保存')
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def update_ini(self):
-        file_path = filedialog.askopenfilename(
-            defaultextension=".ini",
-            filetypes=[("ini files", "*.ini"), ("All files", "*.*")],
-            title="选择机器人参数文件"
-        )
-        if file_path:
-            tag = robot.send_file(file_path, "/home/FUSION/Config/cfg/robot.ini")
-            # tag = robot.send_file(file_path, "/home/fusion/1.txt")
-            time.sleep(1)
-            if tag:
-                messagebox.showinfo('success', '参数已保存')
+        if self.connected:
+            file_path = filedialog.askopenfilename(
+                defaultextension=".ini",
+                filetypes=[("ini files", "*.ini"), ("All files", "*.*")],
+                title="选择机器人参数文件"
+            )
+            if file_path:
+                tag = robot.send_file(file_path, "/home/FUSION/Config/cfg/robot.ini")
+                # tag = robot.send_file(file_path, "/home/fusion/1.txt")
+                time.sleep(1)
+                if tag:
+                    messagebox.showinfo('success', '参数已保存')
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def update_sys(self):
-        file_path = filedialog.askopenfilename(
-            filetypes=[("All files", "*.*")],
-            title="选择系统更新文件"
-        )
-        if file_path:
-            tag1 = robot.update_SDK(file_path)
-            # tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")# 代码写的是这个名字
-            print(f"file path:{file_path}")
-            a = file_path.split('/')[-1].split('.')[0].split('_')
-            b = a[2] + '-' + a[3]
-            print(b)
-            with open('version.txt', 'w') as f:
-                f.write(b)
-            f.close()
+        if self.connected:
+            file_path = filedialog.askopenfilename(
+                filetypes=[("All files", "*.*")],
+                title="选择系统更新文件"
+            )
+            if file_path:
+                tag1 = robot.update_SDK(file_path)
+                # tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")# 代码写的是这个名字
+                print(f"file path:{file_path}")
+                a = file_path.split('/')[-1].split('.')[0].split('_')
+                b = a[2] + '-' + a[3]
+                print(b)
+                with open('version.txt', 'w') as f:
+                    f.write(b)
+                f.close()
 
-            tag = robot.send_file('version.txt', "/home/fusion/version.txt")
-            time.sleep(1)
-            if tag1 and tag:
-                messagebox.showinfo('success', '系统文件已上传，请重启控制器自动更新。')
-                os.remove('version.txt')
+                tag = robot.send_file('version.txt', "/home/fusion/version.txt")
+                time.sleep(1)
+                if tag1 and tag:
+                    messagebox.showinfo('success', '系统文件已上传，请重启控制器自动更新。')
+                    os.remove('version.txt')
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def create_main_content(self):
         """创建主内容区域 - 居中布局"""
@@ -2445,35 +2454,6 @@ class App:
         self.left_data.config(text=f"J1-J7: [{format_vector(data1)}]")
         self.right_data.config(text=f"J1-J7: [{format_vector(data2)}]")
 
-        # data11 = self.result['outputs'][0]['fb_joint_pos']
-        # data22 = self.result['outputs'][1]['fb_joint_pos']
-        # list_joints_a=[]
-        # for iii in data11:
-        #     list_joints_a.append(float(iii))
-        #
-        # list_joints_b=[]
-        # for jjj in data22:
-        #     list_joints_b.append(float(jjj))
-        #
-        # if list_joints_a[:]!=0.0:
-        #     fk_mat_1 = kk1.fk(robot_serial=0, joints=list_joints_a)
-        #     print(f'-----joints a:{list_joints_a}, fk_mat:{type(fk_mat_1)}')
-        #     pose_6d_1 = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_1)  # 用关节正解的姿态转XYZABC
-        # else:
-        #     pose_6d_1=[0.0,0.0,0.0,0.0,0.0,0.0]
-        #
-        # if list_joints_b[:]!=0:
-        #     fk_mat_2 = kk2.fk(robot_serial=1, joints=list_joints_b)
-        #     time.sleep(0.1)
-        #     print(f'-----jointsb:{list_joints_b}, fk_mat:{type(fk_mat_2)}')
-        #     pose_6d_2 = kk2.mat4x4_to_xyzabc(pose_mat=fk_mat_2)  # 用关节正解的姿态转XYZABC
-        # else:
-        #     pose_6d_2=[0.0,0.0,0.0,0.0,0.0,0.0]
-        #
-        # # 更新数据显示
-        # self.left_data_6d.config(text=f"XYZABC: [{format_vector(pose_6d_1)}]")
-        # self.right_data_6d.config(text=f"XYZABC: [{format_vector(pose_6d_2)}]")
-
         # 根据状态值更新颜色
         pid_colors = ["gray", "green"]
         speed_colors = ["green", "gray"]
@@ -2494,14 +2474,6 @@ class App:
         self.left_data.config(bg=data_bg)
         self.right_data.config(bg=data_bg)
 
-    # def on_close(self):
-    #     """关闭窗口时清理资源"""
-    #     if messagebox.askokcancel("退出", "确定要退出应用程序吗?"):
-    #         if os.path.exists('version.txt'):
-    #             os.remove('version.txt')
-    #         if self.data_subscriber:
-    #             self.data_subscriber.stop()
-    #         self.root.destroy()
 
     def select_period_file(self, robot_id):
         file_path = filedialog.askopenfilename(
@@ -2518,87 +2490,83 @@ class App:
                 messagebox.showinfo("成功", f"2#周期运行文件已选择: {os.path.basename(file_path)}")
 
     def run_period_file(self, robot_id):
+        if self.connected:
 
-        try:
-            if robot_id == 'A':
-                with open(self.period_file_path_1.get(), 'r', encoding='utf-8') as file:
-                    lines = file.readlines()
+            try:
+                if robot_id == 'A':
+                    with open(self.period_file_path_1.get(), 'r', encoding='utf-8') as file:
+                        lines = file.readlines()
 
-                for i, line in enumerate(lines):
-                    # 处理当前行
-                    processed_line = self.process_line(i, line)
-                    # print(f'processed_line:{processed_line}')
-                    robot.clear_set()
-                    robot.set_joint_cmd_pose(arm='A', joints=processed_line)
-                    robot.send_cmd()
-                    # 50Hz频率 = 每0.02秒一行
-                    time.sleep(0.02)
-            elif robot_id == 'B':
-                with open(self.period_file_path_2.get(), 'r', encoding='utf-8') as file:
-                    lines = file.readlines()
+                    for i, line in enumerate(lines):
+                        # 处理当前行
+                        processed_line = self.process_line(i, line)
+                        # print(f'processed_line:{processed_line}')
+                        robot.clear_set()
+                        robot.set_joint_cmd_pose(arm='A', joints=processed_line)
+                        robot.send_cmd()
+                        # 50Hz频率 = 每0.02秒一行
+                        time.sleep(0.02)
+                elif robot_id == 'B':
+                    with open(self.period_file_path_2.get(), 'r', encoding='utf-8') as file:
+                        lines = file.readlines()
 
-                for i, line in enumerate(lines):
-                    # 处理当前行
-                    processed_line = self.process_line(i, line)
-                    # print(f'processed_line:{processed_line}')
-                    robot.clear_set()
-                    robot.set_joint_cmd_pose(arm='B', joints=processed_line)
-                    robot.send_cmd()
-                    # 50Hz频率 = 每0.02秒一行
-                    time.sleep(0.02)
-        except Exception as e:
-            self.root.after(0, lambda: messagebox.showerror("错误", f"读取文件时出错: {str(e)}"))
+                    for i, line in enumerate(lines):
+                        # 处理当前行
+                        processed_line = self.process_line(i, line)
+                        # print(f'processed_line:{processed_line}')
+                        robot.clear_set()
+                        robot.set_joint_cmd_pose(arm='B', joints=processed_line)
+                        robot.send_cmd()
+                        # 50Hz频率 = 每0.02秒一行
+                        time.sleep(0.02)
+            except Exception as e:
+                self.root.after(0, lambda: messagebox.showerror("错误", f"读取文件时出错: {str(e)}"))
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def process_line(self, line_num, line):
         """处理单行数据，将其转换为浮点数列表"""
         try:
             # 去除行尾的换行符和多余空格
             cleaned_line = line.strip()
-
             # 分割字符串（假设数据由空格或制表符分隔）
             elements = cleaned_line.split()
-
             # 确保每行有7个元素
             if len(elements) != 7:
                 return f"错误: 第 {line_num + 1} 行有 {len(elements)} 个元素，但需要7个"
-
             # 尝试将每个元素转换为浮点数
             float_list = [float(element) for element in elements]
-
             return float_list
-
         except ValueError as e:
             return f"错误: 第 {line_num + 1} 行包含非数值数据 - {str(e)}"
         except Exception as e:
             return f"错误: 处理第 {line_num + 1} 行时发生未知错误 - {str(e)}"
 
     def add_current_joints(self, robot_id):
-        self.entry.delete(0, tk.END)
-        if robot_id == 'A':
-            self.entry.insert(0, str([0.0 if abs(round(x, 2)) < 1e-5 else round(x, 2) for x in
-                                      self.result['outputs'][0]['fb_joint_pos']]))
-        elif robot_id == 'B':
-            self.entry.insert(0, str([0.0 if abs(round(x, 2)) < 1e-5 else round(x, 2) for x in
-                                      self.result['outputs'][1]['fb_joint_pos']]))
+        if self.connected:
+            self.entry.delete(0, tk.END)
+            if robot_id == 'A':
+                self.entry.insert(0, str([0.0 if abs(round(x, 2)) < 1e-5 else round(x, 2) for x in
+                                          self.result['outputs'][0]['fb_joint_pos']]))
+            elif robot_id == 'B':
+                self.entry.insert(0, str([0.0 if abs(round(x, 2)) < 1e-5 else round(x, 2) for x in
+                                          self.result['outputs'][1]['fb_joint_pos']]))
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def validate_point(self, point_str):
         """验证输入是否为长度为7的列表"""
         try:
-            # 尝试将字符串解析为Python对象
             point_list = ast.literal_eval(point_str)
-
             # 检查是否为列表且长度为7
             if not isinstance(point_list, list):
                 return False, "输入必须是一个列表"
-
             if len(point_list) != 7:
                 return False, "列表长度必须为7"
-
             # 检查所有元素是否为数字
             for item in point_list:
                 if not isinstance(item, (int, float)):
                     return False, "列表中的所有元素必须是数字"
-
             return True, point_list
         except (ValueError, SyntaxError):
             return False, "输入格式不正确，必须是有效的列表格式，如 [0,0,0,0,0,0,0]"
@@ -2607,7 +2575,6 @@ class App:
         """检查点是否已经在列表中存在（去重功能）"""
         # 将点列表转换为元组以便比较（列表不可哈希）
         point_tuple = tuple(point_list)
-
         # 检查目标列表中是否已存在相同的点
         for existing_point_str in target_list:
             try:
@@ -2616,20 +2583,17 @@ class App:
                     return True
             except:
                 continue
-
         return False
 
     def add_point1(self):
         """添加点到1#列表"""
         point_str = self.entry_var.get()
         is_valid, result = self.validate_point(point_str)
-
         if is_valid:
             # 检查是否已存在相同的点
             if self.is_duplicate(result, self.points1):
                 messagebox.showwarning("重复点", "该点已存在于1#列表中")
                 return
-
             # 将列表转换为字符串并存储
             point_repr = str(result)
             self.points1.insert(0, point_repr)
@@ -2642,13 +2606,11 @@ class App:
         """添加点到2#列表"""
         point_str = self.entry_var.get()
         is_valid, result = self.validate_point(point_str)
-
         if is_valid:
             # 检查是否已存在相同的点
             if self.is_duplicate(result, self.points2):
                 messagebox.showwarning("重复点", "该点已存在于2#列表中")
                 return
-
             # 将列表转换为字符串并存储
             point_repr = str(result)
             self.points2.insert(0, point_repr)
@@ -2682,13 +2644,11 @@ class App:
         if not self.points1:
             messagebox.showwarning("警告", "1#列表为空，没有内容可保存")
             return
-
         file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
             title="保存1#点列表"
         )
-
         if file_path:
             try:
                 with open(file_path, 'w') as f:
@@ -2697,19 +2657,16 @@ class App:
                 # messagebox.showinfo("成功", f"1#点列表已保存到: {os.path.basename(file_path)}")
             except Exception as e:
                 messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
-
     def save_points2(self):
         """保存2#列表到TXT文件"""
         if not self.points2:
             messagebox.showwarning("警告", "2#列表为空，没有内容可保存")
             return
-
         file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
             title="保存2#点列表"
         )
-
         if file_path:
             try:
                 with open(file_path, 'w') as f:
@@ -2725,16 +2682,13 @@ class App:
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
             title="选择要导入到1#的文件"
         )
-
         if file_path:
             try:
                 with open(file_path, 'r') as f:
                     lines = f.readlines()
-
                 # 验证并导入点
                 valid_points = []
                 invalid_lines = []
-
                 for i, line in enumerate(lines, 1):
                     line = line.strip()
                     if line:  # 跳过空行
@@ -2745,21 +2699,18 @@ class App:
                                 valid_points.append(str(result))
                         else:
                             invalid_lines.append(f"第{i}行: {line}")
-
                 # 添加有效点
                 if valid_points:
                     # self.points1.extend(valid_points)
                     self.points1 = valid_points
                     self.update_comboboxes()
                     # messagebox.showinfo("成功", f"从文件导入了 {len(valid_points)} 个点到1#列表")
-
                 # 显示无效行
                 if invalid_lines:
                     messagebox.showwarning("警告",
                                            f"以下行格式无效，已跳过:\n" +
                                            "\n".join(invalid_lines[:10]) +
                                            ("\n..." if len(invalid_lines) > 10 else ""))
-
             except Exception as e:
                 messagebox.showerror("错误", f"读取文件时出错: {str(e)}")
 
@@ -2769,16 +2720,13 @@ class App:
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
             title="选择要导入到2#的文件"
         )
-
         if file_path:
             try:
                 with open(file_path, 'r') as f:
                     lines = f.readlines()
-
                 # 验证并导入点
                 valid_points = []
                 invalid_lines = []
-
                 for i, line in enumerate(lines, 1):
                     line = line.strip()
                     if line:  # 跳过空行
@@ -2789,20 +2737,17 @@ class App:
                                 valid_points.append(str(result))
                         else:
                             invalid_lines.append(f"第{i}行: {line}")
-
                 # 添加有效点
                 if valid_points:
                     self.points2 = valid_points
                     self.update_comboboxes()
                     # messagebox.showinfo("成功", f"从文件导入了 {len(valid_points)} 个点到2#列表")
-
                 # 显示无效行
                 if invalid_lines:
                     messagebox.showwarning("警告",
                                            f"以下行格式无效，已跳过:\n" +
                                            "\n".join(invalid_lines[:10]) +
                                            ("\n..." if len(invalid_lines) > 10 else ""))
-
             except Exception as e:
                 messagebox.showerror("错误", f"读取文件时出错: {str(e)}")
 
@@ -2810,49 +2755,53 @@ class App:
         """更新两个下拉框的内容"""
         self.combo1['values'] = self.points1
         self.combo2['values'] = self.points2
-
         # 如果有选项，选择第一个
         if self.points1:
             self.combo1.current(0)
         else:
             self.combo1.set('')
-
         if self.points2:
             self.combo2.current(0)
         else:
             self.combo2.set('')
 
     def run1(self):
-        """1#运行按钮的功能"""
-        selected = self.combo1.get()
-        if selected:
-            # 验证选中的点是否为有效的7元素列表
-            is_valid, point_list = self.validate_point(selected)
-            if is_valid:
-                # messagebox.showinfo("1#运行", f"运行选中的点: {point_list}")
-                robot.clear_set()
-                robot.set_joint_cmd_pose(arm='A', joints=point_list)
-                robot.send_cmd()
+        if self.connected:
+            """1#运行按钮的功能"""
+            selected = self.combo1.get()
+            if selected:
+                # 验证选中的点是否为有效的7元素列表
+                is_valid, point_list = self.validate_point(selected)
+                if is_valid:
+                    # messagebox.showinfo("1#运行", f"运行选中的点: {point_list}")
+                    robot.clear_set()
+                    robot.set_joint_cmd_pose(arm='A', joints=point_list)
+                    robot.send_cmd()
+                else:
+                    messagebox.showerror("错误", f"选中的点格式无效: {selected}")
             else:
-                messagebox.showerror("错误", f"选中的点格式无效: {selected}")
+                messagebox.showwarning("警告", "没有可运行的点")
         else:
-            messagebox.showwarning("警告", "没有可运行的点")
+            messagebox.showerror('error', '请先连接机器人')
 
     def run2(self):
-        """2#运行按钮的功能"""
-        selected = self.combo2.get()
-        if selected:
-            # 验证选中的点是否为有效的7元素列表
-            is_valid, point_list = self.validate_point(selected)
-            if is_valid:
-                # messagebox.showinfo("2#运行", f"运行选中的点: {point_list}")
-                robot.clear_set()
-                robot.set_joint_cmd_pose(arm='B', joints=point_list)
-                robot.send_cmd()
+        if self.connected:
+            """2#运行按钮的功能"""
+            selected = self.combo2.get()
+            if selected:
+                # 验证选中的点是否为有效的7元素列表
+                is_valid, point_list = self.validate_point(selected)
+                if is_valid:
+                    # messagebox.showinfo("2#运行", f"运行选中的点: {point_list}")
+                    robot.clear_set()
+                    robot.set_joint_cmd_pose(arm='B', joints=point_list)
+                    robot.send_cmd()
+                else:
+                    messagebox.showerror("错误", f"选中的点格式无效: {selected}")
             else:
-                messagebox.showerror("错误", f"选中的点格式无效: {selected}")
+                messagebox.showwarning("警告", "没有可运行的点")
         else:
-            messagebox.showwarning("警告", "没有可运行的点")
+            messagebox.showerror('error', '请先连接机器人')
 
     def save_param(self, robot_id):
         if robot_id == 'A':
@@ -2911,25 +2860,18 @@ class App:
                     if valid_points:
                         self.tool_a_entry.delete(0, tk.END)
                         self.tool_a_entry.insert(0, valid_points[0])
-
                         self.tool_a1_entry.delete(0, tk.END)
                         self.tool_a1_entry.insert(0, valid_points[1])
-
                         self.k_a_entry.delete(0, tk.END)
                         self.k_a_entry.insert(0, valid_points[2])
-
                         self.d_a_entry.delete(0, tk.END)
                         self.d_a_entry.insert(0, valid_points[3])
-
                         self.cart_k_a_entry.delete(0, tk.END)
                         self.cart_k_a_entry.insert(0, valid_points[4])
-
                         self.cart_d_a_entry.delete(0, tk.END)
                         self.cart_d_a_entry.insert(0, valid_points[5])
-
                         self.vel_a_entry.delete(0, tk.END)
                         self.vel_a_entry.insert(0, valid_points[6])
-
                         self.acc_a_entry.delete(0, tk.END)
                         self.acc_a_entry.insert(0, valid_points[7])
                         # messagebox.showinfo("成功", f"从文件导入了 {len(valid_points)} 参数到#1")
@@ -2958,25 +2900,18 @@ class App:
                     if valid_points:
                         self.tool_b_entry.delete(0, tk.END)
                         self.tool_b_entry.insert(0, valid_points[0])
-
                         self.tool_b1_entry.delete(0, tk.END)
                         self.tool_b1_entry.insert(0, valid_points[1])
-
                         self.k_b_entry.delete(0, tk.END)
                         self.k_b_entry.insert(0, valid_points[2])
-
                         self.d_b_entry.delete(0, tk.END)
                         self.d_b_entry.insert(0, valid_points[3])
-
                         self.cart_k_b_entry.delete(0, tk.END)
                         self.cart_k_b_entry.insert(0, valid_points[4])
-
                         self.cart_d_b_entry.delete(0, tk.END)
                         self.cart_d_b_entry.insert(0, valid_points[5])
-
                         self.vel_b_entry.delete(0, tk.END)
                         self.vel_b_entry.insert(0, valid_points[6])
-
                         self.acc_b_entry.delete(0, tk.END)
                         self.acc_b_entry.insert(0, valid_points[7])
                         # messagebox.showinfo("成功", f"从文件导入了 {len(valid_points)} 参数到#2")
@@ -2985,108 +2920,146 @@ class App:
                     messagebox.showerror("错误", f"读取文件时出错: {str(e)}")
 
     def stop_command(self):
-        robot.soft_stop('AB')
+        if self.connected:
+            robot.soft_stop('AB')
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
-    # 以下是按钮回调函数
     def reset_robot(self, robot_id):
-        robot.clear_set()
-        robot.set_state(arm=robot_id, state=0)  # state=0 下伺服
-        robot.send_cmd()
+        if self.connected:
+            robot.clear_set()
+            robot.set_state(arm=robot_id, state=0)  # state=0 下伺服
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def pvt_mode(self, robot_id):
-        robot.clear_set()
-        robot.set_state(arm=robot_id, state=2)
-        robot.send_cmd()
+        if self.connected:
+            robot.clear_set()
+            robot.set_state(arm=robot_id, state=2)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def position_mode(self, robot_id):
-        robot.clear_set()
-        robot.set_state(arm=robot_id, state=1)
-        robot.send_cmd()
+        if self.connected:
+            robot.clear_set()
+            robot.set_state(arm=robot_id, state=1)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def cr_state(self, robot_id):
-        robot.clear_set()
-        robot.set_state(arm=robot_id, state=4)
-        robot.send_cmd()
+        if self.connected:
+            robot.clear_set()
+            robot.set_state(arm=robot_id, state=4)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def imded_j_mode(self, robot_id):
-        robot.clear_set()
-        robot.set_state(arm=robot_id, state=3)
-        robot.set_impedance_type(arm=robot_id, type=1)
-        robot.send_cmd()
+        if self.connected:
+            robot.clear_set()
+            robot.set_state(arm=robot_id, state=3)
+            robot.set_impedance_type(arm=robot_id, type=1)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def imded_c_mode(self, robot_id):
-        robot.clear_set()
-        robot.set_state(arm=robot_id, state=3)
-        robot.set_impedance_type(arm=robot_id, type=2)
-        robot.send_cmd()
+        if self.connected:
+            robot.clear_set()
+            robot.set_state(arm=robot_id, state=3)
+            robot.set_impedance_type(arm=robot_id, type=2)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def imded_f_mode(self, robot_id):
-        directions = [0, 0, 0, 0, 0, 0]
-        if robot_id == 'A':
+        if self.connected:
+            directions = [0, 0, 0, 0, 0, 0]
+            if robot_id == 'A':
 
-            force_a = float(self.f_a_entry.get())
-            adjustment_a = float(self.f_a_adj_entry.get())
-            selected_axis_a = self.axis_combobox_a.get()
-            if selected_axis_a == 'X':
-                directions[0] = 1
-            elif selected_axis_a == 'Y':
-                directions[1] = 1
-            elif selected_axis_a == 'Z':
-                directions[2] = 1
+                force_a = float(self.f_a_entry.get())
+                adjustment_a = float(self.f_a_adj_entry.get())
+                selected_axis_a = self.axis_combobox_a.get()
+                if selected_axis_a == 'X':
+                    directions[0] = 1
+                elif selected_axis_a == 'Y':
+                    directions[1] = 1
+                elif selected_axis_a == 'Z':
+                    directions[2] = 1
 
-            robot.clear_set()
-            robot.set_force_control_params(arm=robot_id, fcType=0, fxDirection=directions,
-                                           fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
-                                           fcAdjLmt=adjustment_a)
-            robot.set_force_cmd(arm=robot_id, f=force_a)
-            robot.set_state(arm=robot_id, state=3)
-            robot.set_impedance_type(arm=robot_id, type=3)
-            robot.send_cmd()
+                robot.clear_set()
+                robot.set_force_control_params(arm=robot_id, fcType=0, fxDirection=directions,
+                                               fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
+                                               fcAdjLmt=adjustment_a)
+                robot.set_force_cmd(arm=robot_id, f=force_a)
+                robot.set_state(arm=robot_id, state=3)
+                robot.set_impedance_type(arm=robot_id, type=3)
+                robot.send_cmd()
 
-        elif robot_id == 'B':
-            force_b = float(self.f_b_entry.get())
-            adjustment_b = float(self.f_b_adj_entry.get())
-            selected_axis_b = self.axis_combobox_b.get()
-            if selected_axis_b == 'X':
-                directions[0] = 1
-            elif selected_axis_b == 'Y':
-                directions[1] = 1
-            elif selected_axis_b == 'Z':
-                directions[2] = 1
+            elif robot_id == 'B':
+                force_b = float(self.f_b_entry.get())
+                adjustment_b = float(self.f_b_adj_entry.get())
+                selected_axis_b = self.axis_combobox_b.get()
+                if selected_axis_b == 'X':
+                    directions[0] = 1
+                elif selected_axis_b == 'Y':
+                    directions[1] = 1
+                elif selected_axis_b == 'Z':
+                    directions[2] = 1
 
-            robot.clear_set()
-            robot.set_force_control_params(arm=robot_id, fcType=0, fxDirection=directions,
-                                           fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
-                                           fcAdjLmt=adjustment_b)
-            robot.set_force_cmd(arm=robot_id, f=force_b)
-            robot.set_state(arm=robot_id, state=3)
-            robot.set_impedance_type(arm=robot_id, type=3)
-            robot.send_cmd()
+                robot.clear_set()
+                robot.set_force_control_params(arm=robot_id, fcType=0, fxDirection=directions,
+                                               fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
+                                               fcAdjLmt=adjustment_b)
+                robot.set_force_cmd(arm=robot_id, f=force_b)
+                robot.set_state(arm=robot_id, state=3)
+                robot.set_impedance_type(arm=robot_id, type=3)
+                robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def drag_j(self, robot_id):
-        robot.clear_set()
-        robot.set_drag_space(arm=robot_id, dgType=1)
-        robot.send_cmd()
+        if self.result["states"][0]["cur_state"] == 3 and self.result["inputs"][0]["imp_type"] == 1:
+            robot.clear_set()
+            robot.set_drag_space(arm=robot_id, dgType=1)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请设置为关节阻抗模式后再选择关节拖动')
 
     def drag_x(self, robot_id):
-        robot.clear_set()
-        robot.set_drag_space(arm=robot_id, dgType=2)
-        robot.send_cmd()
+        if self.result["states"][0]["cur_state"] == 3 and self.result["inputs"][0]["imp_type"] == 2:
+            robot.clear_set()
+            robot.set_drag_space(arm=robot_id, dgType=2)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请设置为笛卡尔阻抗模式后再选择笛卡尔X拖动')
 
     def drag_y(self, robot_id):
-        robot.clear_set()
-        robot.set_drag_space(arm=robot_id, dgType=3)
-        robot.send_cmd()
+        if self.result["states"][0]["cur_state"] == 3 and self.result["inputs"][0]["imp_type"] == 2:
+            robot.clear_set()
+            robot.set_drag_space(arm=robot_id, dgType=3)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请设置为笛卡尔阻抗模式后再选择笛卡尔Y拖动')
 
     def drag_z(self, robot_id):
-        robot.clear_set()
-        robot.set_drag_space(arm=robot_id, dgType=4)
-        robot.send_cmd()
+        if self.result["states"][0]["cur_state"] == 3 and self.result["inputs"][0]["imp_type"] == 2:
+            robot.clear_set()
+            robot.set_drag_space(arm=robot_id, dgType=4)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请设置为笛卡尔阻抗模式后再选择笛卡尔Z拖动')
 
     def drag_r(self, robot_id):
-        robot.clear_set()
-        robot.set_drag_space(arm=robot_id, dgType=5)
-        robot.send_cmd()
+        if self.result["states"][0]["cur_state"] == 3 and self.result["inputs"][0]["imp_type"] == 2:
+            robot.clear_set()
+            robot.set_drag_space(arm=robot_id, dgType=5)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请设置为笛卡尔阻抗模式后再选择笛卡尔R拖动')
 
     def drag_exit(self, robot_id):
         robot.clear_set()
@@ -3183,181 +3156,211 @@ class App:
                 messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
 
     def error_get(self, robot_id):
-        errors = robot.get_servo_error_code(robot_id)
-        print(f'servo error:{errors}')
-        if errors:
-            messagebox.showinfo(f'{robot_id} arm error', errors)
+        if self.connected:
+            errors = robot.get_servo_error_code(robot_id)
+            print(f'servo error:{errors}')
+            if errors:
+                messagebox.showinfo(f'{robot_id} arm error', errors)
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def error_clear(self, robot_id):
-        robot.clear_error(robot_id)
+        if self.connected:
+            robot.clear_error(robot_id)
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def brake(self, robot_id):
-        if robot_id == 'A':
-            robot.set_param('int', 'BRAK0', 1)
-        elif robot_id == 'B':
-            robot.set_param('int', 'BRAK1', 1)
+        if self.connected:
+            if robot_id == 'A':
+                robot.set_param('int', 'BRAK0', 1)
+            elif robot_id == 'B':
+                robot.set_param('int', 'BRAK1', 1)
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def release_brake(self, robot_id):
-        if robot_id == 'A':
-            robot.set_param('int', 'BRAK0', 2)
-        elif robot_id == 'B':
-            robot.set_param('int', 'BRAK1', 2)
+        if self.connected:
+            if robot_id == 'A':
+                robot.set_param('int', 'BRAK0', 2)
+            elif robot_id == 'B':
+                robot.set_param('int', 'BRAK1', 2)
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def send_pvt(self, robot_id):
-        file_path = filedialog.askopenfilename(
-            title="选择数据文件",
-            filetypes=[("文本文件", "*.txt"), ("fmv文件", "*.fmv"), ("所有文件", "*.*")]
-        )
-        if file_path:
-            print(f'pvt file_path:{file_path}')
-            if robot_id == 'A':
-                print(f'pvt id:{int(self.pvt_a_entry.get())}')
-                robot.send_pvt_file(arm=robot_id, pvt_path=file_path, id=int(self.pvt_a_entry.get()))
-            elif robot_id == 'B':
-                print(f'pvt id:{int(self.pvt_b_entry.get())}')
-                robot.send_pvt_file(arm=robot_id, pvt_path=file_path, id=int(self.pvt_b_entry.get()))
+        if self.connected:
+            file_path = filedialog.askopenfilename(
+                title="选择数据文件",
+                filetypes=[("文本文件", "*.txt"), ("fmv文件", "*.fmv"), ("所有文件", "*.*")]
+            )
+            if file_path:
+                print(f'pvt file_path:{file_path}')
+                if robot_id == 'A':
+                    print(f'pvt id:{int(self.pvt_a_entry.get())}')
+                    robot.send_pvt_file(arm=robot_id, pvt_path=file_path, id=int(self.pvt_a_entry.get()))
+                elif robot_id == 'B':
+                    print(f'pvt id:{int(self.pvt_b_entry.get())}')
+                    robot.send_pvt_file(arm=robot_id, pvt_path=file_path, id=int(self.pvt_b_entry.get()))
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def run_pvt(self, robot_id):
-        if robot_id == 'A':
-            robot.clear_set()
-            robot.set_state(arm=robot_id, state=2)  # PVT
-            robot.set_pvt_id(arm=robot_id, id=int(self.pvt_a_entry.get()))
-            robot.send_cmd()
-        elif robot_id == 'B':
-            robot.clear_set()
-            robot.set_state(arm=robot_id, state=2)  # PVT
-            robot.set_pvt_id(arm=robot_id, id=int(self.pvt_b_entry.get()))
-            robot.send_cmd()
+        if self.connected:
+            if robot_id == 'A':
+                robot.clear_set()
+                robot.set_state(arm=robot_id, state=2)  # PVT
+                robot.set_pvt_id(arm=robot_id, id=int(self.pvt_a_entry.get()))
+                robot.send_cmd()
+            elif robot_id == 'B':
+                robot.clear_set()
+                robot.set_state(arm=robot_id, state=2)  # PVT
+                robot.set_pvt_id(arm=robot_id, id=int(self.pvt_b_entry.get()))
+                robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def tool_set(self, robot_id):
-        kine_p = 0
-        dyn_p = 0
-        if robot_id == 'A':
-            kine_p = ast.literal_eval(self.tool_a1_entry.get())
-            dyn_p = ast.literal_eval(self.tool_a_entry.get())
-            # print(f'a:  kine_p:{kine_p}, dyn_p:{dyn_p}')
-        elif robot_id == 'B':
-            kine_p = ast.literal_eval(self.tool_b1_entry.get())
-            dyn_p = ast.literal_eval(self.tool_b_entry.get())
-            # print(f'b:  kine_p:{kine_p}, dyn_p:{dyn_p}')
-        if not kine_p:
-            messagebox.showerror("错误", "工具运动学参数不能为空！")
-        if len(kine_p) != 6:
-            messagebox.showerror("错误", f"工具运动学必须为6个，当前有{len(kine_p)}个数据！")
-        try:
-            kine_p = [float(item) for item in kine_p]
-        except ValueError:
-            messagebox.showerror("错误", "工具运动学参数必须是有效的数值！")
+        if self.connected:
+            kine_p = 0
+            dyn_p = 0
+            if robot_id == 'A':
+                kine_p = ast.literal_eval(self.tool_a1_entry.get())
+                dyn_p = ast.literal_eval(self.tool_a_entry.get())
+                # print(f'a:  kine_p:{kine_p}, dyn_p:{dyn_p}')
+            elif robot_id == 'B':
+                kine_p = ast.literal_eval(self.tool_b1_entry.get())
+                dyn_p = ast.literal_eval(self.tool_b_entry.get())
+                # print(f'b:  kine_p:{kine_p}, dyn_p:{dyn_p}')
+            if not kine_p:
+                messagebox.showerror("错误", "工具运动学参数不能为空！")
+            if len(kine_p) != 6:
+                messagebox.showerror("错误", f"工具运动学必须为6个，当前有{len(kine_p)}个数据！")
+            try:
+                kine_p = [float(item) for item in kine_p]
+            except ValueError:
+                messagebox.showerror("错误", "工具运动学参数必须是有效的数值！")
 
-        if not dyn_p:
-            messagebox.showerror("错误", "工具动力学参数不能为空！")
-        if len(dyn_p) != 10:
-            messagebox.showerror("错误", f"工具动力学参数必须为10个，当前有{len(dyn_p)}个数据！")
-        try:
-            dyn_p = [float(item) for item in dyn_p]
-        except ValueError:
-            messagebox.showerror("错误", "工具动力学参数必须是有效的数值！")
-        robot.clear_set()
-        robot.set_tool(arm=robot_id, kineParams=kine_p, dynamicParams=dyn_p)
-        robot.send_cmd()
+            if not dyn_p:
+                messagebox.showerror("错误", "工具动力学参数不能为空！")
+            if len(dyn_p) != 10:
+                messagebox.showerror("错误", f"工具动力学参数必须为10个，当前有{len(dyn_p)}个数据！")
+            try:
+                dyn_p = [float(item) for item in dyn_p]
+            except ValueError:
+                messagebox.showerror("错误", "工具动力学参数必须是有效的数值！")
+            robot.clear_set()
+            robot.set_tool(arm=robot_id, kineParams=kine_p, dynamicParams=dyn_p)
+            robot.send_cmd()
 
-        tool_mat = kk1.xyzabc_to_mat4x4(xyzabc=kine_p)
-        if robot_id == "A":
-            kk1.set_tool_kine(robot_serial=0, tool_mat=tool_mat)
-        elif robot_id == "B":
-            kk2.set_tool_kine(robot_serial=1, tool_mat=tool_mat)
+            tool_mat = kk1.xyzabc_to_mat4x4(xyzabc=kine_p)
+            if robot_id == "A":
+                kk1.set_tool_kine(robot_serial=0, tool_mat=tool_mat)
+            elif robot_id == "B":
+                kk2.set_tool_kine(robot_serial=1, tool_mat=tool_mat)
 
-        '''save in txt and send it to controller'''
-        if not self.tool_result:
-            lines = ['0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n',
-                     '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n']
-            # 写回文件
-            with open(self.tools_txt, 'w', encoding='utf-8') as file:
-                file.writelines(lines)
-            file.close()
+            '''save in txt and send it to controller'''
+            if not self.tool_result:
+                lines = ['0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n',
+                         '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n']
+                # 写回文件
+                with open(self.tools_txt, 'w', encoding='utf-8') as file:
+                    file.writelines(lines)
+                file.close()
+            else:
+                from python.fx_robot import update_text_file_simple
+                full_tool = dyn_p + kine_p
+                update_text_file_simple(robot_id, full_tool, self.tools_txt)
+                robot.send_file(self.tools_txt, os.path.join('/home/fusion/', self.tools_txt))
+                time.sleep(1)
         else:
-            from python.fx_robot import update_text_file_simple
-            full_tool = dyn_p + kine_p
-            update_text_file_simple(robot_id, full_tool, self.tools_txt)
-            robot.send_file(self.tools_txt, os.path.join('/home/fusion/', self.tools_txt))
-            time.sleep(1)
+            messagebox.showerror('error', '请先连接机器人')
 
     def vel_acc_set(self, robot_id):
-        vel = acc = 0
-        if robot_id == 'A':
-            vel = int(self.vel_a_entry.get())
-            acc = int(self.acc_a_entry.get())
-        elif robot_id == 'B':
-            vel = int(self.vel_b_entry.get())
-            acc = int(self.acc_b_entry.get())
+        if self.connected:
+            vel = acc = 0
+            if robot_id == 'A':
+                vel = int(self.vel_a_entry.get())
+                acc = int(self.acc_a_entry.get())
+            elif robot_id == 'B':
+                vel = int(self.vel_b_entry.get())
+                acc = int(self.acc_b_entry.get())
 
-        robot.clear_set()
-        robot.set_vel_acc(arm=robot_id, velRatio=vel, AccRatio=acc)
-        robot.send_cmd()
+            robot.clear_set()
+            robot.set_vel_acc(arm=robot_id, velRatio=vel, AccRatio=acc)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def joint_kd_set(self, robot_id):
-        k = 0
-        d = 0
-        if robot_id == 'A':
-            k = ast.literal_eval(self.k_a_entry.get())
-            d = ast.literal_eval(self.d_a_entry.get())
-        elif robot_id == 'B':
-            k = ast.literal_eval(self.k_b_entry.get())
-            d = ast.literal_eval(self.d_b_entry.get())
-        if not k:
-            messagebox.showerror("错误", "关节K参数不能为空！")
-        if len(k) != 7:
-            messagebox.showerror("错误", f"关节K参数必须为7个，当前有{len(k)}个数据！")
-        try:
-            k = [float(item) for item in k]
-        except ValueError:
-            messagebox.showerror("错误", "关节K参数必须是有效的数值！")
+        if self.connected:
+            k = 0
+            d = 0
+            if robot_id == 'A':
+                k = ast.literal_eval(self.k_a_entry.get())
+                d = ast.literal_eval(self.d_a_entry.get())
+            elif robot_id == 'B':
+                k = ast.literal_eval(self.k_b_entry.get())
+                d = ast.literal_eval(self.d_b_entry.get())
+            if not k:
+                messagebox.showerror("错误", "关节K参数不能为空！")
+            if len(k) != 7:
+                messagebox.showerror("错误", f"关节K参数必须为7个，当前有{len(k)}个数据！")
+            try:
+                k = [float(item) for item in k]
+            except ValueError:
+                messagebox.showerror("错误", "关节K参数必须是有效的数值！")
 
-        if not d:
-            messagebox.showerror("错误", "关节D参数不能为空！")
-        if len(d) != 7:
-            messagebox.showerror("错误", f"关节D参数必须为7个，当前有{len(d)}个数据！")
-        try:
-            d = [float(item) for item in d]
-        except ValueError:
-            messagebox.showerror("错误", "关节D参数必须是有效的数值！")
-        robot.clear_set()
-        robot.set_joint_kd_params(arm=robot_id, K=k, D=d)
-        robot.send_cmd()
+            if not d:
+                messagebox.showerror("错误", "关节D参数不能为空！")
+            if len(d) != 7:
+                messagebox.showerror("错误", f"关节D参数必须为7个，当前有{len(d)}个数据！")
+            try:
+                d = [float(item) for item in d]
+            except ValueError:
+                messagebox.showerror("错误", "关节D参数必须是有效的数值！")
+            robot.clear_set()
+            robot.set_joint_kd_params(arm=robot_id, K=k, D=d)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def cart_kd_set(self, robot_id):
-        k = 0
-        d = 0
-        type = 0
-        if robot_id == 'A':
-            k = ast.literal_eval(self.cart_k_a_entry.get())
-            d = ast.literal_eval(self.cart_d_a_entry.get())
-            type = int(self.imped_a_entry.get())
-        elif robot_id == 'B':
-            k = ast.literal_eval(self.cart_k_b_entry.get())
-            d = ast.literal_eval(self.cart_d_b_entry.get())
-            type = int(self.imped_b_entry.get())
+        if self.connected:
+            k = 0
+            d = 0
+            type = 0
+            if robot_id == 'A':
+                k = ast.literal_eval(self.cart_k_a_entry.get())
+                d = ast.literal_eval(self.cart_d_a_entry.get())
+                type = int(self.imped_a_entry.get())
+            elif robot_id == 'B':
+                k = ast.literal_eval(self.cart_k_b_entry.get())
+                d = ast.literal_eval(self.cart_d_b_entry.get())
+                type = int(self.imped_b_entry.get())
 
-        if not k:
-            messagebox.showerror("错误", "笛卡尔K参数不能为空！")
-        if len(k) != 7:
-            messagebox.showerror("错误", f"笛卡尔K参数必须为7个，当前有{len(k)}个数据！")
-        try:
-            k = [float(item) for item in k]
-        except ValueError:
-            messagebox.showerror("错误", "笛卡尔K参数必须是有效的数值！")
+            if not k:
+                messagebox.showerror("错误", "笛卡尔K参数不能为空！")
+            if len(k) != 7:
+                messagebox.showerror("错误", f"笛卡尔K参数必须为7个，当前有{len(k)}个数据！")
+            try:
+                k = [float(item) for item in k]
+            except ValueError:
+                messagebox.showerror("错误", "笛卡尔K参数必须是有效的数值！")
 
-        if not d:
-            messagebox.showerror("错误", "笛卡尔D参数不能为空！")
-        if len(d) != 7:
-            messagebox.showerror("错误", f"笛卡尔D参数必须为7个，当前有{len(d)}个数据！")
-        try:
-            d = [float(item) for item in d]
-        except ValueError:
-            messagebox.showerror("错误", "笛卡尔D参数必须是有效的数值！")
-        robot.clear_set()
-        robot.set_cart_kd_params(arm=robot_id, K=k, D=d, type=type)
-        robot.send_cmd()
+            if not d:
+                messagebox.showerror("错误", "笛卡尔D参数不能为空！")
+            if len(d) != 7:
+                messagebox.showerror("错误", f"笛卡尔D参数必须为7个，当前有{len(d)}个数据！")
+            try:
+                d = [float(item) for item in d]
+            except ValueError:
+                messagebox.showerror("错误", "笛卡尔D参数必须是有效的数值！")
+            robot.clear_set()
+            robot.set_cart_kd_params(arm=robot_id, K=k, D=d, type=type)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def thread_collect_tool_data_no_load(self, robot_id):
         """在新线程中执行collect_tool_data_no_load"""
@@ -3366,85 +3369,88 @@ class App:
         thread.start()
 
     def collect_tool_data_no_load(self, robot_id):
-        folder_path = filedialog.askdirectory(
-            title="选择保存辨识数据的文件夹",
-            mustexist=True
-        )
+        if self.connected:
+            folder_path = filedialog.askdirectory(
+                title="选择保存辨识数据的文件夹",
+                mustexist=True
+            )
 
-        if folder_path:
-            pvt_file = self.file_path_tool.get()
-            robot.send_pvt_file(robot_id, pvt_file, 97)
-            time.sleep(0.5)
+            if folder_path:
+                pvt_file = self.file_path_tool.get()
+                robot.send_pvt_file(robot_id, pvt_file, 97)
+                time.sleep(0.5)
 
-            '''机器人运动前开始设置保存数据'''
-            cols = 15
-            if robot_id == 'A':
-                idx = [0, 1, 2, 3, 4, 5, 6,
-                       50, 51, 52, 53, 54, 55, 56,
-                       76, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0]
-            elif robot_id == 'B':
-                idx = [100, 101, 102, 103, 104, 105, 106,
-                       150, 151, 152, 153, 154, 155, 156,
-                       176, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0]
-            else:
-                raise ValueError('wrong robot_id')
-            rows = 1000000
-            robot.clear_set()
-            robot.collect_data(targetNum=cols, targetID=idx, recordNum=rows)
-            robot.send_cmd()
-            time.sleep(0.5)
+                '''机器人运动前开始设置保存数据'''
+                cols = 15
+                if robot_id == 'A':
+                    idx = [0, 1, 2, 3, 4, 5, 6,
+                           50, 51, 52, 53, 54, 55, 56,
+                           76, 0, 0, 0, 0, 0, 0,
+                           0, 0, 0, 0, 0, 0, 0,
+                           0, 0, 0, 0, 0, 0, 0]
+                elif robot_id == 'B':
+                    idx = [100, 101, 102, 103, 104, 105, 106,
+                           150, 151, 152, 153, 154, 155, 156,
+                           176, 0, 0, 0, 0, 0, 0,
+                           0, 0, 0, 0, 0, 0, 0,
+                           0, 0, 0, 0, 0, 0, 0]
+                else:
+                    raise ValueError('wrong robot_id')
+                rows = 1000000
+                robot.clear_set()
+                robot.collect_data(targetNum=cols, targetID=idx, recordNum=rows)
+                robot.send_cmd()
+                time.sleep(0.5)
 
-            '''设置运行的PVT 号'''
-            robot.clear_set()
-            robot.set_pvt_id(robot_id, 97)
-            robot.send_cmd()
+                '''设置运行的PVT 号'''
+                robot.clear_set()
+                robot.set_pvt_id(robot_id, 97)
+                robot.send_cmd()
 
-            time.sleep(60)  # 模拟跑轨迹时间
+                time.sleep(60)  # 模拟跑轨迹时间
 
-            '''停止采集'''
-            robot.stop_collect_data()
-            time.sleep(0.5)
+                '''停止采集'''
+                robot.stop_collect_data()
+                time.sleep(0.5)
 
-            '''保存采集数据'''
-            save_pvt_path = os.path.join(folder_path, 'pvt.txt')
-            robot.save_collected_data_to_path(save_pvt_path)
+                '''保存采集数据'''
+                save_pvt_path = os.path.join(folder_path, 'pvt.txt')
+                robot.save_collected_data_to_path(save_pvt_path)
 
-            time.sleep(1)
+                time.sleep(1)
 
-            '''数据预处理'''
-            processed_data = []
-            with open(save_pvt_path, 'r') as file:
-                lines = file.readlines()
-                # 删除首行
-            lines = lines[1:]
-            for i, line in enumerate(lines):
-                # 移除行末的换行符并按'$'分割
-                parts = line.strip().split('$')
-                # 提取每个字段的数字部分（去掉非数字前缀）
-                numbers = []
-                for part in parts:
-                    if part:  # 忽略空字符串
-                        # 找到最后一个空格后的数字部分
-                        num_str = part.split()[-1]
-                        numbers.append(num_str)
+                '''数据预处理'''
+                processed_data = []
+                with open(save_pvt_path, 'r') as file:
+                    lines = file.readlines()
+                    # 删除首行
+                lines = lines[1:]
+                for i, line in enumerate(lines):
+                    # 移除行末的换行符并按'$'分割
+                    parts = line.strip().split('$')
+                    # 提取每个字段的数字部分（去掉非数字前缀）
+                    numbers = []
+                    for part in parts:
+                        if part:  # 忽略空字符串
+                            # 找到最后一个空格后的数字部分
+                            num_str = part.split()[-1]
+                            numbers.append(num_str)
 
-                # 删除前两列（索引0和1），保留剩余列
-                if len(numbers) >= 2:
-                    numbers = numbers[2:]
-                processed_data.append(numbers)
-            time.sleep(0.5)
-            os.remove(save_pvt_path)
-            time.sleep(0.5)
-            save_csv_path = os.path.join(folder_path, 'NoLoadData.csv')
-            with open(save_csv_path, 'w') as out_file:
-                for row in processed_data:
-                    out_file.write(','.join(row) + '\n')
-            out_file.close()
-            messagebox.showinfo('success', f'成功保存{robot_id}臂空载辨识数据')
+                    # 删除前两列（索引0和1），保留剩余列
+                    if len(numbers) >= 2:
+                        numbers = numbers[2:]
+                    processed_data.append(numbers)
+                time.sleep(0.5)
+                os.remove(save_pvt_path)
+                time.sleep(0.5)
+                save_csv_path = os.path.join(folder_path, 'NoLoadData.csv')
+                with open(save_csv_path, 'w') as out_file:
+                    for row in processed_data:
+                        out_file.write(','.join(row) + '\n')
+                out_file.close()
+                messagebox.showinfo('success', f'成功保存{robot_id}臂空载辨识数据')
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def thread_collect_tool_data_with_load(self, robot_id):
         """在新线程中执行collect_tool_data_with_load"""
@@ -3453,85 +3459,88 @@ class App:
         thread.start()
 
     def collect_tool_data_with_load(self, robot_id):
-        folder_path = filedialog.askdirectory(
-            title="选择保存辨识数据的文件夹",
-            mustexist=True
-        )
+        if self.connected:
+            folder_path = filedialog.askdirectory(
+                title="选择保存辨识数据的文件夹",
+                mustexist=True
+            )
 
-        if folder_path:
-            pvt_file = self.file_path_tool.get()
-            robot.send_pvt_file(robot_id, pvt_file, 97)
-            time.sleep(0.5)
+            if folder_path:
+                pvt_file = self.file_path_tool.get()
+                robot.send_pvt_file(robot_id, pvt_file, 97)
+                time.sleep(0.5)
 
-            '''机器人运动前开始设置保存数据'''
-            cols = 15
-            if robot_id == 'A':
-                idx = [0, 1, 2, 3, 4, 5, 6,
-                       50, 51, 52, 53, 54, 55, 56,
-                       76, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0]
-            elif robot_id == 'B':
-                idx = [100, 101, 102, 103, 104, 105, 106,
-                       150, 151, 152, 153, 154, 155, 156,
-                       176, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0,
-                       0, 0, 0, 0, 0, 0, 0]
-            else:
-                raise ValueError('wrong robot_id')
-            rows = 1000000
-            robot.clear_set()
-            robot.collect_data(targetNum=cols, targetID=idx, recordNum=rows)
-            robot.send_cmd()
-            time.sleep(0.5)
+                '''机器人运动前开始设置保存数据'''
+                cols = 15
+                if robot_id == 'A':
+                    idx = [0, 1, 2, 3, 4, 5, 6,
+                           50, 51, 52, 53, 54, 55, 56,
+                           76, 0, 0, 0, 0, 0, 0,
+                           0, 0, 0, 0, 0, 0, 0,
+                           0, 0, 0, 0, 0, 0, 0]
+                elif robot_id == 'B':
+                    idx = [100, 101, 102, 103, 104, 105, 106,
+                           150, 151, 152, 153, 154, 155, 156,
+                           176, 0, 0, 0, 0, 0, 0,
+                           0, 0, 0, 0, 0, 0, 0,
+                           0, 0, 0, 0, 0, 0, 0]
+                else:
+                    raise ValueError('wrong robot_id')
+                rows = 1000000
+                robot.clear_set()
+                robot.collect_data(targetNum=cols, targetID=idx, recordNum=rows)
+                robot.send_cmd()
+                time.sleep(0.5)
 
-            '''设置运行的PVT 号'''
-            robot.clear_set()
-            robot.set_pvt_id(robot_id, 97)
-            robot.send_cmd()
+                '''设置运行的PVT 号'''
+                robot.clear_set()
+                robot.set_pvt_id(robot_id, 97)
+                robot.send_cmd()
 
-            time.sleep(60)  # 模拟跑轨迹时间
+                time.sleep(60)  # 模拟跑轨迹时间
 
-            '''停止采集'''
-            robot.stop_collect_data()
-            time.sleep(0.5)
+                '''停止采集'''
+                robot.stop_collect_data()
+                time.sleep(0.5)
 
-            '''保存采集数据'''
-            save_pvt_path = os.path.join(folder_path, 'pvt.txt')
-            robot.save_collected_data_to_path(save_pvt_path)
+                '''保存采集数据'''
+                save_pvt_path = os.path.join(folder_path, 'pvt.txt')
+                robot.save_collected_data_to_path(save_pvt_path)
 
-            time.sleep(1)
+                time.sleep(1)
 
-            '''数据预处理'''
-            processed_data = []
-            with open(save_pvt_path, 'r') as file:
-                lines = file.readlines()
-                # 删除首行
-            lines = lines[1:]
-            for i, line in enumerate(lines):
-                # 移除行末的换行符并按'$'分割
-                parts = line.strip().split('$')
-                # 提取每个字段的数字部分（去掉非数字前缀）
-                numbers = []
-                for part in parts:
-                    if part:  # 忽略空字符串
-                        # 找到最后一个空格后的数字部分
-                        num_str = part.split()[-1]
-                        numbers.append(num_str)
+                '''数据预处理'''
+                processed_data = []
+                with open(save_pvt_path, 'r') as file:
+                    lines = file.readlines()
+                    # 删除首行
+                lines = lines[1:]
+                for i, line in enumerate(lines):
+                    # 移除行末的换行符并按'$'分割
+                    parts = line.strip().split('$')
+                    # 提取每个字段的数字部分（去掉非数字前缀）
+                    numbers = []
+                    for part in parts:
+                        if part:  # 忽略空字符串
+                            # 找到最后一个空格后的数字部分
+                            num_str = part.split()[-1]
+                            numbers.append(num_str)
 
-                # 删除前两列（索引0和1），保留剩余列
-                if len(numbers) >= 2:
-                    numbers = numbers[2:]
-                processed_data.append(numbers)
-            time.sleep(0.5)
-            os.remove(save_pvt_path)
-            time.sleep(0.5)
-            save_csv_path = os.path.join(folder_path, 'LoadData.csv')
-            with open(save_csv_path, 'w') as out_file:
-                for row in processed_data:
-                    out_file.write(','.join(row) + '\n')
-            out_file.close()
-            messagebox.showinfo('success', f'成功保存{robot_id}臂带载辨识数据')
+                    # 删除前两列（索引0和1），保留剩余列
+                    if len(numbers) >= 2:
+                        numbers = numbers[2:]
+                    processed_data.append(numbers)
+                time.sleep(0.5)
+                os.remove(save_pvt_path)
+                time.sleep(0.5)
+                save_csv_path = os.path.join(folder_path, 'LoadData.csv')
+                with open(save_csv_path, 'w') as out_file:
+                    for row in processed_data:
+                        out_file.write(','.join(row) + '\n')
+                out_file.close()
+                messagebox.showinfo('success', f'成功保存{robot_id}臂带载辨识数据')
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def tool_dyn_identy(self):
         # 格式化数据
@@ -3584,61 +3593,73 @@ class App:
                 out_file.write(' '.join(row) + '\n')
 
     def collect_data_both(self):
-        robot.clear_set()
-        cols = 14
-        idx = [0, 1, 2, 3, 4, 5, 6,
-               100, 101, 102, 103, 104, 105, 106,
-               0, 0, 0, 0, 0, 0, 0,
-               0, 0, 0, 0, 0, 0, 0,
-               0, 0, 0, 0, 0, 0, 0]
-        rows = 100000
-        robot.collect_data(targetNum=cols, targetID=idx, recordNum=rows)
-        robot.send_cmd()
+        if self.connected:
+            robot.clear_set()
+            cols = 14
+            idx = [0, 1, 2, 3, 4, 5, 6,
+                   100, 101, 102, 103, 104, 105, 106,
+                   0, 0, 0, 0, 0, 0, 0,
+                   0, 0, 0, 0, 0, 0, 0,
+                   0, 0, 0, 0, 0, 0, 0]
+            rows = 100000
+            robot.collect_data(targetNum=cols, targetID=idx, recordNum=rows)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def stop_collect_data_both(self):
-        robot.clear_set()
-        robot.stop_collect_data()
-        robot.send_cmd()
+        if self.connected:
+            robot.clear_set()
+            robot.stop_collect_data()
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def save_collect_data_both(self):
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".txt",
-            filetypes=[("Text files", "*.txt")],
-            title="保存双臂运动数据"
-        )
-        if file_path:
-            try:
-                robot.save_collected_data_to_path(file_path)
-                # messagebox.showinfo("成功", f"双臂运动数据已保存到: {os.path.basename(file_path)}")
-            except Exception as e:
-                messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
+        if self.connected:
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".txt",
+                filetypes=[("Text files", "*.txt")],
+                title="保存双臂运动数据"
+            )
+            if file_path:
+                try:
+                    robot.save_collected_data_to_path(file_path)
+                    # messagebox.showinfo("成功", f"双臂运动数据已保存到: {os.path.basename(file_path)}")
+                except Exception as e:
+                    messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def collect_data(self, robot_id):
-        cols = 0
-        idx = 0
-        rows = 0
-        if robot_id == 'A':
-            cols = int(self.features_entry_1.get())
-            idx = ast.literal_eval(self.feature_idx_entry_1.get())
-            rows = int(self.lines_entry_1.get())
+        if self.connected:
+            cols = 0
+            idx = 0
+            rows = 0
+            if robot_id == 'A':
+                cols = int(self.features_entry_1.get())
+                idx = ast.literal_eval(self.feature_idx_entry_1.get())
+                rows = int(self.lines_entry_1.get())
 
-        if robot_id == 'B':
-            cols = int(self.features_entry_2.get())
-            idx = ast.literal_eval(self.feature_idx_entry_2.get())
-            rows = int(self.lines_entry_2.get())
-        if cols > 35:
-            messagebox.showerror("错误", f"采集特征参数不能超过35个！")
-        if len(idx) != 35:
-            messagebox.showerror("错误", f"采集特征参数必须为35个，当前有{idx}个！")
-        if 1000000 < rows:
-            rows = 1000000
-            messagebox.showerror("错误", f"数据最多采集一百万行，已设置为1000000")
-        if rows < 1000:
-            rows = 1000
-            messagebox.showerror("错误", f"数据至少采集一千行，已设置为1000")
-        robot.clear_set()
-        robot.collect_data(targetNum=cols, targetID=idx, recordNum=rows)
-        robot.send_cmd()
+            if robot_id == 'B':
+                cols = int(self.features_entry_2.get())
+                idx = ast.literal_eval(self.feature_idx_entry_2.get())
+                rows = int(self.lines_entry_2.get())
+            if cols > 35:
+                messagebox.showerror("错误", f"采集特征参数不能超过35个！")
+            if len(idx) != 35:
+                messagebox.showerror("错误", f"采集特征参数必须为35个，当前有{idx}个！")
+            if 1000000 < rows:
+                rows = 1000000
+                messagebox.showerror("错误", f"数据最多采集一百万行，已设置为1000000")
+            if rows < 1000:
+                rows = 1000
+                messagebox.showerror("错误", f"数据至少采集一千行，已设置为1000")
+            robot.clear_set()
+            robot.collect_data(targetNum=cols, targetID=idx, recordNum=rows)
+            robot.send_cmd()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def tool_trajectory(self):
         file_path = filedialog.askopenfilename(
@@ -3705,157 +3726,196 @@ class App:
                 messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
 
     def get_sensor_offset(self, robot_id):
-        if robot_id == 'A':
-            axis = int(self.axis_select_combobox_1.get())
-            name_f = f"R.A0.L{axis}.BASIC.SensorK"
-            name_i = f"R.A0.L{axis}.BASIC.SensorOffset"
+        if self.connected:
+            if robot_id == 'A':
+                axis = int(self.axis_select_combobox_1.get())
+                data = robot.subscribe(dcss)
+                self.m_sq_offset_1 = data['outputs'][0]['fb_joint_sToq'][axis]
+                print(f'**** self.m_sq_offset_1:{self.m_sq_offset_1}')
+                self.get_offset_entry_1.delete(0, tk.END)
+                self.get_offset_entry_1.insert(0, self.m_sq_offset_1)
+                # name_f = f"R.A0.L{axis}.BASIC.SensorK"
+                # name_i = f"R.A0.L{axis}.BASIC.SensorOffset"
+                #
+                # re_flag1,i_para = robot.get_param(type='int', paraName=name_i)
+                # re_flag2,f_para = robot.get_param(type='float', paraName=name_f)
+                # if re_flag1==0 and re_flag2==0:
+                #     temp="".join(f"{i_para * f_para:.2f}")
+                #     self.get_offset_entry_1.delete(0, tk.END)
+                #     self.get_offset_entry_1.insert(0, temp)
+                # else:
+                #     messagebox.showerror("error","获取参数错误")
 
-            i_para = robot.get_param(type='int', paraName=name_i)
-            f_para = robot.get_param(type='float', paraName=name_f)
-            temp = i_para * f_para * 1000
-            temp *= 0.001
-            self.m_sq_offset_1 = temp
-            self.get_offset_entry_1.delete(0, tk.END)
-            self.get_offset_entry_1.insert(0, temp)
-
-        if robot_id == 'B':
-            axis = int(self.axis_select_combobox_2.get())
-            name_f = f"R.A1.L{axis}.BASIC.SensorK"
-            name_i = f"R.A1.L{axis}.BASIC.SensorOffset"
-
-            i_para = robot.get_param(type='int', paraName=name_i)
-            f_para = robot.get_param(type='float', paraName=name_f)
-            temp = i_para * f_para * 1000
-            temp *= 0.001
-            self.m_sq_offset_2 = temp
-            self.get_offset_entry_2.delete(0, tk.END)
-            self.get_offset_entry_2.insert(0, temp)
+            if robot_id == 'B':
+                axis = int(self.axis_select_combobox_2.get())
+                data = robot.subscribe(dcss)
+                self.m_sq_offset_2 = data['outputs'][1]['fb_joint_sToq'][axis]
+                print(f'**** self.m_sq_offset_2:{self.m_sq_offset_2}')
+                self.get_offset_entry_2.delete(0, tk.END)
+                self.get_offset_entry_2.insert(0, self.m_sq_offset_2)
+                # name_f = f"R.A1.L{axis}.BASIC.SensorK"
+                # name_i = f"R.A1.L{axis}.BASIC.SensorOffset"
+                # re_flag1,i_para = robot.get_param(type='int', paraName=name_i)
+                # re_flag2,f_para = robot.get_param(type='float', paraName=name_f)
+                # if re_flag1 == 0 and re_flag2 == 0:
+                #     print(f' *** int:{i_para}, float:{f_para}')
+                #     temp="".join(f"{i_para * f_para:.2f}")
+                #     self.get_offset_entry_2.delete(0, tk.END)
+                #     self.get_offset_entry_2.insert(0, temp)
+                # else:
+                #     messagebox.showerror("error","获取参数错误")
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def set_sensor_offset(self, robot_id):  # todo
+        if self.connected:
+            if robot_id == 'A':
+                axis = int(self.axis_select_combobox_1.get())
+                name_f = f"R.A0.L{axis}.BASIC.SensorK"
+                re_flag,m_sk = robot.get_param(type='float', paraName=name_f)
+                if re_flag==0:
+                    print(f' *** get m_sk:{m_sk}')
+                    m_soft=float(self.get_offset_entry_1.get())/m_sk
+                    print(f'**** set senor value:{m_soft}')
+                    name_i = f"R.A0.L{axis}.BASIC.SensorOffset"
+                    robot.set_param(type='int', paraName=name_i, value=m_soft)
+                    re_flag__=robot.save_para_file()
+                    if re_flag__!=0:
+                        messagebox.showerror("error","保存参数失败")
 
-        if robot_id == 'A':
-            axis = int(self.axis_select_combobox_1.get())
-            name_f = f"R.A0.L{axis}.BASIC.SensorK"
-            m_sk = robot.get_param(type='float', paraName=name_f)
-            m_soft = self.m_sq_offset_1 / m_sk
-            m_soft_i = m_soft
-            name_i = f"R.A0.L{axis}.BASIC.SensorOffset"
-            robot.set_param(type='int', paraName=name_i, value=m_soft_i)
-            time.sleep(0.5)
-            robot.save_para_file()
+            elif robot_id == 'B':
+                axis = int(self.axis_select_combobox_2.get())
+                name_f = f"R.A1.L{axis}.BASIC.SensorK"
+                re_flag,m_sk = robot.get_param(type='float', paraName=name_f)
+                if re_flag==0:
+                    print(f' *** get m_sk:{m_sk}')
+                    m_soft = float(self.get_offset_entry_2.get()) / m_sk
+                    print(f'**** set senor value:{m_soft}')
+                    name_i = f"R.A1.L{axis}.BASIC.SensorOffset"
+                    robot.set_param(type='int', paraName=name_i, value=m_soft)
+                    re_flag__ = robot.save_para_file()
+                    if re_flag__ != 0:
+                        messagebox.showerror("error", "保存参数失败")
 
-        elif robot_id == 'B':
-            axis = int(self.axis_select_combobox_2.get())
-            name_f = f"R.A1.L{axis}.BASIC.SensorK"
-            m_sk = robot.get_param(type='float', paraName=name_f)
-            m_soft = self.m_sq_offset_2 / m_sk
-            m_soft_i = m_soft
-            name_i = f"R.A1.L{axis}.BASIC.SensorOffset"
-            robot.set_param(type='int', paraName=name_i, value=m_soft_i)
-            time.sleep(0.5)
-            robot.save_para_file()
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def clear_motor_as_zero(self, robot_id):
-        if robot_id == 'A':
-            if self.result['states'][0]["cur_state"] != 0:
-                messagebox.showerror('error', '左臂必须在复位状态才可电机编码器清零')
-            else:
-                axis = int(self.motor_axis_select_combobox_1.get())
-                robot.set_param(type='int', paraName="RESETMOTENC0", value=axis)
-        elif robot_id == 'B':
-            if self.result['states'][1]["cur_state"] != 0:
-                messagebox.showerror('error', '右臂必须在复位状态才可电机编码器清零')
-            else:
-                axis = int(self.motor_axis_select_combobox_11.get())
-                robot.set_param(type='int', paraName="RESETMOTENC1", value=axis)
+        if self.connected:
+            if robot_id == 'A':
+                if self.result['states'][0]["cur_state"] != 0:
+                    messagebox.showerror('error', '左臂必须在复位状态才可电机编码器清零')
+                else:
+                    axis = int(self.motor_axis_select_combobox_1.get())
+                    robot.set_param(type='int', paraName="RESETMOTENC0", value=axis)
+            elif robot_id == 'B':
+                if self.result['states'][1]["cur_state"] != 0:
+                    messagebox.showerror('error', '右臂必须在复位状态才可电机编码器清零')
+                else:
+                    axis = int(self.motor_axis_select_combobox_11.get())
+                    robot.set_param(type='int', paraName="RESETMOTENC1", value=axis)
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def clear_motorE_as_zero(self, robot_id):
-        if robot_id == 'A':
-            if self.result['states'][0]["cur_state"] != 0:
-                messagebox.showerror('error', '左臂必须在复位状态才可电机外编码器清零')
-            else:
-                axis = int(self.motor_axis_select_combobox_1.get())
-                robot.set_param(type='int', paraName="RESETEXTENC0", value=axis)
-        elif robot_id == 'B':
-            if self.result['states'][1]["cur_state"] != 0:
-                messagebox.showerror('error', '右臂必须在复位状态才可电机外编码器清零')
-            else:
-                axis = int(self.motor_axis_select_combobox_11.get())
-                robot.set_param(type='int', paraName="RESETEXTENC1", value=axis)
+        if self.connected:
+            if robot_id == 'A':
+                if self.result['states'][0]["cur_state"] != 0:
+                    messagebox.showerror('error', '左臂必须在复位状态才可电机外编码器清零')
+                else:
+                    axis = int(self.motor_axis_select_combobox_1.get())
+                    robot.set_param(type='int', paraName="RESETEXTENC0", value=axis)
+            elif robot_id == 'B':
+                if self.result['states'][1]["cur_state"] != 0:
+                    messagebox.showerror('error', '右臂必须在复位状态才可电机外编码器清零')
+                else:
+                    axis = int(self.motor_axis_select_combobox_11.get())
+                    robot.set_param(type='int', paraName="RESETEXTENC1", value=axis)
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def clear_motor_error(self, robot_id):
-        if robot_id == 'A':
-            if self.result['states'][0]["cur_state"] != 0:
-                messagebox.showerror('error', '左臂必须在复位状态才可电机编码器清错')
-            else:
-                axis = int(self.motor_axis_select_combobox_1.get())
-                robot.set_param(type='int', paraName="CLEARMOTENC0", value=axis)
-        elif robot_id == 'B':
-            if self.result['states'][1]["cur_state"] != 0:
-                messagebox.showerror('error', '右臂必须在复位状态才可电机编码器清错')
-            else:
-                axis = int(self.motor_axis_select_combobox_11.get())
-                robot.set_param(type='int', paraName="CLEARMOTENC1", value=axis)
+        if self.connected:
+            if robot_id == 'A':
+                if self.result['states'][0]["cur_state"] != 0:
+                    messagebox.showerror('error', '左臂必须在复位状态才可电机编码器清错')
+                else:
+                    axis = int(self.motor_axis_select_combobox_1.get())
+                    robot.set_param(type='int', paraName="CLEARMOTENC0", value=axis)
+            elif robot_id == 'B':
+                if self.result['states'][1]["cur_state"] != 0:
+                    messagebox.showerror('error', '右臂必须在复位状态才可电机编码器清错')
+                else:
+                    axis = int(self.motor_axis_select_combobox_11.get())
+                    robot.set_param(type='int', paraName="CLEARMOTENC1", value=axis)
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def send_data_eef(self, robot_id):
-        try:
-            com = 0
-            com_ = ''
-            sample_data = None
-            robot.clear_485_cache(robot_id)
-            time.sleep(0.5)
-            if robot_id == 'A':
-                sample_data = self.com_entry_1.get()
-                # print(f'sample_data:{sample_data}')
-                # print(f'len(sample_data):{len(sample_data)}')
-                com_ = self.com_select_combobox_1.get()
-                # print(f'com:{com_}')
-            elif robot_id == 'B':
-                sample_data = self.com_entry_2.get()
-                com_ = self.com_select_combobox_2.get()
+        if self.connected:
+            try:
+                com = 0
+                com_ = ''
+                sample_data = None
+                robot.clear_485_cache(robot_id)
+                time.sleep(0.5)
+                if robot_id == 'A':
+                    sample_data = self.com_entry_1.get()
+                    # print(f'sample_data:{sample_data}')
+                    # print(f'len(sample_data):{len(sample_data)}')
+                    com_ = self.com_select_combobox_1.get()
+                    # print(f'com:{com_}')
+                elif robot_id == 'B':
+                    sample_data = self.com_entry_2.get()
+                    com_ = self.com_select_combobox_2.get()
 
-            # 1：‘C’端; 2：com1; 3:com2
-            if com_ == 'CAN':
-                com = 1
-            elif com_ == 'COM1':
-                com = 2
-            elif com_ == 'COM2':
-                com = 3
-            # print(f'com:{com}')
-            success, sdk_return = robot.set_485_data(robot_id, sample_data, len(sample_data), com)
-            if not success:
-                messagebox.showerror('error', f'send data must be hex string of bytes string')
-        except Exception as e:
-            messagebox.showerror('error', e)
+                # 1：‘C’端; 2：com1; 3:com2
+                if com_ == 'CAN':
+                    com = 1
+                elif com_ == 'COM1':
+                    com = 2
+                elif com_ == 'COM2':
+                    com = 3
+                # print(f'com:{com}')
+                success, sdk_return = robot.set_485_data(robot_id, sample_data, len(sample_data), com)
+                if not success:
+                    messagebox.showerror('error', f'send data must be hex string of bytes string')
+            except Exception as e:
+                messagebox.showerror('error', e)
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
     def receive_data_eef(self, robot_id):
-        try:
-            com = 0
-            com_ = ''
-            if robot_id == 'A':
-                com_ = self.com_select_combobox_1.get()
-            elif robot_id == 'B':
-                com_ = self.com_select_combobox_2.get()
-
-            # 1：‘C’端; 2：com1; 3:com2
-            if com_ == 'CAN':
-                com = 1
-            elif com_ == 'COM1':
-                com = 2
-            elif com_ == 'COM2':
-                com = 3
-            success, data = robot.get_485_data(robot_id, int(com))
-            print(f'eef received:{data}')
-            if success > 0:
+        if self.connected:
+            try:
+                com = 0
+                com_ = ''
                 if robot_id == 'A':
-                    self.recv_text1.delete('1.0', tk.END)
-                    self.recv_text1.insert(tk.END, data)
-                if robot_id == 'B':
-                    self.recv_text2.delete('1.0', tk.END)
-                    self.recv_text2.insert(tk.END, data)
-                # messagebox.showinfo('success', f're data to {robot_id}')
-        except Exception as e:
-            messagebox.showerror('error', e)
+                    com_ = self.com_select_combobox_1.get()
+                elif robot_id == 'B':
+                    com_ = self.com_select_combobox_2.get()
+
+                # 1：‘C’端; 2：com1; 3:com2
+                if com_ == 'CAN':
+                    com = 1
+                elif com_ == 'COM1':
+                    com = 2
+                elif com_ == 'COM2':
+                    com = 3
+                success, data = robot.get_485_data(robot_id, int(com))
+                print(f'eef received:{data}')
+                if success > 0:
+                    if robot_id == 'A':
+                        self.recv_text1.delete('1.0', tk.END)
+                        self.recv_text1.insert(tk.END, data)
+                    if robot_id == 'B':
+                        self.recv_text2.delete('1.0', tk.END)
+                        self.recv_text2.insert(tk.END, data)
+                    # messagebox.showinfo('success', f're data to {robot_id}')
+            except Exception as e:
+                messagebox.showerror('error', e)
+        else:
+            messagebox.showerror('error', '请先连接机器人')
 
 
 # 启动应用
