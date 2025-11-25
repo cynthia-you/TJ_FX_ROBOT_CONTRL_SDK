@@ -65,11 +65,14 @@ print('-'*50)
 fk_mat=kk.fk(robot_serial=0,joints=[10,20,30,40,50,60,70])
 #逆解
 ik_result_structure=kk.ik(robot_serial=0,pose_mat=fk_mat,ref_joints=[10,20,30,40,50,60,70])
-print(f'ik joints:{ik_result_structure.m_Output_RetJoint.to_list()}')
-print(f'ik 当前位姿是否超出位置可达空间（False：未超出；True：超出）: {ik_result_structure.m_Output_IsOutRange}')
-print(f'ik 各关节是否发生奇异（False：未奇异；True：奇异）: {ik_result_structure.m_Output_IsDeg[:]}')
-print(f'ik 是否有关节超出位置正负限制（False：未超出；True：超出）: {ik_result_structure.m_Output_IsJntExd}')
-print(f'ik 各关节是否超出位置正负限制（False：未超出；True：超出）: {ik_result_structure.m_Output_JntExdTags[:]}')
+if ik_result_structure:
+    print(f'ik joints:{ik_result_structure.m_Output_RetJoint.to_list()}')
+    print(f'ik 当前位姿是否超出位置可达空间（False：未超出；True：超出）: {ik_result_structure.m_Output_IsOutRange}')
+    print(f'ik 各关节是否发生奇异（False：未奇异；True：奇异）: {ik_result_structure.m_Output_IsDeg[:]}')
+    print(f'ik 是否有关节超出位置正负限制（False：未超出；True：超出）: {ik_result_structure.m_Output_IsJntExd}')
+    print(f'ik 各关节是否超出位置正负限制（False：未超出；True：超出）: {ik_result_structure.m_Output_JntExdTags[:]}')
+else:
+    print('NO ik results')
 time.sleep(0.5)
 #逆解优化
 #计算末端位姿不变、改变零空间（臂角方向）的逆运动学
