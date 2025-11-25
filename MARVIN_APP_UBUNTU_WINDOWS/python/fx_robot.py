@@ -431,17 +431,26 @@ class Marvin_Robot:
             param_buf = (ctypes.c_char * 30)(*paraName.encode('ascii'), 0)  # 显式添加终止符
             if type=='float':
                 result = ctypes.c_double(0)
-                self.robot.OnGetFloatPara(param_buf, ctypes.byref(result))
+                self.robot.OnGetFloatPara.restype = ctypes.c_long
+                re_flag=self.robot.OnGetFloatPara(param_buf, ctypes.byref(result))
                 # print(f"parameter:{paraName}, float parameters={result.value}")
-                return result.value
+                return re_flag,result.value
             elif type=='int':
                 result = ctypes.c_int(0)
-                self.robot.OnGetIntPara(param_buf, ctypes.byref(result))
+                self.robot.OnGetIntPara.restype = ctypes.c_long
+                re_flag=self.robot.OnGetIntPara(param_buf, ctypes.byref(result))
                 # print(f"parameter:{paraName}, int parameters={result.value}")
-                return result.value
+                return re_flag, result.value
         except Exception as e:
-            print(f'******************1')
             print("ERROR:",e)
+
+    def save_para_file(self):
+        '''保存配置文件
+        :return:
+        '''
+        self.robot.OnSavePara.restype = ctypes.c_long
+        return self.robot.OnSavePara()
+
 
     def set_param(self,type:str,paraName:str,value:float):
         '''设置参数信息
@@ -478,14 +487,13 @@ class Marvin_Robot:
             param_buf = (ctypes.c_char * 30)(*paraName.encode('ascii'), 0)  # 显式添加终止符
             if type=='float':
                 result = ctypes.c_double(value)
-                self.robot.OnSetFloatPara(param_buf, result)
-                return True
+                self.robot.OnSetFloatPara.restype = ctypes.c_long
+                return self.robot.OnSetFloatPara(param_buf, result)
             elif type=='int':
-                result = ctypes.c_int(value)
-                self.robot.OnSetIntPara(param_buf, result)
-                return True
+                result = ctypes.c_int(int(value))
+                self.robot.OnSetIntPara.restype = ctypes.c_long
+                return self.robot.OnSetIntPara(param_buf, result)
         except Exception as e:
-            print(f'******************2')
             print("ERROR:",e)
 
     def clear_set(self):
@@ -938,20 +946,6 @@ class Marvin_Robot:
         except Exception as e:
             print(f'******************17')
             print(f'ERROR:{e}')
-
-
-
-    def save_para_file(self):
-        '''保存配置文件
-        :return:
-        '''
-        id = self.robot.OnSavePara()
-        if id == -1 or id == 2:
-            print("save parameter failed.")
-            return id
-        else:
-            print(f'index of saved parameter is {id}')
-            return id
 
     def log_switch(self,flag:str):
         try:
