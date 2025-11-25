@@ -32,6 +32,12 @@
      
 
 ### 1.1 控制器版本更新
+    1003_35版本添加功能:
+    1 增加内外编码器检测功能
+    2 修复伺服出错后所有轴全部下使能
+    https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/tag/marvin_tool_1003_35
+
+    
     1003_34版本添加功能:
     1 内编外编清0，编码器清错。
     2 支持仅位置模式控制 增加了参数R.A0.BASIC.CtrlType和R.A1.BASIC.CtrlType。0表示控制模式都开放，1表示只有位置控制 (修改在机器人配置文件 *.ini)
