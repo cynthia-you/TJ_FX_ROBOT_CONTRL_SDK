@@ -370,7 +370,7 @@ class Marvin_Robot:
         return self.robot.OnDownloadLog(log_char)
 
 
-        def get_param(self,type:str,paraName:str):
+    def get_param(self,type:str,paraName:str):
         '''获取参数信息
         :param type: float or int .参数类型
         :param paraName:  参数名见robot.ini
