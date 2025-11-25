@@ -790,11 +790,12 @@ class App:
 
     def get_verion(self):
         if self.connected:
-            robot.receive_file('version.txt', "/home/fusion/version.txt")
-            time.sleep(0.5)
-            with open('version.txt', 'r') as f:
-                version = f.readline()
-            f.close()
+            # robot.receive_file('version.txt', "/home/fusion/version.txt")
+            # time.sleep(0.5)
+            # with open('version.txt', 'r') as f:
+            #     version = f.readline()
+            # f.close()
+            re_flag, version = robot.get_param('int', 'VERSION')
             self.vv_entry.delete(0, tk.END)
             self.vv_entry.insert(0, version)
         else:
@@ -856,20 +857,22 @@ class App:
             )
             if file_path:
                 tag1 = robot.update_SDK(file_path)
-                # tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")# 代码写的是这个名字
-                print(f"file path:{file_path}")
-                a = file_path.split('/')[-1].split('.')[0].split('_')
-                b = a[2] + '-' + a[3]
-                print(b)
-                with open('version.txt', 'w') as f:
-                    f.write(b)
-                f.close()
-
-                tag = robot.send_file('version.txt', "/home/fusion/version.txt")
-                time.sleep(1)
-                if tag1 and tag:
+                if tag1:
                     messagebox.showinfo('success', '系统文件已上传，请重启控制器自动更新。')
-                    os.remove('version.txt')
+                # # tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")# 代码写的是这个名字
+                # print(f"file path:{file_path}")
+                # a = file_path.split('/')[-1].split('.')[0].split('_')
+                # b = a[2] + '-' + a[3]
+                # print(b)
+                # with open('version.txt', 'w') as f:
+                #     f.write(b)
+                # f.close()
+                #
+                # tag = robot.send_file('version.txt', "/home/fusion/version.txt")
+                # time.sleep(1)
+                # if tag1 and tag:
+                #     messagebox.showinfo('success', '系统文件已上传，请重启控制器自动更新。')
+                #     os.remove('version.txt')
         else:
             messagebox.showerror('error', '请先连接机器人')
 
