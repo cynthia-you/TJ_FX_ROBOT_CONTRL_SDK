@@ -253,7 +253,7 @@
 
 
 
-        订阅数据a_state=sub_data["states"][0]["err_code"]的值可以看到当前伺服状态：
+        订阅数据a_state=sub_data["states"][0]["err_code"]的值可以看到当前机械臂的错误状态：
              ARM_ERR_BusPhysicAbnoraml = 1, //"总线拓扑异常"
              ARM_ERR_ServoError = 2,//"伺服故障"
              ARM_ERR_InvalidPVT = 3,//"PVT异常"
