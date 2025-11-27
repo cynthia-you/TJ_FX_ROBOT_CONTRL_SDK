@@ -108,13 +108,6 @@ robot.log_switch('1') #全局日志开关
 robot.local_log_switch('1') # 主要日志
 
 
-'''清错'''
-robot.clear_set()
-robot.clear_error('A')
-robot.send_cmd()
-time.sleep(1)
-
-
 '''发送HEX数据到CAN
 注意看模组协议 CANID 如果是32位的发送数据要发对，比如协议CANID为0x01, 按HEX发送为：01 00 00 00 00
 64位协议CANID为0x01, 按HEX发送为：01 00
