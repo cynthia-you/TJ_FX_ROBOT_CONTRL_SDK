@@ -1,0 +1,6 @@
+#linux:
+g++ *.cpp -Wall -w -O2 -fPIC -shared -o libMarvinSDK.dll
+
+
+#win:
+g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm
