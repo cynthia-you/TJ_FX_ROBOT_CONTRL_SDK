@@ -6,7 +6,7 @@ class StateCtr(Structure):
     _fields_ = [
         ("m_CurState", c_int),  # * 当前状态 */ ArmState
         ("m_CmdState", c_int),  # * 指令状态 */ DCSSCmdType 0
-        ("m_ERRCode", c_int)  # * 错误码   */
+        ("m_ERRCode", c_int)    # * 机械臂错误码*/
     ]
 
 
