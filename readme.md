@@ -118,13 +118,17 @@
     4.1.1编译SO动态库:
     INUX设备编译:
         控制SDK:  ./contrlSDK/makefile 生成libMarvinSDK.so
+        
         运动学SDK: ./kinematicsSDK/makefile 生成libKine.so
 
     4.1.2编译DLL动态库:
     1)在WINDOWS下使用MINGW编译:
-            控制SDK:  g++ MarvinSDK.cpp Robot.cpp ACB.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.dll
-            运动学SDK: g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
-            WINDOWS下C++使用
+            控制SDK:
+                 源码controlSDK_win: g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm
+                 
+            运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
+            
+            编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
 
 
     2)LINUX下编译神DLL动态库:
@@ -134,9 +138,9 @@
                 -lws2_32 -lpthread \
                 -lwinmm
 
-                该指令生成的DLL PYTHON可调用, 但WINDOWS下C++使用不可
-
         运动学SDK: g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll  
+
+        该指令生成的DLL PYTHON可调用, 但WINDOWS下C++使用不可
 
 ### 4.2 使用
     LINUX:
@@ -149,10 +153,9 @@
     WINDOWS:
 
         C++: 
-            ./demo_linux_win/c++_win/API_USAGE_KINEMATICS.txt
-            ./demo_linux_win/c++_win/API_USAGE_MarvinSDK.txt
-
-        PYTHON 代码跨平台, 参考python_doc_contrl.md 和python_doc_kine.md 内的DENO
+            双击执行自动化demo生成脚本： ./demo_linux_win/c++_win/auto_complie.bat
+            
+        PYTHON 代码跨平台, 参考./demo_linux_win/python/   下的demo
 
 
 ## 五、注意事项
