@@ -85,7 +85,7 @@
 ## 二、APP更新
 
 ### 增加浮机参数计算功能
-     MARVIN_APP_1119
+     MARVIN_APP_1125
 
     
     
