@@ -148,7 +148,7 @@
             ./demo_linux_win/c++_linux/API_USAGE_KINEMATICS.txt
             ./demo_linux_win/c++_linux/API_USAGE_MarvinSDK.txt
 
-        PYTHON 代码跨平台, 参考python_doc_contrl.md 和python_doc_kine.md 内的DENO
+        PYTHON 代码跨平台, 参考./demo_linux_win/python/   下的demo
 
     WINDOWS:
 
