@@ -16,9 +16,12 @@ logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
 使用逻辑
     1 初始化订阅数据的结构体
     2 初始化机器人接口
-    3 查验连接是否成功,失败程序直接退出,成功清CAN缓存，开启读CAN回复数据的线程
-    4 发送HEX数据到CAN
-    5 任务完成释放内存使别的程序或者用户可以连接机器人
+    3 选择端口和左右臂
+    4 查验连接是否成功。失败程序直接退出；成功：清CAN缓存，开启读CAN回复数据的线程
+    5 关日志以便检查
+    6 发送HEX数据到CAN
+    7 接收线程收到的回复
+    8 任务完成释放内存使别的程序或者用户可以连接机器人
 '''#################################################################
 # 配置日志系统
 logging.basicConfig(format='%(message)s')
@@ -29,11 +32,11 @@ logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
 '''创建队列'''
 data_queue = queue.Queue()
 
-def read_data():
+def read_data(robot_id,com):
     '''接收CAN的HEX数据'''
     while True:
         try:
-            tag, receive_hex_data = robot.get_485_data('A', 1)
+            tag, receive_hex_data = robot.get_485_data(robot_id, com)
             if tag >= 1:
                 logger.info(f"接收的HEX数据：{receive_hex_data}")
                 data_queue.put(receive_hex_data)
@@ -65,6 +68,9 @@ dcss=DCSS()
 '''初始化机器人接口'''
 robot=Marvin_Robot()
 
+'''选择模式和手臂'''
+robot_id='A'
+com=1
 
 '''查验连接是否成功'''
 init = robot.connect('192.168.1.190')
@@ -92,10 +98,10 @@ else:
     if motion_tag > 0:
         logger.info('success:机器人连接成功!')
         ''' 发送数据前，先清缓存'''
-        robot.clear_485_cache('A')
+        robot.clear_485_cache(robot_id)
         time.sleep(0.2)
 
-        thread = threading.Thread(target=read_data, daemon=True)
+        thread = threading.Thread(target=read_data, args=(robot_id,com),daemon=True)
         thread.start()
         logger.info('读CAN回复线程开启')
     else:
@@ -103,9 +109,9 @@ else:
         exit(0)
 
 
-'''开启日志以便检查'''
-robot.log_switch('1') #全局日志开关
-robot.local_log_switch('1') # 主要日志
+'''关日志以便检查'''
+robot.log_switch('0') #全局日志开关
+robot.local_log_switch('0') # 主要日志
 
 
 '''发送HEX数据到CAN
@@ -113,10 +119,13 @@ robot.local_log_switch('1') # 主要日志
 64位协议CANID为0x01, 按HEX发送为：01 00
 '''
 hex_data = "06 01 00 00 77 03 e8 03 00 00 00 00 00 00 02 02" # 0 1 CANID,  2 3 BYTE1, 4 5 BYTE2,  5 6 BYTE3 以此类推
-success, sdk_return = robot.set_485_data('A',hex_data, len(hex_data), 1)
+success, sdk_return = robot.set_485_data(robot_id,hex_data, len(hex_data), com)
 logger.info(f"设置结果: {'成功' if success else '失败'}")
+
+'''接收CAN的HEX数据'''
 received_count, received_data = get_received_data()
-print(f'thread接收的数据信息， 帧数：{received_count},  接收的数据:\n{received_data}')
+if received_count>0:
+    print(f'thread接收的数据信息， 帧数：{received_count},  接收的数据:\n{received_data}')
 
 
 '''释放机器人内存'''
