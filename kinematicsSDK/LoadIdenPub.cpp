@@ -506,7 +506,7 @@ LoadIdenErrCode OnCalLoadDynamic_7_MarvinSRS(LoadDynamic* loadDyn, const char *u
 	loadDyn->inertia[0] = (ixx>0)? ixx:0.001;
     loadDyn->inertia[1] = (iyy > 0) ? iyy : 0.001;
     loadDyn->inertia[2] = (izz > 0) ? izz : 0.001;
-	printf(" m=%7.3fkg\n x=%7.3fmm\n y=%7.3fmm\n z=%7.3fmm\n ixx=%7.3f\n iyy=%7.3f\n izz=%7.3f\n", me, mrx, mry, mrz, ixx, iyy, izz);
+	// printf(" m=%7.3fkg\n x=%7.3fmm\n y=%7.3fmm\n z=%7.3fmm\n ixx=%7.3f\n iyy=%7.3f\n izz=%7.3f\n", me, mrx, mry, mrz, ixx, iyy, izz);
 	cout << "Load identification calculate successful!"<< endl;
 	return LOAD_IDEN_NoErr;
 }
