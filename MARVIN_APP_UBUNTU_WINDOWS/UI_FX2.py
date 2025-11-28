@@ -11,6 +11,7 @@ import os
 import glob
 import math
 import sys
+import queue
 
 crr_pth = os.getcwd()
 dcss = DCSS()
@@ -37,6 +38,39 @@ button_w = 10
 
 # 定义常量
 DBL_EPSILON = sys.float_info.epsilon
+
+# 创建队列
+data_queue = queue.Queue()
+def read_data(robot_id,com):
+    '''接收CAN的HEX数据'''
+    while True:
+        try:
+            tag, receive_hex_data = robot.get_485_data(robot_id, com)
+            if tag >= 1:
+                print(f"接收的HEX数据：{receive_hex_data}")
+                data_queue.put(receive_hex_data)
+            else:
+                time.sleep(0.001)
+        except Exception as e:
+            # print(f"读取数据错误: {e}")
+            time.sleep(0.001)
+
+
+def get_received_data():
+    '''获取接收到的数据并计数'''
+    received_count = 0
+    received_data_list = []
+
+    while True:
+        try:
+            data = data_queue.get_nowait()
+            received_count += 1
+            received_data_list.append(data)
+            print(f'received_data_list:{received_data_list}')
+        except queue.Empty:
+            break
+
+    return received_count, received_data_list
 
 
 def Matrix2ABC(m, abc):
@@ -261,6 +295,9 @@ class App:
         # 初始化两个点的列表
         self.points1 = []
         self.points2 = []
+
+        self.command1=[]
+        self.command2=[]
 
         # 初始化参数列表
         self.params = []
@@ -2022,18 +2059,49 @@ class App:
         self.com_select_combobox_1.current(0)  # 默认选中第一个选项
         self.com_select_combobox_1.grid(row=0, column=2, padx=5)
 
-        self.com_entry_1 = tk.Entry(self.eef_frame_1, width=120)
-        self.com_entry_1.insert(0, "01 06 00 00 00 01 48 0A")
-        self.com_entry_1.grid(row=0, column=4, padx=5, sticky="ew")
+        # self.com_entry_1 = tk.Entry(self.eef_frame_1, width=120)
+        # self.com_entry_1.insert(0, "01 06 00 00 00 01 48 0A")
+        # self.com_entry_1.grid(row=0, column=4, padx=5, sticky="ew")
 
-        self.eef_text_3 = tk.Button(self.eef_frame_1, text="1#末端接收", command=lambda: self.receive_data_eef('A'))
-        self.eef_text_3.grid(row=0, column=5, padx=5)
+
+        self.eef_delet_1=tk.Button(self.eef_frame_1, text="删除选中", command=lambda: self.delete_eef_command('A'))
+        self.eef_delet_1.grid(row=0, column=3, padx=5, pady=5)
+
+
+        self.eef_combo1 = ttk.Combobox(self.eef_frame_1, state="readonly",width=120)
+        self.eef_combo1.grid(row=0, column=4, padx=5)
+
+        self.eef_bt_1 = tk.Button(self.eef_frame_1, text="1#末端接收", command=lambda: self.receive_data_eef('A'))
+        self.eef_bt_1.grid(row=0, column=5, padx=5)
+
+        self.eef_frame_1_2 = tk.Frame(parent, bg="white")
+        self.eef_frame_1_2.pack(fill="x")
+
+        self.eef1_2_b1= tk.Label(self.eef_frame_1_2, text="", bg="white", width=7)
+        self.eef1_2_b1.grid(row=0, column=0, padx=5)
+
+        self.eef1_2_b2= tk.Label(self.eef_frame_1_2, text="", bg="white", width=7)
+        self.eef1_2_b2.grid(row=0, column=1, padx=5)
+
+        self.eef1_2_b3= tk.Label(self.eef_frame_1_2, text="", bg="white", width=8)
+        self.eef1_2_b3.grid(row=0, column=2, padx=5)
+
+        self.eef_add_1=tk.Button(self.eef_frame_1_2,text='1#加指令',command=lambda :self.add_eef_command('A'))
+        self.eef_add_1.grid(row=0, column=3, padx=5)
+
+        self.eef_entry = tk.Entry(self.eef_frame_1_2, width=120)
+        self.eef_entry.insert(0, "01 06 00 00 00 01 48 0A")
+        self.eef_entry.grid(row=0, column=4, padx=5, sticky="ew")
+
+        self.eef_add_2=tk.Button(self.eef_frame_1_2,text='2#加指令',command=lambda :self.add_eef_command('B'))
+        self.eef_add_2.grid(row=0, column=5, padx=5)
+
 
         self.eef_frame_2 = tk.Frame(parent, bg="white")
         self.eef_frame_2.pack(fill="x")
         # 第1 :text
-        self.eef_text_2 = tk.Button(self.eef_frame_2, text="2#末端发送", command=lambda: self.send_data_eef('B'))
-        self.eef_text_2.grid(row=0, column=0, padx=5)
+        self.eef_bt_2 = tk.Button(self.eef_frame_2, text="2#末端发送", command=lambda: self.send_data_eef('B'))
+        self.eef_bt_2.grid(row=0, column=0, padx=5)
 
         # 第2列：sensor select
         self.com_text_2 = tk.Label(self.eef_frame_2, text="端口", bg="white", width=5)
@@ -2049,12 +2117,20 @@ class App:
         self.com_select_combobox_2.current(0)  # 默认选中第一个选项
         self.com_select_combobox_2.grid(row=0, column=2, padx=5)
 
-        self.com_entry_2 = tk.Entry(self.eef_frame_2, width=120)
-        self.com_entry_2.insert(0, "01 06 00 00 00 01 48 0A")
-        self.com_entry_2.grid(row=0, column=4, padx=5, sticky="ew")
+        # self.com_entry_2 = tk.Entry(self.eef_frame_2, width=120)
+        # self.com_entry_2.insert(0, "01 06 00 00 00 01 48 0A")
+        # self.com_entry_2.grid(row=0, column=4, padx=5, sticky="ew")
 
-        self.eef_text_4 = tk.Button(self.eef_frame_2, text="2#末端接收", command=lambda: self.receive_data_eef('B'))
-        self.eef_text_4.grid(row=0, column=5, padx=5, pady=5)
+        self.eef_delet_2=tk.Button(self.eef_frame_2, text="删除选中", command=lambda: self.delete_eef_command('B'))
+        self.eef_delet_2.grid(row=0, column=3, padx=5, pady=5)
+
+
+        self.eef_combo2 = ttk.Combobox(self.eef_frame_2, state="readonly",width=120)
+        self.eef_combo2.grid(row=0, column=4, padx=5)
+
+        self.eef_bt_4 = tk.Button(self.eef_frame_2, text="2#末端接收", command=lambda: self.receive_data_eef('B'))
+        self.eef_bt_4.grid(row=0, column=5, padx=5, pady=5)
+
 
         self.eef_frame_3 = tk.Frame(parent, bg="white")
         self.eef_frame_3.pack(fill="x")
@@ -2063,13 +2139,14 @@ class App:
         recv_label1 = tk.Label(self.eef_frame_3, text="1#接收内容:")
         recv_label1.grid(row=0, column=0, padx=5)
 
+
         # 间隔
         spacer = tk.Label(self.eef_frame_3, text="   ", bg='white')
         spacer.grid(row=0, column=1, padx=5)
 
         self.recv_text1 = scrolledtext.ScrolledText(self.eef_frame_3, width=70, height=8, wrap=tk.WORD)
         self.recv_text1.grid(row=1, column=0, padx=5)
-        self.recv_text1.insert(tk.END, 'receive info')
+        self.recv_text1.insert(tk.END, '使用提示：\n请先选择端口：CAN/COM1/COM2, \n点击 1#末端接收 按钮， \n输入发送数据，点击 1#末端接收按钮, \n接收到的末端信息以1khz频率刷新显示')
 
         # 间隔
         spacer1 = tk.Label(self.eef_frame_3, text="   ", bg='white')
@@ -2081,7 +2158,7 @@ class App:
 
         self.recv_text2 = scrolledtext.ScrolledText(self.eef_frame_3, width=70, height=8, wrap=tk.WORD)
         self.recv_text2.grid(row=1, column=2, padx=5)
-        self.recv_text2.insert(tk.END, 'receive info')
+        self.recv_text2.insert(tk.END, '使用提示：\n请先选择端口：CAN/COM1/COM2, \n点击 2#末端接收 按钮， \n输入发送数据，点击 2#末端接收按钮, \n接收到的末端信息以1khz频率刷新显示')
 
         # 添加状态显示区域
         status_display_frame_7 = tk.Frame(parent, bg="white", padx=10, pady=5)
@@ -2302,6 +2379,8 @@ class App:
                     frame_update = sub_data['outputs'][0]['frame_serial']
                 time.sleep(0.01)
             if motion_tag > 0:
+                '''启动读485数据'''
+
                 # 启动数据订阅
                 self.data_subscriber = DataSubscriber(self.update_data)
 
@@ -2588,6 +2667,15 @@ class App:
                 continue
         return False
 
+
+
+    def is_duplicate_command(self,point_list, target_list):
+        """检查点是否已经在列表中存在（去重功能）"""
+        for existing_point_str in target_list:
+            if existing_point_str == point_list:
+                return True
+        return False
+
     def add_point1(self):
         """添加点到1#列表"""
         point_str = self.entry_var.get()
@@ -2754,10 +2842,50 @@ class App:
             except Exception as e:
                 messagebox.showerror("错误", f"读取文件时出错: {str(e)}")
 
+
+
+    def add_eef_command(self,robot_id):
+        """添加点到1#列表"""
+        command_str = self.eef_entry.get()
+        if robot_id=='A':
+            # 检查是否已存在相同的点
+            if self.is_duplicate_command(command_str, self.command1):
+                messagebox.showwarning("重复指令", "该指令已存在于1#列表中")
+                return
+            else:
+                self.command1.insert(0, command_str)
+        elif robot_id=='B':
+            # 检查是否已存在相同的点
+            if self.is_duplicate_command(command_str, self.command2):
+                messagebox.showwarning("重复指令", "该指令已存在于1#列表中")
+                return
+            else:
+                self.command2.insert(0, command_str)
+        self.update_combo_eef()
+
+    def delete_eef_command(self,robot_id):
+        """从2#列表删除选中的点"""
+        if robot_id=='A':
+            selected_index = self.eef_combo1.current()
+            if selected_index != -1 and selected_index < len(self.command1):
+                self.command1.pop(selected_index)
+                self.update_combo_eef()
+            else:
+                messagebox.showwarning("警告", "请选择要删除的通讯指令")
+        elif robot_id=='B':
+            selected_index = self.eef_combo1.current()
+            if selected_index != -1 and selected_index < len(self.command2):
+                self.command2.pop(selected_index)
+                self.update_combo_eef()
+            else:
+                messagebox.showwarning("警告", "请选择要删除的通讯指令")
+
+
     def update_comboboxes(self):
         """更新两个下拉框的内容"""
         self.combo1['values'] = self.points1
         self.combo2['values'] = self.points2
+
         # 如果有选项，选择第一个
         if self.points1:
             self.combo1.current(0)
@@ -2767,6 +2895,20 @@ class App:
             self.combo2.current(0)
         else:
             self.combo2.set('')
+
+    def update_combo_eef(self):
+        # 更新eef commands列表
+        self.eef_combo1['values'] = self.command1
+        self.eef_combo2['values'] = self.command2
+        # 如果有选项，选择第一个
+        if self.command1:
+            self.eef_combo1.current(0)
+        else:
+            self.eef_combo1.set('')
+        if self.command2:
+            self.eef_combo2.current(0)
+        else:
+            self.eef_combo2.set('')
 
     def run1(self):
         if self.connected:
@@ -3864,10 +4006,7 @@ class App:
                 time.sleep(0.5)
                 if robot_id == 'A':
                     sample_data = self.com_entry_1.get()
-                    # print(f'sample_data:{sample_data}')
-                    # print(f'len(sample_data):{len(sample_data)}')
                     com_ = self.com_select_combobox_1.get()
-                    # print(f'com:{com_}')
                 elif robot_id == 'B':
                     sample_data = self.com_entry_2.get()
                     com_ = self.com_select_combobox_2.get()
@@ -3881,6 +4020,15 @@ class App:
                     com = 3
                 # print(f'com:{com}')
                 success, sdk_return = robot.set_485_data(robot_id, sample_data, len(sample_data), com)
+                received_count, received_data = get_received_data()
+                if received_data>0:
+                    print(f'received_count:{received_count},  eef received:{received_data[0]}')
+                if robot_id == 'A':
+                    self.recv_text1.delete('1.0', tk.END)
+                    self.recv_text1.insert(tk.END, received_data[0])
+                if robot_id == 'B':
+                    self.recv_text2.delete('1.0', tk.END)
+                    self.recv_text2.insert(tk.END, received_data[0])
                 if not success:
                     messagebox.showerror('error', f'send data must be hex string of bytes string')
             except Exception as e:
@@ -3891,6 +4039,7 @@ class App:
     def receive_data_eef(self, robot_id):
         if self.connected:
             try:
+                robot.clear_485_cache(robot_id)
                 com = 0
                 com_ = ''
                 if robot_id == 'A':
@@ -3905,16 +4054,18 @@ class App:
                     com = 2
                 elif com_ == 'COM2':
                     com = 3
-                success, data = robot.get_485_data(robot_id, int(com))
-                print(f'eef received:{data}')
-                if success > 0:
-                    if robot_id == 'A':
-                        self.recv_text1.delete('1.0', tk.END)
-                        self.recv_text1.insert(tk.END, data)
-                    if robot_id == 'B':
-                        self.recv_text2.delete('1.0', tk.END)
-                        self.recv_text2.insert(tk.END, data)
-                    # messagebox.showinfo('success', f're data to {robot_id}')
+                self.eef_thread=threading.Thread(target=read_data, args=(robot_id, com), daemon=True)
+                self.eef_thread.start()
+
+                received_count, received_data = get_received_data()
+                if received_data > 0:
+                    print(f'received_count:{received_count},  eef received:{received_data[0]}')
+                if robot_id == 'A':
+                    self.recv_text1.delete('1.0', tk.END)
+                    self.recv_text1.insert(tk.END, received_data[0])
+                if robot_id == 'B':
+                    self.recv_text2.delete('1.0', tk.END)
+                    self.recv_text2.insert(tk.END, received_data[0])
             except Exception as e:
                 messagebox.showerror('error', e)
         else:
