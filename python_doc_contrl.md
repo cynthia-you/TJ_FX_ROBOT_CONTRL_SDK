@@ -19,8 +19,53 @@
       
 
 
+## 一、 MarvinSDK为上位机控制机器人（双臂系统）的二次开发工具包，提供功能大类有：
+(1) 1KHz 通信
+    下发指令和订阅机器人数据是1KHz 通信， 采用UDP通信。
 
-## 一、API列表 [demo_linux_win/python/fx_robot.py]
+
+(2) 控制状态切换
+
+    ① 下使能
+    ② 位置跟随模式
+    ③ 位置PVT模式
+    ④ 扭矩模式
+        1) 关节阻抗控制/关节阻抗控制位置跟随
+        2) 坐标阻抗控制/坐标阻抗控制位置跟随
+        3) 力控制/力控制位置跟随
+    ⑤ 协作释放
+
+(3) 控制状态参数（1KHz）
+
+    ① 参数
+        1) 目标跟随速度加速度设定，（百分比，值范围0-100）
+        2) 关节阻抗参数设定
+        3) 坐标阻抗参数设定
+        4) 力控制参数设定
+        5) 工具运动学/动力学参数设定
+    ② 指令
+        1) 位置跟随目标指令 
+        2) 力控目标指令 
+
+(4) 数据反馈和采集（1KHz）
+
+    ① 实时反馈
+        1) 位置
+        2) 速度
+        3) 外编位置
+        4) 电流
+        5) 传感器扭矩
+        6) 摩檫力
+        7) 轴外力
+    ② 数据采集
+        1) 针对实时反馈数据可选择多达35项数据进行实时采集。
+
+(5) 参数获取和设置
+
+    ① 统一接口以参数名方式获取和设置所有参数。
+
+
+## 二、API列表 [demo_linux_win/python/fx_robot.py]
   获取SDK版本  
   - SDK_version()
 
@@ -127,8 +172,8 @@
   - update_SDK(sdk_path: str)
 
 
-## 二、API用法
-### 2.1 API接口说明
+## 三、API用法
+### 3.1 API接口说明
     首先将fx_robot的类函数实例化，然后调用help()方法可一览所有方法，help(方法名)可详细了解方法的输入和返回， 里面写的详细！
 
     tj_robot = Marvin_Robot() #实例化
@@ -186,64 +231,82 @@
     '''
 
 
-## 2.2 绑定类方法
-    一般的方法可以单独调用，但是部分控制指令需要有使用先后逻辑：
-    以下指令设置必须在clear_set() 和send_cmd()之间才起效（忽略输入的测试值）：
-            set_state(arm='A',state=3)
-            set_drag_space(arm='A',dgType=1)
-            set_impedance_type(arm='A',type=1)
-            set_pvt_id(arm='A',id=1)
-            set_card_kd_params(arm='A',K=[3000,3000,3000,60,60,60,0], D =[20,20,20,2,2,2,0], type=1)
-            set_joint_kd_params(arm='A',K=[3,3,3,1.6, 1, 1, 1], D=[0.6,0.6,0.6,0.4,0.2,0.2,0.2])
-            set_force_cmd(arm='A',f=1.)
-            set_force_control_params(arm='A',fcType=0, fxDirection=[0, 0, 1, 0, 0, 0], fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
-            fcAdjLmt=10.)
-            set_vel_acc(arm='A',velRatio=1, AccRatio=1)
-            set_tool(arm='A',kineParams=[0.,0.,0.,0.,0.,0.], dynamicParams=[0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
-            set_joint_cmd_pose(arm='A',joints=[0.,0.,0.,0.,0.,0.,6.])
+## 3.2 绑定类方法
+    ### 3.2.1 SDK的接口部分可以直接调用
+    
+            如：
+              获取指定手臂的伺服错误十六进制：get_servo_error_code(arm: str)
+            
+              主要日志开关接口， 0关1开：local_log_switch(flag: str)
+    
+    ### 3.2.1 高频（IKHZ）收发的指令必须复合调用：
+    
+                以下指令设置必须在clear_set() 和send_cmd()之间才起效（忽略输入的测试值）：
+                set_state(arm='A',state=3)
+                set_drag_space(arm='A',dgType=1)
+                set_impedance_type(arm='A',type=1)
+                set_pvt_id(arm='A',id=1)
+                set_card_kd_params(arm='A',K=[3000,3000,3000,60,60,60,0], D =[20,20,20,2,2,2,0], type=1)
+                set_joint_kd_params(arm='A',K=[3,3,3,1.6, 1, 1, 1], D=[0.6,0.6,0.6,0.4,0.2,0.2,0.2])
+                set_force_cmd(arm='A',f=1.)
+                set_force_control_params(arm='A',fcType=0, fxDirection=[0, 0, 1, 0, 0, 0], fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
+                fcAdjLmt=10.)
+                set_vel_acc(arm='A',velRatio=1, AccRatio=1)
+                set_tool(arm='A',kineParams=[0.,0.,0.,0.,0.,0.], dynamicParams=[0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
+                set_joint_cmd_pose(arm='A',joints=[0.,0.,0.,0.,0.,0.,6.])
+                stop_collect_data()
+                clear_error(arm: str)
+                collect_data(targetNum7, targetID=[0,1,2,3,4,5,6,
+                                                     0,0,0,0,0,0,0,
+                                                     0,0,0,0,0,0,0,
+                                                     0,0,0,0,0,0,0,
+                                                     0,0,0,0,0,0,0], recordNum=1000)
+                                                     
+    
+            
+    #### 3.2.1.1  使用clear_set() 和send_cmd()设置时可以单条设置，如:
+    
+                clear_set()
+                set_state(state=3)
+                send_cmd()
+    
+    #### 3.2.1.2 使用clear_set() 和send_cmd()设置时可以多条一起设置（注意，这里展示可以多种参数和指定一起设置的功能，实际控制模式和参数请根据生产需求设置），如：
+    
+                ''' ####  A arm ###'''
+                clear_set()
+                set_state(arm='A',state=3)
+                set_drag_space(arm='A',dgType=1)
+                set_impedance_type(arm='A',type=1)
+                set_pvt_id(arm='A',id=1)
+                set_card_kd_params(arm='A',K=[3000,3000,3000,60,60,60,0], D =[20,20,20,2,2,2,0], type=1)
+                set_joint_kd_params(arm='A',K=[3,3,3,1.6, 1, 1, 1], D=[0.6,0.6,0.6,0.4,0.2,0.2,0.2])
+                set_force_cmd(arm='A',f=1.)
+                set_force_control_params(arm='A',fcType=0, fxDirection=[0, 0, 1, 0, 0, 0], fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
+                fcAdjLmt=10.)
+                set_vel_acc(arm='A',velRatio=1, AccRatio=1)
+                set_tool(arm='A',kineParams=[0.,0.,0.,0.,0.,0.], dynamicParams=[0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
+                set_joint_cmd_pose(arm='A',joints=[0.,0.,0.,0.,0.,0.,6.])
+                send_cmd()
+            
+                ''' ####  B arm ###'''
+                clear_set()
+                set_state(arm='B',state=3)
+                set_drag_space(arm='B',dgType=1)
+                set_impedance_type(arm='B',type=1)
+                set_pvt_id(arm='B',id=1)
+                set_card_kd_params(arm='B',K=[3000,3000,3000,60,60,60,0], D =[20,20,20,2,2,2,0], type=1)
+                set_joint_kd_params(arm='B',K=[3,3,3,1.6, 1, 1, 1], D=[0.6,0.6,0.6,0.4,0.2,0.2,0.2])
+                set_force_cmd(arm='B',f=1.)
+                set_force_control_params(arm='B',fcType=0, fxDirection=[0, 0, 1, 0, 0, 0], fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
+                                                  fcAdjLmt=10.)
+                set_vel_acc(arm='B',velRatio=1, AccRatio=1)
+                set_tool(arm='B',kineParams=[0.,0.,0.,0.,0.,0.], dynamicParams=[0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
+                set_joint_cmd_pose(arm='B',joints=[0.,0.,0.,0.,0.,0.,6.])
+                send_cmd()
 
 
-    可以单条指令设置:
-    clear_set()
-    set_state(state=3)
-    send_cmd()
 
-    也可以多个指令一起设置：
-    ''' ####  A arm ###'''
-    clear_set()
-    set_state(arm='A',state=3)
-    set_drag_space(arm='A',dgType=1)
-    set_impedance_type(arm='A',type=1)
-    set_pvt_id(arm='A',id=1)
-    set_card_kd_params(arm='A',K=[3000,3000,3000,60,60,60,0], D =[20,20,20,2,2,2,0], type=1)
-    set_joint_kd_params(arm='A',K=[3,3,3,1.6, 1, 1, 1], D=[0.6,0.6,0.6,0.4,0.2,0.2,0.2])
-    set_force_cmd(arm='A',f=1.)
-    set_force_control_params(arm='A',fcType=0, fxDirection=[0, 0, 1, 0, 0, 0], fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
-    fcAdjLmt=10.)
-    set_vel_acc(arm='A',velRatio=1, AccRatio=1)
-    set_tool(arm='A',kineParams=[0.,0.,0.,0.,0.,0.], dynamicParams=[0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
-    set_joint_cmd_pose(arm='A',joints=[0.,0.,0.,0.,0.,0.,6.])
-    send_cmd()
-
-    ''' ####  B arm ###'''
-    clear_set()
-    set_state(arm='B',state=3)
-    set_drag_space(arm='B',dgType=1)
-    set_impedance_type(arm='B',type=1)
-    set_pvt_id(arm='B',id=1)
-    set_card_kd_params(arm='B',K=[3000,3000,3000,60,60,60,0], D =[20,20,20,2,2,2,0], type=1)
-    set_joint_kd_params(arm='B',K=[3,3,3,1.6, 1, 1, 1], D=[0.6,0.6,0.6,0.4,0.2,0.2,0.2])
-    set_force_cmd(arm='B',f=1.)
-    set_force_control_params(arm='B',fcType=0, fxDirection=[0, 0, 1, 0, 0, 0], fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
-                                      fcAdjLmt=10.)
-    set_vel_acc(arm='B',velRatio=1, AccRatio=1)
-    set_tool(arm='B',kineParams=[0.,0.,0.,0.,0.,0.], dynamicParams=[0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
-    set_joint_cmd_pose(arm='B',joints=[0.,0.,0.,0.,0.,0.,6.])
-    send_cmd()
-
-
-
-## 2.3 扭矩模式下刚度和阻尼的建议：
+## 3.3 扭矩模式下刚度和阻尼的建议：
     刚度用来衡量物体抗变形的能力。刚度越大，形变越小力的传导率高，运动时感觉很脆很硬；反之，刚度越小，形变大，形状恢复慢，传递力效率低，运动时感觉比较柔软富有韧性。
     阻尼用来衡量物体耗散振动能量的能力。阻尼越大，物体振幅减小越快，但对力、位移的响应迟缓，运动时感觉阻力大，有粘滞感； 阻尼越小，减震效果减弱，但运动阻力小，更流畅，停止到位置时有余震感。
 
@@ -320,7 +383,8 @@
             b_current_joints=sub_data["outputs"][1]["fb_joint_pos"]
 
 
-# 三、案例脚本
+# 四、案例脚本
+
 请注意：案例仅为参考使用，实地生产和业务逻辑需要您加油写~~~
 
 
@@ -333,7 +397,17 @@
 
 位置模式：position_arm_A.py
 
-拖动模式：drag_arm_A.py
+拖动模式（需要按住末端的按钮拖动）：
+    关节阻抗模式下实现关节拖动：drag_arm_A.py
+    关节阻抗模式下关节拖动并保存数据：drag_JointImpedance_and_save_data_arm_A.py
+    笛卡尔阻抗模式下实现笛卡尔单方向的拖动：drag_cart_arm_A.py
+    笛卡尔阻抗模式下实现笛卡尔单方向的拖动并保存数据：drag_CartImpedance_and_save_data_arm_A.py
+
+撞机时用位置模式不安全，或者撞机成一团情况下，调整手臂姿态：
+    控制器需要升级到35版本以上
+    协作释放模式：collaborative_release.py
+    松闸抱闸模式（联系技术工程师修改伺服参数）:apply-brake_relase-brake_demo.py
+    
 
 末端485读取设定：demo_485_arm_A.py
 
