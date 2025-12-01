@@ -103,10 +103,10 @@ FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
         1. FX_INT32L RobotSerial：0，左臂；1，右臂
         2. solve_para结构体：
             Matrix4    m_Input_IK_TargetTCP：目标末端位姿矩阵：4×4齐次变换矩阵
-            Vect7      m_Input_IK_RefJoint：用于零空间优化的初始参考角度，当存在多解时，系统会选择最接近该参考角度的解。（单位：度）
+            Vect7      m_Input_IK_RefJoint：用于零空间优化的初始参考角度，当存在多解时，系统会选择最接近该参考角度的解（单位：度）。该构型的肩、肘、腕组成初始臂角平面，以肩到腕方向为Z向量。
             FX_INT32L	 m_Input_IK_ZSPType：零空间约束类型（0：使求解结果与参考关节角的欧式距离最小适用于一般冗余优化；1：与参考臂角平面最近，需要额外提供平面参数m_Input_IK_ZSPPara[6]）
             *FX_DOUBLE	 m_Input_IK_ZSPPara[6]：若选择零空间约束类型为1，则需额外输入参考角平面参数，目前仅支持平移方向的参数约束，即[x,y,z,a,b,c]=[0,0,0,0,0,0],可选择x,y,z其中一个方向调整
-            FX_DOUBLE	 m_Input_ZSP_Angle：末端位姿不变的情况下，零空间臂角相对于参考平面的旋转角度（单位：度）
+            FX_DOUBLE	 m_Input_ZSP_Angle：末端位姿不变的情况下，零空间臂角相对于参考平面的旋转角度（单位：度）。在m_Input_IK_RefJoint为初始臂角平面情况下，使用右手法则，绕Z向量正向旋转为臂角增加方向，绕Z向量负向旋转为臂角减少方向
             *FX_DOUBLE  m_DGR1,m_DGR2：选择123关节和567关节发生奇异允许的角度范围，如无额外要求无需输入，默认值为0.05（单位：度）
 
     输出：
