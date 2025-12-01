@@ -272,7 +272,7 @@ class Marvin_Kine:
     def set_tool_kine(self, robot_serial: int, tool_mat: list):
         '''工具运动学设置
         :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param tool_mat: list(4,4) 工具的运动学信息，齐次变换矩阵，相对末端法兰的旋转和平移，请确认法兰坐标系。
+        :param tool_mat: list(4,4) 工具的运动学信息，齐次变换矩阵，相对末端法兰的旋转和平移，请确认法兰坐标系。添加工具运动学信息后，正解IK将正解工具TCP处。
         :return:bool
         '''
         if robot_serial != 0 and robot_serial != 1:
@@ -328,9 +328,9 @@ class Marvin_Kine:
     def fk(self, robot_serial: int, joints: list):
         '''关节角度正解到末端TCP位置和姿态4*4
         :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param joints: list(7,1). 角度值
+        :param joints: list(7,1). 角度值，单位：度
         :return:
-            4x4的位姿矩阵，list(4,4)
+            末端4x4位姿矩阵，list(4,4)
         '''
         if robot_serial != 0 and robot_serial != 1:
             raise ValueError("robot_serial must be 0 or 1")
@@ -365,16 +365,17 @@ class Marvin_Kine:
 
     def ik(self, robot_serial: int, pose_mat: list, ref_joints: list):
         '''末端位置和姿态逆解到关节值
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param pose_mat: list(4,4), 位置姿态4x4list.
-        :param ref_joints: list(7,1),参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。
-        :return:
-            结构体，以下几项最相关：
-                m_Output_RetJoint      ：逆运动学解出的关节角度（单位：度）
-                m_Output_IsOutRange    ：当前位姿是否超出位置可达空间（False：未超出；True：超出）
-                m_Output_IsDeg[7]      ：各关节是否发生奇异（False：未奇异；True：奇异）:
-                m_Output_IsJntExd      : 是否有关节超出位置正负限制（False：未超出；True：超出）:
-                m_Output_JntExdTags[7] ：各关节是否超出位置正负限制（False：未超出；True：超出）:
+            :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
+            :param pose_mat: list(4,4), 末端的位置姿态4x4列表，旋转矩阵单位为角度，平移向量单位是毫米
+            :param ref_joints: list(7,1),参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。
+            :return:
+                结构体，以下几项最相关：
+                    m_Output_RetJoint      ：逆运动学解出的关节角度（单位：度）
+                    m_Output_IsOutRange    ：当前位姿是否超出位置可达空间（False：未超出；True：超出）
+                    m_Output_IsDeg[7]      ：各关节是否发生奇异（False：未奇异；True：奇异）
+                    m_Output_IsJntExd      : 是否有关节超出位置正负限制（False：未超出；True：超出）
+                    m_Output_JntExdTags[7] ：各关节是否超出位置正负限制（False：未超出；True：超出）
+                返回False,则逆解失败。
         '''
         if robot_serial != 0 and robot_serial != 1:
             raise ValueError("robot_serial must be 0 or 1")
@@ -418,20 +419,21 @@ class Marvin_Kine:
     def ik_nsp(self, robot_serial: int, pose_mat: list, ref_joints: list, zsp_type: int, zsp_para: list,
                zsp_angle: float, dgr: list):
         '''逆解优化：可调整方向,不能单独使用，ik得到的逆运动学解的臂角不满足当前选解需求时使用。
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param pose_mat: list(4,4), 位置姿态4x4list.
-        :param ref_joints: list(7,1),参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。
-        :param zsp_type: int, 零空间约束类型（0：与参考角欧式距离最小；1：与参考臂角平面最近）
-        :param zsp_para: list(6,), 若选择零空间约束类型为1，则需额外输入参考角平面参数,[x,y,z,a,b,c]=[0,0,0,0,0,0],可选择x,y,z其中一个方向调整
-        :param zsp_angle: float, 末端位姿不变的情况下，零空间臂角相对于参考平面的旋转角度（单位：度）
-        :param dgr: list(2,), 选择123关节和567关节发生奇异允许的角度范围，如无额外要求无需输入，默认值为0.05（单位：度）
-        :return:
-            结构体，以下几项最相关：
-                m_Output_RetJoint      ：逆运动学解出的关节角度（单位：度）
-                m_Output_IsOutRange    ：当前位姿是否超出位置可达空间（False：未超出；True：超出）
-                m_Output_IsDeg[7]      ：各关节是否发生奇异（False：未奇异；True：奇异）:
-                m_Output_IsJntExd      : 是否有关节超出位置正负限制（False：未超出；True：超出）:
-                m_Output_JntExdTags[7] ：各关节是否超出位置正负限制（False：未超出；True：超出）:
+            :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
+            :param pose_mat: list(4,4), 末端位置姿态4x4列表.
+            :param ref_joints: list(7,1),参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。该构型的肩、肘、腕组成初始臂角平面，以肩到腕方向为Z向量。
+            :param zsp_type: int, 零空间约束类型（0：使求解结果与参考关节角的欧式距离最小适用于一般冗余优化；1：与参考臂角平面最近，需要额外提供平面参数zsp_para）
+            :param zsp_para: list(6,), 若选择零空间约束类型zsp_type为1，则需额外输入参考角平面参数，目前仅支持平移方向的参数约束，即[x,y,z,a,b,c]=[0,0,0,0,0,0],可选择x,y,z其中一个方向调整
+            :param zsp_angle: float, 末端位姿不变的情况下，零空间臂角相对于参考平面的旋转角度（单位：度）,可正向调节也可逆向调节. 在ref_joints为初始臂角平面情况下，使用右手法则，绕Z向量正向旋转为臂角增加方向，绕Z向量负向旋转为臂角减少方向
+            :param dgr: list(2,), 选择123关节和567关节发生奇异允许的角度范围，如无额外要求无需输入，默认值为0.05（单位：度）
+            :return:
+                结构体，以下几项最相关：
+                    m_Output_RetJoint      ：逆运动学解出的关节角度（单位：度）
+                    m_Output_IsOutRange    ：当前位姿是否超出位置可达空间（False：未超出；True：超出）
+                    m_Output_IsDeg[7]      ：各关节是否发生奇异（False：未奇异；True：奇异
+                    m_Output_IsJntExd      : 是否有关节超出位置正负限制（False：未超出；True：超出）
+                    m_Output_JntExdTags[7] ：各关节是否超出位置正负限制（False：未超出；True：超出
+                返回False,则逆解失败。
         '''
 
         if robot_serial != 0 and robot_serial != 1:
@@ -598,18 +600,20 @@ class Marvin_Kine:
 
 
     def movL(self,robot_serial: int,start_xyzabc:list, end_xyzabc:list,ref_joints:list,vel:float,acc:float,save_path):
-        '''直线规划（MOVL），规划文件的频率500Hz，即每2ms执行一行
-
+        '''直线规划，规划文件的频率500Hz，即每2ms执行一行
         :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
         :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
-        :param ref_joints:参考关节构型
-        :param vel:规划速度
-        :param acc:规划加速度
+        :param ref_joints:参考关节构型，也是规划文件的起始点位。
+        :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
         :param save_path:保存的规划文件的路径
         :return: bool
         特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
                 2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                3 输出规划文件的频率为500Hz
+                4 特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
+                5 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
         '''
         if robot_serial != 0 and robot_serial != 1:
             raise ValueError("robot_serial must be 0 or 1")
@@ -645,16 +649,18 @@ class Marvin_Kine:
 
 
     def movL_KeepJ(self,robot_serial: int,start_joints:list, end_joints:list,vel:float,save_path):
-        '''直线规划保持关节构型（MOVL KeepJ）, 规划文件的点位频率50Hz，即每20ms执行一行
+        '''直线规划保持关节构型, 规划文件的点位频率50Hz，即每20ms执行一行
 
         :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :param start_joints:起始点各个关节位置（单位：角度）
         :param end_joints:终点各个关节位置（单位：角度）
-        :param vel:规划速度，百分比，值范围0-100
+        :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         :param save_path:规划文件的保存路径
         :return: bool
         特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
                 2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                3 输出点位频率为500Hz
+                4 该接口是不同于MOVL的规划接口，movL_KeepJ根据起始关节和结束关节规划一条直线路径。
         '''
         if robot_serial != 0 and robot_serial != 1:
             raise ValueError("robot_serial must be 0 or 1")
@@ -689,9 +695,13 @@ class Marvin_Kine:
         :param robot_type: int . 1:CCS机型，2:SRS机型
         :param ipath: sting, 相对路径导入工具辨识轨迹数据。
         :return:
-          辨识成功，返回一个长度为10的list:
-                    m,mcp,i
-        辨识失败，返回一串字符文本，请通过文本类容解决错误。
+            辨识成功，返回一个长度为10的list:
+                        m,mcp*3,i*6
+            辨识失败，返回错误类型：
+                    ret=1, 计算错误，需重新采集数据计算； 
+                    ret=2,打开采集数据文件错误，须检查采样文件； 
+                    ret=3,配置文件被修改； 
+                    ret=4, 采集时间不够，缺少有效数据
 
         '''
         if type(robot_type) != int:
