@@ -266,9 +266,22 @@ xyzabc_to_mat4x4(xyzabc:list)
 
 # 三、案例脚本
 请注意：案例仅为参考使用，实地生产和业务逻辑需要您加油写~~~
-## 3.1综合接口案例脚本:[kine_demo_A_arm.py](python/kine_demo_A_arm.py)[kine_demo_a_arm.py](python/kine_demo_A_arm.py)
 
-## 3.2工具辨识案例：[identy_tool_dynamic_SRS_A_demo.py](python/identy_tool_dynamic_SRS_B_demo.py)
+## 3.1综合接口案例脚本:
+
+    SRS机型运动学综合接口使用：
+        kine_demo_A_arm_srs.py
+    
+    CCS机型运动学综合接口使用：
+        kine_demo_A_arm_ccs.py
+    
+## 3.2工具辨识案例：
+
+    SRS机型(提供了右臂的样例数据)：
+    identy_tool_dynamic_SRS_B_demo.py
+
+    CCS机型(提供了右臂的样例数据)：
+    identy_tool_dynamic_CCS_B_demo.py
 
 ## 3.3十字交叉机型67关节干涉解决案列：
 
