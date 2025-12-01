@@ -73,8 +73,47 @@
 bool OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4);
 
     DEMO:  
-    OnLinkTo(192, 168,1,190)
-    基于UDP 连接并不代表数据已经开始发送，只有在控制器接收到发送数据之后才会向上位机开始1000HZ的周期性状态数据发送。
+    bool init = OnLinkTo(192,168,1,190);
+    if (!init) 
+    {
+        printf("failed:端口占用，连接失败!\n");
+    } else 
+    {
+        //防总线通信异常,先清错
+        usleep(100000);
+        OnClearSet();
+        OnClearErr_A();
+        OnClearErr_B();
+        OnSetSend();
+        usleep(100000);
+
+        int motion_tag = 0;
+        int frame_update = 0;
+
+        for (int i = 0; i < 5; i++) 
+        {
+            OnGetBuf(&dcss);
+            std::cout << "connect frames :" << dcss.m_Out[0].m_OutFrameSerial << std::endl;
+
+            if (dcss.m_Out[0].m_OutFrameSerial != 0 &&
+                frame_update != dcss.m_Out[0].m_OutFrameSerial) {
+                motion_tag++;
+                frame_update = dcss.m_Out[0].m_OutFrameSerial;
+            }
+            usleep(100000);
+        }
+
+        if (motion_tag > 0) 
+        {
+            printf("success:机器人连接成功!\n");
+        } else 
+        {
+            printf "failed:机器人连接失败!\n");
+        }
+    }
+     // 1 基于UDP 连接并不代表数据已经开始发送，只有在控制器接收到发送数据之后才会向上位机开始1000HZ的周期性状态数据发送。
+	 // 2 仅需连接一次，就可以和双臂通信：设置参数，下发指令，订阅机器人实时数据。
+	 
 
 bool OnRelease();
 
@@ -83,7 +122,14 @@ bool OnRelease();
 ### (2) 系统及系统更新相关
 long OnGetSDKVersion();
 
-    获取SDK版本
+    获取SDK版本:为SDK大版本
+
+	 如果需要获取控制器小版本，使用:
+      char paraName[30]="VERSION";
+      long retValue=0;
+      OnGetIntPara(paraName,&retValue);
+      printf("CONTRL VERSION: %ld\n", retValue);
+	  //结果为1003**， **对应小版本号。 如100335, 即大版本号:1003,子版本35
 
 
 bool OnUpdateSystem(char* local_path);
@@ -122,7 +168,7 @@ void OnGetServoErr_A(long ErrCode[7]);
 
 void OnGetServoErr_B(long ErrCode[7]);
 
-    获取指定手臂的错误码，长度为7，十进制
+    获取指定手臂的伺服错误码，长度为7，十进制
     注意连接机器人小睡半秒后，应清错
     获取错误码不为0时，应清错
     订阅回来的机器人当前状态有错时候，应清错
@@ -649,7 +695,6 @@ bool OnSetForceCmd_A(double force)
 
 bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt)
 bool OnSetForceCmd_B(double force)
-
 
 
 
