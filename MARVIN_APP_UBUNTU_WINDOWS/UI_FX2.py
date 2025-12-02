@@ -3122,6 +3122,11 @@ class App:
 
     def imded_f_mode(self, robot_id):
         if self.connected:
+            robot.clear_set()
+            robot.set_state(arm=robot_id, state=3)
+            robot.set_impedance_type(arm=robot_id, type=3)
+            robot.send_cmd()
+            time.sleep(0.001)
             directions = [0, 0, 0, 0, 0, 0]
             if robot_id == 'A':
 
