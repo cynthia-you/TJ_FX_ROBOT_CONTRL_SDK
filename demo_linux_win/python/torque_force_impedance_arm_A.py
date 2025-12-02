@@ -12,12 +12,12 @@ import logging
     3 查验连接是否成功,失败程序直接退出
     4 开启日志以便检查
     5 为了防止伺服有错，先清错
-    6 设置扭矩模式和速度加速度百分比
+    6 设置扭矩模式 力控模式
     7 设置阻抗参数
     8 选择阻抗模式
     9 订阅数据查看是否设置
-    10 下发运动点位1
-    11 订阅查看是否运动到位
+    10 设置力控指令
+    11 订阅查看是否设置
     12 任务完成,下使能,释放内存使别的程序或者用户可以连接机器人
 '''#################################################################
 
@@ -76,55 +76,47 @@ robot.send_cmd()
 time.sleep(1)
 
 
-'''设置扭矩模式  速度加速度百分比'''
+'''设置扭矩模式 力控模式 '''
 robot.clear_set()
 robot.set_state(arm='A',state=3)#state=3扭矩模式
-robot.set_vel_acc(arm='A',velRatio=10, AccRatio=10)
-robot.send_cmd()
-time.sleep(0.5)
-
-'''阻抗参数'''
-robot.clear_set()
-
-# 这两条指令搭配使用才有力控的效果
-# 设置是在Y轴方向有个2斤的力一直拽着手臂提起5厘米， 上下拖动手臂试试， 手臂像弹簧一样会回到原来的位置。力控阻抗下更柔顺
-robot.set_force_control_params(arm='A',fcType=0, fxDirection=[0, 1, 0, 0, 0, 0], fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
-                                        fcAdjLmt=5.)
-robot.set_force_cmd(arm='A',f=10)
-time.sleep(0.5)
-
-'''选择阻抗模式'''
-robot.clear_set()
 robot.set_impedance_type(arm='A',type=3) #type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
 robot.send_cmd()
+time.sleep(0.5)
+
+'''设置力控参数'''
+robot.clear_set()
+# 设置是在Y轴方向有5厘米的调节范围
+robot.set_force_control_params(arm='A',fcType=0, fxDirection=[0, 1, 0, 0, 0, 0], fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
+                                        fcAdjLmt=5.)
 time.sleep(0.5)
 
 '''订阅数据查看是否设置'''
 sub_data=robot.subscribe(dcss)
 logger.info(f"current state{sub_data['states'][0]['cur_state']}")
+logger.info(f'set impedance type={sub_data["inputs"][0]["imp_type"]}')
 logger.info(f"cmd state:{sub_data['states'][0]['cmd_state']}")
 logger.info(f"error code:{sub_data['states'][0]['err_code']}")
-logger.info(f'set vel={sub_data["inputs"][0]["joint_vel_ratio"]}, acc={sub_data["inputs"][0]["joint_acc_ratio"]}')
-# logger.info(f'set card k={sub_data["inputs"][0]["cart_k"][:]}, d={sub_data["inputs"][0]["cart_k"][:]}')
-# logger.info(f'set joint k={sub_data["inputs"][0]["joint_k"][:]}, d={sub_data["inputs"][0]["joint_d"][:]}')
 logger.info(f'set force fcType={sub_data["inputs"][0]["force_type"]}, '
              f'fxDirection={sub_data["inputs"][0]["force_dir"][:]}, '
              f'fcCtrlpara={sub_data["inputs"][0]["force_pidul"][:]}, '
              f'fcAdjLmt={sub_data["inputs"][0]["force_adj_lmt"]}')
-logger.info(f'set impedance type={sub_data["inputs"][0]["imp_type"]}')
 
-'''点位1'''
+
+
+
+'''设置力控指令'''
 robot.clear_set()
-joint_cmd_1=[10.,20.,30.,40.,50.,10,10]
-robot.set_joint_cmd_pose(arm='A',joints=joint_cmd_1)
-robot.send_cmd()
+#根据前面设置的力控参数，这里力控的效果是：
+#在Y轴方向有个2斤的力一直拽着手臂提起5厘米， 上下拖动手臂试试， 手臂像弹簧一样会回到原来的位置。力控阻抗下更柔顺
+robot.set_force_cmd(arm='A',f=10)
+time.sleep(0.5)
 
-time.sleep(5)
-'''订阅数据查看是否到位'''
+'''订阅数据查看力控指令是否设置成功'''
 sub_data=robot.subscribe(dcss)
-logger.info(f'set joint={sub_data["inputs"][0]["joint_cmd_pos"]}')
-logger.info(f'current joint={sub_data["outputs"][0]["fb_joint_pos"]}')
+logger.info(f'set impedance type={sub_data["inputs"][0]["force_cmd"]}')
 
+
+time.sleep(30)#预留时间拖拽时间：上下拖动手臂试试， 手臂像弹簧一样会回到原来的位置。力控阻抗下更柔顺
 
 '''下使能'''
 robot.clear_set()
