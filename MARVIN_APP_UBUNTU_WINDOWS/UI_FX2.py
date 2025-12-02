@@ -3167,7 +3167,12 @@ class App:
             messagebox.showerror('error', '请先连接机器人')
 
     def drag_j(self, robot_id):
-        if self.result["states"][0]["cur_state"] == 3 and self.result["inputs"][0]["imp_type"] == 1:
+        idx=0
+        if robot_id=='A' :
+            idx=0
+        elif robot_id=='B' :
+            idx=1
+        if self.result["states"][idx]["cur_state"] == 3 and self.result["inputs"][idx]["imp_type"] == 1:
             robot.clear_set()
             robot.set_drag_space(arm=robot_id, dgType=1)
             robot.send_cmd()
@@ -3175,7 +3180,12 @@ class App:
             messagebox.showerror('error', '请设置为关节阻抗模式后再选择关节拖动')
 
     def drag_x(self, robot_id):
-        if self.result["states"][0]["cur_state"] == 3 and self.result["inputs"][0]["imp_type"] == 2:
+        idx = 0
+        if robot_id == 'A':
+            idx = 0
+        elif robot_id == 'B':
+            idx = 1
+        if self.result["states"][idx]["cur_state"] == 3 and self.result["inputs"][idx]["imp_type"] == 2:
             robot.clear_set()
             robot.set_drag_space(arm=robot_id, dgType=2)
             robot.send_cmd()
@@ -3183,7 +3193,12 @@ class App:
             messagebox.showerror('error', '请设置为笛卡尔阻抗模式后再选择笛卡尔X拖动')
 
     def drag_y(self, robot_id):
-        if self.result["states"][0]["cur_state"] == 3 and self.result["inputs"][0]["imp_type"] == 2:
+        idx = 0
+        if robot_id == 'A':
+            idx = 0
+        elif robot_id == 'B':
+            idx = 1
+        if self.result["states"][idx]["cur_state"] == 3 and self.result["inputs"][idx]["imp_type"] == 2:
             robot.clear_set()
             robot.set_drag_space(arm=robot_id, dgType=3)
             robot.send_cmd()
@@ -3191,7 +3206,12 @@ class App:
             messagebox.showerror('error', '请设置为笛卡尔阻抗模式后再选择笛卡尔Y拖动')
 
     def drag_z(self, robot_id):
-        if self.result["states"][0]["cur_state"] == 3 and self.result["inputs"][0]["imp_type"] == 2:
+        idx = 0
+        if robot_id == 'A':
+            idx = 0
+        elif robot_id == 'B':
+            idx = 1
+        if self.result["states"][idx]["cur_state"] == 3 and self.result["inputs"][idx]["imp_type"] == 2:
             robot.clear_set()
             robot.set_drag_space(arm=robot_id, dgType=4)
             robot.send_cmd()
@@ -3199,7 +3219,12 @@ class App:
             messagebox.showerror('error', '请设置为笛卡尔阻抗模式后再选择笛卡尔Z拖动')
 
     def drag_r(self, robot_id):
-        if self.result["states"][0]["cur_state"] == 3 and self.result["inputs"][0]["imp_type"] == 2:
+        idx = 0
+        if robot_id == 'A':
+            idx = 0
+        elif robot_id == 'B':
+            idx = 1
+        if self.result["states"][idx]["cur_state"] == 3 and self.result["inputs"][idx]["imp_type"] == 2:
             robot.clear_set()
             robot.set_drag_space(arm=robot_id, dgType=5)
             robot.send_cmd()
