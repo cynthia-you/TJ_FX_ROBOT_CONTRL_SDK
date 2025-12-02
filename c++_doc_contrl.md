@@ -687,11 +687,24 @@ bool OnSetForceCmd_A(double force)
     fcAdjLmt 允许的调节范围, 厘米
 
     DEMO：
-        set_force_control_params(arm='A',fcType=0, fxDirection=[0, 1, 0, 0, 0, 0], fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
-                                        fcAdjLmt=5.)
-        set_force_cmd(arm='A',f=10)
-    #这两条指令搭配使用才有力控的效果
-    #设置是在Y轴方向有个2斤的力一直拽着手臂提起5厘米， 上下拖动手臂试试， 手臂像弹簧一样会回到原来的位置。力控阻抗下更柔顺
+	//设置力控参数，设置是在Y轴方向有5厘米的调节范围
+	int fcType=0; // current only support 0
+    double fxDirection[6] = {0, 1, 0, 0, 0, 0}; //前三个方向可调：X，Y，Z ；一次仅可控制一个方向
+    double fcCtrlpara[7]={0, 0, 0, 0, 0, 0, 0}; //initial as 0
+    double fcAdjLmt=5.0; // 5 厘米
+    OnClearSet();
+    OnSetForceCtrPara_A(fcType, fxDirection,fcCtrlpara,fcAdjLmt);
+    OnSetSend();
+
+	//设置力控指令
+	double force=10;
+ 	OnClearSet();
+    OnSetForceCmd_A(force);
+    OnSetSend();
+    //先设置力控参数后在目标点位再设置力控值
+
+	//效果：在Y轴方向有个10N的力一直拽着手臂提起5厘米， 上下拖动手臂试试， 手臂像弹簧一样会回到原来的位置。力控阻抗下更柔顺
+
 
 bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt)
 bool OnSetForceCmd_B(double force)
