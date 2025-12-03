@@ -1,6 +1,7 @@
 # since each user need to compile to so or dll by their own, therefore, ignore them
 *.so
 *.dll
+*.pyc
 # ignore the tmp result txt
 kinematicsSDK/test.txt
 kinematicsSDK/testkj.txt
