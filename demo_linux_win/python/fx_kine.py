@@ -6,6 +6,9 @@ import os
 import math
 import logging
 from robot_structures import *
+import os
+current_file_path = os.path.abspath(__file__)
+current_path = os.path.dirname(current_file_path)
 
 # 配置日志系统
 logging.basicConfig(format='%(message)s')
@@ -13,7 +16,7 @@ logger = logging.getLogger('debug_printer')
 logger.setLevel(logging.INFO)  # 一键关闭所有调试打印
 logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
 
-current_path = os.getcwd()
+
 
 
 class Marvin_Kine:

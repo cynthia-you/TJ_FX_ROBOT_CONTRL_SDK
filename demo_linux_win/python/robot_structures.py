@@ -114,8 +114,10 @@ class FX_Jacobi(Structure):
         self.m_AxisNum = 0
         # 初始化二维数组为0
         for i in range(6):
+            # in case the m_Jcb is not contiguous in memory
+            row = self.m_Jcb[i]
             for j in range(7):
-                self.m_Jcb[i][j] = 0.0
+                row[j] = 0.0
 
     def set_jcb(self, matrix):
         """
@@ -128,8 +130,9 @@ class FX_Jacobi(Structure):
             raise ValueError("雅可比矩阵必须是6x7的二维数组")
 
         for i in range(6):
+            row = self.m_Jcb[i]
             for j in range(7):
-                self.m_Jcb[i][j] = matrix[i][j]
+                row[j] = matrix[i][j]
 
     def get_jcb(self):
         """

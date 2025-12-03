@@ -1,5 +1,9 @@
 from fx_kine import Marvin_Kine
 import time
+import os
+current_file_path = os.path.abspath(__file__)
+current_path = os.path.dirname(current_file_path)
+
 
 '''#################################################################
 该DEMO 为机器人计算全接口 
@@ -20,7 +24,7 @@ kk=Marvin_Kine()
 !!! 非常重要！！！
 使用前，请一定确认机型，导入正确的配置文件，文件导错，计算会错误啊啊啊,甚至看起来运行正常，但是值错误！！！
 '''
-ini_result=kk.load_config(config_path='ccs_m6.MvKDCfg')
+ini_result=kk.load_config(config_path=os.path.join(current_path,'ccs_m6.MvKDCfg'))
 time.sleep(0.5)
 # print(ini_result)
 # print(type(ini_result['TYPE'][0]))
@@ -103,6 +107,8 @@ print('-'*50)
     #一定要确认robot_serial是左臂0 还是右臂1
 '''
 #计算雅可比矩阵
+# This line will lead to segmentation fault in some environments if we do not change FX_Jacobi in robot_structures.py first.
+
 jts2jacb_result=kk.joints2JacobMatrix(robot_serial=0,joints=[10,10,10,10,10,10,10])
 
 
@@ -139,9 +145,9 @@ print('-'*50)
     ！！！目前仅支持横装方式的辨识！！！
     #检查数据是否有问题！
 '''
-dyn_para=kk.identify_tool_dyn(robot_type='ccs', ipath='ccs_right/LoadData/')
-print(f'mass(KG):{dyn_para[0]}')
-print(f'mcp(x,y,z) mm:{dyn_para[1:4]}')
-print(f'I(ixx,ixy,ixz,iyy,iyz,izz):{dyn_para[4:]}')
-print('-'*50)
+#dyn_para=kk.identify_tool_dyn(robot_type='ccs', ipath='ccs_right/LoadData/')
+#print(f'mass(KG):{dyn_para[0]}')
+#print(f'mcp(x,y,z) mm:{dyn_para[1:4]}')
+#print(f'I(ixx,ixy,ixz,iyy,iyz,izz):{dyn_para[4:]}')
+#print('-'*50)
 
