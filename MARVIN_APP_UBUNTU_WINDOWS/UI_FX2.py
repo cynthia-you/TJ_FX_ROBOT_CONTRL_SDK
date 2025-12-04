@@ -1628,14 +1628,14 @@ class App:
         self.text_2_load_file = tk.Label(self.frame3, text='周期运行', bg='#afdfe4')
         self.text_2_load_file.grid(row=0, column=7, padx=3)
 
-        self.btn_load_file2 = tk.Button(self.frame3, text="1#选择文件", command=lambda: self.select_period_file('B'))
+        self.btn_load_file2 = tk.Button(self.frame3, text="2#选择文件", command=lambda: self.select_period_file('B'))
         self.btn_load_file2.grid(row=0, column=8, padx=5)
 
         self.period_path_entry_2 = tk.Entry(self.frame3, textvariable=self.period_file_path_2, width=45,
                                             font=("Arial", 7), state="readonly")
         self.period_path_entry_2.grid(row=0, column=9, padx=5, sticky="ew")
 
-        self.run_period_2 = tk.Button(self.frame3, text="1#运行", command=lambda: self.run_period_file('B'))
+        self.run_period_2 = tk.Button(self.frame3, text="2#运行", command=lambda: self.run_period_file('B'))
         self.run_period_2.grid(row=0, column=10, padx=5)
 
         # 初始化下拉框
