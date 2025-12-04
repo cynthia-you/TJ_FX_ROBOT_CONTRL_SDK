@@ -4,8 +4,10 @@ from textwrap import dedent
 import os
 import re
 from typing import Union
+import os
 
-current_path=os.getcwd()
+current_file_path = os.path.abspath(__file__)
+current_path = os.path.dirname(current_file_path)
 
 def update_text_file_simple(mode, data_list, filename):
     """
