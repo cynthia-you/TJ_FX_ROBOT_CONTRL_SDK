@@ -141,13 +141,16 @@ print('-'*50)
 
 '''
 工具动力学参数辨识
-    #一定确认robot_type参数代表的机型：srs or ccs(十字交叉)
+    #一定确认robot_type（int）参数代表的机型：0：srs or 1： ccs(十字交叉)
     ！！！目前仅支持横装方式的辨识！！！
     #检查数据是否有问题！
 '''
-#dyn_para=kk.identify_tool_dyn(robot_type='ccs', ipath='ccs_right/LoadData/')
-#print(f'mass(KG):{dyn_para[0]}')
-#print(f'mcp(x,y,z) mm:{dyn_para[1:4]}')
-#print(f'I(ixx,ixy,ixz,iyy,iyz,izz):{dyn_para[4:]}')
-#print('-'*50)
+dyn_para = kk.identify_tool_dyn(robot_type=1, ipath='LoadData_ccs_right/LoadData/')
+if type(dyn_para)==str:
+    print('error:',dyn_para)
+else:
+    print(f'mass(KG):{dyn_para[0]}')
+    print(f'mcp(x,y,z) mm:{dyn_para[1:4]}')
+    print(f'I(ixx,ixy,ixz,iyy,iyz,izz):{dyn_para[4:]}')
+print('-'*50)
 
