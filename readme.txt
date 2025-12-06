@@ -1,9 +1,33 @@
-##构建
-colcon build --packages-select robot_control
-
-##source
-source install/setup.bash
+# MARVIN ROBOT ROS SUPPORT DOC
 
 
-##运行节点
-ros2 run robot_control realtime_robot_control
+# 一. 已开发支持
+## PYTHON
+    ROS2 Jazzy(ubuntu24.04)
+    
+## ROS2原生
+
+
+# 二. rclpy
+
+
+##2.1 发开方式
+    基于rclpy目前开发了两种形式:
+    1. RealtimeControlMethods实时控制模式: 
+        节点内部直接连接机器人并控制,实时性较高
+        适合单一任务,运行后不能修改模式和点位
+        没有提供外部接口（如服务、话题）来动态调整控制参数或命令
+
+    2. ServiceInvocationMethods服务调用模式:
+        节点启动后不自动连接机器人，而是等待服务调用。通过服务来连接机器人，并可能通过其他服务或话题来发送控制命令。
+        灵活性高，可以在运行时通过服务调用连接不同IP的机器人，也可以随时断开。
+        可以设计多个服务（如连接、断开、开始控制、停止控制等）和话题（如发布状态、接收控制命令），使得系统模块化。
+        方便与其他节点交互，符合ROS2的分布式设计理念。
+        实时性可能稍差，因为控制命令需要经过ROS2通信层。
+
+## 2.2 使用注意
+    
+    需要在源SDK新编译SO库.
+
+
+
