@@ -1,0 +1,2 @@
+[console_scripts]
+realtime_robot_control = robot_control.realtime_robot_control:main

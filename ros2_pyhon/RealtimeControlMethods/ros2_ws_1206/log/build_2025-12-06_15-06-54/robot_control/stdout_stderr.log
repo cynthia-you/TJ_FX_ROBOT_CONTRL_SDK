@@ -1,0 +1,50 @@
+running egg_info
+creating ../../build/robot_control/robot_control.egg-info
+writing ../../build/robot_control/robot_control.egg-info/PKG-INFO
+writing dependency_links to ../../build/robot_control/robot_control.egg-info/dependency_links.txt
+writing entry points to ../../build/robot_control/robot_control.egg-info/entry_points.txt
+writing requirements to ../../build/robot_control/robot_control.egg-info/requires.txt
+writing top-level names to ../../build/robot_control/robot_control.egg-info/top_level.txt
+writing manifest file '../../build/robot_control/robot_control.egg-info/SOURCES.txt'
+reading manifest file '../../build/robot_control/robot_control.egg-info/SOURCES.txt'
+writing manifest file '../../build/robot_control/robot_control.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/fusion/ros2_ws_1206/build/robot_control/build
+creating /home/fusion/ros2_ws_1206/build/robot_control/build/lib
+creating /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+copying robot_control/launch_robot_control.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+copying robot_control/realtime_robot_control.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+copying robot_control/fx_kine.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+copying robot_control/fx_robot.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+copying robot_control/__init__.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+copying robot_control/robot_structures.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+copying robot_control/structure_data.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+running install
+running install_lib
+creating /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/launch_robot_control.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/realtime_robot_control.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/fx_kine.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/fx_robot.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/__init__.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/robot_structures.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/structure_data.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/launch_robot_control.py to launch_robot_control.cpython-312.pyc
+byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/realtime_robot_control.py to realtime_robot_control.cpython-312.pyc
+byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/fx_kine.py to fx_kine.cpython-312.pyc
+byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/fx_robot.py to fx_robot.cpython-312.pyc
+byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/__init__.py to __init__.cpython-312.pyc
+byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/robot_structures.py to robot_structures.cpython-312.pyc
+byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/structure_data.py to structure_data.cpython-312.pyc
+running install_data
+creating /home/fusion/ros2_ws_1206/install/robot_control/share/ament_index
+creating /home/fusion/ros2_ws_1206/install/robot_control/share/ament_index/resource_index
+creating /home/fusion/ros2_ws_1206/install/robot_control/share/ament_index/resource_index/packages
+copying resource/robot_control -> /home/fusion/ros2_ws_1206/install/robot_control/share/ament_index/resource_index/packages
+copying package.xml -> /home/fusion/ros2_ws_1206/install/robot_control/share/robot_control
+running install_egg_info
+Copying ../../build/robot_control/robot_control.egg-info to /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control-0.0.0-py3.12.egg-info
+running install_scripts
+Installing realtime_robot_control script to /home/fusion/ros2_ws_1206/install/robot_control/lib/robot_control
+writing list of installed files to '/home/fusion/ros2_ws_1206/build/robot_control/install.log'

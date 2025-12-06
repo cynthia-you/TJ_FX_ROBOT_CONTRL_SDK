@@ -1,0 +1,52 @@
+[0.932s] Invoking command in '/home/fusion/ros2_ws_1206/src/robot_control': CONDA_PROMPT_MODIFIER=(base) DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/fusion/ros2_ws_1206/build/robot_control/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_control build --build-base /home/fusion/ros2_ws_1206/build/robot_control/build install --record /home/fusion/ros2_ws_1206/build/robot_control/install.log --single-version-externally-managed install_data
+[1.222s] running egg_info
+[1.222s] creating ../../build/robot_control/robot_control.egg-info
+[1.241s] writing ../../build/robot_control/robot_control.egg-info/PKG-INFO
+[1.241s] writing dependency_links to ../../build/robot_control/robot_control.egg-info/dependency_links.txt
+[1.241s] writing entry points to ../../build/robot_control/robot_control.egg-info/entry_points.txt
+[1.242s] writing requirements to ../../build/robot_control/robot_control.egg-info/requires.txt
+[1.242s] writing top-level names to ../../build/robot_control/robot_control.egg-info/top_level.txt
+[1.242s] writing manifest file '../../build/robot_control/robot_control.egg-info/SOURCES.txt'
+[1.281s] reading manifest file '../../build/robot_control/robot_control.egg-info/SOURCES.txt'
+[1.282s] writing manifest file '../../build/robot_control/robot_control.egg-info/SOURCES.txt'
+[1.282s] running build
+[1.282s] running build_py
+[1.282s] creating /home/fusion/ros2_ws_1206/build/robot_control/build
+[1.283s] creating /home/fusion/ros2_ws_1206/build/robot_control/build/lib
+[1.283s] creating /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+[1.283s] copying robot_control/launch_robot_control.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+[1.283s] copying robot_control/realtime_robot_control.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+[1.283s] copying robot_control/fx_kine.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+[1.283s] copying robot_control/fx_robot.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+[1.283s] copying robot_control/__init__.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+[1.283s] copying robot_control/robot_structures.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+[1.283s] copying robot_control/structure_data.py -> /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control
+[1.283s] running install
+[1.290s] running install_lib
+[1.313s] creating /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+[1.313s] copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/launch_robot_control.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+[1.313s] copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/realtime_robot_control.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+[1.313s] copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/fx_kine.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+[1.313s] copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/fx_robot.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+[1.313s] copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/__init__.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+[1.314s] copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/robot_structures.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+[1.314s] copying /home/fusion/ros2_ws_1206/build/robot_control/build/lib/robot_control/structure_data.py -> /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control
+[1.314s] byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/launch_robot_control.py to launch_robot_control.cpython-312.pyc
+[1.314s] byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/realtime_robot_control.py to realtime_robot_control.cpython-312.pyc
+[1.330s] byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/fx_kine.py to fx_kine.cpython-312.pyc
+[1.336s] byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/fx_robot.py to fx_robot.cpython-312.pyc
+[1.345s] byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/__init__.py to __init__.cpython-312.pyc
+[1.345s] byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/robot_structures.py to robot_structures.cpython-312.pyc
+[1.347s] byte-compiling /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control/structure_data.py to structure_data.cpython-312.pyc
+[1.348s] running install_data
+[1.348s] creating /home/fusion/ros2_ws_1206/install/robot_control/share/ament_index
+[1.349s] creating /home/fusion/ros2_ws_1206/install/robot_control/share/ament_index/resource_index
+[1.349s] creating /home/fusion/ros2_ws_1206/install/robot_control/share/ament_index/resource_index/packages
+[1.349s] copying resource/robot_control -> /home/fusion/ros2_ws_1206/install/robot_control/share/ament_index/resource_index/packages
+[1.349s] copying package.xml -> /home/fusion/ros2_ws_1206/install/robot_control/share/robot_control
+[1.349s] running install_egg_info
+[1.370s] Copying ../../build/robot_control/robot_control.egg-info to /home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages/robot_control-0.0.0-py3.12.egg-info
+[1.371s] running install_scripts
+[1.508s] Installing realtime_robot_control script to /home/fusion/ros2_ws_1206/install/robot_control/lib/robot_control
+[1.508s] writing list of installed files to '/home/fusion/ros2_ws_1206/build/robot_control/install.log'
+[1.540s] Invoked command in '/home/fusion/ros2_ws_1206/src/robot_control' returned '0': CONDA_PROMPT_MODIFIER=(base) DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/fusion/ros2_ws_1206/build/robot_control/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/fusion/ros2_ws_1206/install/robot_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/robot_control build --build-base /home/fusion/ros2_ws_1206/build/robot_control/build install --record /home/fusion/ros2_ws_1206/build/robot_control/install.log --single-version-externally-managed install_data

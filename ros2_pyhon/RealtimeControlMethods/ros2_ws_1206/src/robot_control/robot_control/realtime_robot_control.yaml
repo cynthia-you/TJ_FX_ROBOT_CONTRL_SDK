@@ -1,0 +1,9 @@
+realtime_robot_control:
+  ros__parameters:
+    robot_ip: "192.168.1.190"
+    control_frequency: 20.0  # Hz
+    velocity_ratio: 30.0     # %
+    acceleration_ratio: 30.0 # %
+    home_position: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    max_sine_amplitude: 15.0
+    auto_reconnect: true
