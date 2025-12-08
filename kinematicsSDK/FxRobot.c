@@ -3332,12 +3332,13 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
 	refJ[i] = Ref_Joints[i];
 
 	FX_DOUBLE jerk = 1000;
+	FX_BOOL ret = FX_FALSE;
 
 	FXSpln Spln = AxisPln_Create();
-	AxisPln_OnMovL(Spln,RobotSerial, start_pos,end_pos,refJ,Vel,ACC,jerk,OutPutPath);
+	ret = AxisPln_OnMovL(Spln,RobotSerial, start_pos,end_pos,refJ,Vel,ACC,jerk,OutPutPath);
 	AxisPln_Destroy(Spln);
 
-	return FX_TRUE;
+	return ret;
 }
 
 FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath)
@@ -3353,11 +3354,12 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
 		start_pos[i] = startjoints[i];
 		end_pos[i] = stopjoints[i];
 	}
-
+    FX_BOOL ret = FX_FALSE;
 	FXSpln Spln = AxisPln_Create();
-	AxisPln_OnMovL_KeepJ(Spln, RobotSerial, start_pos, end_pos, vel, OutPutPath);
+	ret = AxisPln_OnMovL_KeepJ(Spln, RobotSerial, start_pos, end_pos, vel, OutPutPath);
+	AxisPln_Destroy(Spln);
 
-	return FX_TRUE;
+	return ret;
 }
 
 ////Parameters Identification
