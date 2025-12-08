@@ -6,12 +6,11 @@
     ROS2 Jazzy(ubuntu24.04)
     
 ## ROS2原生
-
+    开发中
 
 # 二. rclpy
 
-
-##2.1 发开方式
+## 2.1 发开方式
     基于rclpy目前开发了两种形式:
     1. RealtimeControlMethods实时控制模式: 
         节点内部直接连接机器人并控制,实时性较高
