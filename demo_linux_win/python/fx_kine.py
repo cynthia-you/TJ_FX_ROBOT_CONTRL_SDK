@@ -641,8 +641,8 @@ class Marvin_Kine:
 
         self.kine.FX_Robot_PLN_MOVL.argtypes=[c_long,c_double*6,c_double*6,c_double*7,c_double,c_double,c_char_p]
         self.kine.FX_Robot_PLN_MOVL.restype=c_bool
-        success1=self.kine.FX_Robot_PLN_MOVL(Serial,start,end,joints_vel_value,vel_value,acc_value,path_char)
-        if success1:
+        success=self.kine.FX_Robot_PLN_MOVL(Serial,start,end,joints_vel_value,vel_value,acc_value,path_char)
+        if success:
             logger.info(f'Plan MOVL successful, PATH saved as :{save_path}')
             return  True
 
@@ -683,8 +683,8 @@ class Marvin_Kine:
 
         self.kine.FX_Robot_PLN_MOVL_KeepJ.argtypes=[c_long,c_double*7,c_double*7,c_double,c_char_p]
         self.kine.FX_Robot_PLN_MOVL_KeepJ.restype=c_bool
-        success1=self.kine.FX_Robot_PLN_MOVL_KeepJ(Serial,start,end,vel_value,path_char)
-        if success1:
+        success=self.kine.FX_Robot_PLN_MOVL_KeepJ(Serial,start,end,vel_value,path_char)
+        if success:
             logger.info(f'Plan MOVL KeepJ successful, PATH saved as :{save_path}')
             return  True
 
