@@ -137,11 +137,9 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
         6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
         7. OutPutPath 规划文件的保存路径
 
-    输出：
-        成功：True/1; 失败：False/0
 
     • 输出点位频率为500Hz
-    • 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+    • 函数规划成功会保存规划的PVT文件，无文件保存则规划失败.
     • 特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
     • FX_Robot_PLN_MOVL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
     
@@ -157,11 +155,8 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
         4. vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         5. OutPutPath：规划文件的保存路径
 
-    输出：
-        成功：True/1; 失败：False/0
-
     • 输出点位频率为500Hz
-    • 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+    • 函数规划成功会保存规划的PVT文件，无文件保存则规划失败.
     • 特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
     • 该接口是不同于FX_Robot_PLN_MOVL的规划接口，FX_Robot_PLN_MOVL_KeepJ根据起始关节和结束关节规划一条直线路径。
     
