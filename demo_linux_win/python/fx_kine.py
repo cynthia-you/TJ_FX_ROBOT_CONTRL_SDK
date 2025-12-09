@@ -605,8 +605,8 @@ class Marvin_Kine:
     def movL(self,robot_serial: int,start_xyzabc:list, end_xyzabc:list,ref_joints:list,vel:float,acc:float,save_path):
         '''直线规划，规划文件的频率500Hz，即每2ms执行一行
         :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
-        :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
+        :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
+        :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
         :param ref_joints:参考关节构型，也是规划文件的起始点位。
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
