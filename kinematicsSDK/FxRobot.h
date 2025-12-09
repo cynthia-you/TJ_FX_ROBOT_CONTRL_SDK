@@ -277,8 +277,8 @@ FX_BOOL  FX_Robot_Kine_W(FX_INT32L RobotSerial, Vect7 jcur,Vect7 retW);
 FX_BOOL  FX_Robot_Kine_Err(FX_INT32L RobotSerial, Vect7 angleTar, Vect7 angleCur, Vect3 ErrXYZ, Vect3 ErrGes, FX_DOUBLE* errNSP,Vect7 nspW);
 ////////////////////////////////////////////////////////////////////////////////////////////////
 /////Motion Planning
-FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_CHAR* OutPutPath);
-FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath);
+FX_VOID  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_CHAR* OutPutPath);
+FX_VOID  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath);
 
 ////Parameters Identification
 FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 Type,FX_CHAR* path,FX_DOUBLE* mass, Vect3 mr, Vect6 I);
