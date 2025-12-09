@@ -3314,7 +3314,7 @@ FX_BOOL  FX_Robot_Kine_GetLinkPG(FX_INT32L RobotSerial, FX_DOUBLE PG[7][4][4])
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT8* OutPutPath)
+FX_VOID  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT8* OutPutPath)
 {
 	FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL]\n");
 
@@ -3337,10 +3337,9 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
 	AxisPln_OnMovL(Spln,RobotSerial, start_pos,end_pos,refJ,Vel,ACC,jerk,OutPutPath);
 	AxisPln_Destroy(Spln);
 
-	return FX_TRUE;
 }
 
-FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath)
+FX_VOID  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath)
 {
 	FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL - KeepJ]\n");
 
@@ -3357,7 +3356,6 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
 	FXSpln Spln = AxisPln_Create();
 	AxisPln_OnMovL_KeepJ(Spln, RobotSerial, start_pos, end_pos, vel, OutPutPath);
 
-	return FX_TRUE;
 }
 
 ////Parameters Identification
