@@ -1628,14 +1628,14 @@ class App:
         self.text_2_load_file = tk.Label(self.frame3, text='周期运行', bg='#afdfe4')
         self.text_2_load_file.grid(row=0, column=7, padx=3)
 
-        self.btn_load_file2 = tk.Button(self.frame3, text="2#选择文件", command=lambda: self.select_period_file('B'))
+        self.btn_load_file2 = tk.Button(self.frame3, text="1#选择文件", command=lambda: self.select_period_file('B'))
         self.btn_load_file2.grid(row=0, column=8, padx=5)
 
         self.period_path_entry_2 = tk.Entry(self.frame3, textvariable=self.period_file_path_2, width=45,
                                             font=("Arial", 7), state="readonly")
         self.period_path_entry_2.grid(row=0, column=9, padx=5, sticky="ew")
 
-        self.run_period_2 = tk.Button(self.frame3, text="2#运行", command=lambda: self.run_period_file('B'))
+        self.run_period_2 = tk.Button(self.frame3, text="1#运行", command=lambda: self.run_period_file('B'))
         self.run_period_2.grid(row=0, column=10, padx=5)
 
         # 初始化下拉框
@@ -3127,9 +3127,9 @@ class App:
             robot.set_impedance_type(arm=robot_id, type=3)
             robot.send_cmd()
             time.sleep(0.001)
+
             directions = [0, 0, 0, 0, 0, 0]
             if robot_id == 'A':
-
                 force_a = float(self.f_a_entry.get())
                 adjustment_a = float(self.f_a_adj_entry.get())
                 selected_axis_a = self.axis_combobox_a.get()
@@ -3139,7 +3139,6 @@ class App:
                     directions[1] = 1
                 elif selected_axis_a == 'Z':
                     directions[2] = 1
-
                 robot.clear_set()
                 robot.set_force_control_params(arm=robot_id, fcType=0, fxDirection=directions,
                                                fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
@@ -3159,7 +3158,6 @@ class App:
                     directions[1] = 1
                 elif selected_axis_b == 'Z':
                     directions[2] = 1
-
                 robot.clear_set()
                 robot.set_force_control_params(arm=robot_id, fcType=0, fxDirection=directions,
                                                fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
@@ -4035,10 +4033,11 @@ class App:
                 robot.clear_485_cache(robot_id)
                 time.sleep(0.5)
                 if robot_id == 'A':
-                    sample_data = self.com_entry_1.get()
+                    sample_data = self.eef_combo1.get()
+                    print(f'sample_data:{sample_data}')
                     com_ = self.com_select_combobox_1.get()
                 elif robot_id == 'B':
-                    sample_data = self.com_entry_2.get()
+                    sample_data = self.eef_combo2.get()
                     com_ = self.com_select_combobox_2.get()
 
                 # 1：‘C’端; 2：com1; 3:com2
@@ -4051,14 +4050,15 @@ class App:
                 # print(f'com:{com}')
                 success, sdk_return = robot.set_485_data(robot_id, sample_data, len(sample_data), com)
                 received_count, received_data = get_received_data()
-                if received_data>0:
-                    print(f'received_count:{received_count},  eef received:{received_data[0]}')
-                if robot_id == 'A':
-                    self.recv_text1.delete('1.0', tk.END)
-                    self.recv_text1.insert(tk.END, received_data[0])
-                if robot_id == 'B':
-                    self.recv_text2.delete('1.0', tk.END)
-                    self.recv_text2.insert(tk.END, received_data[0])
+                if received_count>0:
+                    if len(received_data)>0:
+                        print(f'received_count:{received_count},  eef received:{received_data[0]}')
+                        if robot_id == 'A':
+                            self.recv_text1.delete('1.0', tk.END)
+                            self.recv_text1.insert(tk.END, received_data[0])
+                        if robot_id == 'B':
+                            self.recv_text2.delete('1.0', tk.END)
+                            self.recv_text2.insert(tk.END, received_data[0])
                 if not success:
                     messagebox.showerror('error', f'send data must be hex string of bytes string')
             except Exception as e:
@@ -4088,14 +4088,15 @@ class App:
                 self.eef_thread.start()
 
                 received_count, received_data = get_received_data()
-                if received_data > 0:
-                    print(f'received_count:{received_count},  eef received:{received_data[0]}')
-                if robot_id == 'A':
-                    self.recv_text1.delete('1.0', tk.END)
-                    self.recv_text1.insert(tk.END, received_data[0])
-                if robot_id == 'B':
-                    self.recv_text2.delete('1.0', tk.END)
-                    self.recv_text2.insert(tk.END, received_data[0])
+                if received_count > 0:
+                    if len(received_data) > 0:
+                        print(f'received_count:{received_count},  eef received:{received_data[0]}')
+                        if robot_id == 'A':
+                            self.recv_text1.delete('1.0', tk.END)
+                            self.recv_text1.insert(tk.END, received_data[0])
+                        if robot_id == 'B':
+                            self.recv_text2.delete('1.0', tk.END)
+                            self.recv_text2.insert(tk.END, received_data[0])
             except Exception as e:
                 messagebox.showerror('error', e)
         else:
