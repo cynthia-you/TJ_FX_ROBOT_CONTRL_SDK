@@ -77,7 +77,9 @@ time.sleep(0.5)
 '''
 #正解
 fk_mat=kk.fk(robot_serial=0,joints=[10,10,10,10,10,10,10])
+
 #逆解
+#特别提示：连续轨迹调逆解的情况下：正解和逆解是要配套使用的。因为逆解中需要的零空间参数需要正解内部的矩阵运算，所以逆解调用之后再调用一下正运动学才是真的更新了逆解的参考角信息；或者可以每次调用逆运动学之前都更新参考角。
 ik_result_structure=kk.ik(robot_serial=0,pose_mat=fk_mat,ref_joints=[10,10,10,10,10,10,10])
 if ik_result_structure:
     print(f'ik joints:{ik_result_structure.m_Output_RetJoint.to_list()}')
