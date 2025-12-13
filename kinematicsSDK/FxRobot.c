@@ -567,63 +567,6 @@ FX_BOOL  FX_Robot_Kine_Piolt(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_DOUB
 	return FX_TRUE;
 }
 
-FX_BOOL  FX_Robot_Kine_Piolt_NSPG(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_DOUBLE pgos[4][4], Matrix3 nspg)
-{
-	long i;
-	FX_Robot* pRobot;
-	FX_DOUBLE cosv, sinv;
-	if (RobotSerial < 0 || RobotSerial >= MAX_RUN_ROBOT_NUM)
-	{
-		return FX_FALSE;
-	}
-	pRobot = (FX_Robot*)&m_Robot[RobotSerial];
-
-
-	for (i = 0; i < 7; i++)
-	{
-		FX_SIN_COS_DEG(joints[i], &sinv, &cosv);
-		FX_XYZMRot(pRobot->m_KineBase.m_AxisRotBase[i], cosv, sinv, pRobot->m_KineBase.m_AxisRotTip[i]);
-	}
-
-	FX_M44Copy(pRobot->m_KineBase.m_AxisRotTip[0], pRobot->m_KineBase.m_JointPG[0]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[0], pRobot->m_KineBase.m_AxisRotTip[1], pRobot->m_KineBase.m_JointPG[1]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[1], pRobot->m_KineBase.m_AxisRotTip[2], pRobot->m_KineBase.m_JointPG[2]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[2], pRobot->m_KineBase.m_AxisRotTip[3], pRobot->m_KineBase.m_JointPG[3]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[3], pRobot->m_KineBase.m_AxisRotTip[4], pRobot->m_KineBase.m_JointPG[4]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[4], pRobot->m_KineBase.m_AxisRotTip[5], pRobot->m_KineBase.m_JointPG[5]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[5], pRobot->m_KineBase.m_AxisRotTip[6], pRobot->m_KineBase.m_JointPG[6]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[6], pRobot->m_KineBase.m_Flange, pRobot->m_KineBase.m_FlangeTip);
-	FX_PGMult(pRobot->m_KineBase.m_FlangeTip, pRobot->m_KineBase.m_Tool, pRobot->m_KineBase.m_TCP);
-	FX_M44Copy(pRobot->m_KineBase.m_TCP, pgos);
-
-	{
-		Vect3 zdir;
-		Vect3 xdir;
-
-		zdir[0] = pRobot->m_KineBase.m_JointPG[6][0][3] - pRobot->m_KineBase.m_JointPG[1][0][3];
-		zdir[1] = pRobot->m_KineBase.m_JointPG[6][1][3] - pRobot->m_KineBase.m_JointPG[1][1][3];
-		zdir[2] = pRobot->m_KineBase.m_JointPG[6][2][3] - pRobot->m_KineBase.m_JointPG[1][2][3];
-
-		xdir[0] = pRobot->m_KineBase.m_JointPG[2][0][0];
-		xdir[1] = pRobot->m_KineBase.m_JointPG[2][1][0];
-		xdir[2] = pRobot->m_KineBase.m_JointPG[2][2][0];
-
-
-		if (FX_MatrixNormZX(zdir, xdir, nspg) == FX_FALSE)
-		{
-			return FX_FALSE;
-		}
-	}
-
-
-    printf("EG:[% lf % lf % lf % lf \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n %lf %lf %lf %lf \n",
-    pgos[0][0], pgos[0][1], pgos[0][2], pgos[0][3],
-    pgos[1][0], pgos[1][1], pgos[1][2], pgos[1][3],
-    pgos[2][0], pgos[2][1], pgos[2][2], pgos[2][3],
-    pgos[3][0], pgos[3][1], pgos[3][2], pgos[3][3]);
-	return FX_TRUE;
-}
-
 FX_BOOL  FX_Robot_Kine_DL(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_DOUBLE pgos[4][4])
 {
 
@@ -729,34 +672,6 @@ FX_BOOL  FX_Robot_Kine_FK(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pg
 	else if (pRobot->m_RobotType == FX_ROBOT_TYPE_PILOT_CCS)
 	{
 		return FX_Robot_Kine_Piolt(RobotSerial, joints, pgos);
-	}
-	else
-	{
-		return FX_FALSE;
-	}
-	return FX_FALSE;
-}
-
-FX_BOOL  FX_Robot_Kine_FK_NSP(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos, Matrix3 nspg)
-{
-	FX_Robot* pRobot;
-	if (RobotSerial < 0 || RobotSerial >= MAX_RUN_ROBOT_NUM)
-	{
-		return FX_FALSE;
-	}
-	pRobot = (FX_Robot*)&m_Robot[RobotSerial];
-	FX_IdentM33(nspg);
-	if (pRobot->m_RobotType == FX_ROBOT_TYPE_DL)
-	{
-		return FX_Robot_Kine_DL(RobotSerial, joints, pgos);
-	}
-	else if (pRobot->m_RobotType == FX_ROBOT_TYPE_PILOT_SRS)
-	{
-		return FX_Robot_Kine_Piolt_NSPG(RobotSerial, joints, pgos, nspg);
-	}
-	else if (pRobot->m_RobotType == FX_ROBOT_TYPE_PILOT_CCS)
-	{
-		return FX_Robot_Kine_Piolt_NSPG(RobotSerial, joints, pgos, nspg);
 	}
 	else
 	{
@@ -1280,7 +1195,7 @@ FX_BOOL FX_SolveJ123ZNYZ(NSPBase* pnspbase, FX_DOUBLE rot_angle, FX_DOUBLE ref[7
 	}
 
 	ret_j[0] = (jtmp1[0] + jtmp2[0]) * 0.5;
-	ret_j[1] = (jtmp1[1] + jtmp2[2]) * 0.5;
+	ret_j[1] = (jtmp1[1] + jtmp2[1]) * 0.5;
 	ret_j[2] = (jtmp1[2] + jtmp2[2]) * 0.5;
 
 	return FX_TRUE;
@@ -1446,7 +1361,7 @@ FX_BOOL FX_SolveJ567ZNYZ(NSPBase* pnspbase, FX_DOUBLE rot_angle, FX_DOUBLE ref[7
 	}
 
 	ret_j[4] = (jtmp1[0] + jtmp2[0]) * 0.5;
-	ret_j[5] = (jtmp1[1] + jtmp2[2]) * 0.5;
+	ret_j[5] = (jtmp1[1] + jtmp2[1]) * 0.5;
 	ret_j[6] = (jtmp1[2] + jtmp2[2]) * 0.5;
 
 	return FX_TRUE;
@@ -1516,6 +1431,9 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 
 	FX_BOOL   J246_DEG_TAG_B = FX_FALSE;
 
+	FX_INT32L result_num = 0;
+	FX_INT32L result_num_b = 0;
+
 	Matrix3 WristGes;
 	Matrix3 A_M123;
 	Matrix3 A_M567;
@@ -1536,6 +1454,15 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 	{
 		solve_para->m_Output_IsDeg[i] = FX_FALSE;
 		solve_para->m_Output_JntExdTags[i] = FX_FALSE;
+	}
+
+	//init result matrix
+	for (i = 0; i < 8; i++)
+	{
+		for (j = 0; j < 8; j++)
+		{
+			solve_para->m_OutPut_AllJoint[i][j] = 0;
+		}
 	}
 	
 	FX_MMM44(solve_para->m_Input_IK_TargetTCP, pRobot->m_KineBase.m_InvTool, m_flan);
@@ -2037,6 +1964,16 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 					FX_DOUBLE j2_b = -j2_a;
 					FX_DOUBLE j3_b = j3_a + 180;
 
+					result_num = 2;
+
+					solve_para->m_OutPut_AllJoint[0][0] = j1_a;
+					solve_para->m_OutPut_AllJoint[0][1] = j2_a;
+					solve_para->m_OutPut_AllJoint[0][2] = j3_a;
+
+					solve_para->m_OutPut_AllJoint[1][0] = j1_b;
+					solve_para->m_OutPut_AllJoint[1][1] = j2_b;
+					solve_para->m_OutPut_AllJoint[1][2] = j3_b;
+
 					FX_DOUBLE err1;
 					FX_DOUBLE err2;
 
@@ -2077,6 +2014,12 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 					min_A_123[1] = j2_a;
 					min_A_123[2] = j3_a;
 					min_err123_A = err1;
+
+					result_num = 1;
+
+					solve_para->m_OutPut_AllJoint[0][0] = j1_a;
+					solve_para->m_OutPut_AllJoint[0][1] = j2_a;
+					solve_para->m_OutPut_AllJoint[0][2] = j3_a;
 				}
 			}
 
@@ -2107,6 +2050,40 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 
 						FX_DOUBLE err1;
 						FX_DOUBLE err2;
+
+						result_num *= 2;
+
+						if (result_num == 2)
+						{
+							solve_para->m_OutPut_AllJoint[1][0] = solve_para->m_OutPut_AllJoint[0][0];
+							solve_para->m_OutPut_AllJoint[1][1] = solve_para->m_OutPut_AllJoint[0][1];
+							solve_para->m_OutPut_AllJoint[1][2] = solve_para->m_OutPut_AllJoint[0][2];
+
+							solve_para->m_OutPut_AllJoint[0][4] = j5_a;
+							solve_para->m_OutPut_AllJoint[0][5] = j6_a;
+							solve_para->m_OutPut_AllJoint[0][6] = j7_a;
+
+							solve_para->m_OutPut_AllJoint[1][4] = j5_b;
+							solve_para->m_OutPut_AllJoint[1][5] = j6_b;
+							solve_para->m_OutPut_AllJoint[1][6] = j7_b;
+						}
+						else
+						{
+							for (i = 0; i < 2; i++)
+							{
+								solve_para->m_OutPut_AllJoint[i+2][0] = solve_para->m_OutPut_AllJoint[i][0];
+								solve_para->m_OutPut_AllJoint[i+2][1] = solve_para->m_OutPut_AllJoint[i][1];
+								solve_para->m_OutPut_AllJoint[i+2][2] = solve_para->m_OutPut_AllJoint[i][2];
+
+								solve_para->m_OutPut_AllJoint[2*i][4] = j5_a;
+								solve_para->m_OutPut_AllJoint[2*i][5] = j6_a;
+								solve_para->m_OutPut_AllJoint[2*i][6] = j7_a;
+															
+								solve_para->m_OutPut_AllJoint[2*i+1][4] = j5_b;
+								solve_para->m_OutPut_AllJoint[2*i+1][5] = j6_b;
+								solve_para->m_OutPut_AllJoint[2*i+1][6] = j7_b;
+							}
+						}
 
 						err1 = FX_MinDif_Circle(solve_para->m_Input_IK_RefJoint[4], &j5_a)
 							+ FX_MinDif_Circle(solve_para->m_Input_IK_RefJoint[5], &j6_a)
@@ -2143,6 +2120,14 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 						min_A_567[1] = j6_a;
 						min_A_567[2] = j7_a;
 						min_err567_A = err1;
+
+						for (i = 0; i < result_num; i++)
+						{
+							solve_para->m_OutPut_AllJoint[i][4] = j5_a;
+							solve_para->m_OutPut_AllJoint[i][5] = j6_a;
+							solve_para->m_OutPut_AllJoint[i][6] = j7_a;
+						}
+
 					}
 				}
 				else
@@ -2161,7 +2146,18 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 					min_A_567[1] = j6_a;
 					min_A_567[2] = j7_a;
 
+					for (i = 0; i < result_num; i++)
+					{
+						solve_para->m_OutPut_AllJoint[i][4] = j5_a;
+						solve_para->m_OutPut_AllJoint[i][5] = j6_a;
+						solve_para->m_OutPut_AllJoint[i][6] = j7_a;
+					}
+
 				}
+			}
+			for (i = 0; i < result_num; i++)
+			{
+				solve_para->m_OutPut_AllJoint[i][3] = JV4_A;
 			}
 
 		}
@@ -2262,6 +2258,16 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 					FX_DOUBLE err1;
 					FX_DOUBLE err2;
 
+					result_num_b = 2;
+
+					solve_para->m_OutPut_AllJoint[result_num][0] = j1_a;
+					solve_para->m_OutPut_AllJoint[result_num][1] = j2_a;
+					solve_para->m_OutPut_AllJoint[result_num][2] = j3_a;
+
+					solve_para->m_OutPut_AllJoint[result_num+1][0] = j1_b;
+					solve_para->m_OutPut_AllJoint[result_num+1][1] = j2_b;
+					solve_para->m_OutPut_AllJoint[result_num+1][2] = j3_b;
+
 					err1 = FX_MinDif_Circle(solve_para->m_Input_IK_RefJoint[0], &j1_a)
 						+ FX_MinDif_Circle(solve_para->m_Input_IK_RefJoint[1], &j2_a)
 						+ FX_MinDif_Circle(solve_para->m_Input_IK_RefJoint[2], &j3_a);
@@ -2297,6 +2303,12 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 					min_B_123[2] = j3_a;
 					min_err123_B = err1;
 
+					result_num_b = 1;
+
+					solve_para->m_OutPut_AllJoint[result_num][0] = j1_a;
+					solve_para->m_OutPut_AllJoint[result_num][1] = j2_a;
+					solve_para->m_OutPut_AllJoint[result_num][2] = j3_a;
+
 				}
 			}
 
@@ -2327,6 +2339,40 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 
 						FX_DOUBLE err1;
 						FX_DOUBLE err2;
+
+						result_num_b *= 2;
+
+						if (result_num_b == 2)
+						{
+							solve_para->m_OutPut_AllJoint[result_num+1][0] = solve_para->m_OutPut_AllJoint[result_num][0];
+							solve_para->m_OutPut_AllJoint[result_num+1][1] = solve_para->m_OutPut_AllJoint[result_num][1];
+							solve_para->m_OutPut_AllJoint[result_num+1][2] = solve_para->m_OutPut_AllJoint[result_num][2];
+
+							solve_para->m_OutPut_AllJoint[result_num][4] = j5_a;
+							solve_para->m_OutPut_AllJoint[result_num][5] = j6_a;
+							solve_para->m_OutPut_AllJoint[result_num][6] = j7_a;
+
+							solve_para->m_OutPut_AllJoint[result_num+1][4] = j5_b;
+							solve_para->m_OutPut_AllJoint[result_num+1][5] = j6_b;
+							solve_para->m_OutPut_AllJoint[result_num+1][6] = j7_b;
+						}
+						else
+						{
+							for (i = 0; i < 2; i++)
+							{
+								solve_para->m_OutPut_AllJoint[i + result_num + 2][0] = solve_para->m_OutPut_AllJoint[i + result_num][0];
+								solve_para->m_OutPut_AllJoint[i + result_num + 2][1] = solve_para->m_OutPut_AllJoint[i + result_num][1];
+								solve_para->m_OutPut_AllJoint[i + result_num + 2][2] = solve_para->m_OutPut_AllJoint[i + result_num][2];
+
+								solve_para->m_OutPut_AllJoint[2 * i + result_num][4] = j5_a;
+								solve_para->m_OutPut_AllJoint[2 * i + result_num][5] = j6_a;
+								solve_para->m_OutPut_AllJoint[2 * i + result_num][6] = j7_a;
+
+								solve_para->m_OutPut_AllJoint[2 * i + result_num+1][4] = j5_b;
+								solve_para->m_OutPut_AllJoint[2 * i + result_num+1][5] = j6_b;
+								solve_para->m_OutPut_AllJoint[2 * i + result_num+1][6] = j7_b;
+							}
+						}
 
 						err1 = FX_MinDif_Circle(solve_para->m_Input_IK_RefJoint[4], &j5_a)
 							+ FX_MinDif_Circle(solve_para->m_Input_IK_RefJoint[5], &j6_a)
@@ -2361,6 +2407,13 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 						min_B_567[1] = j6_a;
 						min_B_567[2] = j7_a;
 						min_err567_B = err1;
+
+						for (i = 0; i < result_num_b; i++)
+						{
+							solve_para->m_OutPut_AllJoint[i + result_num][4] = j5_a;
+							solve_para->m_OutPut_AllJoint[i + result_num][5] = j6_a;
+							solve_para->m_OutPut_AllJoint[i + result_num][6] = j7_a;
+						}
 					}
 				}
 				else
@@ -2380,10 +2433,23 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 					min_B_567[2] = j7_a;
 					min_err567_B = err1;
 
+					for (i = 0; i < result_num_b; i++)
+					{
+						solve_para->m_OutPut_AllJoint[i+result_num][4] = j5_a;
+						solve_para->m_OutPut_AllJoint[i+result_num][5] = j6_a;
+						solve_para->m_OutPut_AllJoint[i+result_num][6] = j7_a;
+					}
+
 				}
+			}
+			for (i = 0; i < result_num_b; i++)
+			{
+				solve_para->m_OutPut_AllJoint[i+result_num][3] = JV4_B;
 			}
 		}
 
+		solve_para->m_OutPut_Result_Num = result_num + result_num_b;
+		
 		min_err4_A = FX_MinDif_Circle(solve_para->m_Input_IK_RefJoint[3], &JV4_A);
 		min_err4_B = FX_MinDif_Circle(solve_para->m_Input_IK_RefJoint[3], &JV4_B);
 
@@ -2947,328 +3013,6 @@ FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
 	return FX_FALSE;
 }
 
-FX_BOOL  FX_Robot_Kine_W(FX_INT32L RobotSerial, Vect7 jcur,Vect7 retW)
-{
-	Vect7 jv;
-	FX_Vect7Copy(jcur, jv);
-
-	FX_DOUBLE sp = 0.001;
-	FX_INT32 i, j;
-	FX_Robot* pRobot;
-	FX_KineSPC_Pilot* SPC;
-	NSPBase* NSP;
-	FX_DOUBLE cosv, sinv;
-	if (RobotSerial < 0 || RobotSerial >= MAX_RUN_ROBOT_NUM)
-	{
-		return FX_FALSE;
-	}
-	pRobot = (FX_Robot*)&m_Robot[RobotSerial];
-	pRobot = (FX_Robot*)&m_Robot[RobotSerial];
-	SPC = (FX_KineSPC_Pilot*)(pRobot->m_KineSPC);
-	NSP = &(SPC->m_nsp);
-
-	if (jv[1] > -5 && jv[1] < 5)
-	{
-		if (jv[1] > 0)
-		{
-			jv[1] = 5;
-		}
-		else
-		{
-			jv[1] = -5;
-		}
-	}
-
-	if (NSP->m_IsCorss == FX_TRUE)
-	{
-		if (jv[5] >80)
-		{
-			jv[5] = 80;
-		}
-		if (jv[5] < -80)
-		{
-			jv[5] = -80;
-		}
-	}
-	else
-	{
-		if (jv[5] > -5 && jv[5] < 5)
-		{
-			if (jv[5] > 0)
-			{
-				jv[5] = 5;
-			}
-			else
-			{
-				jv[5] = -5;
-			}
-		}
-	}
-
-	retW[3] = 0;
-	for (i = 0; i < 7; i++)
-	{
-
-		FX_SIN_COS_DEG(jv[i], &sinv, &cosv);
-		FX_XYZMRot(pRobot->m_KineBase.m_AxisRotBase[i], cosv, sinv, pRobot->m_KineBase.m_AxisRotTip[i]);
-	}
-
-	FX_M44Copy(pRobot->m_KineBase.m_AxisRotTip[0], pRobot->m_KineBase.m_JointPG[0]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[0], pRobot->m_KineBase.m_AxisRotTip[1], pRobot->m_KineBase.m_JointPG[1]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[1], pRobot->m_KineBase.m_AxisRotTip[2], pRobot->m_KineBase.m_JointPG[2]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[2], pRobot->m_KineBase.m_AxisRotTip[3], pRobot->m_KineBase.m_JointPG[3]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[3], pRobot->m_KineBase.m_AxisRotTip[4], pRobot->m_KineBase.m_JointPG[4]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[4], pRobot->m_KineBase.m_AxisRotTip[5], pRobot->m_KineBase.m_JointPG[5]);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[5], pRobot->m_KineBase.m_AxisRotTip[6], pRobot->m_KineBase.m_JointPG[6]);
-
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[6], pRobot->m_KineBase.m_Flange, pRobot->m_KineBase.m_FlangeTip);
-
-	Vect3 zdir;
-	Matrix3 ORG_123;
-	Matrix3 ORG_567;
-	Matrix4 Base;
-	Matrix3 tip_fix;
-
-	zdir[0] = pRobot->m_KineBase.m_JointPG[6][0][3] - pRobot->m_KineBase.m_JointPG[1][0][3];
-	zdir[1] = pRobot->m_KineBase.m_JointPG[6][1][3] - pRobot->m_KineBase.m_JointPG[1][1][3];
-	zdir[2] = pRobot->m_KineBase.m_JointPG[6][2][3] - pRobot->m_KineBase.m_JointPG[1][2][3];
-
-	FX_VectNorm(zdir);
-	FX_PGMult(pRobot->m_KineBase.m_JointPG[3], pRobot->m_KineBase.m_AxisRotBase[4], Base);
-
-	for ( i = 0; i < 3; i++)
-	{
-		for (j = 0; j < 3; j++)
-		{
-			ORG_123[i][j] = pRobot->m_KineBase.m_JointPG[2][i][j];
-			ORG_567[i][j] = Base[i][j];
-			tip_fix[i][j] = pRobot->m_KineBase.m_FlangeTip[i][j];
-		}
-	}
-
-	Matrix3 m;
-
-	FX_MatRotAxis(zdir, sp, ORG_123, m);
-	Vect3 sj;
-	if (FX_Matrix2ZYZ_DGR(m, 0.5, sj) == FX_TRUE)
-	{
-		FX_DOUBLE err1;
-		FX_DOUBLE err2;
-		Vect3 j1;
-		Vect3 j2;
-		j1[0] = sj[0];
-		j1[1] = -sj[1];
-		j1[2] = sj[2];
-
-
-		j2[0] = sj[0] + 180;
-		j2[1] = sj[1];
-		j2[2] = sj[2] + 180;
-
-		err1 = FX_MinDif_Circle(jv[0], &j1[0])
-			+ FX_MinDif_Circle(jv[1], &j1[1])
-			+ FX_MinDif_Circle(jv[2], &j1[2]);
-		err2 = FX_MinDif_Circle(jv[0], &j2[0])
-			+ FX_MinDif_Circle(jv[1], &j2[1])
-			+ FX_MinDif_Circle(jv[2], &j2[2]);
-
-		if (err1 <= err2)
-		{
-			retW[0] = (j1[0] - jv[0]) / sp;
-			retW[1] = (j1[1] - jv[1]) / sp;
-			retW[2] = (j1[2] - jv[2]) / sp;
-		}
-		else
-		{
-
-			retW[0] = (j2[0] - jv[0]) / sp;
-			retW[1] = (j2[1] - jv[1]) / sp;
-			retW[2] = (j2[2] - jv[2]) / sp;
-		}
-	}
-	else
-	{
-		return FX_FALSE;
-	}
-	FX_MatRotAxis(zdir, sp, ORG_567, m);
-
-	Matrix3 m2;
-	Matrix3 m3;
-	for (i = 0; i < 3; i++)
-	{
-		for (j = 0; j < 3; j++)
-		{
-			m2[i][j] = m[j][i];
-		}
-	}
-	FX_MMM33(m2, tip_fix,m3);
-	{
-
-		//////////////////////////////////////////////
-		pRobot = (FX_Robot*)&m_Robot[RobotSerial];
-		SPC = (FX_KineSPC_Pilot*)(pRobot->m_KineSPC);
-		NSP = &(SPC->m_nsp);
-		if (NSP->m_IsCorss == FX_TRUE)
-		{
-			if (FX_Matrix2ZYX(m3, sj) == FX_TRUE)
-			{
-				Vect3 j1;
-				j1[0] = sj[0];
-				j1[1] = -sj[1];
-				j1[2] = sj[2];
-
-				retW[4] = (j1[0] - jv[4]) / sp;
-				retW[5] = (j1[1] - jv[5]) / sp;
-				retW[6] = (j1[2] - jv[6]) / sp;
-			}
-			else
-			{
-				return FX_FALSE;
-			}
-		}
-		else
-		{
-			if (FX_Matrix2ZYZ_DGR(m3, 0.5, sj) == FX_TRUE)
-			{
-				FX_DOUBLE err1;
-				FX_DOUBLE err2;
-				Vect3 j1;
-				Vect3 j2;
-				j1[0] = sj[0];
-				j1[1] = -sj[1];
-				j1[2] = sj[2];
-
-
-				j2[0] = sj[0] + 180;
-				j2[1] = sj[1];
-				j2[2] = sj[2] + 180;
-
-				err1 = FX_MinDif_Circle(jv[0], &j1[0])
-					+ FX_MinDif_Circle(jv[1], &j1[1])
-					+ FX_MinDif_Circle(jv[2], &j1[2]);
-				err2 = FX_MinDif_Circle(jv[0], &j2[0])
-					+ FX_MinDif_Circle(jv[1], &j2[1])
-					+ FX_MinDif_Circle(jv[2], &j2[2]);
-
-				if (err1 <= err2)
-				{
-					retW[4] = (j1[0] - jv[4]) / sp;
-					retW[5] = (j1[1] - jv[5]) / sp;
-					retW[6] = (j1[2] - jv[6]) / sp;
-				}
-				else
-				{
-
-					retW[4] = (j2[0] - jv[4]) / sp;
-					retW[5] = (j2[1] - jv[5]) / sp;
-					retW[6] = (j2[2] - jv[6]) / sp;
-				}
-			}
-			else
-			{
-				return FX_FALSE;
-			}
-
-		}
-	}
-
-
-
-
-
-
-
-	return FX_TRUE;
-}
-
-FX_BOOL  FX_Robot_Kine_W2(FX_INT32L RobotSerial, Vect7 jv, Vect7 retW)
-{
-	FX_INT32 i;
-	FX_InvKineSolvePara solve_para;
-	FX_Vect7Copy(jv, solve_para.m_Input_IK_RefJoint);
-	solve_para.m_Input_IK_ZSPType = 0;
-	FX_Robot_Kine_FK(RobotSerial, jv, solve_para.m_Input_IK_TargetTCP);
-	FX_Robot_Kine_IK(RobotSerial, &solve_para);
-	solve_para.m_Input_ZSP_Angle = 0.001;
-	FX_Robot_Kine_IK_NSP(RobotSerial, &solve_para);
-	for (i = 0; i < 7; i++)
-	{
-		retW[i] = 1000.0 * (solve_para.m_Output_RetJoint[i] - jv[i]);
-	}
-	return FX_TRUE;
-}
-FX_BOOL  FX_Robot_Kine_Err(FX_INT32L RobotSerial, Vect7 angleTar, Vect7 angleCur, Vect3 ErrXYZ, Vect3 ErrGes, FX_DOUBLE* errNSP, Vect7 nspW)
-{
-	FX_Robot* pRobot;
-	Matrix4 pgt;
-	Matrix4 pgc;
-	Vect3   tdir;
-	Matrix3   cdir_t;
-	Matrix3   tcdir;
-	FX_INT32 i;
-	FX_INT32 j;
-	Matrix3 nsp_t;
-	Matrix3 nsp_c;
-	FX_Robot_Kine_FK_NSP(RobotSerial, angleTar, pgt, nsp_t);
-	FX_Robot_Kine_FK_NSP(RobotSerial, angleCur, pgc, nsp_c);
-
-	ErrXYZ[0] = (pgt[0][3] - pgc[0][3]);
-	ErrXYZ[1] = (pgt[1][3] - pgc[1][3]);
-	ErrXYZ[2] = (pgt[2][3] - pgc[2][3]);
-
-	Vect6 t;
-
-	PGErr(pgt, pgc, t);
-
-	ErrGes[0] = t[3];
-	ErrGes[1] = t[4];
-	ErrGes[2] = t[5];
-
-	pRobot = (FX_Robot*)&m_Robot[RobotSerial];
-
-	if (pRobot->m_RobotType != FX_ROBOT_TYPE_PILOT_SRS && pRobot->m_RobotType != FX_ROBOT_TYPE_PILOT_CCS)
-	{
-		return FX_TRUE;
-	}
-
-	FX_Robot_Kine_W(RobotSerial, angleCur, nspW);
-
-
-
-	Vect3 vx;
-	Vect3 vy;
-	Vect3 vz;
-	vz[0] = nsp_c[0][2];
-	vz[1] = nsp_c[1][2];
-	vz[2] = nsp_c[2][2];
-	vx[0] = nsp_t[0][0];
-	vx[1] = nsp_t[1][0];
-	vx[2] = nsp_t[2][0];
-
-	Matrix3 mt;
-	if (FX_MatrixNormZX(vz,vx,mt) == FX_FALSE)
-	{
-		return FX_FALSE;
-	}
-
-
-
-	for (i = 0; i < 3; i++)
-	{
-		for (j = 0; j < 3; j++)
-		{
-			tcdir[i][j] = mt[j][i];
-		}
-	}
-
-	Matrix3 roll;
-	FX_MMM33(tcdir, nsp_c,  roll);
-
-	*errNSP = - FX_ATan2(roll[1][0], roll[0][0]) * FXARM_R2D;
-
-	return FX_TRUE;
-
-}
 
 FX_VOID InertiaTran(Matrix3 input_i_b, Matrix3 input_b2a, Matrix3 output_i_a)
 {
@@ -3314,7 +3058,7 @@ FX_BOOL  FX_Robot_Kine_GetLinkPG(FX_INT32L RobotSerial, FX_DOUBLE PG[7][4][4])
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FX_VOID  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT8* OutPutPath)
+FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT8* OutPutPath)
 {
 	FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL]\n");
 
@@ -3334,12 +3078,22 @@ FX_VOID  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
 	FX_DOUBLE jerk = 1000;
 
 	FXSpln Spln = AxisPln_Create();
-	AxisPln_OnMovL(Spln,RobotSerial, start_pos,end_pos,refJ,Vel,ACC,jerk,OutPutPath);
+	FX_INT32 result = AxisPln_OnMovL(Spln,RobotSerial, start_pos,end_pos,refJ,Vel,ACC,jerk,OutPutPath);
 	AxisPln_Destroy(Spln);
 
+	if (result == 1)
+	{
+		return FX_TRUE;
+	}
+	else
+	{
+		return FX_FALSE;
+	}
+
+	return FX_FALSE;
 }
 
-FX_VOID  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath)
+FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath)
 {
 	FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL - KeepJ]\n");
 
@@ -3354,8 +3108,19 @@ FX_VOID  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
 	}
 
 	FXSpln Spln = AxisPln_Create();
-	AxisPln_OnMovL_KeepJ(Spln, RobotSerial, start_pos, end_pos, vel, OutPutPath);
+	FX_INT32 result = AxisPln_OnMovL_KeepJ(Spln, RobotSerial, start_pos, end_pos, vel, OutPutPath);
+	AxisPln_Destroy(Spln);
 
+	if (result == 1)
+	{
+		return FX_TRUE;
+	}
+	else
+	{
+		return FX_FALSE;
+	}
+
+	return FX_FALSE;
 }
 
 ////Parameters Identification

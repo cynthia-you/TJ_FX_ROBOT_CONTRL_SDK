@@ -83,6 +83,7 @@ FX_DOUBLE FX_Sqrt(FX_DOUBLE x);
 FX_DOUBLE FX_3Root(FX_DOUBLE ix);
 ///////////////////////////////////////////////////////////////////////////////
 FX_DOUBLE FX_MinDif_Circle(FX_DOUBLE refv, FX_DOUBLE* v);
+FX_DOUBLE FX_Floor(FX_DOUBLE x);
 
 	
 #ifdef __cplusplus

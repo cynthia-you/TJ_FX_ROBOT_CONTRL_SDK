@@ -2559,6 +2559,65 @@ FX_BOOL FX_Matrix2ZYX(Matrix3 m, Vect3  ret)
 	return FX_FALSE;
 
 }
+
+FX_VOID FX_ZYZ2Matrix(Vect3 ret, Matrix3 m)
+{
+	//Z(-Y)Z
+	Vect3 ZYZ = { 0 };
+	ZYZ[0] = ret[0];
+	ZYZ[1] = -ret[1];
+	ZYZ[2] = ret[2];
+
+	FX_DOUBLE sa, ca;
+	FX_DOUBLE sb, cb;
+	FX_DOUBLE sr, cr;
+	FX_SIN_COS_DEG(ZYZ[0], &sa, &ca);
+	FX_SIN_COS_DEG(ZYZ[1], &sb, &cb);
+	FX_SIN_COS_DEG(ZYZ[2], &sr, &cr);
+
+	m[0][0] = ca * cb * cr - sa * sr;
+	m[0][1] = -ca * cb * sr - sa * cr;
+	m[0][2] = ca * sb;
+
+	m[1][0] = sa * cb * cr + ca * sr;
+	m[1][1] = -sa * cb * sr + ca * cr;
+	m[1][2] = sa * sb;
+
+	m[2][0] = -sb * cr;
+	m[2][1] = sb * sr;
+	m[2][2] = cb;
+
+}
+
+FX_VOID FX_ZYX2Matrix(Vect3 ret, Matrix3 m)
+{
+	//Z(-Y)X
+	Vect3 ZYX = { 0 };
+	ZYX[0] = ret[0];
+	ZYX[1] = -ret[1];
+	ZYX[2] = ret[2];
+
+	FX_DOUBLE sa, ca;
+	FX_DOUBLE sb, cb;
+	FX_DOUBLE sr, cr;
+	FX_SIN_COS_DEG(ZYX[0], &sa, &ca);
+	FX_SIN_COS_DEG(ZYX[1], &sb, &cb);
+	FX_SIN_COS_DEG(ZYX[2], &sr, &cr);
+
+	m[0][0] = ca * cb;
+	m[0][1] = ca * sb * sr - sa * cr;
+	m[0][2] = ca * sb * cr + sa * sr;
+
+	m[1][0] = sa * cb;
+	m[1][1] = -sa * sb * sr + ca * cr;
+	m[1][2] = -sa * sb * cr - ca * sr;
+
+	m[2][0] = -sb;
+	m[2][1] = cb * sr;
+	m[2][2] = cb * cr;
+
+}
+
 FX_BOOL	FX_Matrix2ZYZ_DGR(Matrix3 m, FX_DOUBLE dgr, Vect3  ret)
 {
 	FX_DOUBLE bsin;

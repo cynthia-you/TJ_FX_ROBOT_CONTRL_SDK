@@ -261,24 +261,18 @@ FX_BOOL  LOADMvCfg(FX_CHAR* path, FX_INT32L TYPE[2], FX_DOUBLE GRV[2][3], FX_DOU
 FX_BOOL  FX_Robot_Init_Type(FX_INT32L RobotSerial, FX_INT32L RobotType);
 FX_BOOL  FX_Robot_Init_Kine(FX_INT32L RobotSerial, FX_DOUBLE DH[8][4]);
 FX_BOOL  FX_Robot_Init_Lmt(FX_INT32L RobotSerial, FX_DOUBLE PNVA[7][4], FX_DOUBLE J67[4][3]);
-FX_BOOL  FX_Robot_Init_Dyna(FX_INT32L RobotSerial, Vect3 GRV, FX_DOUBLE Mass[7],Vect3 MCP[7], Vect6 I[7]);
-FX_BOOL  FX_Robot_Init_Dyna_Set_VirTool(FX_INT32L RobotSerial, FX_DOUBLE Mass, Vect3 MCP, Vect6 I);
 ////////////////////////////////////////////////////////////////////////////////////////////////
 FX_BOOL  FX_Robot_Tool_Set(FX_INT32L RobotSerial, Matrix4 tool);
 FX_BOOL  FX_Robot_Tool_Rmv(FX_INT32L RobotSerial);
 ////////////////////////////////////////////////////////////////////////////////////////////////
-FX_INT32  FX_GetJ4Type_Pilot_G(FX_INT32L RobotSerial, FX_DOUBLE jv4);
 FX_BOOL  FX_Robot_Kine_FK(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos);
-FX_BOOL  FX_Robot_Kine_FK_NSP(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos, Matrix3 nspg);
 FX_BOOL  FX_Robot_Kine_Jacb(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_Jacobi* jcb);
 FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para);
 FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_para);
-FX_BOOL  FX_Robot_Kine_W(FX_INT32L RobotSerial, Vect7 jcur,Vect7 retW);
-FX_BOOL  FX_Robot_Kine_Err(FX_INT32L RobotSerial, Vect7 angleTar, Vect7 angleCur, Vect3 ErrXYZ, Vect3 ErrGes, FX_DOUBLE* errNSP,Vect7 nspW);
 ////////////////////////////////////////////////////////////////////////////////////////////////
 /////Motion Planning
-FX_VOID  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_CHAR* OutPutPath);
-FX_VOID  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath);
+FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_CHAR* OutPutPath);
+FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath);
 
 ////Parameters Identification
 FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 Type,FX_CHAR* path,FX_DOUBLE* mass, Vect3 mr, Vect6 I);

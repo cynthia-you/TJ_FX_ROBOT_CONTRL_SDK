@@ -363,3 +363,22 @@ FX_DOUBLE FX_MinDif_Circle(FX_DOUBLE refv, FX_DOUBLE* v)
 	return -diff;
 }
 
+FX_DOUBLE FX_Floor(FX_DOUBLE x)
+{
+	FX_INT32L longx = x;
+	FX_DOUBLE fractional = x - longx;
+
+	if (fractional == 0.0) 
+	{
+		return x;
+	}
+	else if (x > 0)
+	{
+		return x - fractional;
+	}
+	else 
+	{
+		return x - fractional - 1;
+	}
+}
+
