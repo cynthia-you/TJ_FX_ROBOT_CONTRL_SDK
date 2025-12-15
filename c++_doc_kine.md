@@ -87,7 +87,9 @@ FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para
                 • Matrix4 m_Input_IK_TargetTCP ：4*4的目标点末端的位姿矩阵
                 • Vect7   m_Input_IK_RefJoint  ：逆运动学的各关节参考角（单位：度）
             • 输出项
-                • Vect7   m_Output_RetJoint      ：逆运动学解出的关节角度（单位：度）
+                • Vect7   m_Output_RetJoint      ：逆运动学解出的关节角度（选解策略为与参考关节角最近）（单位：度）
+                • Matrix8 m_OutPut_AllJoint      ：逆运动学的全部解（每一行代表一组解,分别存放1-7关节的角度值）（单位：度）
+                • FX_INT32L m_OutPut_Result_Num  ：逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
                 • FX_BOOL m_Output_IsOutRange    ：用于判断当前位姿是否超出位置可达空间（0：未超出；1：超出）
                 • FX_BOOL m_Output_IsDeg[7]      ：用于判断各关节是否发生奇异（0：未奇异；1：奇异）
                 • FX_BOOL m_Output_IsJntExd      : 用于判断是否有关节超出位置正负限制（0：未超出；1：超出）
