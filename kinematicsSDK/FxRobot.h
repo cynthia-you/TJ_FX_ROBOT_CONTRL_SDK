@@ -266,6 +266,7 @@ FX_BOOL  FX_Robot_Tool_Set(FX_INT32L RobotSerial, Matrix4 tool);
 FX_BOOL  FX_Robot_Tool_Rmv(FX_INT32L RobotSerial);
 ////////////////////////////////////////////////////////////////////////////////////////////////
 FX_BOOL  FX_Robot_Kine_FK(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos);
+FX_BOOL  FX_Robot_Kine_FK_NSP(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos, Matrix3 nspg);
 FX_BOOL  FX_Robot_Kine_Jacb(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_Jacobi* jcb);
 FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para);
 FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_para);

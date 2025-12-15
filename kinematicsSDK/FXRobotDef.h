@@ -137,6 +137,7 @@ typedef struct
 	FX_DOUBLE j4v;
 	FX_DOUBLE wristges[3][3];
 
+	FX_DOUBLE rot_m[3][3];
 	FX_DOUBLE rot_axis[3];
 	FX_DOUBLE j123Base[3][3];
 	FX_DOUBLE j567Base[3][3];
@@ -192,6 +193,7 @@ typedef struct
 	FX_BOOL m_Output_IsOutRange;
 	FX_BOOL m_Output_IsDeg[7];
 	FX_BOOL m_Output_JntExdTags[7];
+	FX_DOUBLE m_Output_JntExdABS;
 	FX_BOOL m_Output_IsJntExd;
 	Vect7	m_Output_RunLmtP;
 	Vect7	m_Output_RunLmtN;
