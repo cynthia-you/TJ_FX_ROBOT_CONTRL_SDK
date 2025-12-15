@@ -224,6 +224,8 @@ typedef struct
 	FX_DOUBLE               m_DGR3;
 	/////////////////////////////////////
 	Vect7	m_Output_RetJoint;
+	Matrix8 m_OutPut_AllJoint;
+	FX_INT32L m_OutPut_Result_Num;
 	FX_BOOL m_Output_IsOutRange;
 	FX_BOOL m_Output_IsDeg[7];
 	FX_BOOL m_Output_JntExdTags[7];
