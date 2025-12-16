@@ -3,13 +3,13 @@
 ## 版本： 1003
 ## 支持平台： LINUX 及 WINDOWS
 ## LINUX支持： ubuntu18.04 - ubuntu24.04
-## 更新日期：2025-09
+## 更新日期：2025-12
 
 
 # ATTENTION
 
     1.  请先熟练使用MARVIN_APP 或者https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/ 下各个版本里的FxStation.exe， 操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
-    2.  ./demo_linux_win/ 为c++ 和 python 的接口使用DEMO。每个demo顶部有该DEMO的案例说明和使用逻辑，请您一定先阅读，根据现场情况修改后运行。
+    2.  C++_DEMO/ 和 DEMO_PYTHON/ 下为接口使用DEMO。每个demo顶部有该DEMO的案例说明和使用逻辑，请您一定先阅读，根据现场情况修改后运行。
         这些demo的使用逻辑和使用参数为研发测试使用开发的，仅供参考，并非实际生产代码。
             比如:
                 a.速度百分比和加速度百分比为了安全我们都设置为百分之十：10，在您经过丰富的测试后可调到全速100。
@@ -65,7 +65,7 @@
     ① 统一接口以参数名方式获取和设置所有参数。
 
 
-## 二、API列表 [demo_linux_win/python/fx_robot.py]
+## 二、API列表 SDK_PYTHON/fx_robot.py
   获取SDK版本  
   - SDK_version()
 
@@ -384,41 +384,7 @@
 
 
 # 四、案例脚本
-
-请注意：案例仅为参考使用，实地生产和业务逻辑需要您加油写~~~
-
-
-订阅数据：subdata_demo.py
-
-阻抗模式：
-    1. 关节阻抗：torque_joint_impedance_arm_A.py
-    2. 笛卡尔阻抗：torque_card_impedance_arm_A.py
-    3. 力控阻抗：torque_force_impedance_arm_A.py
-
-位置模式：position_arm_A.py
-
-拖动模式（需要按住末端的按钮拖动）：
-    关节阻抗模式下实现关节拖动：drag_arm_A.py
-    关节阻抗模式下关节拖动并保存数据：drag_JointImpedance_and_save_data_arm_A.py
-    笛卡尔阻抗模式下实现笛卡尔单方向的拖动：drag_cart_arm_A.py
-    笛卡尔阻抗模式下实现笛卡尔单方向的拖动并保存数据：drag_CartImpedance_and_save_data_arm_A.py
-
-撞机时用位置模式不安全，或者撞机成一团情况下，调整手臂姿态：
-    控制器需要升级到35版本以上
-    协作释放模式：collaborative_release.py
-    松闸抱闸模式（联系技术工程师修改伺服参数）:apply-brake_relase-brake_demo.py
-    
-
-末端485读取设定：demo_485_arm_A.py
-
-末端CAN读取设定：demo_can_arm_A.py
-
-PVT运行：pvt_demo.py
-
-采集数据：collect_data_demo.py
-
-获取参数: get_param_demo.py
-
+    见DEMO_PYTHON/readme.md
 
 
 

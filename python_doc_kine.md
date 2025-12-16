@@ -3,52 +3,52 @@
 ## 版本： 1004
 ## 支持平台： LINUX 及 WINDOWS
 ## LINUX支持： ubuntu18.04 - ubuntu24.04
-## 更新日期：2025-09
+## 更新日期：2025-12
 
 
 ### 工具包主要提供运动学相关功能。
 
-## 一、接口介绍 [demo_linux_win/python/fx_kine.py]
+## 一、接口介绍 [SDK_PYTHON/fx_kine.py]
 ## 接口快速全览： 
 
 
     可用方法:
 
     机器人关节角度正解到末端位置和姿态4*4矩阵
-  - fk(robot_serial: int, joints: list)
+  - fk(joints: list)
     
     工具动力学辨识
   - identify_tool_dyn(robot_type: int, ipath: str)
 
     机器人末端位姿矩阵逆解到7个关节的角度
-  - ik(robot_serial: int, pose_mat: list, ref_joints: list)
+  - ik(pose_mat: list, ref_joints: list)
 
     逆解零空间
-  - ik_nsp(robot_serial: int, pose_mat: list, ref_joints: list, zsp_type: int, zsp_para: list, zsp_angle: float, dgr: list)
+  - ik_nsp( pose_mat: list, ref_joints: list, zsp_type: int, zsp_para: list, zsp_angle: float, dgr: list)
 
     初始化动力学参数
-  - initial_kine(robot_serial: int, robot_type: int, dh: list, pnva: list, j67: list)
+  - initial_kine( robot_type: int, dh: list, pnva: list, j67: list)
 
     关节角度转雅可比矩阵
-  - joints2JacobMatrix(robot_serial: int, joints: list)
+  - joints2JacobMatrix(joints: list)
 
     加载配置文件
-  - load_config(config_path: str)
+  - load_config(arm_type:int, config_path: str)
 
     末端位姿矩阵转XYZABC表示
   - mat4x4_to_xyzabc(pose_mat: list)
 
     直线插值规划
-  - movL(robot_serial: int, start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, save_path)
+  - movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, save_path)
   - 
     直线插值规划，约束起始结束关节构型
-  - movL_KeepJ(self,robot_serial: int,start_joints:list, end_joints:list,vel:float,save_path):
+  - movL_KeepJ(start_joints:list, end_joints:list,vel:float,save_path):
 
     移除工具设置
-  - remove_tool_kine(robot_serial: int)
+  - remove_tool_kine()
 
     设置末端工具参数
-  - set_tool_kine(robot_serial: int, tool_mat: list)
+  - set_tool_kine(tool_mat: list)
 
     末端XYZABC转位姿矩阵表示
   - xyzabc_to_mat4x4(xyzabc: list)
@@ -59,14 +59,14 @@
     在DEMO中仅示例了单臂（左臂）的计算
     如果人形，则左右臂都要计算，两个手臂实例化两个机器人。
     使用前，请一定确认机型，导入正确的配置文件，文件导错，计算会错误啊啊啊,甚至看起来运行正常，但是值错误！！！
-    •特别提示：连续轨迹调逆解的情况下：正解和逆解是要配套使用的。因为逆解中需要的零空间参数需要正解内部的矩阵运算，所以逆解调用之后再调用一下正运动学才是真的更新了逆解的参考角信息；或者可以每次调用逆运动学之前都更新参考角。
 
 ###    2.1 导入运动学相关参数
-load_config(config_path: str)
+load_config(arm_type: int, config_path: str)
 
+        :param srm_type: 选择左臂还是右臂, 左臂:0, 右臂:1
         :param config_path: 本地机械臂配置文件srs.MvKDCfg/ccs.MvKDCfg(请确认机型和DH参数是否对应), 可相对路径.
         • srs.MvKDCfg/ccs.MvKDCfg 文件中包含与运动学计算相关的双臂参数，进行计算之前需要导入机械臂配置相关文件
-        • TYPE=1006，DL机型；TYPE=1007，Pilot-SRS机型（双臂为MARVIN）；TYPE=1017，Pilot-CCS机型双臂为MARVIN）！
+        • TYPE=1007，Pilot-SRS机型（双臂为MARVIN）；TYPE=1017，Pilot-CCS机型双臂为MARVIN）！
         • GRV参数为双臂重力方向，如[0.000,9.810,0.000];
         • DH参数为双臂MDH参数，包含各关节MDH参数及法兰MDH参数；
         • PNVA参数为双臂各关节正负限制位置以及所允许的正负最大加速度及加加速度；
@@ -77,12 +77,10 @@ load_config(config_path: str)
 
 
 ###    2.2 初始化运动学相关参数
-initial_kine(robot_serial: int, robot_type: int, dh: list, pnva: list, j67: list)
+initial_kine(robot_type: int, dh: list, pnva: list, j67: list)
 
         '''初始化运动学相关参数
         • 运动学相关计算前，需要按照该顺序调用初始化函数，将配置中导入的参数进行初始化
-        • RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :param type: int.机器人机型代号。
         :param dh: list(8,4), 每个轴DH：alpha, a d,theta.
         :param pnva: list(7,4), 每个轴:关节上界p,关节下界n，最大速度v,最大加速度a.
@@ -93,22 +91,20 @@ initial_kine(robot_serial: int, robot_type: int, dh: list, pnva: list, j67: list
 
 ###    2.3 工具设置
 设置工具的运动学参数
-set_tool_dyn(robot_serial: int, dyn: list)
+set_tool_dyn(dyn: list)
 移除工具的运动学参数
-remove_tool_kine(robot_serial: int)
+remove_tool_kine()
 
 
     • 若末端带有负载，对各关节参数初始化后，需要对工具进行设置
 
 
     '''工具运动学设置
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :param tool_mat: list(4,4) 工具的运动学信息，齐次变换矩阵，相对末端法兰的旋转和平移，请确认法兰坐标系。
         :return:bool
         '''
 
     '''移除工具动力学设置
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :return:bool
         '''
 
@@ -116,10 +112,9 @@ remove_tool_kine(robot_serial: int)
 
 
 ###    2.4 计算正运动学
-fk(robot_serial: int, joints: list)
+fk(joints: list)
 
     '''关节角度正解到末端TCP位置和姿态4*4
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :param joints: list(7,1). 正解的输入关节角度，单位：度。
         :return:
             4x4的位姿矩阵，list(4,4)， 旋转矩阵单位为角度，位置向量单位是毫米
@@ -132,30 +127,56 @@ fk(robot_serial: int, joints: list)
     '''
 
 ###    2.5 计算逆运动学
-ik(robot_serial: int, pose_mat: list, ref_joints: list)
-
+ik(pose_mat: list, ref_joints: list)
 
     '''末端位置和姿态逆解到关节值
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :param pose_mat: list(4,4), 末端的位置姿态4x4列表，旋转矩阵单位为角度，位置向量单位是毫米
          :param ref_joints: list(7,1),参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。
         :return:
             结构体，以下几项最相关：
                 m_Output_RetJoint      ：逆运动学解出的关节角度（单位：度）
+                m_OutPut_AllJoint      ：逆运动学的全部解（每一行代表一组解,分别存放1-7关节的角度值）（单位：度）
                 m_Output_IsOutRange    ：当前位姿是否超出位置可达空间（False：未超出；True：超出）
+                m_OutPut_Result_Num    :：逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
                 m_Output_IsDeg[7]      ：各关节是否发生奇异（False：未奇异；True：奇异）
                 m_Output_IsJntExd      : 是否有关节超出位置正负限制（False：未超出；True：超出）
                 m_Output_JntExdTags[7] ：各关节是否超出位置正负限制（False：未超出；True：超出）
             返回False,则逆解失败。
 
-        •特别提示：连续轨迹调逆解的情况下：正解和逆解是要配套使用的。因为逆解中需要的零空间参数需要正解内部的矩阵运算，所以逆解调用之后再调用一下正运动学才是真的更新了逆解的参考角信息；或者可以每次调用逆运动学之前都更新参考角。
+         输出：
+            成功：True/1; 失败：False/0
+            失败情况: 
+                    1. 输入矩阵超出机器人可达关节空间
+                    2. 第四关节为0, 奇异
+
+        • 特别提示:
+                结构体以下输出项的TAG仅绑定对m_Output_RetJoint输出的关节描述
+                    • m_Output_IsOutRange    ：用于判断当前位姿是否超出位置可达空间（0：未超出；1：超出）
+                    • m_Output_IsDeg[7]      ：用于判断各关节是否发生奇异（0：未奇异；1：奇异）
+                    • m_Output_JntExdABS   : 各关节超限绝对值总和(FX_Robot_PLN_MOVL_KeepJ使用)
+                    • m_Output_IsJntExd      : 用于判断是否有关节超出位置正负限制（0：未超出；1：超出）
+                    • m_Output_JntExdTags[7] ：用于判断各关节是否超出位置正负限制（0：未超出；1：超出）
+    
+                如果选用用多组解m_OutPut_AllJoint. 请自行对选的解做判断,符合以下三个条件才能控制机械臂正常驱动:
+                    1. 第二关节的角度不在正负0.05度范围内(在此范围将奇异)
+                    2. 对输出的各个关节做软限位判定:
+                        调用接口ini_result=kk.load_config(config_path=os.path.join(current_path,'ccs_m6.MvKDCfg'))后,
+                        ini_result['PNVA'][:]矩阵里的请两列对应各个关节的正负限位
+                        选取的解的每个关节都满足在限位置内
+                    3. 如果条件1和2都满足,还要做六七关节干涉判定:
+                        判定方法:
+                            调用接口ini_result=kk.load_config(config_path=os.path.join(current_path,'ccs_m6.MvKDCfg'))后,
+                            ini_result['BD'][:]矩阵里依次为++, -+,  --, +- 四个象限的干涉参数
+                            以CCS为例:
+                                如果选的解的六七关节都为正, 则选用在++象限里的参数:[0.018004, -2.3205, 108.0],三个参数分别视为a0,a1,a2, 
+                                第6关节的值为j6,此时使用公式j7=(a0^2)*j6+ a1*j6+a2  将得到第7个关节的最大限制位置
+                                如果选取的解里面的第7关节小于j7, 则不发生干涉, 本组解可被驱动到达.
         '''
 
 ###    2.6 计算末端位姿不变、改变零空间（臂角方向）的逆运动学
-ik_nsp(robot_serial: int, pose_mat: list, ref_joints: list, zsp_type: int, zsp_para: list, zsp_angle: float, dgr: list)
+ik_nsp(pose_mat: list, ref_joints: list, zsp_type: int, zsp_para: list, zsp_angle: float, dgr: list)
 
     '''逆解优化：可调整方向,不能单独使用，ik得到的逆运动学解的臂角不满足当前选解需求时使用。
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :param pose_mat: list(4,4), 末端位置姿态4x4列表.
         :param ref_joints: list(7,1),参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。该构型的肩、肘、腕组成初始臂角平面，以肩到腕方向为Z向量。
         :param zsp_type: int, 零空间约束类型（0：使求解结果与参考关节角的欧式距离最小适用于一般冗余优化；1：与参考臂角平面最近，需要额外提供平面参数zsp_para）
@@ -173,23 +194,20 @@ ik_nsp(robot_serial: int, pose_mat: list, ref_joints: list, zsp_type: int, zsp_p
         '''
 
 ###    2.7 计算雅可比矩阵
-joints2JacobMatrix(robot_serial: int, joints: list)
+joints2JacobMatrix(joints: list)
 
     • 输入关节角度及RobotSerial（参数含义参考初始化参数部分），输出为6*7的雅可比矩阵
     '''当前关节角度转成雅可比矩阵
-            :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
             :param joints: list(7,1), 当前关节角度
             :return: 雅可比矩阵6*7矩阵
             '''
 
 ###    2.8 直线规划（MOVL）
-movL(robot_serial: int, start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, save_path)
+movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, save_path)
 
     • 输出点位频率为500Hz，即每20ms执行一行
 
         '''直线规划
-
-        :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
         :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
         :param ref_joints:参考关节构型，也是规划文件的起始点位。
@@ -206,12 +224,11 @@ movL(robot_serial: int, start_xyzabc: list, end_xyzabc: list, ref_joints: list, 
 
             
 ###    2.9 直线插值规划，约束起始结束关节构型（movL_KeepJ）
-movL_KeepJ(self,robot_serial: int,start_joints:list, end_joints:list,vel:float,save_path):
+movL_KeepJ(start_joints:list, end_joints:list,vel:float,save_path):
 
     • 输出点位频率为50Hz，即每2ms执行一行
         '''直线规划保持关节构型
 
-        :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :param start_joints:起始点各个关节位置（单位：角度）
         :param end_joints:终点各个关节位置（单位：角度）
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
@@ -265,38 +282,12 @@ xyzabc_to_mat4x4(xyzabc:list)
         '''
 
 
-
-
 # 三、案例脚本
 请注意：案例仅为参考使用，实地生产和业务逻辑需要您加油写~~~
 
-## 3.1综合接口案例脚本:
+   见DEMO_PYTHON/readme.md
 
-    SRS机型运动学综合接口使用：
-        kine_demo_A_arm_srs.py
-    
-    CCS机型运动学综合接口使用：
-        kine_demo_A_arm_ccs.py
-    
-## 3.2工具辨识案例：
 
-    SRS机型(提供了右臂的样例数据)：
-    identy_tool_dynamic_SRS_B_demo.py
-
-    CCS机型(提供了右臂的样例数据)：
-    identy_tool_dynamic_CCS_B_demo.py
-
-## 3.3十字交叉机型67关节干涉解决案列：
-
-    案列的情况和解决方案描述：
-    给定一个当前关节[32,-64,72,59,-107,-30,58]，不确定是否超限，想要在这组关节下，末端朝Z的负向方向移动100毫米。
-
-    [ccs_67_interference.py](python/ccs_67_interference.py)
-    首先脚本判断该关节值里7关节超限了，先保持末端位姿不变，解到[24.710327454579385, -34.626590037831534, 129.573376956529, 58.999999819257596, -154.5774252821101, -9.250648598649414, 76.73495447348635]， 
-    然后这个关节基础上，Z调-100毫米， 再逆解到不超限的[30.441992064349336, -41.66004132484181, 124.19196073906699, 73.1034294701139, -147.2634786470432, 5.414599152769855, 71.29893883226201]。
-
-    解决方案末端验证：[dd_eval.py](python/dd_eval.py) 验证解出来的关节是否保持末端位姿不变以及正确在Z方向-100毫米
-    
 
 
 
