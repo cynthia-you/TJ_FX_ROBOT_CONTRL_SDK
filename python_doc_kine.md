@@ -161,7 +161,7 @@ ik(pose_mat: list, ref_joints: list)
                     1. 第二关节的角度不在正负0.05度范围内(在此范围将奇异)
                     2. 对输出的各个关节做软限位判定:
                         调用接口ini_result=kk.load_config(config_path=os.path.join(current_path,'ccs_m6.MvKDCfg'))后,
-                        ini_result['PNVA'][:]矩阵里的请两列对应各个关节的正负限位
+                        ini_result['PNVA'][:]矩阵里的前两列对应各个关节的正负限位
                         选取的解的每个关节都满足在限位置内
                     3. 如果条件1和2都满足,还要做六七关节干涉判定:
                         判定方法:
