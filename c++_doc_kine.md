@@ -113,7 +113,7 @@ FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para
                 1. 第二关节的角度不在正负0.05度范围内(在此范围将奇异)
                 2. 对输出的各个关节做软限位判定:
                     调用接口LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I)后,
-                    PNVA矩阵里的请两列对应各个关节的正负限位
+                    PNVA矩阵里的前两列对应各个关节的正负限位
                     选取的解的每个关节都满足在限位置内
                 3. 如果条件1和2都满足,还要做六七关节干涉判定:
                     判定方法:
