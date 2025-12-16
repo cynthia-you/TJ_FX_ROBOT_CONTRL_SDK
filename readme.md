@@ -4,7 +4,7 @@
 
 # ATTENTION
      1.  请先熟练使用MARVIN_APP 或者https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/ 下各个版本里的FxStation.exe， 操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
-     2.  ./demo_linux_win/ 为c++ 和 python 的接口使用DEMO。每个demo顶部有该DEMO的案例说明和使用逻辑，请您一定先阅读，根据现场情况修改后运行。
+     2.  DEMO_C++ 和 DEMO_PYTHON 为SDK接口在C++和PYTHON下的使用DEMO。每个demo顶部有该DEMO的案例说明和使用逻辑，请您一定先阅读，根据现场情况修改后运行。
          这些demo的使用逻辑和使用参数为研发测试使用开发的，仅供参考，并非实际生产代码。
              比如:
                  a.速度百分比和加速度百分比为了安全我们都设置为百分之十：10，在您经过丰富的测试后可调到全速100。
@@ -151,17 +151,17 @@
 ### 4.2 使用
     LINUX:
         C++: 
-            ./demo_linux_win/c++_linux/API_USAGE_KINEMATICS.txt
-            ./demo_linux_win/c++_linux/API_USAGE_MarvinSDK.txt
+            ./DEMO_C++/readme.md
 
-        PYTHON 代码跨平台, 参考./demo_linux_win/python/   下的demo
+        PYTHON 代码跨平台, 参考DEMO_PYTHON/readme.md
 
     WINDOWS:
 
         C++: 
-            双击执行自动化demo生成脚本： ./demo_linux_win/c++_win/auto_complie.bat
+            ./DEMO_C++/readme.md
+            双击执行自动化demo生成脚本： ./DEMO_C++/auto_complie.bat
             
-        PYTHON 代码跨平台, 参考./demo_linux_win/python/   下的demo
+        PYTHON 代码跨平台, 参考DEMO_PYTHON/readme.md
 
 
 ## 五、注意事项
