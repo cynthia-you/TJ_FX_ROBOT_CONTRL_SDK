@@ -1608,6 +1608,7 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 			if (FX_Fabs(Jv3[0]) < 0.02 || FX_Fabs(Jv3[1]) < 0.02)
 			{
 				J246_DEG_TAG_B = FX_TRUE;
+				solve_para->m_Output_IsDeg[3] = FX_TRUE;
 				solve_para->m_Output_RetJoint[0] = solve_para->m_Input_IK_RefJoint[0];
 				solve_para->m_Output_RetJoint[1] = solve_para->m_Input_IK_RefJoint[1];
 				solve_para->m_Output_RetJoint[2] = solve_para->m_Input_IK_RefJoint[2];
@@ -1645,7 +1646,7 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 			FX_XYZMRot(pRobot->m_KineBase.m_AxisRotBase[i], cosv, sinv,m_AxisRotTip[i]);
 		}
 
-		FX_M44Copy(pRobot->m_KineBase.m_AxisRotTip[0], m_JointPG[0]);
+		FX_M44Copy(m_AxisRotTip[0], m_JointPG[0]);
 		FX_PGMult(m_JointPG[0], m_AxisRotTip[1], m_JointPG[1]);
 		FX_PGMult(m_JointPG[1], m_AxisRotTip[2], m_JointPG[2]);
 		ref_vx[0] = m_JointPG[2][0][0];

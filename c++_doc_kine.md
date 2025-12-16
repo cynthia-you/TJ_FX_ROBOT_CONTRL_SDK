@@ -92,12 +92,39 @@ FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para
                 • FX_INT32L m_OutPut_Result_Num  ：逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
                 • FX_BOOL m_Output_IsOutRange    ：用于判断当前位姿是否超出位置可达空间（0：未超出；1：超出）
                 • FX_BOOL m_Output_IsDeg[7]      ：用于判断各关节是否发生奇异（0：未奇异；1：奇异）
+                • FX_DOUBLE m_Output_JntExdABS   : 各关节超限绝对值总和(FX_Robot_PLN_MOVL_KeepJ使用)
                 • FX_BOOL m_Output_IsJntExd      : 用于判断是否有关节超出位置正负限制（0：未超出；1：超出）
                 • FX_BOOL m_Output_JntExdTags[7] ：用于判断各关节是否超出位置正负限制（0：未超出；1：超出）
     输出：
         成功：True/1; 失败：False/0
-     •特别提示：连续轨迹调逆解的情况下：正解和逆解是要配套使用的。因为逆解中需要的零空间参数需要正解内部的矩阵运算，所以逆解调用之后再调用一下正运动学才是真的更新了逆解的参考角信息；或者可以每次调用逆运动学之前都更新参考角。
-    
+        失败情况: 
+                1. 输入矩阵超出机器人可达关节空间
+                2. 第四关节为0, 奇异
+
+    • 特别提示:
+            结构体以下输出项的TAG仅绑定对m_Output_RetJoint输出的关节描述
+                • FX_BOOL m_Output_IsOutRange    ：用于判断当前位姿是否超出位置可达空间（0：未超出；1：超出）
+                • FX_BOOL m_Output_IsDeg[7]      ：用于判断各关节是否发生奇异（0：未奇异；1：奇异）
+                • FX_DOUBLE m_Output_JntExdABS   : 各关节超限绝对值总和(FX_Robot_PLN_MOVL_KeepJ使用)
+                • FX_BOOL m_Output_IsJntExd      : 用于判断是否有关节超出位置正负限制（0：未超出；1：超出）
+                • FX_BOOL m_Output_JntExdTags[7] ：用于判断各关节是否超出位置正负限制（0：未超出；1：超出）
+
+            如果选用用多组解m_OutPut_AllJoint. 请自行对选的解做判断,符合以下三个条件才能控制机械臂正常驱动:
+                1. 第二关节的角度不在正负0.05度范围内(在此范围将奇异)
+                2. 对输出的各个关节做软限位判定:
+                    调用接口LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I)后,
+                    PNVA矩阵里的请两列对应各个关节的正负限位
+                    选取的解的每个关节都满足在限位置内
+                3. 如果条件1和2都满足,还要做六七关节干涉判定:
+                    判定方法:
+                        调用接口LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I)后,
+                        BD矩阵里依次为++, -+,  --, +- 四个象限的干涉参数
+                        以CCS为例:
+                            如果选的解的六七关节都为正, 则选用在++象限里的参数:[0.018004, -2.3205, 108.0],三个参数分别视为a0,a1,a2, 
+                            第6关节的值为j6,此时使用公式j7=a0^2)*j6+ a1*j6+a2  将得到第7个关节的最大限制位置
+                            如果选取的解里面的第7关节小于j7, 则不发生干涉, 本组解可被驱动到达.
+
+
 
 ###    6. 计算末端位姿不变、改变零空间（臂角方向）的逆运动学
 FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
