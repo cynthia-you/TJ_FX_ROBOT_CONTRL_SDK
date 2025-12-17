@@ -29,8 +29,6 @@
 
           
 
-     
-
 ### 1.1 控制器版本更新
     1003_35版本添加功能:
     1 增加内外编码器检测功能
@@ -83,6 +81,9 @@
     https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases
 
 ## 二、APP更新
+
+### 添加FXSTAION软件源码
+     https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/%E4%B8%8A%E4%BD%8D%E6%9C%BA%E8%BD%AF%E4%BB%B6MARVIN_APP/FxStation_1217.zip
 
 ### 末端CAN/485 更新
      1.机器人连接后点击接收按钮后开启读末端返回报文线程
