@@ -30,18 +30,18 @@
     	FX_DOUBLE				m_Input_ZSP_Angle; //末端位姿不变的情况下，零空间臂角相对于参考平面的旋转角度（单位：度）,可正向调节也可逆向调节. 在ref_joints为初始臂角平面情况下，使用右手法则，绕Z向量正向旋转为臂角增加方向，绕Z向量负向旋转为臂角减少方向
     	FX_DOUBLE               m_DGR1; //(仅在IK_NSP接口中设置起效)判断第二关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
     	FX_DOUBLE               m_DGR2; //(仅在IK_NSP接口中设置起效)判断第六关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
-    	FX_DOUBLE               m_DGR3;//预留接口
+    	FX_DOUBLE               m_DGR3; //预留接口
     	///////////////输出//////////////////////
-    	Vect7	m_Output_RetJoint; //逆运动学解出的关节角度（单位：度）
-    	Matrix8 m_OutPut_AllJoint; //逆运动学的全部解（每一行代表一组解, 分别存放1 - 7关节的角度值）（单位：度）
-    	FX_INT32L m_OutPut_Result_Num; //逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
-    	FX_BOOL m_Output_IsOutRange;//当前位姿是否超出位置可达空间（False：未超出；True：超出）
-    	FX_BOOL m_Output_IsDeg[7]; //各关节是否发生奇异（False：未奇异；True：奇异）
-    	FX_BOOL m_Output_JntExdTags[7];//各关节是否超出位置正负限制（False：未超出；True：超出）
-    	FX_DOUBLE m_Output_JntExdABS;//所有关节中超出限位的最大角度的绝对值，比如解出一组关节角度，7关节超限，的值为-95，已知软限位为-90度，m_Output_JntExdABS=5.
-    	FX_BOOL m_Output_IsJntExd;//是否有关节超出位置正负限制（False：未超出；True：超出）
-    	Vect7	m_Output_RunLmtP; //各个关节运行的正限位
-    	Vect7	m_Output_RunLmtN;//各个关节运行的负限位   
+    	Vect7	                m_Output_RetJoint; //逆运动学解出的关节角度（单位：度）
+    	Matrix8                 m_OutPut_AllJoint; //逆运动学的全部解（每一行代表一组解, 分别存放1 - 7关节的角度值）（单位：度）
+    	FX_INT32L               m_OutPut_Result_Num; //逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
+    	FX_BOOL                 m_Output_IsOutRange; //当前位姿是否超出位置可达空间（False：未超出；True：超出）
+    	FX_BOOL                 m_Output_IsDeg[7]; //各关节是否发生奇异（False：未奇异；True：奇异）
+    	FX_BOOL                 m_Output_JntExdTags[7]; //各关节是否超出位置正负限制（False：未超出；True：超出）
+    	FX_DOUBLE               m_Output_JntExdABS; //所有关节中超出限位的最大角度的绝对值，比如解出一组关节角度，7关节超限，的值为-95，已知软限位为-90度，m_Output_JntExdABS=5.
+    	FX_BOOL                 m_Output_IsJntExd; //是否有关节超出位置正负限制（False：未超出；True：超出）
+    	Vect7	                m_Output_RunLmtP; //各个关节运行的正限位
+    	Vect7	                m_Output_RunLmtN; //各个关节运行的负限位   
     }FX_InvKineSolvePara;
 
     
