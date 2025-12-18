@@ -669,7 +669,31 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 	double Q_end[4] = { 0 };
 	FX_ABC2Quaternions(start_pos, Q_start);
 	FX_ABC2Quaternions(end_pos, Q_end);
-	
+
+	//Calculate Quaternions Angle
+	double cosangle = Q_start[0] * Q_end[0] + Q_start[1] * Q_end[1] +
+					  Q_start[2] * Q_end[2] + Q_start[3] * Q_end[3];
+	if (cosangle < 0.0)
+	{
+		cosangle = -cosangle;
+		Q_end[0] = -Q_end[0];
+		Q_end[1] = -Q_end[1];
+		Q_end[2] = -Q_end[2];
+		Q_end[3] = -Q_end[3];
+	}
+	double qangle = FX_ACOS(cosangle) * 2 * FXARM_R2D;
+
+	//Cut Quaterniongs PLN
+	OnPln(0, qangle, vel, acc, jerk, &ret[3]);
+	double qnum = ret[3].OnGetPointNum();
+
+	if (qnum > max_num)
+	{
+		max_num = qnum;
+		max_num_axis = 3;
+	}
+
+
 	CPointSet out;
 	out.OnInit(PotT_9d);
 	double tmp[9] = { 0 };
@@ -684,8 +708,18 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 
 		if ((same_tag[3] + same_tag[4] + same_tag[5]) < 3)
 		{
-			double ratio = i / (double)(max_num - 1);
-			FX_QuaternionSlerp(Q_start, Q_end, ratio, &tmp[3]);
+			double ratio;
+			if (max_num_axis == 3)
+			{
+				ratio = p[0]/ qangle;
+				FX_QuaternionSlerp(Q_start, Q_end, ratio, &tmp[3]);
+			}
+			else
+			{
+				ratio = i / (double)(max_num - 1);
+				FX_QuaternionSlerp(Q_start, Q_end, ratio, &tmp[3]);
+			}
+			
 		}
 		else
 		{
@@ -694,7 +728,13 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 			tmp[5] = Q_start[2];
 			tmp[6] = Q_start[3];
 		}
-		
+
+		out.OnSetPoint(tmp);
+	}
+
+	//set 4 same point
+	for (i = 0; i < 4; i++)
+	{
 		out.OnSetPoint(tmp);
 	}
 
@@ -822,6 +862,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 		}
 	}
 
+	long final_num = out.OnGetPointNum();
 	////////////////////InvKine//////////////
 	FX_InvKineSolvePara sp;
 
@@ -843,8 +884,8 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 			TCP[i][j] = 0;
 		}
 	}
-	
-	for (i = 0; i < max_num; i++)
+
+	for (i = 0; i < final_num; i++)
 	{
 		double* pp = out.OnGetPoint(i);
 		tmppoints[0] = pp[0];
@@ -972,7 +1013,7 @@ bool CAxisPln::OnMovL_KeepJ(long RobotSerial, double startjoints[7], double stop
 	sp.m_DGR1 = 10;
 	sp.m_DGR2 = 10;
 	sp.m_DGR3 = 10;
-	//printf("[s] ----- ");
+
 	double last_joint[7];
 	for (i = 0; i < 7; i++)
 	{
