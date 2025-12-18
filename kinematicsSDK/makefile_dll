@@ -1,2 +1,11 @@
+c++ dll
 libKine.dll: FxRobot.c
 	g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll
+	
+
+#pythion dll	
+x86_64-w64-mingw32-g++ *.cpp *.c -Wall -O2 -shared -o libKine.dll \
+            -DBUILDING_DLL \
+            -static -static-libgcc -static-libstdc++ \
+            -lws2_32 -lpthread \
+            -lwinmm
