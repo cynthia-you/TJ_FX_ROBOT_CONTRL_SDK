@@ -18,6 +18,33 @@
     连续轨迹调逆解的情况下：正解和逆解是要配套使用的。因为逆解中需要的零空间参数需要正解内部的矩阵运算，所以逆解调用之后再调用一下正运动学才是真的更新了逆解的参考角信息；或者可以每次调用逆运动学之前都更新参考角
 
 
+### 逆解结构体数据介绍
+    该结构体用于逆解解算中输入输出数据的解算。
+    typedef struct
+    {
+        ///////////////输入//////////////////////
+    	Matrix4					m_Input_IK_TargetTCP; //末端位置姿态4x4列表，可通过正解接口获取，或者指定末端的位置和旋转
+    	Vect7					m_Input_IK_RefJoint; //参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。该构型的肩、肘、腕组成初始臂角平面，以肩到腕方向为Z向量，参考角第四关节不能为零。
+    	FX_INT32L				m_Input_IK_ZSPType; //零空间约束类型（0：使求解结果与参考关节角的欧式距离最小适用于一般冗余优化；1：与参考臂角平面最近，需要额外提供平面参数zsp_para）
+    	FX_DOUBLE				m_Input_IK_ZSPPara[6]; //若选择零空间约束类型zsp_type为1，则需额外输入参考角平面参数，目前仅支持平移方向的参数约束，即[x,y,z,a,b,c]=[0,0,0,0,0,0],可选择x,y,z其中一个方向调整
+    	FX_DOUBLE				m_Input_ZSP_Angle; //末端位姿不变的情况下，零空间臂角相对于参考平面的旋转角度（单位：度）,可正向调节也可逆向调节. 在ref_joints为初始臂角平面情况下，使用右手法则，绕Z向量正向旋转为臂角增加方向，绕Z向量负向旋转为臂角减少方向
+    	FX_DOUBLE               m_DGR1; //(仅在IK_NSP接口中设置起效)判断第二关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
+    	FX_DOUBLE               m_DGR2; //(仅在IK_NSP接口中设置起效)判断第六关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
+    	FX_DOUBLE               m_DGR3;//预留接口
+    	///////////////输出//////////////////////
+    	Vect7	m_Output_RetJoint; //逆运动学解出的关节角度（单位：度）
+    	Matrix8 m_OutPut_AllJoint; //逆运动学的全部解（每一行代表一组解, 分别存放1 - 7关节的角度值）（单位：度）
+    	FX_INT32L m_OutPut_Result_Num; //逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
+    	FX_BOOL m_Output_IsOutRange;//当前位姿是否超出位置可达空间（False：未超出；True：超出）
+    	FX_BOOL m_Output_IsDeg[7]; //各关节是否发生奇异（False：未奇异；True：奇异）
+    	FX_BOOL m_Output_JntExdTags[7];//各关节是否超出位置正负限制（False：未超出；True：超出）
+    	FX_DOUBLE m_Output_JntExdABS;//所有关节中超出限位的最大角度的绝对值，比如解出一组关节角度，7关节超限，的值为-95，已知软限位为-90度，m_Output_JntExdABS=5.
+    	FX_BOOL m_Output_IsJntExd;//是否有关节超出位置正负限制（False：未超出；True：超出）
+    	Vect7	m_Output_RunLmtP; //各个关节运行的正限位
+    	Vect7	m_Output_RunLmtN;//各个关节运行的负限位   
+    }FX_InvKineSolvePara;
+
+    
 
 ###    1. 导入运动学相关参数
 FX_BOOL  LOADMvCfg(FX_CHAR* path, FX_INT32L TYPE[2], FX_DOUBLE GRV[2][3], FX_DOUBLE DH[2][8][4], FX_DOUBLE PNVA[2][7][4], FX_DOUBLE BD[2][4][3],FX_DOUBLE Mass[2][7], FX_DOUBLE MCP[2][7][3], FX_DOUBLE I[2][7][6])
