@@ -5,6 +5,8 @@ from ctypes import *
 import re
 from typing import Union
 import os
+import time
+import csv
 
 current_file_path = os.path.abspath(__file__)
 current_path = os.path.dirname(current_file_path)
@@ -555,10 +557,8 @@ class Marvin_Robot:
         self.save_data_path = path1.encode('utf-8')
         path_char = ctypes.c_char_p(self.save_data_path)
         self.robot.OnSaveGatherData(path_char)
-        import time
-        time.sleep(0.2)
 
-        import csv
+        time.sleep(0.2)
         with open(path1, 'r') as file:
             lines = file.readlines()
         processed_data=[]
@@ -1328,7 +1328,6 @@ class DCSS(Structure):
 
 
 if __name__ == "__main__":
-    import time
 
     tj_robot = Marvin_Robot()
     tj_robot.help()
