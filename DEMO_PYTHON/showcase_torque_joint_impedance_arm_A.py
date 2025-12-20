@@ -92,7 +92,7 @@ time.sleep(0.5)
 
 '''阻抗参数'''
 robot.clear_set()
-robot.set_joint_kd_params(arm='A',K=[2,2,2,1.6, 1, 1, 1], D=[0.3,0.3,0.3,0.2,0.2,0.2,0.2])#预设为参数最大上限，供参考。
+robot.set_joint_kd_params(arm='A',K=[2,2,2,1.6, 1, 1, 1], D=[0.3,0.3,0.3,0.2,0.2,0.2,0.2])#预设参考。
 robot.send_cmd()
 time.sleep(0.5)
 
