@@ -1143,31 +1143,31 @@ class FX_Jacobi(Structure):
         return result
 
 
-# def inv_main():
-#     # 创建结构体实例
-#     ik_params = FX_InvKineSolvePara()
-#
-#     # 设置输入参数
-#     ik_params.m_Input_IK_ZSPType = 1
-#     ik_params.m_Input_ZSP_Angle = 45.0
-#
-#     # 设置TCP矩阵（示例值）
-#     tcp_values = [1, 0, 0, 0,
-#                   0, 1, 0, 0,
-#                   0, 0, 1, 0,
-#                   0, 0, 0, 1]
-#     ik_params.m_Input_IK_TargetTCP = Matrix4(tcp_values)
-#
-#     # 设置关节参考位置（示例值）
-#     ref_joint = [0, 0, 0, 0, 0, 0, 0]
-#     ik_params.m_Input_IK_RefJoint = Vect7(ref_joint)
-#
-#     # 设置ZSP参数
-#     ik_params.set_input_ik_zsp_para([1.0, 0.,0.,0.,0.,0.])
-#
-#     # 输出结构体大小
-#     print(f"FX_InvKineSolvePara size: {sizeof(ik_params)} bytes")
-#     print(f"Matrix8 size: {sizeof(Matrix8)} bytes")
+def inv_main():
+    # 创建结构体实例
+    ik_params = FX_InvKineSolvePara()
+
+    # 设置输入参数
+    ik_params.m_Input_IK_ZSPType = 1
+    ik_params.m_Input_ZSP_Angle = 45.0
+
+    # 设置TCP矩阵（示例值）
+    tcp_values = [1, 0, 0, 0,
+                  0, 1, 0, 0,
+                  0, 0, 1, 0,
+                  0, 0, 0, 1]
+    ik_params.m_Input_IK_TargetTCP = Matrix4(tcp_values)
+
+    # 设置关节参考位置（示例值）
+    ref_joint = [0, 0, 0, 0, 0, 0, 0]
+    ik_params.m_Input_IK_RefJoint = Vect7(ref_joint)
+
+    # 设置ZSP参数
+    ik_params.set_input_ik_zsp_para([1.0, 0.,0.,0.,0.,0.])
+
+    # 输出结构体大小
+    print(f"FX_InvKineSolvePara size: {sizeof(ik_params)} bytes")
+    print(f"Matrix8 size: {sizeof(Matrix8)} bytes")
 
 if __name__ == "__main__":
     kk = Marvin_Kine()  # 实例化
