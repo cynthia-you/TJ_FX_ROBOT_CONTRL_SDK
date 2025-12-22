@@ -1,0 +1,22 @@
+天机-孚晞  计算 API usage C++
+
+LINUX：
+demo1: showcase_kinematics_all_functions.cpp
+g++ showcase_kinematics_all_functions.cpp -o kine -L. -lKine -Wl,-rpath=.
+./kine
+
+showcase_ik_failed_conclusion.cpp
+g++ showcase_ik_failed_conclusion.cpp -o kine_fail -L. -lKine -Wl,-rpath=.
+./kine_fail
+
+
+showcase_kine_two_arms.cpp
+g++ showcase_kine_two_arms.cpp -o kine_two_arms -L. -lKine -Wl,-rpath=.
+./kine_two_arms
+
+
+showcase_ik_nsp_two_arms.cpp
+g++ showcase_ik_nsp_two_arms.cpp -o ik_nsp -L. -lKine -Wl,-rpath=.
+./ik_nsp
+
+
