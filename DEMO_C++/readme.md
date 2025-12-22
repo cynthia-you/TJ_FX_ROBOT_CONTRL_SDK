@@ -16,4 +16,17 @@
     *.dll WINDOWS下使用
 
 
-## 更新中
+
+## 一. 计算showcases
+
+### 1. 计算SDK 功能模块完整演示
+            showcase_kinematics_all_functions.cpp
+
+### 2. 计算逆解失败总结
+            showcase_ik_failed_conclusion.cpp
+
+### 3. 两条手臂同时计算
+            showcase_kine_two_arms.cpp
+
+### 4. 逆解参考基准
+            showcase_ik_nsp_two_arms.cpp
