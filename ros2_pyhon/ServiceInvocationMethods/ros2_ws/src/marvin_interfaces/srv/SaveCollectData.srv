@@ -1,0 +1,4 @@
+string local_save_path
+---
+bool success
+string message

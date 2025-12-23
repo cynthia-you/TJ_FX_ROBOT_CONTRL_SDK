@@ -1,0 +1,11 @@
+int32 out_frame_serial
+float32[] fb_joint_pos
+float32[] fb_joint_vel
+float32[] fb_joint_cmd
+float32[] fb_joint_c_toq
+float32[] fb_joint_s_toq
+float32[] fb_joint_them
+float32[] est_joint_firc
+float32[] est_joint_firc_dot
+float32[] est_joint_force
+float32[] est_cart_fn

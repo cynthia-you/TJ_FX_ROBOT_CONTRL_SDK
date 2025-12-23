@@ -1,0 +1,5 @@
+string local_path
+string remote_path
+---
+bool success
+string message

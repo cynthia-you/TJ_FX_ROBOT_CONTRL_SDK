@@ -1,0 +1,5 @@
+int32 serial
+string marvin_config
+---
+bool success
+string message

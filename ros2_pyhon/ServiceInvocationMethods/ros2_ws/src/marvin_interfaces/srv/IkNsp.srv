@@ -1,0 +1,9 @@
+float32 nsp_angle
+float32[] ref_joints
+int32 out_range
+int32 deg_123
+int32 deg_567
+---
+bool success
+string message
+float32[] ik_joints

@@ -1,0 +1,8 @@
+string arm_id  # 'A' or 'B'
+int32 fc_type
+float32[] directions
+float32[] fc_ctrl_para
+float32 adjustment
+---
+bool success
+string message

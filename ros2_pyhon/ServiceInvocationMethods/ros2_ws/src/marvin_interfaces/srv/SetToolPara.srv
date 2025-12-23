@@ -1,0 +1,6 @@
+string arm_id
+float32[] kine_para
+float32[] dynamic_para
+---
+bool success
+string message

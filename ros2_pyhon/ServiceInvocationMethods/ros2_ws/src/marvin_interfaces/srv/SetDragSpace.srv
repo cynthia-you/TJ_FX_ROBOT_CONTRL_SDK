@@ -1,0 +1,5 @@
+string arm_id  # 'A' or 'B'
+int32 dg_type
+---
+bool success
+string message

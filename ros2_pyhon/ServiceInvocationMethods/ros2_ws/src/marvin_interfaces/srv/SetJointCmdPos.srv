@@ -1,0 +1,6 @@
+# 通用关节命令设置服务
+string arm_id  # 'A' or 'B'
+float32[] joints
+---
+bool success
+string message

@@ -1,0 +1,4 @@
+string sdk_path
+---
+bool success
+string message

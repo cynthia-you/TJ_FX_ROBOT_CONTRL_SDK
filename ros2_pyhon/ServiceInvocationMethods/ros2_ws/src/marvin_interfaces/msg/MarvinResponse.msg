@@ -1,0 +1,11 @@
+string[] robot_name
+State[] states
+Output[] outputs
+Input[] inputs
+#string para_name
+#int32 para_type
+#int32 para_ins
+#int32 para_value_i
+#float32 para_value_f
+#int16 para_cmd_serial
+#int16 para_ret_serial

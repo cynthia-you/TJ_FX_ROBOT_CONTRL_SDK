@@ -1,0 +1,5 @@
+string arm_id
+int32 state
+---
+bool success
+string message

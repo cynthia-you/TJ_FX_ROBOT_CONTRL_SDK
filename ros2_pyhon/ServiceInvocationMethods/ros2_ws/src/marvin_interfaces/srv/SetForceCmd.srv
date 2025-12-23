@@ -1,0 +1,5 @@
+string arm_id  # 'A' or 'B'
+float32 f
+---
+bool success
+string message

@@ -1,0 +1,5 @@
+string global_or_local
+string flag
+---
+bool success
+string message

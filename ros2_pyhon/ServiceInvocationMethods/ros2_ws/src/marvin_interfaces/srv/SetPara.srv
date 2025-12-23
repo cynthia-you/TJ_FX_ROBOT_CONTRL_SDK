@@ -1,0 +1,6 @@
+string type
+string para_name
+float32 value
+---
+bool success
+string message

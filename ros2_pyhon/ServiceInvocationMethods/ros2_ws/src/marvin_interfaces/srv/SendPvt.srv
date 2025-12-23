@@ -1,0 +1,6 @@
+string arm_id
+string pvt_path
+int32 id
+---
+bool success
+string message

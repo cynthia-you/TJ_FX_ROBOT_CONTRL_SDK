@@ -1,0 +1,6 @@
+string arm_id  # 'A' or 'B'
+float32[] k
+float32[] d
+---
+bool success
+string message

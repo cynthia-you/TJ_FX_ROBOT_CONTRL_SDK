@@ -1,0 +1,4 @@
+string arm_id
+---
+bool success
+string message

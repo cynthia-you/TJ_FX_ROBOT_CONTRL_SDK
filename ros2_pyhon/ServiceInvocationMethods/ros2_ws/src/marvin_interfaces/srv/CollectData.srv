@@ -1,0 +1,6 @@
+int32 target_num
+int32[] target_ids
+int32 record_num
+---
+bool success
+string message
