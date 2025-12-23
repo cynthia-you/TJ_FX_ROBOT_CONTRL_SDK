@@ -15,8 +15,6 @@
     在DEMO中仅示例了单臂（左臂）的计算
     如果人形，则左右臂都要计算，两个手臂需要独立初始化导入运动学参数，初始化运动学参数。
     使用前，请一定确认机型，导入正确的配置文件，文件导错，计算会错误啊啊啊,甚至看起来运行正常，但是值错误！！！
-    连续轨迹调逆解的情况下：正解和逆解是要配套使用的。因为逆解中需要的零空间参数需要正解内部的矩阵运算，所以逆解调用之后再调用一下正运动学才是真的更新了逆解的参考角信息；或者可以每次调用逆运动学之前都更新参考角
-
 
 ### 逆解结构体数据介绍
     该结构体用于逆解解算中输入输出数据的解算。
@@ -35,7 +33,7 @@
     	Vect7	                m_Output_RetJoint; //逆运动学解出的关节角度（单位：度）
     	Matrix8                 m_OutPut_AllJoint; //逆运动学的全部解（每一行代表一组解, 分别存放1 - 7关节的角度值）（单位：度）
     	FX_INT32L               m_OutPut_Result_Num; //逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
-    	FX_BOOL                 m_Output_IsOutRange; //当前位姿是否超出位置可达空间（False：未超出；True：超出）
+    	FX_BOOL                 m_Output_IsOutRange; //当前位姿是否超出位置可达空间（False：未超出；True：超出）,如果超出可达空间,则需调整参考角度(参考角度和目标点位相差过大).
     	FX_BOOL                 m_Output_IsDeg[7]; //各关节是否发生奇异（False：未奇异；True：奇异）
     	FX_BOOL                 m_Output_JntExdTags[7]; //各关节是否超出位置正负限制（False：未超出；True：超出）
     	FX_DOUBLE               m_Output_JntExdABS; //所有关节中超出限位的最大角度的绝对值，比如解出一组关节角度，7关节超限，的值为-95，已知软限位为-90度，m_Output_JntExdABS=5.
@@ -101,9 +99,24 @@ FX_BOOL  FX_Robot_Kine_FK(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pg
         3. 初始化输出的末端其次变换矩阵
     输出：
         成功：True/1; 失败：False/0
+
+###   5.计算正运动学和零空间(臂角平面)参数
+FX_BOOL  FX_Robot_Kine_FK_NSP(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos, Matrix3 nspg);
+
+  • 输入七关节角度及RobotSerial（参数含义参考初始化参数部分），输出为4*4的法兰末端位姿矩阵,并得到基于该角度下的零空间参数
+    输入：
+        1. FX_INT32L RobotSerial：0，左臂；1，右臂
+        2. FX_DOUBLE joints[7]:需要得到末端齐次变换矩阵的输入关节角度，单位：度
+        3. Matrix4 pgos:初始化输出的末端其次变换矩阵
+        4. Matrix3 nspg:初始化零空间参数矩阵
+    输出：
+        成功：True/1; 失败：False/0
+        
+ • 特别提示:零空间参数矩阵 nspg(3,3), 其中第一列可以作为逆解结构体里面m_Input_IK_ZSPPara的x y z的输入值。
+
     
 
-###    5. 计算逆运动学
+###    6. 计算逆运动学
 FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
 
     • 输入RobotSerial（参数含义参考初始化参数部分）及solve_para结构体，输出包含在solve_para中
@@ -117,7 +130,7 @@ FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para
                 • Vect7   m_Output_RetJoint      ：逆运动学解出的关节角度（选解策略为与参考关节角最近）（单位：度）
                 • Matrix8 m_OutPut_AllJoint      ：逆运动学的全部解（每一行代表一组解,分别存放1-7关节的角度值）（单位：度）
                 • FX_INT32L m_OutPut_Result_Num  ：逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
-                • FX_BOOL m_Output_IsOutRange    ：用于判断当前位姿是否超出位置可达空间（0：未超出；1：超出）
+                • FX_BOOL m_Output_IsOutRange    ：用于判断当前位姿是否超出位置可达空间（0：未超出；1：超出）,如果超出可达空间,则需调整参考角度(参考角度和目标点位相差过大).
                 • FX_BOOL m_Output_IsDeg[7]      ：用于判断各关节是否发生奇异（0：未奇异；1：奇异）
                 • FX_DOUBLE m_Output_JntExdABS   : 各关节超限绝对值总和(FX_Robot_PLN_MOVL_KeepJ使用)
                 • FX_BOOL m_Output_IsJntExd      : 用于判断是否有关节超出位置正负限制（0：未超出；1：超出）
@@ -130,7 +143,7 @@ FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para
 
     • 特别提示:
             结构体以下输出项的TAG仅绑定对m_Output_RetJoint输出的关节描述
-                • FX_BOOL m_Output_IsOutRange    ：用于判断当前位姿是否超出位置可达空间（0：未超出；1：超出）
+                • FX_BOOL m_Output_IsOutRange    ：用于判断当前位姿是否超出位置可达空间（0：未超出；1：超出）,如果超出可达空间,则需调整参考角度(参考角度和目标点位相差过大).
                 • FX_BOOL m_Output_IsDeg[7]      ：用于判断各关节是否发生奇异（0：未奇异；1：奇异）
                 • FX_DOUBLE m_Output_JntExdABS   : 各关节超限绝对值总和(FX_Robot_PLN_MOVL_KeepJ使用)
                 • FX_BOOL m_Output_IsJntExd      : 用于判断是否有关节超出位置正负限制（0：未超出；1：超出）
@@ -153,7 +166,7 @@ FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para
 
 
 
-###    6. 计算末端位姿不变、改变零空间（臂角方向）的逆运动学
+###    7. 计算末端位姿不变、改变零空间（臂角方向）的逆运动学
 FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
 
     • 输入RobotSerial（参数含义参考初始化参数部分）及solve_para结构体，输出包含在solve_para中
@@ -171,7 +184,7 @@ FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
         成功：True/1; 失败：False/0
 
 
-###    7. 计算雅可比矩阵
+###    8. 计算雅可比矩阵
 FX_BOOL  FX_Robot_Kine_Jacb(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_Jacobi* jcb)
 
     • 输入关节角度及RobotSerial（参数含义参考初始化参数部分），输出为6*7的雅可比矩阵
@@ -182,7 +195,7 @@ FX_BOOL  FX_Robot_Kine_Jacb(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_Jacob
     输出：
         成功：True/1; 失败：False/0
 
-###    8. 直线规划（MOVL）
+###    9. 直线规划（MOVL）
 FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT8* OutPutPath)
 
     • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为包含该段规划的关节点位文件
@@ -204,7 +217,7 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
     • FX_Robot_PLN_MOVL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
     
 
-###    9.直线规划，约束机器人气势和结束的各个关节角度（MOVLJ）
+###    10.直线规划，约束机器人气势和结束的各个关节角度（MOVLJ）
 FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath);
 
     • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为包含该段规划的关节点位文件
@@ -224,7 +237,7 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
     
     
 
-###    10. 工具动力学参数辨识
+###    11. 工具动力学参数辨识
 FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 Type,FX_CHAR* path,FX_DOUBLE* mass, Vect3 mr, Vect6 I);
 
     • 输入当前机型Type(获取机型Type参考导入运动学参数部分)及文件存放路径，输出为工具相对于法兰端的质量、质心及惯量
@@ -241,22 +254,22 @@ FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 Type,FX_CHAR* path,FX_DOUBLE* mass, Vec
             
     • 其中 NoLoadData.csv 文件为无负载下采集的数据，在无负载情况下采集；LoadData.csv 文件需要在更换末端携带负载后重新采集（注意左右臂不可同时辨识，需要两个手臂逐一采集空载和带载辨识）
 
-###    11. 位置姿态4×4矩阵转XYZABC
+###    12. 位置姿态4×4矩阵转XYZABC
 FX_BOOL FX_Matrix42XYZABCDEG(FX_DOUBLE m[4][4],FX_DOUBLE xyzabc[6])
 
     • 输入为4*4的法兰末端位姿矩阵
     • 输出位姿信息XYZ及欧拉角ABC（单位：mm/度）
     输出：
         成功：True/1; 失败：False/0
-###     12. XYZABC转位置姿态4×4矩阵
+###     13. XYZABC转位置姿态4×4矩阵
 FX_VOID FX_XYZABC2Matrix4DEG(FX_DOUBLE xyzabc[6], FX_DOUBLE m[4][4])
 
     • 输入为位姿信息XYZ及欧拉角ABC（单位：mm/度）
     • 输出4*4的法兰末端位姿矩阵
 
 # 二、案例脚本
-## C++开发的使用编译见：demo_linu_win/c++linux/API_USAGE_KINMATICS.txt
-##DEMO: [my_dd.cpp](c%2B%2B_win/my_dd.cpp)
+## C++开发的使用编译见：
+    ./DEMO_C++/readme.md
 
 
 
