@@ -96,7 +96,7 @@ logger.info(f'arm error code:{sub_data["states"][0]["err_code"]}')
 
 '''设置PVT 轨迹本机路径 和PVT号'''
 #linux
-pvt_file=os.path.join(current_path,'/LoadData_ccs_right/LoadData/IdenTraj/LoadIdenTraj_MarvinCCS_Left.fmv')
+pvt_file=current_path+'/LoadData_ccs_right/LoadData/IdenTraj/LoadIdenTraj_MarvinCCS_Left.fmv'
 robot.send_pvt_file('A',pvt_file, 2)
 time.sleep(1)
 
