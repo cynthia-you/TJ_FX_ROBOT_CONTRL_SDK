@@ -83,7 +83,7 @@
             ("m_Output_RetJoint", Vect7), #逆运动学解出的关节角度（单位：度）
             ("m_OutPut_AllJoint", Matrix8), #逆运动学的全部解（每一行代表一组解, 分别存放1 - 7关节的角度值）（单位：度）
             ("m_OutPut_Result_Num", FX_INT32L), #逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
-            ("m_Output_IsOutRange", FX_BOOL), #当前位姿是否超出位置可达空间（False：未超出；True：超出）
+            ("m_Output_IsOutRange", FX_BOOL), #当前位姿是否超出位置可达空间（False：未超出；True：超出）,如果超出可达空间,则需调整参考角度(参考角度和目标点位相差过大).
             ("m_Output_IsDeg", FX_BOOL * 7), #各关节是否发生奇异（False：未奇异；True：奇异）
             ("m_Output_JntExdTags", FX_BOOL * 7), #各关节是否超出位置正负限制（False：未超出；True：超出）
             ("m_Output_JntExdABS", FX_DOUBLE), #所有关节中超出限位的最大角度的绝对值，比如解出一组关节角度，7关节超限，的值为-95，已知软限位为-90度，m_Output_JntExdABS=5.
@@ -187,7 +187,7 @@ ik(structure_data):
             结构体的输出参数：
                 m_Output_RetJoint      :逆运动学解出的关节角度（单位：度）
                 m_OutPut_AllJoint      :逆运动学的全部解（每一行代表一组解,分别存放1-7关节的角度值）（单位：度）
-                m_Output_IsOutRange    :当前位姿是否超出位置可达空间（False：未超出；True：超出）
+                m_Output_IsOutRange    :当前位姿是否超出位置可达空间（False：未超出；True：超出）,如果超出可达空间,则需调整参考角度(参考角度和目标点位相差过大).
                 m_OutPut_Result_Num    :逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
                 m_Output_IsDeg[7]      :各关节是否发生奇异（False：未奇异；True：奇异）
                 m_Output_IsJntExd      :是否有关节超出位置正负限制（False：未超出；True：超出）
@@ -203,7 +203,7 @@ ik(structure_data):
 
         • 特别提示:
                 结构体以下输出项的TAG仅绑定对m_Output_RetJoint输出的关节描述
-                    • m_Output_IsOutRange     :用于判断当前位姿是否超出位置可达空间（0：未超出；1：超出）
+                    • m_Output_IsOutRange     :用于判断当前位姿是否超出位置可达空间（0：未超出；1：超出）,如果超出可达空间,则需调整参考角度(参考角度和目标点位相差过大).
                     • m_Output_IsDeg[7]       :用于判断各关节是否发生奇异（0：未奇异；1：奇异）
                     • m_Output_JntExdABS      :各关节超限绝对值总和(FX_Robot_PLN_MOVL_KeepJ使用)
                     • m_Output_IsJntExd       :用于判断是否有关节超出位置正负限制（0：未超出；1：超出）
@@ -243,7 +243,7 @@ ik_nsp(sturcture_data):
             结构体的输出参数：
                 m_Output_RetJoint      :逆运动学解出的关节角度（单位：度）
                 m_OutPut_AllJoint      :逆运动学的全部解（每一行代表一组解,分别存放1-7关节的角度值）（单位：度）
-                m_Output_IsOutRange    :当前位姿是否超出位置可达空间（False：未超出；True：超出）
+                m_Output_IsOutRange    :当前位姿是否超出位置可达空间（False：未超出；True：超出）,如果超出可达空间,则需调整参考角度(参考角度和目标点位相差过大).
                 m_OutPut_Result_Num    :逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
                 m_Output_IsDeg[7]      :各关节是否发生奇异（False：未奇异；True：奇异）
                 m_Output_IsJntExd      :是否有关节超出位置正负限制（False：未超出；True：超出）
