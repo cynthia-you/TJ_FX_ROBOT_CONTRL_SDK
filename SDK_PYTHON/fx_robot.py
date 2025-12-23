@@ -1036,7 +1036,6 @@ class Marvin_Robot:
                 result = self.robot.OnGetChDataA(data_buffer, ctypes.byref(ret_ch))
                 # 提取字节数据
                 byte_data = bytes(data_buffer)  # 或 bytearray(data_buffer)
-                print(f'arm receive byte_data :{byte_data}')
                 hex_list = []
                 for byte in byte_data:
                     # 将每个字节转换为两位十六进制
