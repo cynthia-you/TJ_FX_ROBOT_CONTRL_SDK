@@ -133,7 +133,7 @@ extern "C" {
 	//设置左臂工具笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
 	FX_DLL_EXPORT bool OnSetCartKD_A(double K[7], double D[7], int type);
 	//设置右臂工具笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
-	FX_DLL_EXPORT bool OnSetCartKD_B(double K[6], double D[6],int type);
+	FX_DLL_EXPORT bool OnSetCartKD_B(double K[7], double D[7],int type);
 	//4 如果使用力控模式,在扭矩模式力控模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(3) 以下两个指令连用
 	//4.1 设置指定手臂的力控参数
 	//设置左臂力控参数
