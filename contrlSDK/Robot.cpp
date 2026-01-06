@@ -2424,7 +2424,7 @@ bool CRobot::OnSetDragSpace_B(int zsType)
 	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm drag space type=%d\n",zsType);
 	return true;
 }
-bool CRobot::OnSetCartKD_B(double K[6], double D[6],int type)
+bool CRobot::OnSetCartKD_B(double K[7], double D[7],int type)
 {
 	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
 
