@@ -301,7 +301,7 @@ bool OnSetJointKD_B(double K[7], double D[7])
 {
 	return CRobot::OnSetJointKD_B(K, D);
 }
-bool OnSetCartKD_B(double K[6], double D[6],int type)
+bool OnSetCartKD_B(double K[7], double D[7],int type)
 {
 	return CRobot::OnSetCartKD_B(K, D, type);
 }
