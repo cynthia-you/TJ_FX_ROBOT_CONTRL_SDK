@@ -37,21 +37,26 @@ def update_text_file_simple(mode, data_list, filename):
 def read_csv_file_to_float_strict(filename, expected_columns=16):
     """
     读取CSV格式的文件内容并转换为float，严格验证每列数量
-
     参数:
         filename: 文件名
         expected_columns: 期望的列数（默认16）
 
     返回:
         如果文件为空: 返回0
-        如果文件有一行: 返回 [float1, float2, ...]
-        如果文件有两行: 返回 [[float1, float2, ...], [float1, float2, ...]]
+        如果文件有一行: 返回0
+        如果文件有两行且其中一行全为0:
+            - 返回 ('line1', [第一行数据])  # 如果第二行全为0
+            - 返回 ('line2', [第二行数据])  # 如果第一行全为0
+        如果文件有两行且都不为0: 返回 [[第一行数据], [第二行数据]]
+        如果文件有两行且都全为0: 返回0
         如果文件不存在或转换失败: 返回-1
     """
+    if not os.path.exists(filename):
+        print(f"文件不存在: {filename}")
+        return -1
 
     if os.path.getsize(filename) == 0:
         return 0
-
     try:
         with open(filename, 'r', encoding='utf-8') as file:
             lines = file.readlines()
@@ -83,18 +88,35 @@ def read_csv_file_to_float_strict(filename, expected_columns=16):
 
             all_float_data.append(float_values)
 
-        # 根据行数返回不同格式
+        # 根据行数处理
         if len(all_float_data) == 1:
-            return all_float_data[0]
+            # 文件只有一行，返回0
+            return 0
+
         elif len(all_float_data) == 2:
-            return all_float_data
+            # 检查两行是否全为0
+            line1_all_zero = all(x == 0.0 for x in all_float_data[0])
+            line2_all_zero = all(x == 0.0 for x in all_float_data[1])
+
+            if line1_all_zero and line2_all_zero:
+                # 两行都全为0
+                return 0
+            elif line1_all_zero and not line2_all_zero:
+                # 第一行全为0，第二行不为0
+                return ('line2', all_float_data[1])
+            elif not line1_all_zero and line2_all_zero:
+                # 第一行不为0，第二行全为0
+                return ('line1', all_float_data[0])
+            else:
+                # 两行都不为0
+                return all_float_data
         else:
             print(f"文件包含{len(all_float_data)}行，只支持1-2行")
             return -1
-
     except Exception as e:
         print(f"读取文件时出错: {e}")
         return -1
+
 def decimal_to_hex(number, prefix=False, upper=True, float_precision=8):
     """
     将十进制数转换为十六进制表示
@@ -620,6 +642,7 @@ class Marvin_Robot:
                err_code = [0] * 7
                for i in range(7):
                    err_code[i] = decimal_to_hex(err_code_value[i], prefix=True)
+               err_code=get_fault_descriptions(err_code,fault_code_dict)
                return err_code
            elif arm=='B':
                self.robot.OnGetServoErr_B.argtypes = [ctypes.POINTER(ctypes.c_long * 7)]
@@ -627,6 +650,7 @@ class Marvin_Robot:
                err_code = [0] * 7
                for i in range(7):
                    err_code[i] = decimal_to_hex(err_code_value[i], prefix=True)
+               err_code = get_fault_descriptions(err_code, fault_code_dict)
                return err_code
 
        except Exception as e:
@@ -1143,7 +1167,6 @@ class Marvin_Robot:
         return tool_result
 
 
-
     def help(self, method_name: str = None) -> None:
         """
         显示帮助信息
@@ -1324,6 +1347,189 @@ class DCSS(Structure):
         ("m_ParaCmdSerial", c_short),  # short from PC
         ("m_ParaRetSerial", c_short),  # short working: 0; finish: cmd serial; error cmd_serial + 100
     ]
+
+
+arm_err_code={
+    '1':"总线拓扑异常",
+    '2':"伺服故障",
+    '3':"PVT异常",
+    '4':"请求进位置失败",
+    '5':"进位置失败",
+    '6':"请求进扭矩失败",
+    '7':"进扭矩失败",
+    '8':"请求上伺服失败",
+    '9':"上伺服失败",
+    '10':"请求下伺服失败",
+    '11':"下伺服失败",
+    '12':"内部错",
+    '13':"急停",
+    '14':"配置文件选择了浮动基座选项，但是UMI设置在配置文件未开"
+}
+
+fault_code_dict = {
+    "0x2280": "驱动器短路",
+    "0x2310": "U相输出电流过大",
+    "0x2311": "V相输出电流过大",
+    "0x2320": "驱动器硬件过流",
+    "0x2330": "驱动器输出对地短路",
+    "0x3130": "主电源输入异常",
+    "0x3210": "直流母线过压",
+    "0x3220": "直流母线欠压",
+    "0x4210": "功率模块过热",
+    "0x6010": "CPU1 看门狗溢出",
+    "0x6011": "CPU2 看门狗溢出",
+    "0x7112": "能耗制动电阻过载",
+    "0x8311": "电机持续过载",
+    "0x8611": "位置跟随误差过大",
+    "0x8612": "正向软限位",
+    "0x8613": "负向软限位",
+    "0x8800": "编码器数据溢出",
+    "0x8801": "保留",
+    "0xFF00": "CPU1 工作异常",
+    "0xFF01": "CPU2 工作异常",
+    "0xFF02": "CPU1 内存异常",
+    "0xFF03": "CPU2 内存异常",
+    "0xFF04": "CPU 内存冲突",
+    "0xFF05": "磁极定位错误",
+    "0xFF06": "编码器数据异常",
+    "0xFF07": "编码器通信异常",
+    "0xFF08": "编码器通信超时",
+    "0xFF09": "编码器内部异常1",
+    "0xFF10": "驱动器其它轴异常",
+    "0xFF11": "电机抱闸断线",
+    "0xFF12": "保留",
+    "0xFF13": "保留",
+    "0xFF14": "控制编码器超速",
+    "0xFF15": "驱动器持续过载",
+    "0xFF16": "保留",
+    "0xFF17": "驱动器输出缺相",
+    "0xFF18": "电机失速",
+    "0xFF19": "协处理器通讯异常",
+    "0xFF20": "编码器AB信号变化异常",
+    "0xFF21": "电流跟随误差过大",
+    "0xFF22": "位置目标值异常",
+    "0xFF23": "编码器上电位置异常",
+    "0xFF24": "位置目标值溢出",
+    "0xFF25": "电机抱闸异常",
+    "0xFF26": "控制电源欠压",
+    "0xFF27": "STO1 触发",
+    "0xFF28": "STO2 触发",
+    "0xFF29": "正向硬限位开关触发",
+    "0xFF30": "负向硬限位开关触发",
+    "0xFF31": "电机超速",
+    "0xFF32": "急停输入开关触发",
+    "0xFF33": "转矩饱和检测故障",
+    "0xFF34": "速度跟随误差过大",
+    "0xFF35": "驱动器过流2",
+    "0xFF36": "寻原点失效",
+    "0xFF37": "EtherCAT过程数据错误",
+    "0xFF38": "EtherCAT总线指令非法",
+    "0xFF39": "EtherCAT通讯周期错误",
+    "0xFF40": "位置规划运行错误",
+    "0xFF41": "EtherCAT非法同步模式",
+    "0xFF42": "位置目标值超出设定范围",
+    "0xFF43": "整流模块过热",
+    "0xFF44": "散热器过热",
+    "0xFF45": "电机U相持续过载",
+    "0xFF46": "电机V相持续过载",
+    "0xFF48": "保留",
+    "0xFF49": "驱动器内部异常",
+    "0xFF50": "限位开关异常",
+    "0xFF51": "EtherCAT总线通讯异常",
+    "0xFF52": "接口编码器分辨率变更",
+    "0xFF53": "编码器过热",
+    "0xFF54": "编码器电池欠电压故障",
+    "0xFF55": "保留",
+    "0xFF56": "保留",
+    "0xFF57": "控制模式设定错误",
+    "0xFF58": "上电位置偏差过大",
+    "0xFF59": "编码器加速度异常故障",
+    "0xFF60": "电机堵转",
+    "0xFF61": "电机过热",
+    "0xFF62": "增量式编码器Z信号异常",
+    "0xFF63": "写EPROM数据异常",
+    "0xFF64": "读EPROM数据异常",
+    "0xFF65": "控制机功率异常",
+    "0xFF66": "拖曳使能异常",
+    "0xFF67": "CPU过热",
+    "0xFF68": "CPU1过载",
+    "0xFF69": "CPU2过载",
+    "0xFF70": "CPU1握手失效",
+    "0xFF71": "DriveMaster通讯超时",
+    "0xFF72": "保留",
+    "0xFF73": "力矩传感器异常",
+    "0xFF74": "保留",
+    "0xFF75": "ESC配置EEPROM异常",
+    "0xFF76": "ESC内部访问错误",
+    "0xFF77": "伺服使能未准备好",
+    "0xFF78": "CPU2握手失败",
+    "0xFF79": "CPU1主任务超时",
+    "0xFF80": "主电源掉电",
+    "0xFF81": "直流母线充电继电器异常",
+    "0xFF82": "CPU内部错误",
+    "0xFF83": "位置实际值溢出",
+    "0xFF84": "保留",
+    "0xFF85": "编码器内部异常2",
+    "0xFF86": "保留",
+    "0xFF87": "编码器内部异常3",
+    "0xFF88": "保留",
+    "0xFF89": "保留",
+    "0xFF8A": "STO1电路诊断异常",
+    "0xFF8B": "STO2电路诊断异常",
+    "0xFF8C": "霍尔信号异常",
+    "0xFF8D": "编码器霍尔-AB信号欠相异常",
+    "0xFF8E": "第2位置跟随误差过大",
+    "0xFF8F": "STO接线异常",
+    "0xFF90": "第2速度跟随误差过大",
+    "0xFF91": "驱动器内部异常2",
+}
+def get_fault_descriptions(fault_codes_list, fault_dict):
+    """
+    根据故障代码列表和故障字典，返回故障描述的字符串
+    支持多个关节的错误信息显示
+    Args:
+        fault_codes_list: 各关节故障代码列表
+        fault_dict: 故障代码与名称的字典
+
+    Returns:
+        包含所有关节故障描述的字符串
+    """
+    if not fault_codes_list:
+        return "无故障信息"
+    all_descriptions = []
+    for joint_idx, code in enumerate(fault_codes_list, 1):
+        # 处理可能的格式差异
+        code_str = str(code)
+        # 如果是整数，转换为十六进制字符串
+        if isinstance(code, int):
+            code_str = hex(code)
+        # 统一为小写字母以匹配字典键
+        code_str_lower = code_str.lower()
+        # 检查是否为无错误代码
+        if code_str in ["0x0000", "0000", "0", "0x0", "0X0", ""]:
+            continue
+        # 查找故障名称
+        fault_name = None
+        if code_str in fault_dict:
+            fault_name = fault_dict[code_str]
+        elif code_str_lower in fault_dict:
+            fault_name = fault_dict[code_str_lower]
+        else:
+            # 如果未找到，使用默认描述
+            fault_name = f"未知故障({code_str})"
+        if fault_name:
+            all_descriptions.append(f"关节{joint_idx}: {code_str} - {fault_name}")
+
+    # 返回格式化的字符串
+    if not all_descriptions:
+        return "None"
+    elif len(all_descriptions) == 1:
+        return all_descriptions[0]
+    else:
+        result = "各关节故障信息:\n"
+        for i, desc in enumerate(all_descriptions, 1):
+            result += f"{i}. {desc}\n"
+        return result.strip()
 
 
 if __name__ == "__main__":
