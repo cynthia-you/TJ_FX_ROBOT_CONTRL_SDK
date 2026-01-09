@@ -100,8 +100,10 @@
         showcase_collaborative_release.py
 ### 18. 松闸抱闸演示
         showcase_apply-brake_release-brake.py
-
-
+### 19. 获取伺服错误码及对应错误原因
+        showcase_servo_error.py
+### 20. 拖动保存的轨迹转为PVT文件
+        showcase_process_collect_data_to_pvt_format.py
 
 ## 二. 计算showcases
 
