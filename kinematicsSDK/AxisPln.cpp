@@ -697,7 +697,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 	CPointSet out;
 	out.OnInit(PotT_9d);
 	double tmp[9] = { 0 };
-	double ttmp[2] = { 0 };
+
 	for (i = 0; i < max_num; i++)
 	{
 		double* p = ret[max_num_axis].OnGetPoint(i);
@@ -905,21 +905,24 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 			}
 		}
 
-		FX_Robot_Kine_IK(RobotSetial, &sp);
+		if(FX_Robot_Kine_IK(RobotSetial, &sp)==false)
+		{
+			return FX_FALSE;
+		}
 
 		// Error feedback
 		for (long kk = 0; kk < 7; kk++)
 		{
 			if (sp.m_Output_JntExdTags[kk] == FX_TRUE)
 			{
-				printf("Joint %d exceed limit \n", kk);
+				//printf("Joint %d exceed limit \n", kk);
 				return FX_FALSE;
 			}
 		}
 
 		if (sp.m_Output_IsOutRange == FX_TRUE)
 		{
-			printf("Input Position over reachable space\n");
+			//printf("Input Position over reachable space\n");
 			return FX_FALSE;
 		}
 		
@@ -979,7 +982,7 @@ bool CAxisPln::OnMovL_KeepJ(long RobotSerial, double startjoints[7], double stop
 	{
 		vel = 0.1;
 	}
-	FX_DOUBLE cut_step = vel * 0.02;
+	FX_DOUBLE cut_step = vel * 0.002;
 
 	long tnum = length_pos / cut_step + 2;
 	double dnum = tnum;
@@ -1138,6 +1141,353 @@ bool CAxisPln::OnMovL_KeepJ(long RobotSerial, double startjoints[7], double stop
 
 	return true;
 }
+
+bool CAxisPln::OnMovL_KeepJ_Cut(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, double acc, char* path)
+{
+	//Final result in retjoints
+	CPointSet retJoints;
+	FX_INT32L i = 0;
+	FX_INT32L j = 0;
+	retJoints.OnInit(PotT_9d);
+	retJoints.OnEmpty();
+
+	//Pset for XYZ Q NSP 
+	CPointSet pset;
+	pset.OnInit(PotT_40d);
+
+	//XYZ Q NSP
+	Matrix4 pg_start;
+	Matrix4 pg_stop;
+	Matrix3 nspg_start;
+	Matrix3 nspg_stop;
+	FX_Robot_Kine_FK_NSP(RobotSerial, startjoints, pg_start, nspg_start);
+	FX_Robot_Kine_FK_NSP(RobotSerial, stopjoints, pg_stop, nspg_stop);
+
+	Quaternion q_start;
+	Quaternion q_stop;
+
+	Quaternion q_nsp_start;
+	Quaternion q_nsp_stop;
+
+	FX_Matrix2Quaternion4(pg_start, q_start);
+	FX_Matrix2Quaternion4(pg_stop, q_stop);
+
+	FX_Matrix2Quaternion3(nspg_start, q_nsp_start);
+	FX_Matrix2Quaternion3(nspg_stop, q_nsp_stop);
+	/////////////
+	///////determine same points:For XYZ
+	long same_tag[3] = { 0 };
+	for (i = 0; i < 3; i++)
+	{
+		if (fabs(pg_start[i][3] - pg_stop[i][3]) < 0.01)
+		{
+			same_tag[i] = 1;
+		}
+	}
+	///////Check Max Axis
+	CPointSet ret[3];
+	long num_axis[3] = { 0 };//ret[0].OnGetPointNum();
+	long max_num = 0;
+	long max_num_axis = 0;
+
+	//double acc = vel * 10;
+	double jerk = acc;
+
+	for (i = 0; i < 3; i++)
+	{
+		OnPln(pg_start[i][3], pg_stop[i][3], vel, acc, jerk, &ret[i]);
+		num_axis[i] = ret[i].OnGetPointNum();
+		if (num_axis[i] > max_num)
+		{
+			max_num = num_axis[i];
+			max_num_axis = i;
+		}
+	}
+
+	double input[40];
+	for (i = 0; i < 40; i++)
+	{
+		input[i] = 0;
+	}
+
+	for (i = 0; i < max_num; i++)
+	{
+		double* p = ret[max_num_axis].OnGetPoint(i);
+		input[0] = pg_stop[0][3];
+		input[1] = pg_stop[1][3];
+		input[2] = pg_stop[2][3];
+		input[max_num_axis] = p[0];
+
+		double ratio = i / (double)(max_num - 1);
+		FX_QuaternionSlerp(q_start, q_stop, ratio, &input[3]);
+		Quaternion nspq;
+		FX_QuaternionSlerp(q_nsp_start, q_nsp_stop, ratio, nspq);
+		Matrix3 tmpm;
+		FX_Quaternions2Matrix3(nspq, tmpm);
+		input[7] = tmpm[0][0];
+		input[8] = tmpm[1][0];
+		input[9] = tmpm[2][0];
+
+		pset.OnSetPoint(input);
+	}
+
+	//set 4 same point
+	for (i = 0; i < 4; i++)
+	{
+		pset.OnSetPoint(input);
+	}
+
+	long dof = 0;
+	bool end_tag = false;
+	for (dof = 0; dof < 3; dof++)
+	{
+		if (dof != max_num_axis)
+		{
+			if (same_tag[dof] == 0)
+			{
+				double step = (double)(num_axis[dof] - 1) / (max_num + 1);
+				long   serial = 0;
+				double tmpy = 0;
+				for (i = 0; i < num_axis[dof] - 3; i += 2)
+				{
+					double* p1 = ret[dof].OnGetPoint(i);
+					double* p2 = ret[dof].OnGetPoint(i + 1);
+					double* p3 = ret[dof].OnGetPoint(i + 2);
+					double* p4 = ret[dof].OnGetPoint(i + 3);
+
+					double x[4];
+					double y[4];
+					double xpara[10];
+					double retpara[4];
+
+					x[0] = i;
+					x[1] = i + 1;
+					x[2] = i + 2;
+					x[3] = i + 3;
+
+					y[0] = p1[0];
+					y[1] = p2[0];
+					y[2] = p3[0];
+					y[3] = p4[0];
+
+					CO3Polynorm::CalXPara(x, xpara);
+					CO3Polynorm::CalPnPara(xpara, y, retpara);
+
+					if (i == 0)
+					{
+						//for (j = 0; j < 3; j++)
+						for (; tmpy < x[3]; tmpy = serial * step)
+						{
+							double sloy = CO3Polynorm::CalPnY(retpara, tmpy);
+							double* p = pset.OnGetPoint(serial);
+
+							serial++;
+
+							if (p != NULL)
+							{
+								p[dof] = sloy;
+							}
+						}
+					}
+					else
+					{
+						long k = 0;
+						while (tmpy > x[0])
+						{
+							k++;
+							tmpy -= step;
+						}
+						k--;
+						tmpy += step;
+
+						while (tmpy < x[1])
+						{
+							double sloy = CO3Polynorm::CalPnY(retpara, tmpy);
+							double* p = pset.OnGetPoint(serial - k);
+							if (p != NULL)
+							{
+								double r1 = j;
+								double r2;
+								r1 /= step;
+								r2 = 1 - r1;
+								sloy = sloy * r1 + p[dof] * r2;
+								p[dof] = sloy;
+							}
+
+							tmpy += step;
+							k--;
+						}
+
+						while (tmpy < x[3])
+						{
+							double sloy = CO3Polynorm::CalPnY(retpara, tmpy);
+							double* p = pset.OnGetPoint(serial);
+
+							serial++;
+							tmpy += step;
+							if (sloy<x[3] && tmpy>x[3])
+							{
+								//add last point
+								end_tag = true;
+							}
+
+							if (p != NULL)
+							{
+								p[dof] = sloy;
+							}
+						}
+
+						if (end_tag == true)
+						{
+							double* p = pset.OnGetPoint(serial);
+							if (p != NULL)
+							{
+								p[dof] = pg_stop[dof][3];
+							}
+						}
+
+					}
+				}
+			}
+			else
+			{
+				for (i = 0; i < max_num; i++)
+				{
+					double* p = pset.OnGetPoint(i);
+					if (p != NULL)
+					{
+						p[dof] = pg_start[dof][3];
+					}
+				}
+			}
+		}
+	}
+	
+	char apthhh[] = "D:\\cccc\\SPMOVL\\MOVL_cut_xyz.txt";
+	char* pppp = apthhh;
+	pset.OnSave(pppp);
+
+	FX_INT32L num = 0;
+	num = pset.OnGetPointNum();
+	FX_InvKineSolvePara sp;
+	sp.m_DGR1 = 10;
+	sp.m_DGR2 = 10;
+	sp.m_DGR3 = 10;
+
+	double last_joint[7];
+	for (i = 0; i < 7; i++)
+	{
+		last_joint[i] = startjoints[i];
+		sp.m_Input_IK_RefJoint[i] = startjoints[i];
+		sp.m_Output_RetJoint[i] = startjoints[i];
+	}
+
+	bool _jext = false;
+
+	for (i = 0; i < num; i++)
+	{
+		double* p = pset.OnGetPoint(i);
+		FX_Quaternions2ABCMatrix(&p[3], &p[0], sp.m_Input_IK_TargetTCP);
+		sp.m_Input_IK_ZSPPara[0] = p[7];
+		sp.m_Input_IK_ZSPPara[1] = p[8];
+		sp.m_Input_IK_ZSPPara[2] = p[9];
+		sp.m_Input_IK_ZSPType = 1;
+
+		for (j = 0; j < 7; j++)
+		{
+			sp.m_Input_IK_RefJoint[j] = last_joint[j];
+		}
+
+		if (FX_Robot_Kine_IK(RobotSerial, &sp) == FX_FALSE)
+		{
+			return false;
+		}
+
+		for (j = 0; j < 7; j++)
+		{
+			p[j + 10] = sp.m_Output_RetJoint[j];
+			last_joint[j] = sp.m_Output_RetJoint[j];
+		}
+
+
+		if (sp.m_Output_IsJntExd == FX_TRUE)
+		{
+			_jext = true;
+			double cur_ext = sp.m_Output_JntExdABS;
+
+			double old_ext = cur_ext;
+			long dir = 1;
+			sp.m_Input_ZSP_Angle = 0.01;
+			FX_Robot_Kine_IK_NSP(RobotSerial, &sp);
+			double t_ext1 = sp.m_Output_JntExdABS;
+			sp.m_Input_ZSP_Angle = -0.01;
+			FX_Robot_Kine_IK_NSP(RobotSerial, &sp);
+			double t_ext2 = sp.m_Output_JntExdABS;
+
+			if (t_ext2 < t_ext1)
+			{
+				if (cur_ext < t_ext2)
+				{
+					//printf("A\n");
+					return false;
+				}
+				dir = -1;
+				old_ext = cur_ext;
+			}
+			else
+			{
+
+				if (cur_ext < t_ext1)
+				{
+					//printf("B\n");
+					return false;
+				}
+			}
+
+			sp.m_Input_ZSP_Angle = dir;
+			while (cur_ext > 0.00001)
+			{
+				FX_Robot_Kine_IK_NSP(RobotSerial, &sp);
+				cur_ext = sp.m_Output_JntExdABS;
+				//printf("<%lf/%lf> \n ", cur_ext,sp.m_Input_ZSP_Angle);
+				if (FX_Fabs(sp.m_Input_ZSP_Angle) > 360)
+				{
+					//printf("\n\n no result\n");
+					return false;
+				}
+
+				//printf("%.2lf  -->\n ", cur_ext);
+
+				sp.m_Input_ZSP_Angle += dir;
+
+
+
+			}
+
+			//printf("---------------------\n");
+
+			sp.m_Input_ZSP_Angle -= dir;
+			p[17] = sp.m_Input_ZSP_Angle;
+			//printf("[%d]<%lf>   ----- ", i, p[17]);
+
+
+		}
+
+		for (j = 0; j < 7; j++)
+		{
+			p[j + 19] = sp.m_Output_RetJoint[j];
+		}
+
+		retJoints.OnSetPoint(&p[19]);
+	}
+
+	long final_num = retJoints.OnGetPointNum();
+	char* pp = path;
+	retJoints.OnSave(path);
+
+	return true;
+}
+
 
 bool CAxisPln::OnMovJ(long RobotSetial, double start_joint[7], double end_joint[7], double vel, double acc, double jerk, char* path)
 {

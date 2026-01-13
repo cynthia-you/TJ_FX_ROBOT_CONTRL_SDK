@@ -260,6 +260,7 @@ FX_BOOL  LOADMvCfg(FX_CHAR* path, FX_INT32L TYPE[2], FX_DOUBLE GRV[2][3], FX_DOU
 
 #endif // _USER_IF_TAG_
 ////////////////////////////////////////////////////////////////////////////////////////////////
+FX_VOID  FX_LOG_SWITCH(FX_INT32L log_tag_input);
 FX_BOOL  FX_Robot_Init_Type(FX_INT32L RobotSerial, FX_INT32L RobotType);
 FX_BOOL  FX_Robot_Init_Kine(FX_INT32L RobotSerial, FX_DOUBLE DH[8][4]);
 FX_BOOL  FX_Robot_Init_Lmt(FX_INT32L RobotSerial, FX_DOUBLE PNVA[7][4], FX_DOUBLE J67[4][3]);
@@ -275,7 +276,7 @@ FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_
 ////////////////////////////////////////////////////////////////////////////////////////////////
 /////Motion Planning
 FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_CHAR* OutPutPath);
-FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_CHAR* OutPutPath);
+FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc, FX_CHAR* OutPutPath);
 
 ////Parameters Identification
 FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 Type,FX_CHAR* path,FX_DOUBLE* mass, Vect3 mr, Vect6 I);
