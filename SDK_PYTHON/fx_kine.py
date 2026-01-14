@@ -17,7 +17,6 @@ logger.setLevel(logging.INFO)  # 一键关闭所有调试打印
 logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
 
 
-
 class Marvin_Kine:
     def __init__(self):
         """初始化机器人控制类"""
@@ -114,6 +113,16 @@ class Marvin_Kine:
             inspect.Parameter.VAR_KEYWORD: "可变关键字参数(**kwargs)"
         }
         return mapping.get(kind, "未知参数类型")
+
+    def log_switch(self,switch:int):
+        '''
+        :param switch: 打印日志开：true；打印日志关：false
+        '''
+        self.kine.FX_LOG_SWITCH.argtypes = [c_long]
+        switch_ = c_long(switch)
+        self.kine.FX_LOG_SWITCH(switch_)
+
+
 
     def load_config(self, arm_type: int, config_path: str):
         ''' 使用前，请一定确认机型，导入正确的配置文件。导入机械臂配置信息
@@ -664,7 +673,6 @@ class Marvin_Kine:
         end= (ctypes.c_double * 6)(e0,e1,e2,e3,e4,e5)
 
         vel_value=c_double(vel)
-
         acc_value=c_double(acc)
 
         j0, j1, j2, j3, j4, j5, j6 = ref_joints
@@ -683,12 +691,13 @@ class Marvin_Kine:
 
 
 
-    def movL_KeepJ(self,start_joints:list, end_joints:list,vel:float,save_path):
+    def movL_KeepJ(self,start_joints:list, end_joints:list,vel:float,acc:float,save_path):
         '''直线规划保持关节构型, 规划文件的点位频率50Hz，即每20ms执行一行
 
         :param start_joints:起始点各个关节位置（单位：角度）
         :param end_joints:终点各个关节位置（单位：角度）
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
         :param save_path:规划文件的保存路径
         :return: bool
         特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
@@ -709,10 +718,11 @@ class Marvin_Kine:
         end= (ctypes.c_double * 7)(e0,e1,e2,e3,e4,e5,e6)
 
         vel_value=c_double(vel)
+        acc_value = c_double(acc)
 
-        self.kine.FX_Robot_PLN_MOVL_KeepJ.argtypes=[c_long,c_double*7,c_double*7,c_double,c_char_p]
+        self.kine.FX_Robot_PLN_MOVL_KeepJ.argtypes=[c_long,c_double*7,c_double*7,c_double,c_double,c_char_p]
         self.kine.FX_Robot_PLN_MOVL_KeepJ.restype=c_bool
-        success1=self.kine.FX_Robot_PLN_MOVL_KeepJ(Serial,start,end,vel_value,path_char)
+        success1=self.kine.FX_Robot_PLN_MOVL_KeepJ(Serial,start,end,vel_value,acc_value,path_char)
         if success1:
             if os.path.exists(save_path):
                 logger.info(f'Plan MOVL KeepJ successful, PATH saved as :{save_path}')
