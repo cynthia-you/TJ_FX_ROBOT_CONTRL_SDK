@@ -22,6 +22,9 @@ from SDK_PYTHON.fx_kine import Marvin_Kine,FX_InvKineSolvePara,convert_to_8x8_ma
 '''实列化计算'''
 kk=Marvin_Kine()
 
+'''关闭日志'''
+kk.log_switch(0)#0 off, 1 on
+
 '''
 配置导入
 !!! 非常重要！！！
@@ -161,7 +164,7 @@ print('-'*50)
 '''
 fk_mat=kk.fk(joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995])
 tag_movlkj=kk.movL_KeepJ(start_joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995],
-                       end_joints=[-26.908 ,-91.109, 74.502 ,-88.083, -93.599 ,17.151, -13.602],vel=20,save_path='testkj.txt')
+                       end_joints=[-26.908 ,-91.109, 74.502 ,-88.083, -93.599 ,17.151, -13.602],vel=100,acc=100,save_path='testkj.txt')
 if tag_movlkj:
     print('movL_KeepJ success')
 print('-'*50)
