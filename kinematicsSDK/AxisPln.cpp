@@ -1363,9 +1363,9 @@ bool CAxisPln::OnMovL_KeepJ_Cut(long RobotSerial, double startjoints[7], double 
 		}
 	}
 	
-	char apthhh[] = "D:\\cccc\\SPMOVL\\MOVL_cut_xyz.txt";
-	char* pppp = apthhh;
-	pset.OnSave(pppp);
+	// char apthhh[] = "D:\\cccc\\SPMOVL\\MOVL_cut_xyz.txt";
+	// char* pppp = apthhh;
+	// pset.OnSave(pppp);
 
 	FX_INT32L num = 0;
 	num = pset.OnGetPointNum();
