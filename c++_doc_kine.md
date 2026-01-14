@@ -42,8 +42,10 @@
     	Vect7	                m_Output_RunLmtN; //各个关节运行的负限位   
     }FX_InvKineSolvePara;
 
-    
-
+###    0.SDK日志关闭
+FX_VOID  FX_LOG_SWITCH(FX_INT32L log_tag_input);
+    log_tag_input：true 开； false关
+        
 ###    1. 导入运动学相关参数
 FX_BOOL  LOADMvCfg(FX_CHAR* path, FX_INT32L TYPE[2], FX_DOUBLE GRV[2][3], FX_DOUBLE DH[2][8][4], FX_DOUBLE PNVA[2][7][4], FX_DOUBLE BD[2][4][3],FX_DOUBLE Mass[2][7], FX_DOUBLE MCP[2][7][3], FX_DOUBLE I[2][7][6])
 
