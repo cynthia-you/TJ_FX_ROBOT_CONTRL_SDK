@@ -48,7 +48,7 @@
   - movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, save_path)
   - 
     直线插值规划，约束起始结束关节构型
-  - movL_KeepJ(start_joints:list, end_joints:list,vel:float,save_path):
+  - movL_KeepJ(start_joints:list, end_joints:list,vel:float,acc: float,save_path):
 
     移除工具设置
   - remove_tool_kine()
@@ -92,6 +92,13 @@
             ("m_Output_RunLmtN", Vect7) #各个关节运行的负限位，可作为计算六七关节的干涉参考最大限制。                                                                                mm
         ]
 
+###    2.0 日志关闭
+    def log_switch(switch:int):
+        '''
+        :param switch: 打印日志开：1；打印日志关：0
+        '''
+
+    
 ###    2.1 导入运动学相关参数
 load_config(arm_type: int, config_path: str)
 
