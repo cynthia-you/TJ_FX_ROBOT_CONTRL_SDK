@@ -25,6 +25,9 @@ void RobotKineDemo()
             printf("]%s\n", i < rows-1 ? "," : "]");
         }
     };
+    ///////////////////////0 关闭打印日志
+    bool log_switch=false;
+    FX_LOG_SWITCH(log_switch);
     
     FX_INT32L i = 0;
     FX_INT32L j = 0;
@@ -238,7 +241,7 @@ void RobotKineDemo()
     char op1[] = "testkeepj.txt";
     char* path1 = op1;
 
-    if (FX_Robot_PLN_MOVL_KeepJ(0, angle1, angle2, 20, path1)== FX_FALSE)
+    if (FX_Robot_PLN_MOVL_KeepJ(0, angle1, angle2, 20, 20, path1)== FX_FALSE)
     {
         printf("Robot MOVL KeepJ Error\n");
     }
