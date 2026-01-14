@@ -103,7 +103,7 @@ logger.info(f"current state{sub_data['states'][0]['cur_state']}")
 logger.info(f"cmd state:{sub_data['states'][0]['cmd_state']}")
 logger.info(f"arm error code:{sub_data['states'][0]['err_code']}")
 logger.info(f'set vel={sub_data["inputs"][0]["joint_vel_ratio"]}, acc={sub_data["inputs"][0]["joint_acc_ratio"]}')
-logger.info(f'set card k={sub_data["inputs"][0]["cart_k"][:]}, d={sub_data["inputs"][0]["cart_k"][:]}')
+logger.info(f'set card k={sub_data["inputs"][0]["cart_k"][:]}, d={sub_data["inputs"][0]["cart_d"][:]}')
 logger.info(f'set impedance type={sub_data["inputs"][0]["imp_type"]}')
 
 
