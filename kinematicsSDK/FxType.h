@@ -32,15 +32,15 @@ int main()
 
 }
 /////////////////////////////////////////////////////////////////////////
-
+#define FX_UINT32 	unsigned int     应对严格类型检查的平台
+#define FX_UINT32L 	unsigned long    应对严格类型检查的平台
 *********************************************************************************/  
-#define _FX_CPL_UBUNTU_XENOMAI_J1900_
+//#define _FX_CPL_UBUNTU_XENOMAI_J1900_
 //#define _FX_CPL_WIN_32_CASE_1_
-//#define _FX_CPL_WIN_64_CASE_1_
+#define _FX_CPL_WIN_64_CASE_1_
 
 
 #ifdef  _FX_CPL_UBUNTU_XENOMAI_J1900_
-#define FX_VOID     void
 
 #define FX_BOOL  	unsigned char
 #define FX_TRUE  	1
@@ -67,7 +67,6 @@ int main()
 
 
 #ifdef  _FX_CPL_WIN_32_CASE_1_
-#define FX_VOID     void
 
 #define FX_BOOL  	unsigned char
 #define FX_TRUE  	1
@@ -94,8 +93,8 @@ int main()
 
 
 #ifdef  _FX_CPL_WIN_64_CASE_1_
-#define FX_VOID     void
 
+#define FX_VOID  	void
 #define FX_BOOL  	unsigned char
 #define FX_TRUE  	1
 #define FX_FALSE 	0
@@ -103,7 +102,7 @@ int main()
 #define FX_CHAR   	char
 #define FX_UCHAR  	unsigned char
 #define FX_INT8   	char
-#define FX_INT16 	short
+#define FX_INT16 	short 
 #define FX_INT32 	int
 #define FX_INT32L 	long
 #define FX_INT64 	long long

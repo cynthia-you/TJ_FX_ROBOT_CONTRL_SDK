@@ -11,10 +11,14 @@ public:
 	virtual ~CAxisPln();
 
 	bool OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, char* path);
+	bool OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, CPointSet * ret_pset);
 	bool OnMovL_KeepJ(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, char* path);
-	bool OnMovL_KeepJ_Cut(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, double acc, char* path);
+	bool OnMovL_KeepJ(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, CPointSet* ret_pset);
 	bool OnMovJ(long RobotSetial, double start_joint[7], double end_joint[7], double vel, double acc, double jerk, char* path);
-protected:
+	bool OnMovL_KeepJ_Cut(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, double acc, char* path);
+	bool OnMovL_KeepJ_CutA(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, double acc, CPointSet * ret_pset);
+
+	protected:
 	bool OnPln(double start_pos, double end_pos, double vel, double acc, double jerk, CPointSet* ret);
 	bool OnPlnAcc(double start_pos, double end_pos, double vel, double acc, double jerk, CPointSet* ret);
 	bool OnPlnAccNew(double start_pos, double end_pos, double vel, double acc, double jerk, CPointSet* ret, CPointSet* ret1);

@@ -1007,6 +1007,48 @@ bool CPointSet::OnSaveCSV(char* path)
 	return true;
 }
 
+
+
+bool CPointSet::OnSaveRaw(char* path)
+{
+	if (m_PointType == PotT_BEGIN)
+	{
+		return false;
+	}
+	long num = OnGetPointNum();
+	if (num <= 0)
+	{
+		return false;
+	}
+
+	if (path == NULL)
+	{
+		return false;
+	}
+	FILE* fp = fopen(path, "wb");
+	if (fp == NULL)
+	{
+		return false;
+	}
+	fflush(fp);
+
+	char r = 0x0a;
+
+
+	double* tmp;
+	for (long i = 0; i < num; i++)
+	{
+		tmp = OnGetPoint(i);
+		for (long j = 0; j < m_PointType; j++)
+		{
+			fprintf(fp, "%lf ", tmp[j]);
+		}
+		fprintf(fp, "%c", r);
+	}
+	fclose(fp);
+	return true;
+}
+
 bool CPointSet::OnGetLine(FILE* fp, char* buf)
 {
 	if (fp == NULL || buf == NULL)

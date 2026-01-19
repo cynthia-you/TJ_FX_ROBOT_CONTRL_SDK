@@ -1,4 +1,3 @@
-
 #include "O3Polynorm.h"
 #include "math.h"
 

@@ -71,6 +71,7 @@ public:
 	bool OnLoad(char* path);
 	bool OnLoadFast(char* path);
 	bool OnSave(FILE* fp);
+	bool OnSaveRaw(char* path);
 	bool OnLoad(FILE* fp);
 	bool OnSetTag(char* tag);
 	bool OnSetSubTag(char* subtag);
