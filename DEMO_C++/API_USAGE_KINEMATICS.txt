@@ -1,22 +1,42 @@
-天机-孚晞  计算 API usage C++
+天机-孚晞  计算SDK API usage C++
 
-LINUX：
-demo1: showcase_kinematics_all_functions.cpp
+demo1 运行所有接口功能： showcase_kinematics_all_functions.cpp
 g++ showcase_kinematics_all_functions.cpp -o kine -L. -lKine -Wl,-rpath=.
 ./kine
 
-showcase_ik_failed_conclusion.cpp
+demo2 逆解失败原因分析：showcase_ik_failed_conclusion.cpp
 g++ showcase_ik_failed_conclusion.cpp -o kine_fail -L. -lKine -Wl,-rpath=.
 ./kine_fail
 
 
-showcase_kine_two_arms.cpp
+demo3 两条手臂同时调用运动学计算：showcase_kine_two_arms.cpp
 g++ showcase_kine_two_arms.cpp -o kine_two_arms -L. -lKine -Wl,-rpath=.
 ./kine_two_arms
 
 
-showcase_ik_nsp_two_arms.cpp
+demo4 两条手臂同时逆解到预期构型：showcase_ik_nsp_two_arms.cpp
 g++ showcase_ik_nsp_two_arms.cpp -o ik_nsp -L. -lKine -Wl,-rpath=.
 ./ik_nsp
+
+demo5 演示左臂离线和在线规划功能接口：showcase_online_and_offline_pln_all_function.cpp
+g++ showcase_online_and_offline_pln_all_function.cpp -o pln -L. -lKine -Wl,-rpath=.
+./pln
+
+demo6 左臂关节阻抗50HZ执行离线直线规划文件：showcase_offline_movl_execution.cpp
+g++ showcase_offline_movl_execution.cpp -o offline_movl -L. -lKine -lMarvinSDK -Wl,-rpath=.
+./offline_movl
+
+demo7 左臂关节阻抗50HZ执行在线直线规划点：showcase_online_movla_execution.cpp
+g++ showcase_online_movla_execution.cpp -o online_movla -L. -lKine -lMarvinSDK -Wl,-rpath=.
+./online_movla
+
+demo8 左臂关节阻抗50HZ执行约束构型的离线直线规划文件：showcase_offline_movl_keepj_execution.cpp
+g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj -L. -lKine -lMarvinSDK -Wl,-rpath=.
+./offline_movl_keepj
+
+demo9 左臂关节阻抗50HZ执行约束构型的在线直线规划点位：showcase_online_movl_keepja_execution.cpp
+g++ showcase_online_movl_keepja_execution.cpp -o online_movl_keepja -L. -lKine -lMarvinSDK -Wl,-rpath=.
+./online_movl_keepja
+
 
 
