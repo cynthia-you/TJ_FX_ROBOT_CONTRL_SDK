@@ -1,9 +1,8 @@
-
 #include "FxRobot.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-void RobotKineDemo()
+void RobotPLNDemo()
 {
     auto print_array = [](auto* arr, size_t n, const char* name = "", int precision = 2) {
         if (name[0] != '\0') printf("%s=", name);
@@ -29,9 +28,9 @@ void RobotKineDemo()
     FX_INT32L i = 0;
     FX_INT32L j = 0;
 
-     ///////////////////////0 关闭打印日志
-     bool log_switch=false;
-     FX_LOG_SWITCH(log_switch);
+    ///////////////////////0. 关闭打印日志
+    bool log_switch=false;
+    FX_LOG_SWITCH(log_switch);
     
    ////////////////////////1.导入运动学参数
     FX_INT32L TYPE[2];
@@ -82,48 +81,8 @@ void RobotKineDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////3.工具设置
-    Matrix4 tool;
-
-    for (i = 0; i < 4; i++)
-    {
-        for (j = 0; j < 4; j++)
-        {
-            if (i == j)
-            {
-                tool[i][j] = 1;
-            }
-            else
-            {
-                tool[i][j] = 0;
-            }
-
-        }
-    }
-
-    if (FX_Robot_Tool_Set(0, tool) == FX_FALSE)
-    {
-        printf("Robot Set Tool Error\n");
-    }
-    else
-    {
-        printf("Robot Set Tool Success\n");
-    }
-
-    if (FX_Robot_Tool_Rmv(0) == FX_FALSE)
-    {
-        printf("Robot Remove Tool Error\n");
-    }
-    else
-    {
-        printf("Robot Remove Tool Success\n");
-    }
-
-
-    printf("------------------------------\n");
-
-    ////////////////////////4. 计算正运动学
-    FX_DOUBLE jv[7] = { 10, 20, 30, 40, 50, 10,10 };
+    ////////////////////////3. 计算正运动学获取末端位置姿态矩阵
+    FX_DOUBLE jv[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
     Matrix4 kine_pg;
     if (FX_Robot_Kine_FK(0, jv, kine_pg) == FX_FALSE)
     {
@@ -136,7 +95,7 @@ void RobotKineDemo()
     printf("------------------------------\n");
 
 
-    ////////////////////////5. 4*4位置姿态矩阵 转 xyzabc
+    ////////////////////////4. 4*4位置姿态矩阵 转 xyzabc
     Vect6 xyzabc={0};
 
     if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == FX_FALSE)
@@ -148,66 +107,10 @@ void RobotKineDemo()
         printf("matrix to xyzabc Success\n");
         print_array(xyzabc,6,"xyzabc");
     }
-
-    Matrix4 mat_result;
-    FX_XYZABC2Matrix4DEG(xyzabc,mat_result);
-    printf("xyzabc to matrix Success\n");
-    print_matrix(mat_result,4,4,"mat_rersukts");
     printf("------------------------------\n");
 
-     ////////////////////////6. 计算雅可比矩阵
-     FX_Jacobi jcb;
-     if (FX_Robot_Kine_Jacb(0, jv, &jcb) == FX_FALSE)
-     {
-         printf("Robot Jacobian Matrix Error\n");
-     }
-     else
-     {
-         printf("Robot Jacobian Matrix Success\n");
-     }
-     printf("------------------------------\n");
 
-
-     ////////////////////////7. 计算逆运动学
-     FX_InvKineSolvePara sp;
-     for (i = 0; i < 4; i++)
-     {
-         for (j = 0; j < 4; j++)
-         {
-             sp.m_Input_IK_TargetTCP[i][j] = kine_pg[i][j];
-         }
-     }
-
-     for (i = 0; i < 7; i++)
-     {
-         sp.m_Input_IK_RefJoint[i] = jv[i];
-     }
-
-     if (FX_Robot_Kine_IK(0, &sp) == FX_FALSE)
-     {
-         printf("Robot Inverse Kinamatics Error\n");
-     }
-     else
-     {
-         printf("Robot Inverse Kinamatics Success\n");
-     }
-     printf("------------------------------\n");
-
-     ////////////////////////8.计算末端位姿不变、改变零空间（臂角方向）的逆运动学
-     sp.m_Input_IK_ZSPType = 0;
-     sp.m_Input_ZSP_Angle -= 1;
-     if (FX_Robot_Kine_IK_NSP(0, &sp) == FX_FALSE)
-     {
-         printf("Robot Null-Space Inverse Kinamatics Error\n");
-     }
-     else
-     {
-         printf("Robot Null-Space Inverse Kinamatics Success\n");
-     }
-     printf("------------------------------\n");
-
-
-    ////////////////////////9. ֱ直线规划（MOVL）
+    ////////////////////////5. ֱ离线直线规划（MOVL）
     Vect6 start = {0.0};
      for (i = 0; i < 6; i++)
     {
@@ -222,7 +125,7 @@ void RobotKineDemo()
 
     end[0]+=10;//末端X方向移动10毫米
 
-    char op[] = "test_movl.txt";
+    char op[] = "test.txt";
     char* path = op;
 
     if (FX_Robot_PLN_MOVL(0, start, end, jv, 100, 100, path) == FX_FALSE)
@@ -236,7 +139,31 @@ void RobotKineDemo()
     printf("------------------------------\n");
 
 
-    ////////////////////////10. ֱ在线直线规划（MOVLA）并执行点
+    ///////////////////////////6. ֱ加载离线直线规划（MOVL）文件
+     CPointSet pset_movl;
+
+     char offline_pvt[] = "test.txt";
+     char* pvt_file =offline_pvt;
+
+     pset_movl.OnLoadFast(pvt_file);
+
+     int point_num=0;
+     point_num=pset_movl.OnGetPointNum();
+     printf("[OFFLINE] MOVL number of pvt points:%d\n",point_num);
+
+     for (long tag=0; tag<point_num;tag+=10)//规划文件为500HZ， 下采样为50HZ
+     {
+         double* pvv=pset_movl.OnGetPoint(tag);
+         print_array(pvv,7,"MOVL offline pvt point");
+         if (pvv=NULL)
+         {
+             printf("MOVL offline pln Error\n");
+         }
+     }
+     printf("------------------------------\n");
+
+
+     ////////////////////////7. ֱ在线直线规划（MOVLA）并执行点
      CPointSet pset_movla;
      if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla) == FX_FALSE)
      {
@@ -248,12 +175,26 @@ void RobotKineDemo()
      }
      printf("------------------------------\n");
 
+     int point_num1=0;
+     point_num1=pset_movla.OnGetPointNum();
+     printf("[ONLINE] MOVL number of online pvt points:%d\n",point_num1);
 
-     ////////////////////////11. ֱ直线规划（MOVL_KeepJ）
+     for (long tag=0; tag<point_num1;tag+=10)//规划点位为500HZ， 下采样为50HZ
+     {
+         double* pvv1=pset_movla.OnGetPoint(tag);
+         print_array(pvv1,7,"MOVLA online pvt point");
+         if (pvv1=NULL)
+         {
+             printf("MOVLA online pln Error\n");
+         }
+     }
+     printf("------------------------------\n");
+
+     ////////////////////////8. 离线直线规划（MOVL_KeepJ）
      FX_DOUBLE angle1[7] = { -5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995 };
      FX_DOUBLE angle2[7] = { -26.908 ,-91.109, 74.502 ,-88.083, -93.599 ,17.151, -13.602 };
 
-     char op1[] = "test_movl_keepj.txt";
+     char op1[] = "testkeepj.txt";
      char* path1 = op1;
 
      if (FX_Robot_PLN_MOVL_KeepJ(0, angle1, angle2, 100, 100,path1)== FX_FALSE)
@@ -266,8 +207,31 @@ void RobotKineDemo()
      }
      printf("------------------------------\n");
 
+     ////////////////////////9. 加载离线直线规划（MOVL_keepj）文件
+     CPointSet pset_movl_keepj;
 
-     ////////////////////////12. 在线直线规划（MOVL_KeepJA）并执行点
+     char offline_pvt_movl_keepj[] = "testkeepj.txt";
+     char* pvt_file1 =offline_pvt_movl_keepj;
+
+     pset_movl_keepj.OnLoadFast(pvt_file1);
+
+     int point_num2=0;
+     point_num2=pset_movl_keepj.OnGetPointNum();
+     printf("[OFFLINE] MOVL number of pvt points:%d\n",point_num2);
+
+     for (long tag=0; tag<point_num2;tag+=20)
+     {
+         double* pvv2=pset_movl_keepj.OnGetPoint(tag);
+         print_array(pvv2,7,"MOVL_KEEPJ offline pvt point");
+         if (pvv2=NULL)
+         {
+             printf("MOVL_KEEPJ offline pln Error\n");
+         }
+     }
+     printf("------------------------------\n");
+
+
+     ////////////////////////10. 在线直线规划（MOVL_KeepJA）并执行点
      CPointSet pset_movl_keepja;
      if (FX_Robot_PLN_MOVL_KeepJA(0, angle1, angle2, 100, 100,&pset_movl_keepja)== FX_FALSE)
      {
@@ -279,33 +243,23 @@ void RobotKineDemo()
      }
      printf("------------------------------\n");
 
+     int point_num3=0;
+     point_num3=pset_movl_keepja.OnGetPointNum();
+     printf("[ONLINE] MOVL_KEEPJA  number of online pvt points:%d\n",point_num3);
 
-
-     ////////////////////////13. 工具动力学参数辨识
-     FX_DOUBLE ret_m = 0;
-     Vect3 ret_mr = { 0 };
-     Vect6 ret_I = { 0 };
-
-     char ip[] = "./LoadData_ccs_right/LoadData";
-     char* ipath = ip;
-
-     if (FX_Robot_Iden_LoadDyn(1, ipath, &ret_m, ret_mr, ret_I) != 0)
+     for (long tag=0; tag<point_num3;tag+=20)
      {
-         printf("Robot Tool Dynamics Parameter Identification Error\n");
-     }
-     else
-     {
-         printf("tool dyn info =[%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",ret_m,
-         ret_mr[0],ret_mr[1],ret_mr[2],
-         ret_I[0],ret_I[3],ret_I[4],ret_I[1],ret_I[5],ret_I[2]);//ixx,ixy,ixz,iyy,iyz,izz
-         printf("Robot Tool Dynamics Parameter Identification Success\n");
+         double* pvv3=pset_movl_keepja.OnGetPoint(tag);
+         print_array(pvv3,7,"MOVL_KEEPJA online pvt point");
+         if (pvv3=NULL)
+         {
+             printf("MOVL_KEEPJA online pln Error\n");
+         }
      }
      printf("------------------------------\n");
-
-
 }
 
 int main()
 {
-    RobotKineDemo();
+    RobotPLNDemo();
 }
