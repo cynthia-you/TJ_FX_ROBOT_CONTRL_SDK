@@ -72,6 +72,18 @@ int main()
     OnSetSend();
     usleep(100000);
 
+
+
+      //设置设置位置模式和速度加速度百分比
+    OnClearSet();
+    OnSetTargetState_A(0) ;
+    OnSetJointLmt_A(5, 5) ;
+    OnSetTargetState_B(0) ;
+    OnSetJointLmt_B(5, 5) ;
+    OnSetSend();
+    usleep(100000);
+
+  
     //左臂强制松闸
     char paraName[30]="BRAK0";
     OnSetIntPara(paraName,2);
