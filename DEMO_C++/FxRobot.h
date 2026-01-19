@@ -1,7 +1,6 @@
 #ifndef FX_FXROBOT_H_
 #define FX_FXROBOT_H_
-
-
+#include "PointSet.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -259,6 +258,8 @@ FX_BOOL  LOADMvCfg(FX_CHAR* path, FX_INT32L TYPE[2], FX_DOUBLE GRV[2][3], FX_DOU
 	FX_DOUBLE Mass[2][7], FX_DOUBLE MCP[2][7][3], FX_DOUBLE I[2][7][6]);
 
 #endif // _USER_IF_TAG_
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 FX_VOID  FX_LOG_SWITCH(FX_INT32L log_tag_input);
 FX_BOOL  FX_Robot_Init_Type(FX_INT32L RobotSerial, FX_INT32L RobotType);
@@ -276,10 +277,13 @@ FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_
 ////////////////////////////////////////////////////////////////////////////////////////////////
 /////Motion Planning
 FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_CHAR* OutPutPath);
-FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc, FX_CHAR* OutPutPath);
+FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, CPointSet* ret_pset);
+FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc,FX_CHAR* OutPutPath);
+FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc,CPointSet* ret_pset);
 
 ////Parameters Identification
 FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 Type,FX_CHAR* path,FX_DOUBLE* mass, Vect3 mr, Vect6 I);
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 FX_VOID FX_XYZABC2Matrix4DEG(FX_DOUBLE xyzabc[6], FX_DOUBLE m[4][4]);
 FX_BOOL FX_Matrix42XYZABCDEG(FX_DOUBLE m[4][4],FX_DOUBLE xyzabc[6]);

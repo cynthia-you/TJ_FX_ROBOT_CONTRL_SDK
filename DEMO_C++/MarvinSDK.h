@@ -23,6 +23,8 @@
 #define FX_FLOAT 	float
 #define FX_DOUBLE 	double
 
+
+
 typedef enum
 {
 	ARM_STATE_IDLE = 0,             //////// 下伺服
