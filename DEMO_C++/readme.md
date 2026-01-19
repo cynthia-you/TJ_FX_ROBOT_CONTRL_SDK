@@ -28,5 +28,47 @@
 ### 3. 两条手臂同时计算
             showcase_kine_two_arms.cpp
 
-### 4. 逆解参考基准
+### 5. 逆解参考基准
             showcase_ik_nsp_two_arms.cpp
+
+## 二. 控制showcases
+
+### 1. 强制抱闸和强制松闸案例
+            showcase_apply_brake_release_brake.cpp
+
+### 2. 机器人进入协作释放案列
+            showcase_collaborative_release.cpp
+
+### 3. 在迪卡尔阻抗模式下,进去迪卡尔Y方向拖动,拖动并保存数据的控制案列
+            showcase_drag_CartImpedance_save_data.cpp
+
+### 4. 拖动控制案例
+            showcase_drag_joint.cpp
+
+### 5. 在关节阻抗模式下,进去关节拖动,拖动并保存数据的控制案列
+            showcase_drag_JointImpedance_save_data.cpp
+
+### 6. 获取和设置参数案列
+           showcase_get_set_param_demo.cpp
+
+### 7. 连接检查案列
+            showcase_link_check.cpp
+
+### 8. 关节位置跟随控制案列
+            showcase_position_two_arms.cpp
+
+### 9. 跑PVT轨迹并保存数据的案列
+            showcase_pvt.cpp
+
+### 10. 为笛卡尔阻抗控制案列
+            torque_cart_impedance_demo.cpp
+
+### 11. 为力控案列
+            torque_force_impedance_demo.cpp
+
+### 12. 关节阻抗控制案列
+            torque_joint_impedance_demo.cpp
+
+### 13. 在关节阻抗模式下,进去关节拖动,拖动并保存数据的控制案列
+            showcase_drag_JointImpedance_save_data.cpp
+            
