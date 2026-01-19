@@ -30,6 +30,23 @@
 
 ### 5. 逆解参考基准
             showcase_ik_nsp_two_arms.cpp
+            
+### 6. 演示左臂离线和在线规划功能接口：
+            showcase_online_and_offline_pln_all_function.cpp
+
+
+### 7. 左臂关节阻抗50HZ执行离线直线规划文件：
+            showcase_offline_movl_execution.cpp
+
+### 8.左臂关节阻抗50HZ执行在线直线规划点：
+            showcase_online_movla_execution.cpp
+
+### 9.左臂关节阻抗50HZ执行约束构型的离线直线规划文件：
+            showcase_offline_movl_keepj_execution.cpp
+
+### 10. 左臂关节阻抗50HZ执行约束构型的在线直线规划点位：
+            showcase_online_movl_keepja_execution.cpp
+
 
 ## 二. 控制showcases
 
