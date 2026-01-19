@@ -13,12 +13,19 @@
                  d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
                  
 ## 一、 SDK更新
+### 1.1 更新在线规划功能
+     1.演示左臂离线和在线规划功能接口：showcase_online_and_offline_pln_all_function.cpp
+     2.左臂关节阻抗50HZ执行离线直线规划文件：showcase_offline_movl_execution.cpp
+     3.左臂关节阻抗50HZ执行在线直线规划点：showcase_online_movla_execution.cpp
+     4.臂关节阻抗50HZ执行约束构型的离线直线规划文件：showcase_offline_movl_keepj_execution.cpp
+     5.左臂关节阻抗50HZ执行约束构型的在线直线规划点位：showcase_online_movl_keepja_execution.cpp
 
-### 1.1 PYTHON
+
+### 1.2 PYTHON
      1. 更新了计算的SDK:https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/SDK_PYTHON/fx_kine.py
      2. 更新了SDK的DEMO:https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/DEMO_PYTHON/readme.md
 
-### 1.2 代码获取控制器版本号
+### 1.3 代码获取控制器版本号
      C++:
           char paraName[30]="VERSION";
           long retValue=0;
