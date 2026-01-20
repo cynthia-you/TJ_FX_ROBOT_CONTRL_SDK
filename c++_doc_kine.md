@@ -214,8 +214,6 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
 
 
     • 输出点位频率为500Hz
-    • 函数规划成功会保存规划的PVT文件，无文件保存则规划失败；或者读函数返回。
-    • 特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节。
     • FX_Robot_PLN_MOVL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
     
 
@@ -235,7 +233,6 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
         
     • 输出点位频率为500Hz
     • 函数规划成功会保存规划的PVT文件，无文件保存则规划失败；或者读函数返回。
-    • 特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节。
     • 该接口是不同于FX_Robot_PLN_MOVL的规划接口，FX_Robot_PLN_MOVL_KeepJ根据起始关节和结束关节规划一条直线路径。
     
     
@@ -269,6 +266,44 @@ FX_VOID FX_XYZABC2Matrix4DEG(FX_DOUBLE xyzabc[6], FX_DOUBLE m[4][4])
 
     • 输入为位姿信息XYZ及欧拉角ABC（单位：mm/度）
     • 输出4*4的法兰末端位姿矩阵
+
+###     14. 在线直线规划（MOVLA）
+FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, CPointSet* ret_pset);
+
+  • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为包含该段规划的关节点位文件
+    输入：
+        1. FX_INT32L RobotSerial：0，左臂；1，右臂
+        2. Start_XYZABC起始点末端的位姿信息，六维信息，目标末端点相对于基座的平移和欧拉旋转，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
+        3. End_XYZABC终止点末端的位姿信息，六维信息，目标末端点相对于基座的平移和欧拉旋转，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
+        4. Ref_Joints约束了规划的起始关节点信息。单位：度。 
+        5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        7. CPointSet* ret_pset 点位缓存类函数
+    输出：
+        成功：True/1; 失败：False/0
+
+    • 输出点位频率为500Hz。
+    • 特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节。
+    • FX_Robot_PLN_MOVLA的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
+
+###    15.直线规划，约束机器人气势和结束的各个关节角度（MOVLJA）
+FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE ACC， CPointSet* ret_pset);
+
+    • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为包含该段规划的关节点位文件
+    输入：
+        1. FX_INT32L RobotSerial：0，左臂；1，右臂
+        2. startjoints:起始点各个关节位置（单位：角度）
+        3. stopjointss:终点各个关节位置（单位：角度）
+        4. vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        5. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        6. CPointSet* ret_pset 点位缓存类函数
+    输出：
+        成功：True/1; 失败：False/0
+        
+    • 输出点位频率为500Hz
+    • 该接口是不同于FX_Robot_PLN_MOVLA的规划接口，FX_Robot_PLN_MOVL_KeepJA根据起始关节和结束关节规划一条直线路径。
+    
+    
 
 # 二、案例脚本
 ## C++开发的使用编译见：
