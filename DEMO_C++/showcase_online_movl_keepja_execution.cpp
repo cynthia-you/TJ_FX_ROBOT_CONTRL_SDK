@@ -203,7 +203,7 @@ int main()
         joints_[4]=pvv[4];
         joints_[5]=pvv[5];
         joints_[6]=pvv[6];
-        if (pvv=NULL)
+        if (pvv==NULL)
         {
             printf("MOVL_KEEPJA online pln Error\n");
             return -1;
@@ -230,4 +230,5 @@ int main()
     OnRelease();
     return 1;
 }
+
 
