@@ -198,7 +198,7 @@ int main()
     point_num=pset_movl_keepj.OnGetPointNum();
     printf("[OFFLINE] MOVL_KEEPJ number of pvt points:%d\n",point_num);
     double joints_[7]={0.0};
-    for (long tag=0; tag<point_num;tag+=20)//规划文件为500HZ， 下采样为50HZ
+    for (long tag=0; tag<point_num;tag+=10)//规划文件为500HZ， 下采样为50HZ
     {
         double* pvv=pset_movl_keepj.OnGetPoint(tag);
         print_array(pvv,7,"MOVL_KEEPJ offline pvt point");
@@ -219,7 +219,7 @@ int main()
             OnClearSet();
             OnSetJointCmdPos_A(joints_);
             OnSetSend();
-            usleep(20000);
+            usleep(20000);//2ms
         }
     }
 
@@ -234,4 +234,5 @@ int main()
     OnRelease();
     return 1;
 }
+
 
