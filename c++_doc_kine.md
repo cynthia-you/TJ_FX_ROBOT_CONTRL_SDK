@@ -270,7 +270,7 @@ FX_VOID FX_XYZABC2Matrix4DEG(FX_DOUBLE xyzabc[6], FX_DOUBLE m[4][4])
 ###     14. 在线直线规划（MOVLA）
 FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, CPointSet* ret_pset);
 
-  • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为包含该段规划的关节点位文件
+    • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为点位缓存类函数
     输入：
         1. FX_INT32L RobotSerial：0，左臂；1，右臂
         2. Start_XYZABC起始点末端的位姿信息，六维信息，目标末端点相对于基座的平移和欧拉旋转，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
@@ -283,7 +283,6 @@ FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End
         成功：True/1; 失败：False/0
 
     • 输出点位频率为500Hz。
-    • 特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节。
     • FX_Robot_PLN_MOVLA的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
 
 ###    15.直线规划，约束机器人气势和结束的各个关节角度（MOVLJA）
