@@ -5171,8 +5171,8 @@ class App:
         if global_robot_ip:
             init = robot.connect(global_robot_ip)
             print(f'\nrobot connect ({global_robot_ip}), return:{init}')
-            if init==0:
-                messagebox.showerror('failed','端口占用，连接失败')
+            # if init==0:
+            #     messagebox.showerror('failed','端口占用，连接失败')
             # else:
             '''清错'''
             robot.clear_set()
@@ -5887,4 +5887,5 @@ if __name__ == "__main__":
         background="white"  # 标签背景色
     )
     app = App(root)
+
     root.mainloop()
