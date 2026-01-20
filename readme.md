@@ -14,11 +14,17 @@
                  
 ## 一、 SDK更新
 ### 1.1 更新在线规划功能
-     1.演示左臂离线和在线规划功能接口：showcase_online_and_offline_pln_all_function.cpp
-     2.左臂关节阻抗50HZ执行离线直线规划文件：showcase_offline_movl_execution.cpp
-     3.左臂关节阻抗50HZ执行在线直线规划点：showcase_online_movla_execution.cpp
-     4.臂关节阻抗50HZ执行约束构型的离线直线规划文件：showcase_offline_movl_keepj_execution.cpp
-     5.左臂关节阻抗50HZ执行约束构型的在线直线规划点位：showcase_online_movl_keepja_execution.cpp
+
+     C++接口：
+          FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, CPointSet* ret_pset);
+          FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc,CPointSet* ret_pset);
+
+     c++ demo: 
+          1.演示左臂离线和在线规划功能接口：showcase_online_and_offline_pln_all_function.cpp
+          2.左臂关节阻抗50HZ执行离线直线规划文件：showcase_offline_movl_execution.cpp
+          3.左臂关节阻抗50HZ执行在线直线规划点：showcase_online_movla_execution.cpp
+          4.臂关节阻抗50HZ执行约束构型的离线直线规划文件：showcase_offline_movl_keepj_execution.cpp
+          5.左臂关节阻抗50HZ执行约束构型的在线直线规划点位：showcase_online_movl_keepja_execution.cpp
 
 
 ### 1.2 PYTHON
