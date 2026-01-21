@@ -127,5 +127,9 @@
 
 ### 7. 逆解参考基准
             showcase_ik_nsp_two_arms.py
-
-
+            
+### 8.在线直线规划并以关节阻抗模式以50HZ频率执行点位
+            showcase_online_pln_movl.py
+            
+### 9.在线直线规划，约束构型并以关节阻抗模式以50HZ频率执行点位
+            showcase_online_pln_movl_keepj.py
