@@ -46,9 +46,16 @@
 
     直线插值规划
   - movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, save_path)
-  - 
+    
     直线插值规划，约束起始结束关节构型
-  - movL_KeepJ(start_joints:list, end_joints:list,vel:float,acc: float,save_path):
+  - movL_KeepJ(start_joints:list, end_joints:list,vel:float,acc: float,save_path)
+
+    在线直线插值规划
+  - movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float)
+
+        
+    在线直线插值规划，约束起始结束关节构型
+  - movL_KeepJA(start_joints:list, end_joints:list,vel:float,acc: float)
 
     移除工具设置
   - remove_tool_kine()
@@ -275,39 +282,76 @@ movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: fl
 
     • 输出点位频率为500Hz，即每20ms执行一行
 
-        '''直线规划
-        :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
-        :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm abc旋转单位度
+        '''直线规划，规划文件的频率500Hz，即每2ms执行一行
+        :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
+        :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
         :param ref_joints:参考关节构型，也是规划文件的起始点位。
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
         :param save_path:保存的规划文件的路径
         :return: bool
+        特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                2 输出规划文件的频率为500Hz
+                3 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
         '''
-        特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
-                2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
-                3 输出规划文件的频率为500Hz
-                4 特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
-                5 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
 
             
 ###    2.10 直线插值规划，约束起始结束关节构型（movL_KeepJ）
-movL_KeepJ(start_joints:list, end_joints:list,vel:float,save_path):
+movL_KeepJ(start_joints:list, end_joints:list,vel:float,save_path)
 
     • 输出点位频率为50Hz，即每2ms执行一行
-        '''直线规划保持关节构型
-
+        '''直线规划保持关节构型, 规划文件的点位频率50Hz，即每20ms执行一行
         :param start_joints:起始点各个关节位置（单位：角度）
         :param end_joints:终点各个关节位置（单位：角度）
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
         :param save_path:规划文件的保存路径
         :return: bool
-        特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
-                2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
-                3 输出点位频率为500Hz
-                4 该接口是不同于MOVL的规划接口，movL_KeepJ根据起始关节和结束关节规划一条直线路径。
+        特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                2 输出点位频率为500Hz
+                3 该接口是不同于MOVL的规划接口，movL_KeepJ根据起始关节和结束关节规划一条直线路径。
+        '''
 
-###    2.11 工具动力学参数辨识
+
+
+###    2.11 在线直线规划（MOVL）
+movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float)
+
+    • 输出点位频率为500Hz，即每20ms执行一行
+
+         '''直线规划，执行MOVLA规划并返回点集数据(频率500Hz)
+        :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
+        :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
+        :param ref_joints:参考关节构型，也是规划文件的起始点位。
+        :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        :return: 规划得到的点集列表
+        特别提示:1 需要读函数返回值,如果关节超限,返回为false.
+                2 输出规划文件的频率为500Hz
+                3 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
+        '''
+
+            
+###    2.12 在线直线插值规划，约束起始结束关节构型（movL_KeepJ）
+movL_KeepJA(start_joints:list, end_joints:list,vel:float,save_path)
+
+    • 输出点位频率为50Hz，即每2ms执行一行
+        '''直线规划，执行movL_KeepJA规划并返回点集数据(频率500Hz)
+    
+       :param start_joints:起始点各个关节位置（单位：角度）
+       :param end_joints:终点各个关节位置（单位：角度）
+       :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+       :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+       :return: 规划得到的点集列表
+       特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的点集.
+               2 输出点位频率为500Hz
+               3 该接口是不同于MOVLA的规划接口，movL_KeepJA根据起始关节和结束关节规划一条直线路径。
+       '''
+
+
+                
+
+###    2.13 工具动力学参数辨识
 identify_tool_dyn(robot_type: int, ipath: str)
 
         '''工具动力学参数辨识
@@ -324,7 +368,7 @@ identify_tool_dyn(robot_type: int, ipath: str)
         '''
 
 
-###     2.12 位置姿态4×4矩阵转XYZABC
+###     2.14 位置姿态4×4矩阵转XYZABC
 mat4x4_to_xyzabc(pose_mat:list)
 
     • 输入为4*4的法兰末端位姿矩阵
@@ -336,7 +380,7 @@ mat4x4_to_xyzabc(pose_mat:list)
                 （6,1）位姿信息XYZ及欧拉角ABC（单位：mm/度）
         '''
     
-###     2.13 XYZABC转位置姿态4×4矩阵
+###     2.15 XYZABC转位置姿态4×4矩阵
 xyzabc_to_mat4x4(xyzabc:list)
 
     • 输入为位姿信息XYZ及欧拉角ABC（单位：mm/度）
@@ -349,7 +393,7 @@ xyzabc_to_mat4x4(xyzabc:list)
 
         '''
         
-###     2.14 位姿矩阵展开表示
+###     2.16 位姿矩阵展开表示
 mat4x4_to_mat1x16(self,pose_mat):
         matrix_data=[]
         for i in range(4):
