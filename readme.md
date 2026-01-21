@@ -13,6 +13,7 @@
                  d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
                  
 ## 一、 SDK更新
+
 ### 1.1 更新在线规划功能
 
      C++接口：
@@ -26,6 +27,20 @@
           4.臂关节阻抗50HZ执行约束构型的离线直线规划文件：showcase_offline_movl_keepj_execution.cpp
           5.左臂关节阻抗50HZ执行约束构型的在线直线规划点位：showcase_online_movl_keepja_execution.cpp
 
+     PY接口：
+          movLA(self, start_xyzabc: List[float], end_xyzabc: List[float],
+              ref_joints: List[float], vel: float, acc: float,
+              dimension: int = 7) -> List[List[float]]:
+              
+           movL_KeepJA(self, start_joints: List[float], end_joints: List[float],
+              vel: float, acc: float,
+              dimension: int = 7) -> List[List[float]]
+
+     py demo:
+          showcase_online_pln_movl.py
+          showcase_online_pln_movl_keepj.py
+          
+          
 
 ### 1.2 PYTHON
      1. 更新了计算的SDK:https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/SDK_PYTHON/fx_kine.py
