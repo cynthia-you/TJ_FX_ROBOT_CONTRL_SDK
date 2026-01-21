@@ -2,10 +2,10 @@ from ctypes import *
 import ctypes
 import inspect
 from textwrap import dedent
-import os
-import math
 import logging
 import os
+import sys
+from typing import List
 current_file_path = os.path.abspath(__file__)
 current_path = os.path.dirname(current_file_path)
 
@@ -16,24 +16,119 @@ logger = logging.getLogger('debug_printer')
 logger.setLevel(logging.INFO)  # 一键关闭所有调试打印
 logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
 
-
 class Marvin_Kine:
     def __init__(self):
         """初始化机器人控制类"""
-        import sys
         logger.info(f'user platform: {sys.platform}')
         if sys.platform == 'win32':
             self.kine = ctypes.WinDLL(os.path.join(current_path, 'libKine.dll'))
-            # self.kine = ctypes.CDLL(os.path.join(current_path, 'libKine.dll'))
         else:
             self.kine = ctypes.CDLL(os.path.join(current_path, 'libKine.so'))
-
         # 创建结构体实例
         self.sp = FX_InvKineSolvePara()
         self.jacobi = FX_Jacobi()
         self.jacobi_dot = FX_Jacobi()
 
         self.robot_tag=None
+        self._setup_function_prototypes()
+
+    def _setup_function_prototypes(self):
+        """设置所有C函数的参数类型和返回类型"""
+
+        # 原有的MOVL函数
+        self.kine.FX_Robot_PLN_MOVL.argtypes = [
+            ctypes.c_long,  # RobotSerial
+            ctypes.POINTER(ctypes.c_double),  # Start_XYZABC (6个double)
+            ctypes.POINTER(ctypes.c_double),  # End_XYZABC (6个double)
+            ctypes.POINTER(ctypes.c_double),  # Ref_Joints (7个double)
+            ctypes.c_double,  # Vel
+            ctypes.c_double,  # ACC
+            ctypes.c_char_p  # OutPutPath
+        ]
+        self.kine.FX_Robot_PLN_MOVL.restype = ctypes.c_bool
+
+        # CPointSet创建函数
+        self.kine.FX_CPointSet_Create.argtypes = []
+        self.kine.FX_CPointSet_Create.restype = ctypes.c_void_p
+
+        # CPointSet销毁函数
+        self.kine.FX_CPointSet_Destroy.argtypes = [ctypes.c_void_p]
+        self.kine.FX_CPointSet_Destroy.restype = None
+
+        # CPointSet初始化函数
+        self.kine.FX_CPointSet_OnInit.argtypes = [ctypes.c_void_p, ctypes.c_long]
+        self.kine.FX_CPointSet_OnInit.restype = ctypes.c_bool
+
+        # CPointSet获取点数函数
+        self.kine.FX_CPointSet_OnGetPointNum.argtypes = [ctypes.c_void_p]
+        self.kine.FX_CPointSet_OnGetPointNum.restype = ctypes.c_long
+
+        # CPointSet获取点数据函数
+        self.kine.FX_CPointSet_OnGetPoint.argtypes = [ctypes.c_void_p, ctypes.c_long]
+        self.kine.FX_CPointSet_OnGetPoint.restype = ctypes.POINTER(ctypes.c_double)
+
+        # C风格的MOVLA函数
+        self.kine.FX_Robot_PLN_MOVLA_C.argtypes = [
+            ctypes.c_long,  # RobotSerial
+            ctypes.POINTER(ctypes.c_double),  # Start_XYZABC
+            ctypes.POINTER(ctypes.c_double),  # End_XYZABC
+            ctypes.POINTER(ctypes.c_double),  # Ref_Joints
+            ctypes.c_double,  # Vel
+            ctypes.c_double,  # ACC
+            ctypes.c_void_p  # ret_pset
+        ]
+        self.kine.FX_Robot_PLN_MOVLA_C.restype = ctypes.c_bool
+
+        # C风格的MOVL_KEEPJA函数
+        self.kine.FX_Robot_PLN_MOVL_KeepJA_C.argtypes = [
+            ctypes.c_long,  # RobotSerial
+            ctypes.POINTER(ctypes.c_double),  # startjoints
+            ctypes.POINTER(ctypes.c_double),  # stopjoints
+            ctypes.c_double,  # Vel
+            ctypes.c_double,  # ACC
+            ctypes.c_void_p  # ret_pset
+        ]
+        self.kine.FX_Robot_PLN_MOVL_KeepJA_C.restype = ctypes.c_bool
+
+
+    def create_point_set(self, point_type: int = 6) -> ctypes.c_void_p:
+        """创建CPointSet对象"""
+        pset = self.kine.FX_CPointSet_Create()
+        if pset:
+            # 初始化点集类型，6对应6维数据(x,y,z,a,b,c)
+            self.kine.FX_CPointSet_OnInit(pset, point_type)
+        return pset
+
+    def destroy_point_set(self, pset: ctypes.c_void_p):
+        """销毁CPointSet对象"""
+        if pset:
+            self.kine.FX_CPointSet_Destroy(pset)
+
+    def get_point_set_data(self, pset: ctypes.c_void_p, dimension: int = 6) -> List[List[float]]:
+        """
+        从CPointSet对象中获取所有数据
+
+        参数:
+            pset: CPointSet指针
+            dimension: 每个点的维度，默认6维(x,y,z,a,b,c)
+        """
+        if not pset:
+            return []
+
+        num_points = self.kine.FX_CPointSet_OnGetPointNum(pset)
+        data = []
+
+        for i in range(num_points):
+            point_ptr = self.kine.FX_CPointSet_OnGetPoint(pset, i)
+            if point_ptr:
+                # 读取dimension维度的数据
+                point = [point_ptr[j] for j in range(dimension)]
+                data.append(point)
+
+        return data
+
+
+
     def help(self, method_name: str = None) -> None:
         """显示帮助信息
         参数:method_name (str): 可选的方法名，显示特定方法的帮助信息
@@ -116,13 +211,11 @@ class Marvin_Kine:
 
     def log_switch(self,switch:int):
         '''
-        :param switch: 打印日志开：true；打印日志关：false
+        :param switch: 打印日志开：1；打印日志关：0
         '''
         self.kine.FX_LOG_SWITCH.argtypes = [c_long]
         switch_ = c_long(switch)
         self.kine.FX_LOG_SWITCH(switch_)
-
-
 
     def load_config(self, arm_type: int, config_path: str):
         ''' 使用前，请一定确认机型，导入正确的配置文件。导入机械臂配置信息
@@ -329,8 +422,6 @@ class Marvin_Kine:
             logger.error('remove tool kinematics info failed!')
             return False
 
-
-
     def fk(self,joints: list):
         '''关节角度正解到末端TCP位置和姿态4*4
         :param joints: list(7,1). 角度值，单位：度
@@ -365,7 +456,6 @@ class Marvin_Kine:
             return fk_mat
         else:
             return False
-
 
     def fk_nsp(self,joints: list):
         '''关节角度正解到末端TCP位置和姿态4*4，并得到基于该角度下的零空间参数XYZ方矩阵
@@ -575,7 +665,6 @@ class Marvin_Kine:
             logger.info(f"Jacobi matrix:{self.jacobi.get_jcb()}")
             return self.jacobi.get_jcb()
 
-
     def mat4x4_to_xyzabc(self,pose_mat:list):
         '''末端位置和姿态转XYZABC
         :param pose_mat: list(4,4), 位置姿态4x4list.
@@ -610,7 +699,6 @@ class Marvin_Kine:
             logger.info(f"xyzabc:{pose_6d}")
             return pose_6d
 
-
     def xyzabc_to_mat4x4(self,xyzabc:list):
         '''末端XYZABC转位置和姿态矩阵
         param xyzabc: list(6,),
@@ -644,7 +732,6 @@ class Marvin_Kine:
             logger.info("xyzabc to mat4x4 Success")
             return fk_mat
 
-
     def movL(self,start_xyzabc:list, end_xyzabc:list,ref_joints:list,vel:float,acc:float,save_path):
         '''直线规划，规划文件的频率500Hz，即每2ms执行一行
         :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
@@ -654,13 +741,10 @@ class Marvin_Kine:
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
         :param save_path:保存的规划文件的路径
         :return: bool
-        特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
-                2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
-                3 输出规划文件的频率为500Hz
-                4 特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
-                5 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
+        特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                2 输出规划文件的频率为500Hz
+                3 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
         '''
-
         Serial = ctypes.c_long(self.robot_tag)
 
         path = save_path.encode('utf-8')
@@ -689,7 +773,69 @@ class Marvin_Kine:
             logger.error(f'Plan MOVL failed!')
             return False
 
+    def movLA(self, start_xyzabc: List[float], end_xyzabc: List[float],
+              ref_joints: List[float], vel: float, acc: float,
+              dimension: int = 7) -> List[List[float]]:
 
+        '''直线规划，执行MOVLA规划并返回点集数据(频率500Hz)
+        :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
+        :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
+        :param ref_joints:参考关节构型，也是规划文件的起始点位。
+        :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        :return: 规划得到的点集列表
+        特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                2 输出规划文件的频率为500Hz
+                3 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
+        '''
+        Serial = ctypes.c_long(self.robot_tag)
+
+        # 创建起点数组
+        if len(start_xyzabc) != 6:
+            raise ValueError("start_xyzabc must have 6 elements")
+        start_array = (ctypes.c_double * 6)(*start_xyzabc)
+
+        # 创建终点数组
+        if len(end_xyzabc) != 6:
+            raise ValueError("end_xyzabc must have 6 elements")
+        end_array = (ctypes.c_double * 6)(*end_xyzabc)
+
+        # 创建关节角数组
+        if len(ref_joints) != 7:
+            raise ValueError("ref_joints must have 7 elements")
+        joints_array = (ctypes.c_double * 7)(*ref_joints)
+
+        vel_value = ctypes.c_double(vel)
+        acc_value = ctypes.c_double(acc)
+
+        # 创建CPointSet对象
+        pset = self.create_point_set(dimension)
+        if not pset:
+            raise RuntimeError("Failed to create CPointSet object")
+
+        try:
+            # 调用规划函数
+            success = self.kine.FX_Robot_PLN_MOVLA_C(
+                Serial,
+                ctypes.cast(start_array, ctypes.POINTER(ctypes.c_double)),
+                ctypes.cast(end_array, ctypes.POINTER(ctypes.c_double)),
+                ctypes.cast(joints_array, ctypes.POINTER(ctypes.c_double)),
+                vel_value,
+                acc_value,
+                pset
+            )
+
+            if success:
+                # 获取点集数据
+                data = self.get_point_set_data(pset, dimension)
+                print(f'Plan MOVLA successful, got {len(data)} points')
+                return data
+            else:
+                print('Plan MOVLA failed!')
+                return []
+        finally:
+            # 确保清理资源
+            self.destroy_point_set(pset)
 
     def movL_KeepJ(self,start_joints:list, end_joints:list,vel:float,acc:float,save_path):
         '''直线规划保持关节构型, 规划文件的点位频率50Hz，即每20ms执行一行
@@ -700,10 +846,9 @@ class Marvin_Kine:
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
         :param save_path:规划文件的保存路径
         :return: bool
-        特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
-                2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
-                3 输出点位频率为500Hz
-                4 该接口是不同于MOVL的规划接口，movL_KeepJ根据起始关节和结束关节规划一条直线路径。
+        特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                2 输出点位频率为500Hz
+                3 该接口是不同于MOVL的规划接口，movL_KeepJ根据起始关节和结束关节规划一条直线路径。
         '''
 
         Serial = ctypes.c_long(self.robot_tag)
@@ -731,7 +876,55 @@ class Marvin_Kine:
             logger.error(f'Plan MOVL KeepJ failed!')
             return False
 
+    def movL_KeepJA(self, start_joints: List[float], end_joints: List[float],
+              vel: float, acc: float,
+              dimension: int = 7) -> List[List[float]]:
+        '''直线规划，执行movL_KeepJA规划并返回点集数据(频率500Hz)
 
+               :param start_joints:起始点各个关节位置（单位：角度）
+               :param end_joints:终点各个关节位置（单位：角度）
+               :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+               :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+               :return: 规划得到的点集列表
+               特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的点集.
+                       2 输出点位频率为500Hz
+                       3 该接口是不同于MOVLA的规划接口，movL_KeepJA根据起始关节和结束关节规划一条直线路径。
+               '''
+
+        Serial = ctypes.c_long(self.robot_tag)
+        s0, s1, s2, s3, s4, s5, s6 = start_joints
+        start = (ctypes.c_double * 7)(s0, s1, s2, s3, s4, s5, s6)
+        e0, e1, e2, e3, e4, e5, e6 = end_joints
+        end = (ctypes.c_double * 7)(e0, e1, e2, e3, e4, e5, e6)
+        vel_value = c_double(vel)
+        acc_value = c_double(acc)
+        # 创建CPointSet对象
+        pset = self.create_point_set(dimension)
+        if not pset:
+            raise RuntimeError("Failed to create CPointSet object")
+
+        try:
+            # 调用规划函数
+            success = self.kine.FX_Robot_PLN_MOVL_KeepJA_C(
+                Serial,
+                ctypes.cast(start, ctypes.POINTER(ctypes.c_double)),
+                ctypes.cast(end, ctypes.POINTER(ctypes.c_double)),
+                vel_value,
+                acc_value,
+                pset
+            )
+
+            if success:
+                # 获取点集数据
+                data = self.get_point_set_data(pset, dimension)
+                print(f'Plan MOVL_KeepJA successful, got {len(data)} points')
+                return data
+            else:
+                print('Plan MOVL_KeepJA failed!')
+                return []
+        finally:
+            # 确保清理资源
+            self.destroy_point_set(pset)
 
     def identify_tool_dyn(self, robot_type: int, ipath: str):
         '''工具动力学参数辨识
@@ -831,7 +1024,6 @@ def convert_to_8x8_matrix(flat_list):
         matrix_8x8.append(flat_list[row_start:row_end])
     return matrix_8x8
 
-
 def convert_to_8x8_matrix(flat_list):
     """将一维列表转换为8x8二维列表，并过滤掉全为零的行"""
     if len(flat_list) != 64:
@@ -847,14 +1039,9 @@ def convert_to_8x8_matrix(flat_list):
 
     return matrix_8x8
 
-
-# 定义基本类型
 FX_INT32L = c_long
 FX_DOUBLE = c_double
 FX_BOOL = c_bool
-
-
-# 定义 Vect7 类型 (7个double的数组)
 class Vect7(Structure):
     _fields_ = [("data", FX_DOUBLE * 7)]
 
@@ -872,8 +1059,6 @@ class Vect7(Structure):
     def __str__(self):
         return str(self.to_list())
 
-
-# 定义 Matrix4 类型 (4x4矩阵，16个double)
 class Matrix4(Structure):
     _fields_ = [("data", FX_DOUBLE * 16)]
 
@@ -891,8 +1076,6 @@ class Matrix4(Structure):
     def __str__(self):
         return str(self.to_list())
 
-
-# 定义 Matrix8 类型 (8x8矩阵，64个double)
 class Matrix8(Structure):
     _fields_ = [("data", FX_DOUBLE * 64)]
 
@@ -909,8 +1092,6 @@ class Matrix8(Structure):
 
     def __str__(self):
         return str(self.to_list())
-
-
 
 # 定义主结构体 FX_InvKineSolvePara
 class FX_InvKineSolvePara(ctypes.Structure):
@@ -1094,14 +1275,11 @@ class FX_InvKineSolvePara(ctypes.Structure):
                f"  输出: 结果数={self.m_OutPut_Result_Num}, " \
                f"超限={self.m_Output_IsOutRange}"
 
-
-# 定义 FX_Jacobi 结构体
 class FX_Jacobi(Structure):
     _fields_ = [
         ("m_AxisNum", FX_INT32L),
-        ("m_Jcb", (FX_DOUBLE * 7) * 6)  # 6x7 二维数组
+        ("m_Jcb", (FX_DOUBLE * 7) * 6)  #6x7 二维数组
     ]
-
     def __init__(self):
         super().__init__()
         self.m_AxisNum = 0
@@ -1152,7 +1330,6 @@ class FX_Jacobi(Structure):
             result += "  " + "  ".join(row) + "\n"
         return result
 
-
 def inv_main():
     # 创建结构体实例
     ik_params = FX_InvKineSolvePara()
@@ -1169,7 +1346,7 @@ def inv_main():
     ik_params.m_Input_IK_TargetTCP = Matrix4(tcp_values)
 
     # 设置关节参考位置（示例值）
-    ref_joint = [0, 0, 0, 0, 0, 0, 0]
+    ref_joint = [0, 0.4, 0, 0, 0, 0, 0]
     ik_params.m_Input_IK_RefJoint = Vect7(ref_joint)
 
     # 设置ZSP参数
