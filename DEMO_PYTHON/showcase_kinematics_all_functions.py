@@ -153,20 +153,38 @@ print(f'6d_pose_1:{pose_6d_1}')
 pose_6d_2=pose_6d_1.copy()
 pose_6d_2[0]+=10# X方向移动10mm
 print(f'6d_pose_2:{pose_6d_2}')
-tag_movl=kk.movL(start_xyzabc=pose_6d_1,end_xyzabc=pose_6d_2,ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68],vel=100,acc=100,save_path='test.txt')
+
+#OFFLINE
+tag_movl=kk.movL(start_xyzabc=pose_6d_1,end_xyzabc=pose_6d_2,ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68],vel=100,acc=100,save_path='PLN_MOVL.txt')
 if tag_movl:
     print('movL success')
+print('-'*50)
+
+#ONLINE
+points=kk.movLA(start_xyzabc=pose_6d_1,end_xyzabc=pose_6d_2,ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68],vel=100,acc=100)
+print(f"Got {len(points)} planning points")
+if points:
+    print(f"First point: {points[0]}")
 print('-'*50)
 
 '''
 直线规划（MOVL KeepJ）
     特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
 '''
-fk_mat=kk.fk(joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995])
+
+#OFFLINE
 tag_movlkj=kk.movL_KeepJ(start_joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995],
-                       end_joints=[-26.908 ,-91.109, 74.502 ,-88.083, -93.599 ,17.151, -13.602],vel=100,acc=100,save_path='testkj.txt')
+                       end_joints=[-26.908 ,-91.109, 74.502 ,-88.083, -93.599 ,17.151, -13.602],vel=100,acc=100,save_path='PLN_MOVL_KEEPJ.txt')
 if tag_movlkj:
     print('movL_KeepJ success')
+print('-'*50)
+
+#ONLINE
+points=kk.movL_KeepJA(start_joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995],
+                       end_joints=[-26.908 ,-91.109, 74.502 ,-88.083, -93.599 ,17.151, -13.602],vel=100,acc=100)
+print(f"Got {len(points)} planning points")
+if points:
+    print(f"First point: {points[0]}")
 print('-'*50)
 
 '''
