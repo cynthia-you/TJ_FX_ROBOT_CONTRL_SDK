@@ -9,7 +9,10 @@
 
 ## 你好使用MARVIN_APP软件前，需要温馨提示您：
 
-    软件同级config/文件夹内请放入独一无二的机型配置文件:ccs 6公斤的机型的计算配置文件为ccs_m6.MvKDCfg,ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg； srs机型为srs.MvKDCfg. 多个*.MvKDCfg会解析出错
+    软件同级config/文件夹内请放入独一无二的机型配置文件:
+    ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
+    ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg； 
+    srs机型为srs.MvKDCfg. 多个*.MvKDCfg会解析出错
 
 
 
