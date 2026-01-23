@@ -240,7 +240,14 @@ robot.set_tool(arm='B', dynamicParams=tool_right_dynamic, kineParams=tool_right_
 robot.send_file('tool_dyn_kine.txt', os.path.join('/home/fusion/', 'tool_dyn_kine.txt'))
 time.sleep(1)
 
+ #计算解算设置生效
+tool_mat = kk1.xyzabc_to_mat4x4(tool_left_kinematics)
+kk1.set_tool_kine(tool_mat=tool_mat)
+tool_mat = kk2.xyzabc_to_mat4x4(tool_right_kinematics)
+kk2.set_tool_kine(tool_mat=tool_mat）
+
 
 
 '''6 任务完成 释放连接'''
 robot.release_robot()
+
