@@ -5,8 +5,8 @@
 #include  "ACB.h"
 #include "TCPFileClient.h"
 #ifdef CMPL_WIN
-#include <Windows.h>
-//#include <mmiscapi2.h>
+#include<Windows.h>
+#include < mmiscapi2.h >
 #pragma comment(lib,"winmm.lib")
 #include <winsock.h>
 #include <stdio.h>
@@ -15,6 +15,8 @@
 #endif
 #include "PointSet.h"
 #define    SDK_VERSION   1003
+
+
 
 
 
