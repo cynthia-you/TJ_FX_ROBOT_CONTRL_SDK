@@ -261,6 +261,12 @@ bool OnSetCartKD_A(double K[7], double D[7], int type)
 {
 	return CRobot::OnSetCartKD_A(K, D, type);
 }
+
+bool  OnSetEefRot_A(int fcType, double CartCtrlPara[7])
+{
+	return CRobot::OnSetEefRot_A(fcType, CartCtrlPara);
+}
+
 bool OnSetDragSpace_A(int dgType)
 {
 	return CRobot::OnSetDragSpace_A(dgType);
@@ -301,9 +307,14 @@ bool OnSetJointKD_B(double K[7], double D[7])
 {
 	return CRobot::OnSetJointKD_B(K, D);
 }
-bool OnSetCartKD_B(double K[7], double D[7],int type)
+bool OnSetCartKD_B(double K[6], double D[6],int type)
 {
 	return CRobot::OnSetCartKD_B(K, D, type);
+}
+
+bool  OnSetEefRot_B(int fcType, double CartCtrlPara[7])
+{
+	return CRobot::OnSetEefRot_B(fcType, CartCtrlPara);
 }
 
 bool OnSetDragSpace_B(int dgType)

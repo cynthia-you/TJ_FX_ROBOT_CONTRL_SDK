@@ -918,14 +918,17 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 #endif
 //	bind(m_InsRobot->_local_sock, (struct sockaddr*)&m_InsRobot->_local, sizeof(_local));
 	// 绑定Socket并检查结果
-    if (bind(m_InsRobot->_local_sock, (struct sockaddr*)&m_InsRobot->_local, sizeof(m_InsRobot->_local)) != 0)
-    {
-        if(m_InsRobot->m_LocalLogTag == true) printf("port bind failure, possibly occupied by another program\n");
-        // 关闭socket连接
-        close(m_InsRobot->_local_sock);
-        m_InsRobot->_local_sock = 0;
-        return false;
-    }
+	if (bind(m_InsRobot->_local_sock, (struct sockaddr*)&m_InsRobot->_local, sizeof(m_InsRobot->_local)) != 0)
+	{
+		if(m_InsRobot->m_LocalLogTag == true)
+			printf("port bind failure, possibly occupied by another program\n");
+
+		// 关闭socket连接（Windows winsock）
+		closesocket(m_InsRobot->_local_sock);
+		m_InsRobot->_local_sock = 0;
+		return false;
+	}
+
 	memset(&m_InsRobot->_to, 0, sizeof(_to));
 	char ip_str[100];
 	sprintf(ip_str, "%d.%d.%d.%d", ip1, ip2, ip3, ip4);
@@ -2022,8 +2025,6 @@ bool CRobot::OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[
 	pv[3] = fxDir[3];
 	pv[4] = fxDir[4];
 	pv[5] = fxDir[5];
-
-
 	pv[6] = fcCtrlPara[0];
 	pv[7] = fcCtrlPara[1];
 	pv[8] = fcCtrlPara[2];
@@ -2043,6 +2044,8 @@ bool CRobot::OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[
 	if(m_InsRobot->m_LocalLogTag == true) printf("fcAdjLmt=%lf\n",fcAdjLmt);
 	return true;
 }
+
+
 bool CRobot::OnSetDragSpace_A(int zsType)
 {
 	long add_size = 1 + sizeof(FX_FLOAT) * 6 + sizeof(FX_INT32) ;
@@ -2114,13 +2117,55 @@ bool CRobot::OnSetCartKD_A(double K[7], double D[7],int type)
 
 	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm Card k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
+	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm Cart k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
 	K[0],K[1],K[2],K[3],K[4],K[5],K[6],
 	D[0],D[1],D[2],D[3],D[4],D[5],D[6],
 	type);
 
 	return true;
 }
+
+bool CRobot::OnSetEefRot_A(int fcType, double CartCtrlPara[7])
+{
+	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
+
+	if (add_size + m_InsRobot->m_Slen >= 1400)
+	{
+		return false;
+	}
+
+	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 107;
+	m_InsRobot->m_Slen++;
+
+	FX_INT32* pv1 = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	pv1[0] = fcType;
+
+	m_InsRobot->m_Slen += sizeof(FX_INT32);
+	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	pv[0] = 0;
+	pv[1] = 0;
+	pv[2] = 0;
+	pv[3] = 0;
+	pv[4] = 0;
+	pv[5] = 0;
+	pv[6] = CartCtrlPara[0];
+	pv[7] = CartCtrlPara[1];
+	pv[8] = CartCtrlPara[2];
+	pv[9] = CartCtrlPara[3];
+	pv[10] = CartCtrlPara[4];
+	pv[11] = CartCtrlPara[5];
+	pv[12] = CartCtrlPara[6];
+	pv[13] = 0;
+
+	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
+
+	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	(*pnum)++;
+	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm flange Cart rotation parameters.\n fcType=%d,\n",fcType);
+    if(m_InsRobot->m_LocalLogTag == true) printf("CartCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n",CartCtrlPara[0],CartCtrlPara[1],CartCtrlPara[2],CartCtrlPara[3],CartCtrlPara[4],CartCtrlPara[5],CartCtrlPara[6]);
+	return true;
+}
+	
 bool CRobot::OnSetJointKD_A(double K[7], double D[7])
 {
 	long add_size = 1 + sizeof(FX_FLOAT) * 14;
@@ -2424,7 +2469,7 @@ bool CRobot::OnSetDragSpace_B(int zsType)
 	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm drag space type=%d\n",zsType);
 	return true;
 }
-bool CRobot::OnSetCartKD_B(double K[7], double D[7],int type)
+bool CRobot::OnSetCartKD_B(double K[6], double D[6],int type)
 {
 	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
 
@@ -2462,12 +2507,53 @@ bool CRobot::OnSetCartKD_B(double K[7], double D[7],int type)
 
 	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm Card k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
+	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm Cart k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
 	K[0],K[1],K[2],K[3],K[4],K[5],K[6],
 	D[0],D[1],D[2],D[3],D[4],D[5],D[6],
 	type);
 
 	return true;
+}
+bool CRobot::OnSetEefRot_B(int fcType, double CartCtrlPara[7])
+{
+	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
+
+	if (add_size + m_InsRobot->m_Slen >= 1400)
+	{
+		return false;
+	}
+
+	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 207;
+	m_InsRobot->m_Slen++;
+
+	FX_INT32* pv1 = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	pv1[0] = fcType;
+
+	m_InsRobot->m_Slen += sizeof(FX_INT32);
+	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	pv[0] = 0;
+	pv[1] = 0;
+	pv[2] = 0;
+	pv[3] = 0;
+	pv[4] = 0;
+	pv[5] = 0;
+	pv[6] = CartCtrlPara[0];
+	pv[7] = CartCtrlPara[1];
+	pv[8] = CartCtrlPara[2];
+	pv[9] = CartCtrlPara[3];
+	pv[10] = CartCtrlPara[4];
+	pv[11] = CartCtrlPara[5];
+	pv[12] = CartCtrlPara[6];
+	pv[13] = 0;
+
+	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
+
+	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	(*pnum)++;
+	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm flange Cart rotation parameters.\n fcType=%d,\n",fcType);
+    if(m_InsRobot->m_LocalLogTag == true) printf("CartCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n",CartCtrlPara[0],CartCtrlPara[1],CartCtrlPara[2],CartCtrlPara[3],CartCtrlPara[4],CartCtrlPara[5],CartCtrlPara[6]);
+	return true;
+
 }
 bool CRobot::OnSetJointKD_B(double K[7], double D[7])
 {

@@ -130,10 +130,16 @@ extern "C" {
 	//设置右臂工具关节阻抗的刚度和阻尼参数
 	FX_DLL_EXPORT bool OnSetJointKD_B(double K[7], double D[7]);
 	//3 设置指定手臂的迪卡尔阻抗参数, 在扭矩模式迪卡尔阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(2) 下参数才有意义(以左臂为例)
-	//设置左臂工具笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
+	//3.1 设置笛卡尔阻抗的刚度和阻尼参数
+	//设置左臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
 	FX_DLL_EXPORT bool OnSetCartKD_A(double K[7], double D[7], int type);
-	//设置右臂工具笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
-	FX_DLL_EXPORT bool OnSetCartKD_B(double K[7], double D[7],int type);
+	//设置右臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
+	FX_DLL_EXPORT bool OnSetCartKD_B(double K[6], double D[6],int type);
+	//3.2 设置末端力控类型和笛卡尔方向的旋转
+	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	FX_DLL_EXPORT bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
+	//设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	FX_DLL_EXPORT bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	//4 如果使用力控模式,在扭矩模式力控模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(3) 以下两个指令连用
 	//4.1 设置指定手臂的力控参数
 	//设置左臂力控参数
@@ -145,6 +151,7 @@ extern "C" {
 	FX_DLL_EXPORT bool OnSetForceCmd_A(double force);
 	//设置右臂力控目标
 	FX_DLL_EXPORT bool OnSetForceCmd_B(double force);
+
 
 	//设置指定手臂的目标状态:0下使能 1位置 2PVT 3扭矩 4协作释放
 	//设置左臂模式

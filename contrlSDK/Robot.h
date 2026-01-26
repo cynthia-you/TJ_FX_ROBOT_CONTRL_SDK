@@ -5,8 +5,8 @@
 #include  "ACB.h"
 #include "TCPFileClient.h"
 #ifdef CMPL_WIN
-#include<Windows.h>
-#include < mmiscapi2.h >
+#include <Windows.h>
+//#include <mmiscapi2.h>
 #pragma comment(lib,"winmm.lib")
 #include <winsock.h>
 #include <stdio.h>
@@ -64,6 +64,7 @@ public:
 	static bool OnSetJointLmt_A(int velRatio, int AccRatio);
 	static bool OnSetJointKD_A(double K[7], double D[7]);
 	static bool OnSetCartKD_A(double K[7], double D[7], int type);
+	static bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
 	static bool OnSetDragSpace_A(int zsType);
 	static bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
 	static bool OnSetJointCmdPos_A(double joint[7]);
@@ -74,7 +75,8 @@ public:
 	static bool OnSetTool_B(double kinePara[6], double dynPara[10]);
 	static bool OnSetJointLmt_B(int velRatio, int AccRatio);
 	static bool OnSetJointKD_B(double K[7], double D[7]);
-	static bool OnSetCartKD_B(double K[7], double D[7],int type);
+	static bool OnSetCartKD_B(double K[6], double D[6],int type);
+	static bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	static bool OnSetDragSpace_B(int zsType);
 	static bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
 	static bool OnSetJointCmdPos_B(double joint[7]);
