@@ -918,16 +918,8 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 #endif
 //	bind(m_InsRobot->_local_sock, (struct sockaddr*)&m_InsRobot->_local, sizeof(_local));
 	// 绑定Socket并检查结果
-	if (bind(m_InsRobot->_local_sock, (struct sockaddr*)&m_InsRobot->_local, sizeof(m_InsRobot->_local)) != 0)
-	{
-		if(m_InsRobot->m_LocalLogTag == true)
-			printf("port bind failure, possibly occupied by another program\n");
-
-		// 关闭socket连接（Windows winsock）
-		closesocket(m_InsRobot->_local_sock);
-		m_InsRobot->_local_sock = 0;
-		return false;
-	}
+if (bind(m_InsRobot->_local_sock, (struct sockaddr*)&m_InsRobot->_local, sizeof(m_InsRobot->_local)) != 0) { if(m_InsRobot->m_LocalLogTag == true) printf("port bind failure, possibly occupied by another program\n"); // 关闭socket连接 
+	close(m_InsRobot->_local_sock); m_InsRobot->_local_sock = 0; return false; }
 
 	memset(&m_InsRobot->_to, 0, sizeof(_to));
 	char ip_str[100];
