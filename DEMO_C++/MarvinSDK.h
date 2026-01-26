@@ -23,8 +23,6 @@
 #define FX_FLOAT 	float
 #define FX_DOUBLE 	double
 
-
-
 typedef enum
 {
 	ARM_STATE_IDLE = 0,             //////// 下伺服
@@ -272,7 +270,11 @@ extern "C" {
 	 bool OnSetCartKD_A(double K[7], double D[7], int type);
 	 bool OnSetCartKD_B(double K[6], double D[6],int type);
 
-
+	//3.2 设置末端力控类型和笛卡尔方向的旋转
+	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
+	//设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	 //4 如果使用力控模式,在扭矩模式力控模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(3) 以下两个指令连用
 	 //4.1 设置指定手臂的力控参数
 	 bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
