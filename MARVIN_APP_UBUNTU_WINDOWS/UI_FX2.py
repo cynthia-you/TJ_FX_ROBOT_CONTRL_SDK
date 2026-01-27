@@ -19,22 +19,20 @@ crr_pth = os.getcwd()
 dcss = DCSS()
 robot = Marvin_Robot()
 
+
 kk1 = Marvin_Kine()
 kk2 = Marvin_Kine()
-ini_result = kk1.load_config(config_path=glob.glob('config/*.MvKDCfg')[0])
-print(f'ini_results:{ini_result}')
-initial_kine_tag = kk1.initial_kine(robot_serial=0,
-                                    robot_type=ini_result['TYPE'][0],
-                                    dh=ini_result['DH'][0],
-                                    pnva=ini_result['PNVA'][0],
-                                    j67=ini_result['BD'][0])
+ini_result1 = kk1.load_config(arm_type=0, config_path=glob.glob('config/*.MvKDCfg')[0])
+initial_kine_tag1 = kk1.initial_kine(robot_type=ini_result1['TYPE'][0],
+                                     dh=ini_result1['DH'][0],
+                                     pnva=ini_result1['PNVA'][0],
+                                     j67=ini_result1['BD'][0])
 
-ini_result = kk2.load_config(config_path=glob.glob('config/*.MvKDCfg')[0])
-initial_kine_tag = kk2.initial_kine(robot_serial=1,
-                                    robot_type=ini_result['TYPE'][0],
-                                    dh=ini_result['DH'][0],
-                                    pnva=ini_result['PNVA'][0],
-                                    j67=ini_result['BD'][0])
+ini_result2 = kk2.load_config(arm_type=1, config_path=glob.glob('config/*.MvKDCfg')[0])
+initial_kine_tag2 = kk2.initial_kine(robot_type=ini_result2['TYPE'][1],
+                                     dh=ini_result2['DH'][1],
+                                     pnva=ini_result2['PNVA'][1],
+                                     j67=ini_result2['BD'][1])
 
 button_w = 10
 
@@ -393,7 +391,6 @@ class App:
             text="位置数据",
             width=15,
             command=self.toggle_display_mode,
-
             state="disabled",
             bg="#2196F3",
             fg="#fffef9",
@@ -896,6 +893,7 @@ class App:
             )
             if file_path:
                 tag1 = robot.update_SDK(file_path)
+                tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")  #
                 if tag1:
                     messagebox.showinfo('success', '系统文件已上传，请重启控制器自动更新。')
                 # # tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")# 代码写的是这个名字
@@ -2363,13 +2361,8 @@ class App:
             self.connected = not self.connected
 
         if self.connected:
-            # 连接设备
-            self.connect_btn.config(text="断开连接", bg="#F44336")
-            self.status_label.config(text="已连接")
-            self.status_light.config(fg="green")
-            self.mode_btn.config(state="normal")
             '''judge '''
-            time.sleep(0.2)
+            time.sleep(0.01)
             motion_tag = 0
             frame_update = None
             for i in range(5):
@@ -2381,6 +2374,11 @@ class App:
                     frame_update = sub_data['outputs'][0]['frame_serial']
                 time.sleep(0.01)
             if motion_tag > 0:
+                # 更新连接设备
+                self.connect_btn.config(text="断开连接", bg="#F44336")
+                self.status_label.config(text="已连接")
+                self.status_light.config(fg="green")
+                self.mode_btn.config(state="normal")
                 '''启动读485数据'''
 
                 # 启动数据订阅
@@ -2414,8 +2412,8 @@ class App:
 
                         tool_mat = kk1.xyzabc_to_mat4x4(self.tool_result[0][10:])
                         tool_mat1 = kk2.xyzabc_to_mat4x4(self.tool_result[1][10:])
-                        kk1.set_tool_kine(robot_serial=0, tool_mat=tool_mat)
-                        kk2.set_tool_kine(robot_serial=1, tool_mat=tool_mat1)
+                        kk1.set_tool_kine(tool_mat=tool_mat)
+                        kk2.set_tool_kine(tool_mat=tool_mat1)
 
             if motion_tag == 0:
                 messagebox.showerror('failed!', "机器人连接不成功，请重连")
@@ -2499,14 +2497,14 @@ class App:
             list_joints_b.append(float(jjj))
 
         if list_joints_a[:] != 0.0:
-            fk_mat_1 = kk1.fk(robot_serial=0, joints=list_joints_a)
+            fk_mat_1 = kk1.fk(joints=list_joints_a)
             # print(f'-----joints a:{list_joints_a}, fk_mat:{type(fk_mat_1)}')
             pose_6d_1 = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_1)  # 用关节正解的姿态转XYZABC
         else:
             pose_6d_1 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
         if list_joints_b[:] != 0:
-            fk_mat_2 = kk2.fk(robot_serial=1, joints=list_joints_b)
+            fk_mat_2 = kk2.fk(joints=list_joints_b)
             time.sleep(0.1)
             # print(f'-----jointsb:{list_joints_b}, fk_mat:{type(fk_mat_2)}')
             pose_6d_2 = kk2.mat4x4_to_xyzabc(pose_mat=fk_mat_2)  # 用关节正解的姿态转XYZABC
@@ -3347,6 +3345,7 @@ class App:
 
     def brake(self, robot_id):
         if self.connected:
+            messagebox.showinfo('提示', '请确实伺服参数是否为166混合控制模式')
             if robot_id == 'A':
                 robot.set_param('int', 'BRAK0', 1)
             elif robot_id == 'B':
@@ -3356,6 +3355,7 @@ class App:
 
     def release_brake(self, robot_id):
         if self.connected:
+            messagebox.showinfo('提示', '请确实伺服参数是否为166混合控制模式')
             if robot_id == 'A':
                 robot.set_param('int', 'BRAK0', 2)
             elif robot_id == 'B':
@@ -3430,9 +3430,9 @@ class App:
 
             tool_mat = kk1.xyzabc_to_mat4x4(xyzabc=kine_p)
             if robot_id == "A":
-                kk1.set_tool_kine(robot_serial=0, tool_mat=tool_mat)
+                kk1.set_tool_kine( tool_mat=tool_mat)
             elif robot_id == "B":
-                kk2.set_tool_kine(robot_serial=1, tool_mat=tool_mat)
+                kk2.set_tool_kine( tool_mat=tool_mat)
 
             '''save in txt and send it to controller'''
             if not self.tool_result:
