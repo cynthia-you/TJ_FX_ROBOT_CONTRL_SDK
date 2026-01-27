@@ -1,7 +1,10 @@
-#include "MarvinSDK.h"
+#include "MarvinSDK.h" 
 #include "stdio.h"
 #include "stdlib.h"
 #include "unistd.h"
+#include <iostream>
+#include <cstdlib>
+#include <cstdio>
 
 // '''#################################################################
 // 该 DEMO 用于【右臂：设置笛卡尔阻抗/力控相关参数 + 切换扭矩模式 + 读回校验】的示例。
