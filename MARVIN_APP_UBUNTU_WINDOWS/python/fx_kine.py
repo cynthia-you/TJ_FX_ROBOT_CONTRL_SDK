@@ -5,7 +5,10 @@ from textwrap import dedent
 import os
 import math
 import logging
-from ctypes import *
+import os
+current_file_path = os.path.abspath(__file__)
+current_path = os.path.dirname(current_file_path)
+
 
 # 配置日志系统
 logging.basicConfig(format='%(message)s')
@@ -13,164 +16,6 @@ logger = logging.getLogger('debug_printer')
 logger.setLevel(logging.INFO)  # 一键关闭所有调试打印
 logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
 
-current_path = os.getcwd()
-
-
-# 定义基本类型
-FX_INT32L = c_long
-FX_DOUBLE = c_double
-FX_BOOL = c_bool
-
-
-# 定义 Vect7 类型 (7个double的数组)
-class Vect7(Structure):
-    _fields_ = [("data", FX_DOUBLE * 7)]
-
-    def __init__(self, values=None):
-        super().__init__()
-        if values is not None:
-            if len(values) != 7:
-                raise ValueError("Vect7 requires exactly 7 values")
-            for i, val in enumerate(values):
-                self.data[i] = val
-
-    def to_list(self):
-        return [self.data[i] for i in range(7)]
-
-    def __str__(self):
-        return str(self.to_list())
-
-
-# 定义 Matrix4 类型 (4x4矩阵，16个double)
-class Matrix4(Structure):
-    _fields_ = [("data", FX_DOUBLE * 16)]
-
-    def __init__(self, values=None):
-        super().__init__()
-        if values is not None:
-            if len(values) != 16:
-                raise ValueError("Matrix4 requires exactly 16 values")
-            for i, val in enumerate(values):
-                self.data[i] = val
-
-    def to_list(self):
-        return [self.data[i] for i in range(16)]
-
-    def __str__(self):
-        return str(self.to_list())
-
-
-# 定义主结构体 FX_InvKineSolvePara
-class FX_InvKineSolvePara(Structure):
-    _fields_ = [
-        ("m_Input_IK_TargetTCP", Matrix4),
-        ("m_Input_IK_RefJoint", Vect7),
-        ("m_Input_IK_ZSPType", FX_INT32L),
-        ("m_Input_IK_ZSPPara", FX_DOUBLE * 6),
-        ("m_Input_ZSP_Angle", FX_DOUBLE),
-        ("m_DGR1", FX_DOUBLE),
-        ("m_DGR2", FX_DOUBLE),
-        ("m_DGR3", FX_DOUBLE),
-        ("m_Output_RetJoint", Vect7),
-        ("m_Output_IsOutRange", FX_BOOL),
-        ("m_Output_IsDeg", FX_BOOL * 7),
-        ("m_Output_JntExdTags", FX_BOOL * 7),
-        ("m_Output_IsJntExd", FX_BOOL),
-        ("m_Output_RunLmtP", Vect7),
-        ("m_Output_RunLmtN", Vect7)
-    ]
-
-    def __init__(self):
-        super().__init__()
-        # 初始化数组
-        for i in range(6):
-            self.m_Input_IK_ZSPPara[i] = 0.0
-
-        # 初始化布尔数组
-        for i in range(7):
-            self.m_Output_IsDeg[i] = False
-            self.m_Output_JntExdTags[i] = False
-
-    def set_input_ik_zsp_para(self, values):
-        if len(values) != 6:
-            raise ValueError("m_Input_IK_ZSPPara requires exactly 6 values")
-        for i, val in enumerate(values):
-            self.m_Input_IK_ZSPPara[i] = val
-
-    def get_input_ik_zsp_para(self):
-        return [self.m_Input_IK_ZSPPara[i] for i in range(6)]
-
-    def set_output_is_deg(self, values):
-        if len(values) != 7:
-            raise ValueError("m_Output_IsDeg requires exactly 7 values")
-        for i, val in enumerate(values):
-            self.m_Output_IsDeg[i] = val
-
-    def get_output_is_deg(self):
-        return [self.m_Output_IsDeg[i] for i in range(7)]
-
-    def set_output_jnt_exd_tags(self, values):
-        if len(values) != 7:
-            raise ValueError("m_Output_JntExdTags requires exactly 7 values")
-        for i, val in enumerate(values):
-            self.m_Output_JntExdTags[i] = val
-
-    def get_output_jnt_exd_tags(self):
-        return [self.m_Output_JntExdTags[i] for i in range(7)]
-
-# 定义 FX_Jacobi 结构体
-class FX_Jacobi(Structure):
-    _fields_ = [
-        ("m_AxisNum", FX_INT32L),
-        ("m_Jcb", (FX_DOUBLE * 7) * 6)  # 6x7 二维数组
-    ]
-
-    def __init__(self):
-        super().__init__()
-        self.m_AxisNum = 0
-        # 初始化二维数组为0
-        for i in range(6):
-            for j in range(7):
-                self.m_Jcb[i][j] = 0.0
-
-    def set_jcb(self, matrix):
-        """
-        设置雅可比矩阵的值
-
-        参数:
-        matrix: 6x7 二维列表或numpy数组
-        """
-        if len(matrix) != 6 or any(len(row) != 7 for row in matrix):
-            raise ValueError("雅可比矩阵必须是6x7的二维数组")
-
-        for i in range(6):
-            for j in range(7):
-                self.m_Jcb[i][j] = matrix[i][j]
-
-    def get_jcb(self):
-        """
-        获取雅可比矩阵的值
-
-        返回:
-        6x7 二维列表
-        """
-        result = []
-        for i in range(6):
-            row = []
-            for j in range(7):
-                row.append(self.m_Jcb[i][j])
-            result.append(row)
-        return result
-
-    def __str__(self):
-        """
-        返回雅可比矩阵的字符串表示
-        """
-        result = f"AxisNum: {self.m_AxisNum}\nJacobian Matrix:\n"
-        for i in range(6):
-            row = [f"{self.m_Jcb[i][j]:.6f}" for j in range(7)]
-            result += "  " + "  ".join(row) + "\n"
-        return result
 
 
 class Marvin_Kine:
@@ -179,15 +24,17 @@ class Marvin_Kine:
         import sys
         logger.info(f'user platform: {sys.platform}')
         if sys.platform == 'win32':
-            self.kine = ctypes.WinDLL(os.path.join(current_path, 'python/libKine.dll'))
+            self.kine = ctypes.WinDLL(os.path.join(current_path, 'libKine.dll'))
+            # self.kine = ctypes.CDLL(os.path.join(current_path, 'libKine.dll'))
         else:
-            self.kine = ctypes.CDLL(os.path.join(current_path, 'python/libKine.so'))
+            self.kine = ctypes.CDLL(os.path.join(current_path, 'libKine.so'))
 
         # 创建结构体实例
         self.sp = FX_InvKineSolvePara()
         self.jacobi = FX_Jacobi()
         self.jacobi_dot = FX_Jacobi()
 
+        self.robot_tag=None
     def help(self, method_name: str = None) -> None:
         """显示帮助信息
         参数:method_name (str): 可选的方法名，显示特定方法的帮助信息
@@ -268,18 +115,24 @@ class Marvin_Kine:
         }
         return mapping.get(kind, "未知参数类型")
 
-    def load_config(self, config_path: str):
+    def load_config(self, arm_type: int, config_path: str):
         ''' 使用前，请一定确认机型，导入正确的配置文件。导入机械臂配置信息
+        :param srm_type: 选择左臂还是右臂, 左臂:0, 右臂:1
         :param config_path: 本地机械臂配置文件a.MvKDCfg, 可相对路径.
         • a.MvKDCfg文件中包含与运动学、动力学计算相关的双臂参数，进行计算之前需要导入机械臂配置相关文件
-        • TYPE=1006，DL机型；TYPE=1007，Pilot-SRS机型（双臂为MARVIN）；TYPE=1017，Pilot-CCS机型双臂为MARVIN）！
+        • TYPE=1007，Pilot-SRS机型（双臂为MARVIN）；TYPE=1017，Pilot-CCS机型双臂为MARVIN）！
         • GRV参数为双臂重力方向，如[0.000,9.810,0.000];DH参数为双臂MDH参数，包含各关节MDH参数及法兰MDH参数；PNVA参数为双臂各关节所允许的正负最大加速度及加加速度；BD参数为Pilot-CCS机型特定参数，为六七关节自干涉允许范围的拟合二阶多项式曲线，其他机型中该参数均为0；Mass参数为双臂各关节质量；MCP参数为双臂各关节质心；I参数为双臂各关节惯量
         • MDH参数单位为度和毫米（mm），速度加速度单位为度/秒，关节质量、关节质心、关节惯量单位均为国际标准单位
         :return:
         '''
 
+        if arm_type != 0 and arm_type != 1:
+            raise ValueError("arm_type must be 0 or 1")
+
         if not os.path.exists(config_path):
             raise ValueError("no config file")
+
+        self.robot_tag=arm_type
 
         # 定义函数原型
         self.kine.LOADMvCfg.argtypes = [
@@ -337,11 +190,9 @@ class Marvin_Kine:
             logger.error("Load config failed")
             return None
 
-    def initial_kine(self, robot_serial: int, robot_type: int, dh: list, pnva: list, j67: list):
+    def initial_kine(self, robot_type: int, dh: list, pnva: list, j67: list):
         '''初始化运动学相关参数
         • 运动学相关计算前，需要按照该顺序调用初始化函数，将配置中导入的参数进行初始化
-        • RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :param type: int.机器人机型代号
         :param dh: list(8,4), 每个轴DH：alpha, a d,theta.
         :param pnva: list(7,4), 每个轴:关节上界p,关节下界n，最大速度v,最大加速度a.
@@ -349,12 +200,9 @@ class Marvin_Kine:
         :return:
             bool
         '''
-        if robot_serial != 0 and robot_serial != 1:
-            raise ValueError("robot_serial must be 0 or 1")
 
         if type(robot_type) != int:
             raise ValueError("robot_type  must be int type")
-
 
         if len(dh) != 8:
             raise ValueError("dh  must be 8 rows")
@@ -377,7 +225,7 @@ class Marvin_Kine:
                 if len(j67[i]) != 3:
                     raise ValueError("j67  must be 3 columns")
 
-        Serial = ctypes.c_long(robot_serial)
+        Serial = ctypes.c_long(self.robot_tag)
         robot_type_ = c_long(robot_type)
 
         DH = ((c_double * 4) * 8)()
@@ -426,15 +274,11 @@ class Marvin_Kine:
             logger.error('Initial kinematics failed:FX_Robot_Init_Lmt')
             return False
 
-    def set_tool_kine(self, robot_serial: int, tool_mat: list):
+    def set_tool_kine(self, tool_mat: list):
         '''工具运动学设置
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param tool_mat: list(4,4) 工具的运动学信息，齐次变换矩阵，相对末端法兰的旋转和平移，请确认法兰坐标系。
+        :param tool_mat: list(4,4) 工具的运动学信息，齐次变换矩阵，相对末端法兰的旋转和平移，请确认法兰坐标系。添加工具运动学信息后，正解IK将正解工具TCP处。
         :return:bool
         '''
-        if robot_serial != 0 and robot_serial != 1:
-            raise ValueError("robot_serial must be 0 or 1")
-
         if len(tool_mat) != 4:
             raise ValueError("tool_mat  must be 4 rows")
         else:
@@ -442,7 +286,7 @@ class Marvin_Kine:
                 if len(tool_mat[i]) != 4:
                     raise ValueError("tool_mat  must be 4 columns")
 
-        Serial = ctypes.c_long(robot_serial)
+        Serial = ctypes.c_long(self.robot_tag)
 
         TOOL = ((c_double * 4) * 4)()
         for i in range(4):
@@ -460,15 +304,11 @@ class Marvin_Kine:
             logger.error('set tool kinematics info failed!')
             return False
 
-    def remove_tool_kine(self, robot_serial: int):
+    def remove_tool_kine(self):
         '''移除工具运动学设置
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :return:bool
         '''
-        if robot_serial != 0 and robot_serial != 1:
-            raise ValueError("robot_serial must be 0 or 1")
-
-        Serial = ctypes.c_long(robot_serial)
+        Serial = ctypes.c_long(self.robot_tag)
         '''remove tool'''
         self.kine.FX_Robot_Tool_Rmv.argtypes = [c_long]
         self.kine.FX_Robot_Tool_Rmv.restype = c_bool
@@ -482,20 +322,17 @@ class Marvin_Kine:
 
 
 
-    def fk(self, robot_serial: int, joints: list):
+    def fk(self,joints: list):
         '''关节角度正解到末端TCP位置和姿态4*4
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param joints: list(7,1). 角度值
+        :param joints: list(7,1). 角度值，单位：度
         :return:
-            4x4的位姿矩阵，list(4,4)
+            末端4x4位姿矩阵，list(4,4)
         '''
-        if robot_serial != 0 and robot_serial != 1:
-            raise ValueError("robot_serial must be 0 or 1")
 
         if len(joints) != 7:
             raise ValueError("shape error: fk input joints must be (7,)")
 
-        Serial = ctypes.c_long(robot_serial)
+        Serial = ctypes.c_long(self.robot_tag)
 
         j0, j1, j2, j3, j4, j5, j6 = joints
         joints_double = (ctypes.c_double * 7)(j0, j1, j2, j3, j4, j5, j6)
@@ -520,117 +357,166 @@ class Marvin_Kine:
         else:
             return False
 
-    def ik(self, robot_serial: int, pose_mat: list, ref_joints: list):
-        '''末端位置和姿态逆解到关节值
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param pose_mat: list(4,4), 位置姿态4x4list.
-        :param ref_joints: list(7,1),参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。
+
+    def fk_nsp(self,joints: list):
+        '''关节角度正解到末端TCP位置和姿态4*4，并得到基于该角度下的零空间参数XYZ方矩阵
+        :param joints: list(7,1). 角度值，单位：度
         :return:
-            结构体，以下几项最相关：
-                m_Output_RetJoint      ：逆运动学解出的关节角度（单位：度）
-                m_Output_IsOutRange    ：当前位姿是否超出位置可达空间（False：未超出；True：超出）
-                m_Output_IsDeg[7]      ：各关节是否发生奇异（False：未奇异；True：奇异）:
-                m_Output_IsJntExd      : 是否有关节超出位置正负限制（False：未超出；True：超出）:
-                m_Output_JntExdTags[7] ：各关节是否超出位置正负限制（False：未超出；True：超出）:
+            末端4x4位姿矩阵，list(4,4)
+            零空间参数矩阵 array(3,3), 其中第一列可以作为逆解结构体里面m_Input_IK_ZSPPara的x y z的输入值。
         '''
-        if robot_serial != 0 and robot_serial != 1:
-            raise ValueError("robot_serial must be 0 or 1")
 
-        if len(pose_mat) != 4:
-            raise ValueError("pose_mat  must be 4 rows")
-        else:
-            for i in range(len(pose_mat)):
-                if len(pose_mat[i]) != 4:
-                    raise ValueError("pose_mat  must be 4 columns")
+        if len(joints) != 7:
+            raise ValueError("shape error: fk input joints must be (7,)")
 
-        if len(ref_joints) != 7:
-            raise ValueError("ref_joints must be (7,)")
+        Serial = ctypes.c_long(self.robot_tag)
 
-        Serial = ctypes.c_long(robot_serial)
-        # 将 4x4 矩阵数据复制到 sp.m_Input_IK_TargetTCP
-        matrix_data = []
+        j0, j1, j2, j3, j4, j5, j6 = joints
+        joints_double = (ctypes.c_double * 7)(j0, j1, j2, j3, j4, j5, j6)
+        Matrix4x4 = ((ctypes.c_double * 4) * 4)
+        pg = Matrix4x4()
         for i in range(4):
             for j in range(4):
-                matrix_data.append(pose_mat[i][j])
+                pg[i][j] = 1.0 if i == j else 0.0
 
-        self.sp.m_Input_IK_TargetTCP = Matrix4(matrix_data)
+        Matrix3x3 = ((ctypes.c_double * 3) * 3)
+        nspg = Matrix3x3()
 
-        # 将关节角度值复制到 sp.m_Input_IK_RefJoint
-        j0_, j1_, j2_, j3_, j4_, j5_, j6_ = ref_joints
-        jv = (c_double * 7)(j0_, j1_, j2_, j3_, j4_, j5_, j6_)
-        self.sp.m_Input_IK_RefJoint = Vect7(jv)
+        self.kine.FX_Robot_Kine_FK_NSP.argtypes = [c_long,
+                                               ctypes.POINTER(ctypes.c_double * 7),
+                                               ctypes.POINTER((ctypes.c_double * 4) * 4),
+                                               ctypes.POINTER((ctypes.c_double * 3) * 3)]
+        self.kine.FX_Robot_Kine_FK_NSP.restype = c_bool
+        success1 = self.kine.FX_Robot_Kine_FK_NSP(Serial, ctypes.byref(joints_double), ctypes.byref(pg), ctypes.byref(nspg))
+        if success1:
+            fk_mat = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+            for i in range(4):
+                for j in range(4):
+                    fk_mat[i][j] = pg[i][j]
 
+            nsp_mat=[[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+            for i in range(3):
+                for j in range(3):
+                    nsp_mat[i][j] = nspg[i][j]
+            logger.info(f'fk_nsp result, matrix:{fk_mat}')
+            logger.info(f'nsp matrix:{nsp_mat}')
+            return fk_mat,nsp_mat
+        else:
+            return False
+
+    def ik(self, structure_data):
+        '''末端位置和姿态逆解到关节值
+        :param 结构体数据
+            输入参数：
+                m_Input_IK_TargetTCP：末端位置姿态4x4列表，可通过正解接口获取或者指定末端的位置和旋转
+                m_Input_IK_RefJoint：参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。该构型的肩、肘、腕组成初始臂角平面，以肩到腕方向为Z向量，参考角第四关节不能为零
+                m_Input_IK_ZSPType：零空间约束类型（0：使求解结果与参考关节角的欧式距离最小适用于一般冗余优化；1：与参考臂角平面最近，需要额外提供平面参数zsp_para）
+                m_Input_IK_ZSPPara：若选择零空间约束类型zsp_type为1，则需额外输入参考角平面参数，目前仅支持平移方向的参数约束，即[x,y,z,a,b,c]=[0,0,0,0,0,0],可选择x,y,z其中一个方向调整
+                m_Input_ZSP_Angle：末端位姿不变的情况下，零空间臂角相对于参考平面的旋转角度（单位：度）,可正向调节也可逆向调节. 在ref_joints为初始臂角平面情况下，使用右手法则，绕Z向量正向旋转为臂角增加方向，绕Z向量负向旋转为臂角减少方向
+                m_DGR1：(仅在IK_NSP接口中设置起效)判断第二关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
+                m_DGR2：(仅在IK_NSP接口中设置起效)判断第六关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
+                m_DGR3：预留接口
+
+            结构体的输出参数：
+                m_Output_RetJoint      :逆运动学解出的关节角度（单位：度）
+                m_OutPut_AllJoint      :逆运动学的全部解（每一行代表一组解,分别存放1-7关节的角度值）（单位：度）
+                m_Output_IsOutRange    :当前位姿是否超出位置可达空间（False：未超出；True：超出）
+                m_OutPut_Result_Num    :逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
+                m_Output_IsDeg[7]      :各关节是否发生奇异（False：未奇异；True：奇异）
+                m_Output_IsJntExd      :是否有关节超出位置正负限制（False：未超出；True：超出）
+                m_Output_JntExdTags[7] :各关节是否超出位置正负限制（False：未超出；True：超出）
+                m_Output_RunLmtP       :各个关节运行的正限位, 可作为计算六七关节的干涉参考最大限制
+                m_Output_RunLmtN       :各个关节运行的负限位，可作为计算六七关节的干涉参考最大限制
+
+         输出：
+            成功：True/1; 失败：False/0
+            失败情况:
+                    1. 输入矩阵超出机器人可达关节空间
+                    2. 第四关节为0, 奇异
+
+        • 特别提示:
+                结构体以下输出项的TAG仅绑定对m_Output_RetJoint输出的关节描述
+                    • m_Output_IsOutRange     :用于判断当前位姿是否超出位置可达空间（0：未超出；1：超出）
+                    • m_Output_IsDeg[7]       :用于判断各关节是否发生奇异（0：未奇异；1：奇异）
+                    • m_Output_JntExdABS      :各关节超限绝对值总和(FX_Robot_PLN_MOVL_KeepJ使用)
+                    • m_Output_IsJntExd       :用于判断是否有关节超出位置正负限制（0：未超出；1：超出）
+                    • m_Output_JntExdTags[7]  :用于判断各关节是否超出位置正负限制（0：未超出；1：超出）
+
+                如果选用用多组解m_OutPut_AllJoint. 请自行对选的解做判断,符合以下三个条件才能控制机械臂正常驱动:
+                    1. 第二关节的角度不在正负0.05度范围内(在此范围将奇异)
+                    2. 对输出的各个关节做软限位判定:
+                        调用接口ini_result=kk.load_config(config_path=os.path.join(current_path,'ccs_m6_31.MvKDCfg'))后,
+                        ini_result['PNVA'][:]矩阵里的请两列对应各个关节的正负限位
+                        选取的解的每个关节都满足在限位置内
+                    3. 如果条件1和2都满足,还要做六七关节干涉判定:
+                        判定方法:
+                            调用接口ini_result=kk.load_config(config_path=os.path.join(current_path,'ccs_m6_31.MvKDCfg'))后,
+                            ini_result['BD'][:]矩阵里依次为++, -+,  --, +- 四个象限的干涉参数
+                            以CCS为例:
+                                如果选的解的六七关节都为正, 则选用在++象限里的参数:[0.018004, -2.3205, 108.0],三个参数分别视为a0,a1,a2,
+                                第6关节的值为j6,此时使用公式j7=(a0^2)*j6+ a1*j6+a2  将得到第7个关节的最大限制位置
+                                如果选取的解里面的第7关节小于j7, 则不发生干涉, 本组解可被驱动到达.
+        '''
+        Serial = ctypes.c_long(self.robot_tag)
+        self.sp=structure_data
         # 调用逆运动学函数
         self.kine.FX_Robot_Kine_IK.argtypes = [c_long, POINTER(FX_InvKineSolvePara)]
         self.kine.FX_Robot_Kine_IK.restype = c_bool
         success = self.kine.FX_Robot_Kine_IK(Serial, byref(self.sp))
         if not success:
             logger.error("Robot Inverse Kinematics Error")
+            if self.sp.m_Output_IsOutRange==1:
+                logger.info(f'IK m_Output_IsOutRange:{self.sp.m_Output_IsOutRange}')
+                logger.info("Robot Inverse Kinematics excess!")
+
+            if self.sp.m_Output_IsDeg[3]==1:
+                logger.info(f'IK Joint4 m_Output_IsDeg:{self.sp.m_Output_IsDeg[3]}')
+                logger.info("Robot Inverse Kinematics Degen!")
             return False
         else:
-            logger.error("Robot Inverse Kinematics excess!")
-            logger.info(f"ik joints:{self.sp.m_Output_RetJoint.to_list()}")
+            logger.info("Robot Inverse Kinematics success")
+            logger.info(f'ik result numbers :{self.sp.m_OutPut_Result_Num}')
+            logger.info(f"ik joints(close to reference joints):{self.sp.m_Output_RetJoint.to_list()}")
+            all_joint_list = self.sp.m_OutPut_AllJoint.to_list()
+            all_joint_8x8 = convert_to_8x8_matrix(all_joint_list)
+            logger.info(f'all ik joints:{all_joint_8x8 }')
+
             return self.sp
 
-    def ik_nsp(self, robot_serial: int, pose_mat: list, ref_joints: list, zsp_type: int, zsp_para: list,
-               zsp_angle: float, dgr: list):
-        '''逆解优化：可调整方向,不能单独使用，ik得到的逆运动学解的臂角不满足当前选解需求时使用。
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param pose_mat: list(4,4), 位置姿态4x4list.
-        :param ref_joints: list(7,1),参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。
-        :param zsp_type: int, 零空间约束类型（0：与参考角欧式距离最小；1：与参考臂角平面最近）
-        :param zsp_para: list(6,), 若选择零空间约束类型为1，则需额外输入参考角平面参数,[x,y,z,a,b,c]=[0,0,0,0,0,0],可选择x,y,z其中一个方向调整
-        :param zsp_angle: float, 末端位姿不变的情况下，零空间臂角相对于参考平面的旋转角度（单位：度）
-        :param dgr: list(2,), 选择123关节和567关节发生奇异允许的角度范围，如无额外要求无需输入，默认值为0.05（单位：度）
-        :return:
-            结构体，以下几项最相关：
-                m_Output_RetJoint      ：逆运动学解出的关节角度（单位：度）
-                m_Output_IsOutRange    ：当前位姿是否超出位置可达空间（False：未超出；True：超出）
-                m_Output_IsDeg[7]      ：各关节是否发生奇异（False：未奇异；True：奇异）:
-                m_Output_IsJntExd      : 是否有关节超出位置正负限制（False：未超出；True：超出）:
-                m_Output_JntExdTags[7] ：各关节是否超出位置正负限制（False：未超出；True：超出）:
-        '''
-
-        if robot_serial != 0 and robot_serial != 1:
-            raise ValueError("robot_serial must be 0 or 1")
-
-        if len(pose_mat) != 4:
-            raise ValueError("pose_mat  must be 4 rows")
-        else:
-            for i in range(len(pose_mat)):
-                if len(pose_mat[i]) != 4:
-                    raise ValueError("pose_mat  must be 4 columns")
-
-        if len(ref_joints) != 7:
-            raise ValueError("ref_joints must be (7,)")
-
-        Serial = ctypes.c_long(robot_serial)
-
-        # 将 4x4 矩阵数据复制到 sp.m_Input_IK_TargetTCP
-        matrix_data = []
+    def mat4x4_to_mat1x16(self,pose_mat):
+        matrix_data=[]
         for i in range(4):
             for j in range(4):
                 matrix_data.append(pose_mat[i][j])
+        return matrix_data
 
-        self.sp.m_Input_IK_TargetTCP = Matrix4(matrix_data)
+    def ik_nsp(self, sturcture_data):
+        '''逆解优化：可调整方向,不能单独使用，ik得到的逆运动学解的臂角不满足当前选解需求时使用。
+            输入参数：
+                m_Input_IK_TargetTCP：末端位置姿态4x4列表，可通过正解接口获取或者指定末端的位置和旋转
+                m_Input_IK_RefJoint：参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。该构型的肩、肘、腕组成初始臂角平面，以肩到腕方向为Z向量，参考角第四关节不能为零
+                m_Input_IK_ZSPType：零空间约束类型（0：使求解结果与参考关节角的欧式距离最小适用于一般冗余优化；1：与参考臂角平面最近，需要额外提供平面参数zsp_para）
+                m_Input_IK_ZSPPara：若选择零空间约束类型zsp_type为1，则需额外输入参考角平面参数，目前仅支持平移方向的参数约束，即[x,y,z,a,b,c]=[0,0,0,0,0,0],可选择x,y,z其中一个方向调整
+                m_Input_ZSP_Angle：末端位姿不变的情况下，零空间臂角相对于参考平面的旋转角度（单位：度）,可正向调节也可逆向调节. 在ref_joints为初始臂角平面情况下，使用右手法则，绕Z向量正向旋转为臂角增加方向，绕Z向量负向旋转为臂角减少方向
+                m_DGR1：(仅在IK_NSP接口中设置起效)判断第二关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
+                m_DGR2：(仅在IK_NSP接口中设置起效)判断第六关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
+                m_DGR3：预留接口
 
-        # 将关节角度值复制到 sp.m_Input_IK_RefJoint
-        j0_, j1_, j2_, j3_, j4_, j5_, j6_ = ref_joints
-        jv = (c_double * 7)(j0_, j1_, j2_, j3_, j4_, j5_, j6_)
-        self.sp.m_Input_IK_RefJoint = Vect7(jv)
-
-        self.sp.m_Input_IK_ZSPType = zsp_type
-        if zsp_type == 1:
-            p0, p1, p2, p3, p4, p5 = zsp_para
-            zsp_para_value = (c_double * 6)(p0, p1, p2, p3, p4, p5)
-            self.sp.m_Input_IK_ZSPPara = zsp_para_value
-        self.sp.m_Input_ZSP_Angle -= zsp_angle
-
-        dgr1, dgr2 = dgr
-        # dgr_value=(c_double*2)(dgr1,dgr2)
-        self.sp.m_DGR1 = dgr1
-        self.sp.m_DGR2 = dgr2
-
+            结构体的输出参数：
+                m_Output_RetJoint      :逆运动学解出的关节角度（单位：度）
+                m_OutPut_AllJoint      :逆运动学的全部解（每一行代表一组解,分别存放1-7关节的角度值）（单位：度）
+                m_Output_IsOutRange    :当前位姿是否超出位置可达空间（False：未超出；True：超出）
+                m_OutPut_Result_Num    :逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
+                m_Output_IsDeg[7]      :各关节是否发生奇异（False：未奇异；True：奇异）
+                m_Output_IsJntExd      :是否有关节超出位置正负限制（False：未超出；True：超出）
+                m_Output_JntExdTags[7] :各关节是否超出位置正负限制（False：未超出；True：超出）
+                m_Output_RunLmtP       :各个关节运行的正限位, 可作为计算六七关节的干涉参考最大限制
+                m_Output_RunLmtN       :各个关节运行的负限位，可作为计算六七关节的干涉参考最大限制
+        输出：
+            成功：True/1; 失败：False/0
+        '''
+        Serial = ctypes.c_long(self.robot_tag)
+        self.sp=sturcture_data
         self.kine.FX_Robot_Kine_IK_NSP.argtypes = [c_long, POINTER(FX_InvKineSolvePara)]
         self.kine.FX_Robot_Kine_IK_NSP.restype = c_bool
         success = self.kine.FX_Robot_Kine_IK_NSP(Serial, byref(self.sp))
@@ -642,19 +528,15 @@ class Marvin_Kine:
             logger.info(f"ik joints:{self.sp.m_Output_RetJoint.to_list()}")
             return self.sp
 
-    def joints2JacobMatrix(self, robot_serial: int, joints: list):
+    def joints2JacobMatrix(self, joints: list):
         '''当前关节角度转成雅可比矩阵
-        :param robot_serial:  int, RobotSerial=0，左臂；RobotSerial=1，右臂
         :param joints: list(7,1), 当前关节
         :return: 雅可比矩阵6*7矩阵
         '''
-        if robot_serial != 0 and robot_serial != 1:
-            raise ValueError("robot_serial must be 0 or 1")
-
         if len(joints) != 7:
             raise ValueError("joints must be (7,)")
 
-        Serial = ctypes.c_long(robot_serial)
+        Serial = ctypes.c_long(self.robot_tag)
 
         joints_double = ctypes.c_double * 7
         j0, j1, j2, j3, j4, j5, j6 = joints
@@ -710,11 +592,10 @@ class Marvin_Kine:
         success = self.kine.FX_Matrix42XYZABCDEG(matrix_data,xyzabc)
 
         if not success:
-            logger.error("Pose mat to xyzabc Error")
+            # logger.error("Pose mat to xyzabc Error")
             return False
         else:
             # logger.info("Pose mat to xyzabc Success")
-
             pose_6d=[xyzabc[i] for i in range(6)]
             # logger.info(f"xyzabc:{pose_6d}")
             return pose_6d
@@ -747,29 +628,30 @@ class Marvin_Kine:
             for j in range(4):
                 fk_mat[i][j] = pg[i][j]
         if not fk_mat:
-            logger.error("xyzabc to mat4x4 Error")
+            # logger.error("xyzabc to mat4x4 Error")
             return False
         else:
-            logger.info("xyzabc to mat4x4 Success")
+            # logger.info("xyzabc to mat4x4 Success")
             return fk_mat
 
 
-    def movL(self,robot_serial: int,start_xyzabc:list, end_xyzabc:list,ref_joints:list,vel:float,acc:float,save_path):
-        '''直线规划（MOVL）
-
-        :param robot_serial: int, RobotSerial=0，左臂；RobotSerial=1，右臂
-        :param start_xyzabc:
-        :param end_xyzabc:
-        :param ref_joints:
-        :param vel:
-        :param acc:
-        :param save_path:
+    def movL(self,start_xyzabc:list, end_xyzabc:list,ref_joints:list,vel:float,acc:float,save_path):
+        '''直线规划，规划文件的频率500Hz，即每2ms执行一行
+        :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
+        :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
+        :param ref_joints:参考关节构型，也是规划文件的起始点位。
+        :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        :param save_path:保存的规划文件的路径
         :return: bool
+        特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
+                2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                3 输出规划文件的频率为500Hz
+                4 特别提示:直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
+                5 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
         '''
-        if robot_serial != 0 and robot_serial != 1:
-            raise ValueError("robot_serial must be 0 or 1")
 
-        Serial = ctypes.c_long(robot_serial)
+        Serial = ctypes.c_long(self.robot_tag)
 
         path = save_path.encode('utf-8')
         path_char = ctypes.c_char_p(path)
@@ -791,27 +673,68 @@ class Marvin_Kine:
         self.kine.FX_Robot_PLN_MOVL.restype=c_bool
         success1=self.kine.FX_Robot_PLN_MOVL(Serial,start,end,joints_vel_value,vel_value,acc_value,path_char)
         if success1:
-            logger.info(f'Plan MOVL successful, PATH saved as :{save_path}')
-            return  True
-
+            if os.path.exists(save_path):
+                logger.info(f'Plan MOVL successful, PATH saved as :{save_path}')
+                return True
         else:
             logger.error(f'Plan MOVL failed!')
             return False
+
+
+
+    def movL_KeepJ(self,start_joints:list, end_joints:list,vel:float,save_path):
+        '''直线规划保持关节构型, 规划文件的点位频率50Hz，即每20ms执行一行
+
+        :param start_joints:起始点各个关节位置（单位：角度）
+        :param end_joints:终点各个关节位置（单位：角度）
+        :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        :param save_path:规划文件的保存路径
+        :return: bool
+        特别提示:1 直线规划前,需要将起始关节位置调正解接口,将数据更新到起始关节.
+                2 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+                3 输出点位频率为500Hz
+                4 该接口是不同于MOVL的规划接口，movL_KeepJ根据起始关节和结束关节规划一条直线路径。
+        '''
+
+        Serial = ctypes.c_long(self.robot_tag)
+
+        path = save_path.encode('utf-8')
+        path_char = ctypes.c_char_p(path)
+
+        s0,s1,s2,s3,s4,s5,s6=start_joints
+        start= (ctypes.c_double * 7)( s0,s1,s2,s3,s4,s5,s6)
+
+        e0,e1,e2,e3,e4,e5,e6=end_joints
+        end= (ctypes.c_double * 7)(e0,e1,e2,e3,e4,e5,e6)
+
+        vel_value=c_double(vel)
+
+        self.kine.FX_Robot_PLN_MOVL_KeepJ.argtypes=[c_long,c_double*7,c_double*7,c_double,c_char_p]
+        self.kine.FX_Robot_PLN_MOVL_KeepJ.restype=c_bool
+        success1=self.kine.FX_Robot_PLN_MOVL_KeepJ(Serial,start,end,vel_value,path_char)
+        if success1:
+            if os.path.exists(save_path):
+                logger.info(f'Plan MOVL KeepJ successful, PATH saved as :{save_path}')
+                return True
+        else:
+            logger.error(f'Plan MOVL KeepJ failed!')
+            return False
+
+
 
     def identify_tool_dyn(self, robot_type: int, ipath: str):
         '''工具动力学参数辨识
         :param robot_type: int . 1:CCS机型，2:SRS机型
         :param ipath: sting, 相对路径导入工具辨识轨迹数据。
         :return:
-            m,mcp,i
-        错误返回参考:
-        //typedef enum {
-        //	LOAD_IDEN_NoErr = 0, // No error
-        //	LOAD_IDEN_CalErr = 1, // Calculation error, 计算错误，需重新采集数据计算
-        //	LOAD_IDEN_OpenSmpDateFieErr = 2, //  Open sample file error 打开采集数据文件错误，须检查采样文件
-        //	LOAD_IDEN_OpenCfgFileErr = 3, // Open config file error 配置文件被修改
-        //	LOAD_IDEN_DataSmpErr = 4 // Data sample error 采集时间不够，缺少有效数据
-        //}LoadIdenErrCode;
+            辨识成功，返回一个长度为10的list:
+                        m,mcp*3,i*6
+            辨识失败，返回错误类型：
+                    ret=1, 计算错误，需重新采集数据计算； 
+                    ret=2,打开采集数据文件错误，须检查采样文件； 
+                    ret=3,配置文件被修改； 
+                    ret=4, 采集时间不够，缺少有效数据
+
         '''
         if type(robot_type) != int:
             raise ValueError("robot_type must be int type")
@@ -819,9 +742,9 @@ class Marvin_Kine:
         if not os.path.exists(ipath):
             raise ValueError(f"no {ipath}, pls check!")
 
-        if robot_type == 1:
+        if robot_type==1:
             print(f'CCS tool identy')
-        elif robot_type == 2:
+        elif robot_type==2:
             print(f'SRS tool identy')
 
         robot_type_ = c_int(robot_type)
@@ -838,10 +761,10 @@ class Marvin_Kine:
             c_int,
             c_char_p,
             POINTER(c_double),
-            POINTER(c_double * 3),
-            POINTER(c_double * 6)
+            POINTER(c_double*3),
+            POINTER(c_double*6)
         ]
-        self.kine.FX_Robot_Iden_LoadDyn.restype = c_int32
+        self.kine.FX_Robot_Iden_LoadDyn.restype = c_int
 
         # 调用函数
         ret_int = self.kine.FX_Robot_Iden_LoadDyn(
@@ -851,11 +774,11 @@ class Marvin_Kine:
             mcp_ptr,
             ii_ptr
         )
-        if ret_int == 0:
+        if ret_int==0:
             logger.info('Identify tool dynamics successful')
 
             # 提取结果
-            dyn_para = []
+            dyn_para=[]
             m_val = mm_ptr.contents.value
             mcp_list = [mcp_ptr[i] for i in range(3)]
             ii_list = [ii_ptr[i] for i in range(6)]
@@ -872,25 +795,384 @@ class Marvin_Kine:
             dyn_para.append(ii_list[5])
             dyn_para.append(ii_list[2])
 
+
             logger.info(f'tool dynamics[m,mx,my,mz,ixx,ixy,ixz,iyy,iyz,izz]: {dyn_para}')
-            return True,dyn_para
+            return dyn_para
         else:
             logger.error('Identify tool dynamics failed!')
-            logger.error(
-                f'identify_tool_dyn 返回错误码:{ret_int}\n ret=1, 计算错误，需重新采集数据计算\n ret=2,打开采集数据文件错误，须检查采样文件\n ret=3,配置文件被修改\n ret=4, 采集时间不够，缺少有效数据')
-            if ret_int == 1:
-                return False,'ret=1, 计算错误，需重新采集数据计算'
-            elif ret_int == 2:
-                return False,'ret=2,打开采集数据文件错误，须检查采样文件'
-            elif ret_int == 3:
-                return False,"ret=3,配置文件被修改"
-            elif ret_int == 4:
-                return False,'ret=4, 采集时间不够，缺少有效数据'
+            logger.error(f'identify_tool_dyn 返回错误码:{ret_int}\n ret=1, 计算错误，需重新采集数据计算\n ret=2,打开采集数据文件错误，须检查采样文件\n ret=3,配置文件被修改\n ret=4, 采集时间不够，缺少有效数据')
+            if ret_int==1:
+                return 'ret=1, 计算错误，需重新采集数据计算'
+            elif ret_int==2:
+                return 'ret=2,打开采集数据文件错误，须检查采样文件'
+            elif ret_int==3:
+                return "ret=3,配置文件被修改"
+            elif ret_int==4:
+                return 'ret=4, 采集时间不够，缺少有效数据'
+
+def convert_to_8x8_matrix(flat_list):
+    if len(flat_list) != 64:
+        raise ValueError("列表必须有64个元素")
+    matrix_8x8 = []
+    for i in range(8):  # 8行
+        row_start = i * 8
+        row_end = row_start + 8
+        matrix_8x8.append(flat_list[row_start:row_end])
+    return matrix_8x8
 
 
+def convert_to_8x8_matrix(flat_list):
+    """将一维列表转换为8x8二维列表，并过滤掉全为零的行"""
+    if len(flat_list) != 64:
+        raise ValueError("列表必须有64个元素")
+
+    matrix_8x8 = []
+    for i in range(8):  # 8行
+        row_start = i * 8
+        row_end = row_start + 8
+        row = flat_list[row_start:row_end]
+        if not all(abs(val) < 1e-10 for val in row):
+            matrix_8x8.append(row)
+
+    return matrix_8x8
+
+
+# 定义基本类型
+FX_INT32L = c_long
+FX_DOUBLE = c_double
+FX_BOOL = c_bool
+
+
+# 定义 Vect7 类型 (7个double的数组)
+class Vect7(Structure):
+    _fields_ = [("data", FX_DOUBLE * 7)]
+
+    def __init__(self, values=None):
+        super().__init__()
+        if values is not None:
+            if len(values) != 7:
+                raise ValueError("Vect7 requires exactly 7 values")
+            for i, val in enumerate(values):
+                self.data[i] = val
+
+    def to_list(self):
+        return [self.data[i] for i in range(7)]
+
+    def __str__(self):
+        return str(self.to_list())
+
+
+# 定义 Matrix4 类型 (4x4矩阵，16个double)
+class Matrix4(Structure):
+    _fields_ = [("data", FX_DOUBLE * 16)]
+
+    def __init__(self, values=None):
+        super().__init__()
+        if values is not None:
+            if len(values) != 16:
+                raise ValueError("Matrix4 requires exactly 16 values")
+            for i, val in enumerate(values):
+                self.data[i] = val
+
+    def to_list(self):
+        return [self.data[i] for i in range(16)]
+
+    def __str__(self):
+        return str(self.to_list())
+
+
+# 定义 Matrix8 类型 (8x8矩阵，64个double)
+class Matrix8(Structure):
+    _fields_ = [("data", FX_DOUBLE * 64)]
+
+    def __init__(self, values=None):
+        super().__init__()
+        if values is not None:
+            if len(values) != 64:
+                raise ValueError("Matrix8 requires exactly 64 values")
+            for i, val in enumerate(values):
+                self.data[i] = val
+
+    def to_list(self):
+        return [self.data[i] for i in range(64)]
+
+    def __str__(self):
+        return str(self.to_list())
+
+
+
+# 定义主结构体 FX_InvKineSolvePara
+class FX_InvKineSolvePara(ctypes.Structure):
+    _fields_ = [
+        # 输入部分
+        ("m_Input_IK_TargetTCP", Matrix4), #末端位置姿态4x4列表，可通过正解接口获取或者指定末端的位置和旋转
+        ("m_Input_IK_RefJoint", Vect7), #参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。该构型的肩、肘、腕组成初始臂角平面，以肩到腕方向为Z向量，参考角第四关节不能为零
+        ("m_Input_IK_ZSPType", FX_INT32L), #零空间约束类型（0：使求解结果与参考关节角的欧式距离最小适用于一般冗余优化；1：与参考臂角平面最近，需要额外提供平面参数zsp_para）
+        ("m_Input_IK_ZSPPara", FX_DOUBLE * 6), #若选择零空间约束类型zsp_type为1，则需额外输入参考角平面参数，目前仅支持平移方向的参数约束，即[x,y,z,a,b,c]=[0,0,0,0,0,0],可选择x,y,z其中一个方向调整
+        ("m_Input_ZSP_Angle", FX_DOUBLE), #末端位姿不变的情况下，零空间臂角相对于参考平面的旋转角度（单位：度）,可正向调节也可逆向调节. 在ref_joints为初始臂角平面情况下，使用右手法则，绕Z向量正向旋转为臂角增加方向，绕Z向量负向旋转为臂角减少方向
+        ("m_DGR1", FX_DOUBLE), #(仅在IK_NSP接口中设置起效)判断第二关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
+        ("m_DGR2", FX_DOUBLE), #(仅在IK_NSP接口中设置起效)判断第六关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
+        ("m_DGR3", FX_DOUBLE), #预留接口
+        # 输出部分
+        ("m_Output_RetJoint", Vect7), #逆运动学解出的关节角度（单位：度）
+        ("m_OutPut_AllJoint", Matrix8), #逆运动学的全部解（每一行代表一组解, 分别存放1 - 7关节的角度值）（单位：度）
+        ("m_OutPut_Result_Num", FX_INT32L), #逆运动学全部解的组数（七自由度CCS构型最多四组解，SRS最多八组解）
+        ("m_Output_IsOutRange", FX_BOOL), #当前位姿是否超出位置可达空间（False：未超出；True：超出）
+        ("m_Output_IsDeg", FX_BOOL * 7), #各关节是否发生奇异（False：未奇异；True：奇异）
+        ("m_Output_JntExdTags", FX_BOOL * 7), #各关节是否超出位置正负限制（False：未超出；True：超出）
+        ("m_Output_JntExdABS", FX_DOUBLE), #所有关节中超出限位的最大角度的绝对值，比如解出一组关节角度，7关节超限，的值为-95，已知软限位为-90度，m_Output_JntExdABS=5.
+        ("m_Output_IsJntExd", FX_BOOL), #是否有关节超出位置正负限制（False：未超出；True：超出）
+        ("m_Output_RunLmtP", Vect7), #各个关节运行的正限位, 可作为计算六七关节的干涉参考最大限制。
+        ("m_Output_RunLmtN", Vect7) #各个关节运行的负限位，可作为计算六七关节的干涉参考最大限制。                                                                                mm
+    ]
+
+    def __init__(self):
+        super().__init__()
+        # 初始化数组
+        for i in range(6):
+            self.m_Input_IK_ZSPPara[i] = 0.0
+
+        # 初始化布尔数组
+        for i in range(7):
+            self.m_Output_IsDeg[i] = False
+            self.m_Output_JntExdTags[i] = False
+
+        # 初始化其他字段
+        self.m_OutPut_Result_Num = 0
+        self.m_Output_JntExdABS = 0.0
+        self.m_Output_IsJntExd = False
+        self.m_Output_IsOutRange = False
+
+    # ==================== 输入部分设置方法 ====================
+    def set_input_ik_target_tcp(self, matrix):
+        """设置目标TCP位姿矩阵(4x4)"""
+        if len(matrix) != 16:
+            raise ValueError("m_Input_IK_TargetTCP requires exactly 16 values for 4x4 matrix")
+        for i, val in enumerate(matrix):
+            self.m_Input_IK_TargetTCP.data[i] = val
+
+    def set_input_ik_ref_joint(self, values):
+        """设置参考关节角度(7个值)"""
+        if len(values) != 7:
+            raise ValueError("m_Input_IK_RefJoint requires exactly 7 values")
+        for i, val in enumerate(values):
+            self.m_Input_IK_RefJoint.data[i] = val
+
+    def set_input_ik_zsp_type(self, value):
+        """设置ZSP类型"""
+        self.m_Input_IK_ZSPType = value
+
+    def set_input_ik_zsp_para(self, values):
+        """设置ZSP参数(6个值)"""
+        if len(values) != 6:
+            raise ValueError("m_Input_IK_ZSPPara requires exactly 6 values")
+        for i, val in enumerate(values):
+            self.m_Input_IK_ZSPPara[i] = val
+
+    def set_input_zsp_angle(self, value):
+        """设置ZSP角度"""
+        self.m_Input_ZSP_Angle = value
+
+    def set_dgr1(self, value):
+        """设置DGR1"""
+        self.m_DGR1 = value
+
+    def set_dgr2(self, value):
+        """设置DGR2"""
+        self.m_DGR2 = value
+
+    def set_dgr3(self, value):
+        """设置DGR3"""
+        self.m_DGR3 = value
+
+    def set_all_inputs(self, **kwargs):
+        """批量设置所有输入参数"""
+        setters = {
+            'target_tcp': self.set_input_ik_target_tcp,
+            'ref_joint': self.set_input_ik_ref_joint,
+            'zsp_type': self.set_input_ik_zsp_type,
+            'zsp_para': self.set_input_ik_zsp_para,
+            'zsp_angle': self.set_input_zsp_angle,
+            'dgr1': self.set_dgr1,
+            'dgr2': self.set_dgr2,
+            'dgr3': self.set_dgr3
+        }
+
+        for key, value in kwargs.items():
+            if key in setters:
+                setters[key](value)
+            else:
+                raise ValueError(f"Unknown input parameter: {key}")
+
+    # ==================== 输出部分获取方法 ====================
+
+    def get_output_ret_joint(self):
+        """获取返回的关节角度(7个值)"""
+        return [self.m_Output_RetJoint.data[i] for i in range(7)]
+
+    def get_output_all_joint(self):
+        """获取所有关节的矩阵值(8x8=64个值)"""
+        return [self.m_OutPut_AllJoint.data[i] for i in range(64)]
+
+    def get_output_result_num(self):
+        """获取结果数量"""
+        return self.m_OutPut_Result_Num
+
+    def get_output_is_out_range(self):
+        """获取是否超出范围"""
+        return self.m_Output_IsOutRange
+
+    def get_output_is_deg(self):
+        """获取是否为奇异点(7个布尔值)"""
+        return [self.m_Output_IsDeg[i] for i in range(7)]
+
+    def get_output_jnt_exd_tags(self):
+        """获取关节扩展标签(7个布尔值)"""
+        return [self.m_Output_JntExdTags[i] for i in range(7)]
+
+    def get_output_jnt_exd_abs(self):
+        """获取关节扩展绝对值"""
+        return self.m_Output_JntExdABS
+
+    def get_output_is_jnt_exd(self):
+        """获取是否有关节扩展"""
+        return self.m_Output_IsJntExd
+
+    def get_output_run_lmt_positive(self):
+        """获取正方向运行限制(7个值)"""
+        return [self.m_Output_RunLmtP.data[i] for i in range(7)]
+
+    def get_output_run_lmt_negative(self):
+        """获取负方向运行限制(7个值)"""
+        return [self.m_Output_RunLmtN.data[i] for i in range(7)]
+
+    def get_all_outputs(self):
+        """获取所有输出参数"""
+        return {
+            'ret_joint': self.get_output_ret_joint(),
+            'all_joint': self.get_output_all_joint(),
+            'result_num': self.get_output_result_num(),
+            'is_out_range': self.get_output_is_out_range(),
+            'is_deg': self.get_output_is_deg(),
+            'jnt_exd_tags': self.get_output_jnt_exd_tags(),
+            'jnt_exd_abs': self.get_output_jnt_exd_abs(),
+            'is_jnt_exd': self.get_output_is_jnt_exd(),
+            'run_lmt_positive': self.get_output_run_lmt_positive(),
+            'run_lmt_negative': self.get_output_run_lmt_negative()
+        }
+
+    # ==================== 辅助方法 ====================
+
+    def set_output_jnt_exd_tags(self, values):
+        """设置关节扩展标签(7个布尔值)"""
+        if len(values) != 7:
+            raise ValueError("m_Output_JntExdTags requires exactly 7 values")
+        for i, val in enumerate(values):
+            self.m_Output_JntExdTags[i] = val
+
+    def get_input_ik_zsp_para(self):
+        """获取ZSP参数(6个值)"""
+        return [self.m_Input_IK_ZSPPara[i] for i in range(6)]
+
+    def __repr__(self):
+        """调试用：显示结构体信息"""
+        return f"FX_InvKineSolvePara:\n" \
+               f"  输入: TCP={self.get_output_ret_joint()}, " \
+               f"参考关节={self.get_input_ik_zsp_para()}, " \
+               f"ZSP类型={self.m_Input_IK_ZSPType}\n" \
+               f"  输出: 结果数={self.m_OutPut_Result_Num}, " \
+               f"超限={self.m_Output_IsOutRange}"
+
+
+# 定义 FX_Jacobi 结构体
+class FX_Jacobi(Structure):
+    _fields_ = [
+        ("m_AxisNum", FX_INT32L),
+        ("m_Jcb", (FX_DOUBLE * 7) * 6)  # 6x7 二维数组
+    ]
+
+    def __init__(self):
+        super().__init__()
+        self.m_AxisNum = 0
+        # 初始化二维数组为0
+        for i in range(6):
+            # in case the m_Jcb is not contiguous in memory
+            row = self.m_Jcb[i]
+            for j in range(7):
+                row[j] = 0.0
+
+    def set_jcb(self, matrix):
+        """
+        设置雅可比矩阵的值
+
+        参数:
+        matrix: 6x7 二维列表或numpy数组
+        """
+        if len(matrix) != 6 or any(len(row) != 7 for row in matrix):
+            raise ValueError("雅可比矩阵必须是6x7的二维数组")
+
+        for i in range(6):
+            row = self.m_Jcb[i]
+            for j in range(7):
+                row[j] = matrix[i][j]
+
+    def get_jcb(self):
+        """
+        获取雅可比矩阵的值
+
+        返回:
+        6x7 二维列表
+        """
+        result = []
+        for i in range(6):
+            row = []
+            for j in range(7):
+                row.append(self.m_Jcb[i][j])
+            result.append(row)
+        return result
+
+    def __str__(self):
+        """
+        返回雅可比矩阵的字符串表示
+        """
+        result = f"AxisNum: {self.m_AxisNum}\nJacobian Matrix:\n"
+        for i in range(6):
+            row = [f"{self.m_Jcb[i][j]:.6f}" for j in range(7)]
+            result += "  " + "  ".join(row) + "\n"
+        return result
+
+
+def inv_main():
+    # 创建结构体实例
+    ik_params = FX_InvKineSolvePara()
+
+    # 设置输入参数
+    ik_params.m_Input_IK_ZSPType = 1
+    ik_params.m_Input_ZSP_Angle = 45.0
+
+    # 设置TCP矩阵（示例值）
+    tcp_values = [1, 0, 0, 0,
+                  0, 1, 0, 0,
+                  0, 0, 1, 0,
+                  0, 0, 0, 1]
+    ik_params.m_Input_IK_TargetTCP = Matrix4(tcp_values)
+
+    # 设置关节参考位置（示例值）
+    ref_joint = [0, 0, 0, 0, 0, 0, 0]
+    ik_params.m_Input_IK_RefJoint = Vect7(ref_joint)
+
+    # 设置ZSP参数
+    ik_params.set_input_ik_zsp_para([1.0, 0.,0.,0.,0.,0.])
+
+    # 输出结构体大小
+    print(f"FX_InvKineSolvePara size: {sizeof(ik_params)} bytes")
+    print(f"Matrix8 size: {sizeof(Matrix8)} bytes")
 
 if __name__ == "__main__":
     kk = Marvin_Kine()  # 实例化
     kk.help()  # 查看方法
     kk.help('load_config')
+
+    #逆解结构体
+    inv_main()
     exit()
