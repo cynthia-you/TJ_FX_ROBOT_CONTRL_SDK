@@ -151,7 +151,7 @@ if points:
         robot.clear_set()
         robot.set_joint_cmd_pose(arm='A', joints=points[i])
         robot.send_cmd()
-        time.sleep(0.002)
+        time.sleep(0.02)# 500HZ:sleep 2ms,  50hz:sleep 20ms
 
 '''下使能'''
 robot.clear_set()
