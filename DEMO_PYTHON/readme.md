@@ -122,14 +122,11 @@
 ### 5. SRS右臂工具动力学辨识演示脚本
             showcase_identy_tool_dynamic_SRS_B.py
 
-### 6. 设置工具校验正解
-            showcase_set_tool.py
-
-### 7. 逆解参考基准
+### 6. 逆解参考基准
             showcase_ik_nsp_two_arms.py
             
-### 8.在线直线规划并以笛卡尔阻抗模式以50HZ频率执行点位
+### 7.在线直线规划并以笛卡尔阻抗模式以50HZ频率执行点位
             showcase_online_pln_movl.py
             
-### 9.在线直线规划，约束构型并以笛卡尔阻抗模式以50HZ频率执行点位
+### 8.在线直线规划，约束构型并以笛卡尔阻抗模式以50HZ频率执行点位
             showcase_online_pln_movl_keepj.py
