@@ -78,14 +78,14 @@ robot.local_log_switch('1') # 主要日志
 
 '''设置阻抗参数'''
 robot.clear_set()
-robot.set_joint_kd_params(arm='A',K=[2,2,2,1.6, 1, 1, 1], D=[0.4,0.4,0.17,0.23,0.23,0.2,0.2])#预设参考。
+robot.set_cart_kd_params(arm='A',K=[12000,12000,12000,600, 600, 600, 20], D=[0.4,0.4,0.17,0.23,0.23,0.2,0.2],type=2)
 robot.send_cmd()
 time.sleep(0.5)
 
-'''设置扭矩模式,关节阻抗模式,速度加速度百分比'''
+'''设置扭矩模式,笛卡尔阻抗模式,速度加速度百分比'''
 robot.clear_set()
 robot.set_state(arm='A',state=3)#state=3扭矩模式
-robot.set_impedance_type(arm='A',type=1) #type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
+robot.set_impedance_type(arm='A',type=2) #type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
 robot.set_vel_acc(arm='A',velRatio=100, AccRatio=100)
 robot.send_cmd()
 time.sleep(0.5)
@@ -94,16 +94,41 @@ time.sleep(0.5)
 sub_data=robot.subscribe(dcss)
 logger.info(f"current state{sub_data['states'][0]['cur_state']}")
 logger.info(f'set vel={sub_data["inputs"][0]["joint_vel_ratio"]}, acc={sub_data["inputs"][0]["joint_acc_ratio"]}')
-logger.info(f'set joint k={sub_data["inputs"][0]["joint_k"][:]}, d={sub_data["inputs"][0]["joint_d"][:]}')
+logger.info(f'set cart k={sub_data["inputs"][0]["cart_k"][:]}, d={sub_data["inputs"][0]["cart_d"][:]}')
 logger.info(f'set impedance type={sub_data["inputs"][0]["imp_type"]}')
 
+'''机器人运动前开始设置保存数据'''
+cols=7
+idx=[0,1,2,3,4,5,6,
+     0,0,0,0,0,0,0,
+     0,0,0,0,0,0,0,
+     0,0,0,0,0,0,0,
+     0,0,0,0,0,0,0]
+rows=1000000
+robot.clear_set()
+robot.collect_data(targetNum=cols,targetID=idx,recordNum=rows)
+robot.send_cmd()
+time.sleep(0.5)
+
+ 
+'''运行到起始点位'''
+robot.clear_set()
+joint_cmd_1=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68]
+robot.set_joint_cmd_pose(arm='A',joints=joint_cmd_1)
+robot.send_cmd()
+time.sleep(2) #预留运动时间
+
+'''订阅数据查看是否到位'''
+sub_data=robot.subscribe(dcss)
+logger.info(f'set joint={sub_data["inputs"][0]["joint_cmd_pos"]}')
+logger.info(f'current joint={sub_data["outputs"][0]["fb_joint_pos"]}')
 
 '''运行到起始点位'''
 robot.clear_set()
 joint_cmd_1=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995]
 robot.set_joint_cmd_pose(arm='A',joints=joint_cmd_1)
 robot.send_cmd()
-time.sleep(3) #预留运动时间
+time.sleep(2) #预留运动时间
 
 '''订阅数据查看是否到位'''
 sub_data=robot.subscribe(dcss)
@@ -152,6 +177,17 @@ if points:
         robot.set_joint_cmd_pose(arm='A', joints=points[i])
         robot.send_cmd()
         time.sleep(0.02)# 500HZ:sleep 2ms,  50hz:sleep 20ms
+
+
+'''停止采集'''
+robot.clear_set()
+robot.stop_collect_data()
+robot.send_cmd()
+time.sleep(0.2)
+
+'''保存采集数据'''
+path='pln_movlj.csv'
+robot.save_collected_data_as_csv_to_path(path)
 
 '''下使能'''
 robot.clear_set()
