@@ -287,7 +287,7 @@ movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: fl
         :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
         :param ref_joints:参考关节构型，也是规划文件的起始点位。
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
         :param save_path:保存的规划文件的路径
         :return: bool
         特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
@@ -304,7 +304,7 @@ movL_KeepJ(start_joints:list, end_joints:list,vel:float,save_path)
         :param start_joints:起始点各个关节位置（单位：角度）
         :param end_joints:终点各个关节位置（单位：角度）
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
         :param save_path:规划文件的保存路径
         :return: bool
         特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
@@ -324,7 +324,7 @@ movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: f
         :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
         :param ref_joints:参考关节构型，也是规划文件的起始点位。
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
         :return: 规划得到的点集列表
         特别提示:1 需要读函数返回值,如果关节超限,返回为false.
                 2 输出规划文件的频率为500Hz
@@ -341,7 +341,7 @@ movL_KeepJA(start_joints:list, end_joints:list,vel:float,save_path)
        :param start_joints:起始点各个关节位置（单位：角度）
        :param end_joints:终点各个关节位置（单位：角度）
        :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-       :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+       :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
        :return: 规划得到的点集列表
        特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的点集.
                2 输出点位频率为500Hz
