@@ -207,7 +207,7 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
         3. End_XYZABC终止点末端的位姿信息，六维信息，目标末端点相对于基座的平移和欧拉旋转，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
         4. Ref_Joints约束了规划的起始关节点信息。单位：度。 
         5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
         7. OutPutPath 规划文件的保存路径
     输出：
         成功：True/1; 失败：False/0
@@ -226,7 +226,7 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
         2. startjoints:起始点各个关节位置（单位：角度）
         3. stopjointss:终点各个关节位置（单位：角度）
         4. vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        5. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        5. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
         6. OutPutPath：规划文件的保存路径
     输出：
         成功：True/1; 失败：False/0
@@ -277,7 +277,7 @@ FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End
         3. End_XYZABC终止点末端的位姿信息，六维信息，目标末端点相对于基座的平移和欧拉旋转，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
         4. Ref_Joints约束了规划的起始关节点信息。单位：度。 
         5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
         7. CPointSet* ret_pset 点位缓存类函数
     输出：
         成功：True/1; 失败：False/0
@@ -294,7 +294,7 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect
         2. startjoints:起始点各个关节位置（单位：角度）
         3. stopjointss:终点各个关节位置（单位：角度）
         4. vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        5. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        5. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
         6. CPointSet* ret_pset 点位缓存类函数
     输出：
         成功：True/1; 失败：False/0
