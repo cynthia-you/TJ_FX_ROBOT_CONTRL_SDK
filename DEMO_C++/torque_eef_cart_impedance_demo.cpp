@@ -85,77 +85,77 @@ int main()
 
     // 设置右臂参数并发送指令
     OnClearSet();
-    OnSetCartKD_B(K, D,type) ;
-    OnSetEefRot_B(type, Dir);
+    OnSetCartKD_A(K, D,type) ;
+    OnSetEefRot_A(type, Dir);
     OnSetSend();
     sleep(1);
 
     // 设置右臂速度和加速度限制并发送指令
     OnClearSet();
-    OnSetJointLmt_B(10, 10) ;
+    OnSetJointLmt_A(10, 10) ;
     OnSetSend();
     sleep(1);
 
     // 设置右臂为扭矩模式和坐标阻抗模式并发送指令
     OnClearSet();
-    OnSetTargetState_B(3) ; 
-    OnSetImpType_B(2) ;
+    OnSetTargetState_A(3) ; 
+    OnSetImpType_A(2) ;
     OnSetSend();
     sleep(1);
 
     // 获取右臂状态信息并打印
     OnGetBuf(&t);
-    printf("current state of B arm:%d\n",t.m_State[1].m_CurState);
-    printf("cmd state of B arm:%d\n",t.m_State[1].m_CmdState);
-    printf("error code of B arms:%d\n",t.m_State[1].m_ERRCode);
+    printf("current state of A arm:%d\n",t.m_State[0].m_CurState);
+    printf("cmd state of A arm:%d\n",t.m_State[0].m_CmdState);
+    printf("error code of A arms:%d\n",t.m_State[0].m_ERRCode);
 
-    printf("CMD of imdepancd:%d\n",t.m_In[1].m_ImpType);
-    printf("CMD of vel and acc:%d %d\n",t.m_In[1].m_Joint_Vel_Ratio,t.m_In[1].m_Joint_Acc_Ratio);
+    printf("CMD of imdepancd:%d\n",t.m_In[0].m_ImpType);
+    printf("CMD of vel and acc:%d %d\n",t.m_In[0].m_Joint_Vel_Ratio,t.m_In[1].m_Joint_Acc_Ratio);
 
-    printf("CMD of cart K=[%lf %lf %lf %lf %lf %lf %lf]\n",t.m_In[1].m_Cart_K[0],
-                                                            t.m_In[1].m_Cart_K[1],
-                                                            t.m_In[1].m_Cart_K[2],
-                                                            t.m_In[1].m_Cart_K[3],
-                                                            t.m_In[1].m_Cart_K[4],
-                                                            t.m_In[1].m_Cart_K[5],
-                                                            t.m_In[1].m_Cart_K[6]);
+    printf("CMD of cart K=[%lf %lf %lf %lf %lf %lf %lf]\n",t.m_In[0].m_Cart_K[0],
+                                                            t.m_In[0].m_Cart_K[1],
+                                                            t.m_In[0].m_Cart_K[2],
+                                                            t.m_In[0].m_Cart_K[3],
+                                                            t.m_In[0].m_Cart_K[4],
+                                                            t.m_In[0].m_Cart_K[5],
+                                                            t.m_In[0].m_Cart_K[6]);
 
-    printf("CMD of cart D=[%lf %lf %lf %lf %lf %lf %lf]\n",t.m_In[1].m_Cart_D[0],
-                                                            t.m_In[1].m_Cart_D[1],
-                                                            t.m_In[1].m_Cart_D[2],
-                                                            t.m_In[1].m_Cart_D[3],
-                                                            t.m_In[1].m_Cart_D[4],
-                                                            t.m_In[1].m_Cart_D[5],
-                                                            t.m_In[1].m_Cart_D[6]);
+    printf("CMD of cart D=[%lf %lf %lf %lf %lf %lf %lf]\n",t.m_In[0].m_Cart_D[0],
+                                                            t.m_In[0].m_Cart_D[1],
+                                                            t.m_In[0].m_Cart_D[2],
+                                                            t.m_In[0].m_Cart_D[3],
+                                                            t.m_In[0].m_Cart_D[4],
+                                                            t.m_In[0].m_Cart_D[5],
+                                                            t.m_In[0].m_Cart_D[6]);
 
     printf("CMD of cart type=%d\n",t.m_In[1].m_Cart_KD_Type);
     //打印新的笛卡尔参数
-    printf("CMD of NEW cart=[%lf %lf %lf %lf %lf %lf %lf]\n",t.m_In[1].m_Force_PIDUL[0],
-                                                            t.m_In[1].m_Force_PIDUL[1],
-                                                            t.m_In[1].m_Force_PIDUL[2],
-                                                            t.m_In[1].m_Force_PIDUL[3],
-                                                            t.m_In[1].m_Force_PIDUL[4],
-                                                            t.m_In[1].m_Force_PIDUL[5],
-                                                          t.m_In[1].m_Force_PIDUL[6]);
+    printf("CMD of NEW cart=[%lf %lf %lf %lf %lf %lf %lf]\n",t.m_In[0].m_Force_PIDUL[0],
+                                                            t.m_In[0].m_Force_PIDUL[1],
+                                                            t.m_In[0].m_Force_PIDUL[2],
+                                                            t.m_In[0].m_Force_PIDUL[3],
+                                                            t.m_In[0].m_Force_PIDUL[4],
+                                                            t.m_In[0].m_Force_PIDUL[5],
+                                                          t.m_In[0].m_Force_PIDUL[6]);
 
 
     OnGetBuf(&t);
   
-    printf("CMD joints of arm A :%lf %lf %lf %lf %lf %lf %lf \n",t.m_In[1].m_Joint_CMD_Pos[0],
-                                                                t.m_In[1].m_Joint_CMD_Pos[1],
-                                                                t.m_In[1].m_Joint_CMD_Pos[2],
-                                                                t.m_In[1].m_Joint_CMD_Pos[3],
-                                                                t.m_In[1].m_Joint_CMD_Pos[4],
-                                                                t.m_In[1].m_Joint_CMD_Pos[5],
-                                                                t.m_In[1].m_Joint_CMD_Pos[6]);
+    printf("CMD joints of arm A :%lf %lf %lf %lf %lf %lf %lf \n",t.m_In[0].m_Joint_CMD_Pos[0],
+                                                                t.m_In[0].m_Joint_CMD_Pos[1],
+                                                                t.m_In[0].m_Joint_CMD_Pos[2],
+                                                                t.m_In[0].m_Joint_CMD_Pos[3],
+                                                                t.m_In[0].m_Joint_CMD_Pos[4],
+                                                                t.m_In[0].m_Joint_CMD_Pos[5],
+                                                                t.m_In[0].m_Joint_CMD_Pos[6]);
                                                                 
-    printf("current joints of arm A :%lf %lf %lf %lf %lf %lf %lf \n",t.m_Out[1].m_FB_Joint_Pos[0],
-                                                                      t.m_Out[1].m_FB_Joint_Pos[1],
-                                                                      t.m_Out[1].m_FB_Joint_Pos[2],
-                                                                      t.m_Out[1].m_FB_Joint_Pos[3],
-                                                                      t.m_Out[1].m_FB_Joint_Pos[4],
-                                                                      t.m_Out[1].m_FB_Joint_Pos[5],
-                                                                      t.m_Out[1].m_FB_Joint_Pos[6]);
+    printf("current joints of arm A :%lf %lf %lf %lf %lf %lf %lf \n",t.m_Out[0].m_FB_Joint_Pos[0],
+                                                                      t.m_Out[0].m_FB_Joint_Pos[1],
+                                                                      t.m_Out[0].m_FB_Joint_Pos[2],
+                                                                      t.m_Out[0].m_FB_Joint_Pos[3],
+                                                                      t.m_Out[0].m_FB_Joint_Pos[4],
+                                                                      t.m_Out[0].m_FB_Joint_Pos[5],
+                                                                      t.m_Out[0].m_FB_Joint_Pos[6]);
     sleep(100000);
 
 
