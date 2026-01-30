@@ -3165,18 +3165,20 @@ FX_VOID FX_QuaternionSlerp(Quaternion Q_from, Quaternion Q_to, FX_DOUBLE ratio, 
 		Q_to[3] = -Q_to[3];
 	}
 
-	if ((1.0 + cosom) > 0.001)
+	const FX_DOUBLE EPS = 1e-6;
+	if (cosom > 1.0 - EPS)
+	{
+		scale0 = 1.0 - ratio;
+		scale1 = ratio;
+	}
+	else
 	{
 		omega = FX_ACOS(cosom);
 		sinom = FX_SIN_ARC(omega);
 		scale0 = FX_SIN_ARC((1.0 - ratio) * omega) / sinom;
 		scale1 = FX_SIN_ARC(ratio * omega) / sinom;
 	}
-	else
-	{
-		scale0 = 1.0 - ratio;
-		scale1 = ratio;
-	}
+	
 	Q_ret[0] = scale0 * Q_from[0] + scale1 * Q_to[0];
 	Q_ret[1] = scale0 * Q_from[1] + scale1 * Q_to[1];
 	Q_ret[2] = scale0 * Q_from[2] + scale1 * Q_to[2];
@@ -3315,4 +3317,60 @@ FX_VOID	 FX_Matrix2Quaternion4(Matrix4 m, Quaternion q)
 		q[1] = (m[1][2] + m[2][1]) / S;
 		q[2] = 0.25 * S;
 	}
+}
+
+FX_VOID FX_XYZ2Matrix(Vect3 ret, Matrix3 m)
+{
+	//ZYX
+	Vect3 ZYX = { 0 };
+	ZYX[0] = ret[2];
+	ZYX[1] = ret[1];
+	ZYX[2] = ret[0];
+
+	FX_DOUBLE sa, ca;
+	FX_DOUBLE sb, cb;
+	FX_DOUBLE sr, cr;
+	FX_SIN_COS_DEG(ZYX[0], &sa, &ca);
+	FX_SIN_COS_DEG(ZYX[1], &sb, &cb);
+	FX_SIN_COS_DEG(ZYX[2], &sr, &cr);
+
+	m[0][0] = ca * cb;
+	m[0][1] = ca * sb * sr - sa * cr;
+	m[0][2] = ca * sb * cr + sa * sr;
+
+	m[1][0] = sa * cb;
+	m[1][1] = -sa * sb * sr + ca * cr;
+	m[1][2] = -sa * sb * cr - ca * sr;
+
+	m[2][0] = -sb;
+	m[2][1] = cb * sr;
+	m[2][2] = cb * cr;
+}
+
+FX_VOID FX_RotXYZ(Vect3 ret, Matrix3 m)
+{
+	//XYZ
+	Vect3 XYZ = { 0 };
+	XYZ[0] = ret[0];
+	XYZ[1] = ret[1];
+	XYZ[2] = ret[2];
+
+	FX_DOUBLE sa, ca;
+	FX_DOUBLE sb, cb;
+	FX_DOUBLE sr, cr;
+	FX_SIN_COS_DEG(XYZ[0], &sa, &ca);
+	FX_SIN_COS_DEG(XYZ[1], &sb, &cb);
+	FX_SIN_COS_DEG(XYZ[2], &sr, &cr);
+
+	m[0][0] = cb * cr;
+	m[0][1] = -cb * sr;
+	m[0][2] = sb;
+
+	m[1][0] = sa * sb * cr + ca * sr;
+	m[1][1] = -sa * sb * sr + ca * cr;
+	m[1][2] = -sa * cb;
+
+	m[2][0] = -ca * sb * cr + sa * sr;
+	m[2][1] = ca * sb * sr + sa * cr;
+	m[2][2] = ca * cb;
 }

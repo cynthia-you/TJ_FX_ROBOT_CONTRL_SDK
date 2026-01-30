@@ -3356,8 +3356,8 @@ FX_VOID   FX_XYZABC2Matrix4DEG(FX_DOUBLE xyzabc[6], FX_DOUBLE m[4][4])
 	m[0][2] = ca * sb * cr + sa * sr;
 
 	m[1][0] = sa * cb;
-	m[1][1] = sa * sb * sr + ca * cr;
-	m[1][2] = sa * sb * cr - ca * sr;
+	m[1][1] = -sa * sb * sr + ca * cr;
+	m[1][2] = -sa * sb * cr - ca * sr;
 
 	m[2][0] = -sb;
 	m[2][1] = cb * sr;

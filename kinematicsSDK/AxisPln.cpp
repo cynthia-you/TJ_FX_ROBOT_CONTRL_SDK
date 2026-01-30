@@ -542,11 +542,25 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 		}
 	}
 
-	//Cuter Euler-Angle
+	//Cuter Euler-Angle based on Base_Coordinate
 	double Q_start[4] = { 0 };
 	double Q_end[4] = { 0 };
+
+	double det_abc[3] = { 0 };
+	double det_abc_matrix[3][3] = { {0} };
+	for (i = 0; i < 3; i++)
+	{
+		det_abc[i] = end_pos[i + 3] - start_pos[i + 3];
+	}
+	FX_RotXYZ(det_abc, det_abc_matrix);
+
+	double Rot_Cur[3][3] = { {0} };
+	double Rot_Target[3][3] = { {0} };
+	FX_XYZ2Matrix(&start_pos[3], Rot_Cur);
+	FX_MMM33(det_abc_matrix, Rot_Cur, Rot_Target);
+
 	FX_ABC2Quaternions(start_pos, Q_start);
-	FX_ABC2Quaternions(end_pos, Q_end);
+	FX_Matrix2Quaternion3(Rot_Target,Q_end);
 
 	//Calculate Quaternions Angle
 	double cosangle = Q_start[0] * Q_end[0] + Q_start[1] * Q_end[1] +
@@ -861,11 +875,25 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 		}
 	}
 
-	//Cuter Euler-Angle
+	//Cuter Euler-Angle based on Base_Coordinate
 	double Q_start[4] = { 0 };
 	double Q_end[4] = { 0 };
+
+	double det_abc[3] = { 0 };
+	double det_abc_matrix[3][3] = { {0} };
+	for (i = 0; i < 3; i++)
+	{
+		det_abc[i] = end_pos[i + 3] - start_pos[i + 3];
+	}
+	FX_RotXYZ(det_abc, det_abc_matrix);
+
+	double Rot_Cur[3][3] = { {0} };
+	double Rot_Target[3][3] = { {0} };
+	FX_XYZ2Matrix(&start_pos[3], Rot_Cur);
+	FX_MMM33(det_abc_matrix, Rot_Cur, Rot_Target);
+
 	FX_ABC2Quaternions(start_pos, Q_start);
-	FX_ABC2Quaternions(end_pos, Q_end);
+	FX_Matrix2Quaternion3(Rot_Target,Q_end);
 
 	//Calculate Quaternions Angle
 	double cosangle = Q_start[0] * Q_end[0] + Q_start[1] * Q_end[1] +

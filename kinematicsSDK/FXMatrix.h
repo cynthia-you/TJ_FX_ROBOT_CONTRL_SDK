@@ -129,6 +129,8 @@ FX_BOOL			FX_Matrix2ZYZ(Matrix3 m, Vect3  ret);
 FX_BOOL			FX_Matrix2ZYX(Matrix3 m, Vect3  ret);
 FX_VOID         FX_ZYZ2Matrix(Vect3 ret, Matrix3 m);//Z(-Y)Z
 FX_VOID         FX_ZYX2Matrix(Vect3 ret, Matrix3 m);//Z(-Y)X
+FX_VOID         FX_XYZ2Matrix(Vect3 ret, Matrix3 m);//ZYX
+FX_VOID			FX_RotXYZ(Vect3 ret, Matrix3 m);//XYZ
 FX_BOOL			FX_Matrix2ZYZ_DGR(Matrix3 m, FX_DOUBLE dgr, Vect3  ret);
 
 FX_VOID			FX_MatRotAxis(Vect3 rot_dir, FX_DOUBLE rot_angle, Matrix3 m, Matrix3 m_roted);
