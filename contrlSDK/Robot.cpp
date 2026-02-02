@@ -493,7 +493,7 @@ bool CRobot::OnClearChDataA()
 	{
 		num = m_InsRobot->m_ACB1.ReadBuf((unsigned char*)&t, si);
 	}
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Clear 485 cache of A arm\n");
+	// if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Clear 485 cache of A arm\n");
 
 	return true;
 }
@@ -512,7 +512,7 @@ bool CRobot::OnClearChDataB()
 	{
 		num = m_InsRobot->m_ACB2.ReadBuf((unsigned char*)&t, si);
 	}
-    if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Clear 485 cache of B arm\n");
+    // if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Clear 485 cache of B arm\n");
 	return true;
 }
 
@@ -1446,83 +1446,139 @@ void CRobot::DoRecv()
 		return;
 	}
 
-	_localLen = sizeof(_local);
+	// 临时存储最新的 DCSS 数据
+	// 使用 static 避免每次调用都在栈上分配 ~2KB 内存
+	static DCSS temp_dcss;
+	bool got_dcss_data = false;
+	int dcss_packet_count = 0;
+
+	// 循环读取所有堆积的 UDP 数据包，直到缓冲区为空
+	// 目的：清空旧数据，只使用最新的数据包
+	while (true)
+	{
+		_localLen = sizeof(_local);
 
 #ifdef CMPL_WIN
-	int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr*)&_local, &_localLen);
+		int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr*)&_local, &_localLen);
 #endif
 #ifdef CMPL_LIN
-	int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr*)&_local, (socklen_t*)&_localLen);
+		int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr*)&_local, (socklen_t*)&_localLen);
 #endif
-	
-	if (Len == sizeof(DCSS) + 2)
-	{
-		if (recvbuf[0] == 'F' && recvbuf[1] == 'X')
-		{
-			DCSS* p = (DCSS*)&recvbuf[2];
-			memcpy(&m_DCSS, p, sizeof(m_DCSS));
-			if (m_InsRobot->m_GatherTag == 1)
-			{
-				if (m_GatherRecordNum >= m_GatherRecordMaxNum)
-				{
-					m_GatherTag = 4;
-				}
-				else
-				{
-					double v[40];
-					for (long i = 0; i < m_GatherItemSize; i++)
-					{
-						v[i+2] = *m_GatherItem[i];
-					}
-					v[0] = m_DCSS.m_Out[0].m_OutFrameSerial;
-					//if(m_InsRobot->m_LocalLogTag == true) printf("%lf\n",v[0]);
-					v[1] = m_DCSS.m_Out[1].m_OutFrameSerial;
-					m_GatherSet.OnSetPoint(v);
-					m_GatherRecordNum++;
-				}
-			}
-			
-			if (m_InsRobot->m_GatherTag == 2)
-			{
-				m_InsRobot->m_GatherTag = 4;
-			}
 
-			if (old_serial_tag == FX_FALSE)
+		// 非阻塞 socket：Len < 0 表示缓冲区为空或发生错误
+		if (Len < 0)
+		{
+#ifdef CMPL_LIN
+			// Linux: EAGAIN 或 EWOULDBLOCK 表示缓冲区为空（正常情况）
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
 			{
-				old_serial_tag = true;
+				break;  // 缓冲区已空，退出循环
+			}
+#endif
+#ifdef CMPL_WIN
+			// Windows: WSAEWOULDBLOCK 表示缓冲区为空
+			int err = WSAGetLastError();
+			if (err == WSAEWOULDBLOCK)
+			{
+				break;  // 缓冲区已空，退出循环
+			}
+#endif
+			// 其他错误，退出循环
+			break;
+		}
+
+		// 处理机器人状态数据包（DCSS）
+		if (Len == sizeof(DCSS) + 2)
+		{
+			if (recvbuf[0] == 'F' && recvbuf[1] == 'X')
+			{
+				DCSS* p = (DCSS*)&recvbuf[2];
+				memcpy(&temp_dcss, p, sizeof(temp_dcss));
+				got_dcss_data = true;
+				dcss_packet_count++;
+			}
+		}
+		// 处理通信数据包（DDSS）- 每个包都需要处理
+		else if(Len == sizeof(DDSS) + 2)
+		{
+			if (recvbuf[0] == 'C' && recvbuf[1] == 'H')
+			{
+				DDSS* p = (DDSS*)&recvbuf[2];
+				if (p->m_CH == 1)
+				{
+					m_ACB1.WriteBuf((unsigned char *)p, sizeof(DDSS));
+				}
+
+				if (p->m_CH == 2)
+				{
+					m_ACB2.WriteBuf((unsigned char*)p, sizeof(DDSS));
+				}
+			}
+		}
+
+		// 安全限制：防止无限循环，最多读取 100 个 DCSS 包
+		// 如果缓冲区堆积超过 100 个包（0.1秒），说明系统严重过载
+		if (dcss_packet_count >= 100)
+		{
+			if (m_InsRobot->m_LocalLogTag == true)
+			{
+				printf("[Marvin SDK Warning]: UDP buffer overflow, cleared %d packets\n", dcss_packet_count);
+			}
+			break;
+		}
+	}
+
+	// 只在读取到新数据时更新 m_DCSS（使用最后一次读取的最新数据）
+	if (got_dcss_data)
+	{
+		memcpy(&m_DCSS, &temp_dcss, sizeof(m_DCSS));
+
+		// 数据采集处理
+		if (m_InsRobot->m_GatherTag == 1)
+		{
+			if (m_GatherRecordNum >= m_GatherRecordMaxNum)
+			{
+				m_GatherTag = 4;
+			}
+			else
+			{
+				double v[40];
+				for (long i = 0; i < m_GatherItemSize; i++)
+				{
+					v[i+2] = *m_GatherItem[i];
+				}
+				v[0] = m_DCSS.m_Out[0].m_OutFrameSerial;
+				//if(m_InsRobot->m_LocalLogTag == true) printf("%lf\n",v[0]);
+				v[1] = m_DCSS.m_Out[1].m_OutFrameSerial;
+				m_GatherSet.OnSetPoint(v);
+				m_GatherRecordNum++;
+			}
+		}
+
+		if (m_InsRobot->m_GatherTag == 2)
+		{
+			m_InsRobot->m_GatherTag = 4;
+		}
+
+		// 帧序号检测与丢帧统计
+		if (old_serial_tag == FX_FALSE)
+		{
+			old_serial_tag = true;
+			old_serial = m_DCSS.m_Out[0].m_OutFrameSerial;
+		}
+		else
+		{
+			old_serial += 1;
+			old_serial %= 1000000;
+			if (old_serial != m_DCSS.m_Out[0].m_OutFrameSerial)
+			{
+				miss_cnt++;
 				old_serial = m_DCSS.m_Out[0].m_OutFrameSerial;
 			}
 			else
 			{
-				old_serial += 1;
-				old_serial %= 1000000;
-				if (old_serial != m_DCSS.m_Out[0].m_OutFrameSerial)
-				{
-					miss_cnt++;
-					old_serial = m_DCSS.m_Out[0].m_OutFrameSerial;
-				}
-				else
-				{
-					miss_cnt = 0;
-				}
+				miss_cnt = 0;
 			}
-		}
-	}
-	else if(Len == sizeof(DDSS) + 2)
-	{
-		if (recvbuf[0] == 'C' && recvbuf[1] == 'H')
-		{
-			DDSS* p = (DDSS*)&recvbuf[2];
-			if (p->m_CH == 1)
-			{
-				m_ACB1.WriteBuf((unsigned char *)p, sizeof(DDSS));
-			}
-
-			if (p->m_CH == 2)
-			{
-				m_ACB2.WriteBuf((unsigned char*)p, sizeof(DDSS));
-			}
-			
 		}
 	}
 
