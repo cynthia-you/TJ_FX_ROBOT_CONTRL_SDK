@@ -209,6 +209,12 @@ class App:
         self.period_file_path_2 = tk.StringVar()
         self.file_path_tool = tk.StringVar()
         self.file_path_50 = tk.StringVar()
+        if not hasattr(self, 'force_dir_a_entry'):
+            self.force_dir_a_entry = tk.StringVar()
+        if not hasattr(self, 'force_dir_b_entry'):
+            self.force_dir_b_entry = tk.StringVar()
+        self.force_dir_a_entry = tk.StringVar(value='1,1,1,1,1,1')
+        self.force_dir_b_entry = tk.StringVar(value='1,1,1,1,1,1')
 
         # 文件路径
         self.source_file = "robot.ini"  # 初始文件
@@ -283,10 +289,6 @@ class App:
         self.init_tool_variables()
         # 初始化阻抗参数
         self.init_kd_variables()
-
-        # self.stop_flag = False
-        # self.thread = None
-        # self.lock = threading.Lock()
         self.stop_event = threading.Event()
         self.thread = None
 
@@ -301,7 +303,6 @@ class App:
         except Exception as e:
             messagebox.showerror("错误", f"读取文件失败: {str(e)}")
             return ""
-
     def init_tool_variables(self):
         """初始化工具参数相关的StringVar变量"""
         # 工具动力学参数 (10个值)
@@ -826,6 +827,25 @@ class App:
         )
         self.left_force_dir_btn3.pack(side="left",padx=(0,5))
 
+        # 力方向 用户定义
+        force_row1 = tk.Frame(force_control_frame,bg='white')
+        force_row1.pack(fill="x", pady=(5, 5))
+        # 力
+        tk.Label(force_row1, text="任意方向：", font=('Arial', 9),bg='white' ).pack(side="left", padx=(0, 5))
+
+        left_force_entry1 = tk.Entry(force_row1, textvariable=self.force_dir_a_entry,font=('Arial', 9),width=30)
+        left_force_entry1.pack(side="left",padx=(0,5))
+
+        self.left_force_dir_btn3 = tk.Button(
+            force_row1,
+            text="用户定义",
+            width=8,
+            command=lambda: self.imped_f_mode(3,'A'),
+            font=("Arial", 9, "bold"),
+            bg='#CCCCFF'
+        )
+        self.left_force_dir_btn3.pack(side="left",padx=(5,5))
+
         # 关节指令
         joint_cmd_frame = ttk.LabelFrame(
             left_second_control_frame,
@@ -1322,6 +1342,25 @@ class App:
             bg='#F7F7CE'
         )
         self.right_force_dir_btn3.pack(side="left", padx=(0, 5))
+
+        # 力方向 用户定义
+        force_row1 = tk.Frame(force_control_frame, bg='white')
+        force_row1.pack(fill="x", pady=(5, 5))
+        # 力
+        tk.Label(force_row1, text="任意方向：", font=('Arial', 9), bg='white').pack(side="left", padx=(0, 5))
+
+        left_force_entry1 = tk.Entry(force_row1, textvariable=self.force_dir_b_entry, font=('Arial', 9), width=30)
+        left_force_entry1.pack(side="left", padx=(0, 5))
+
+        self.right_force_dir_btn3 = tk.Button(
+            force_row1,
+            text="用户定义",
+            width=8,
+            command=lambda: self.imped_f_mode(3, 'B'),
+            font=("Arial", 9, "bold"),
+            bg='#CCCCFF'
+        )
+        self.right_force_dir_btn3.pack(side="left", padx=(5, 5))
 
         # 关节指令
         joint_cmd_frame = ttk.LabelFrame(
@@ -2217,7 +2256,8 @@ class App:
                     title="选择系统更新文件"
                 )
                 if file_path:
-                    tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")
+                    tag1 = robot.update_SDK(file_path)
+                    # tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")
                     if tag1:
                         messagebox.showinfo('success', '系统文件已上传，请重启控制器自动更新。')
                     else:
@@ -2506,14 +2546,24 @@ class App:
         if self.connected:
             result = messagebox.askokcancel("确认操作", "机器人将切换为阻抗力控状态，确认切换吗？")
             if result:
-                directions = [0, 0, 0, 0, 0, 0]
-                directions[dir]=1
                 robot.clear_set()
                 robot.set_state(arm=robot_id, state=3)
                 robot.set_impedance_type(arm=robot_id, type=3)
                 robot.send_cmd()
                 time.sleep(0.001)
-
+                directions = [0, 0, 0, 0, 0, 0]
+                if dir==3:
+                    flag=None
+                    dir=None
+                    if robot_id=='A':
+                        flag,dir=self.validate_point(self.force_dir_a_entry.get(),6)
+                    elif robot_id=='B':
+                        flag, dir = self.validate_point(self.force_dir_b_entry.get(), 6)
+                    if flag:
+                        values = dir.split(',')
+                        directions = [float(value.strip()) for value in values]
+                else:
+                    directions[dir]=1
                 force=0
                 adj=0
                 if robot_id == 'A':
@@ -5153,6 +5203,14 @@ class App:
         """急停按钮回调函数"""
         if self.connected:
             try:
+                for i in range(10):
+                    robot.set_param('int',"EMCY0", 0)
+                    robot.set_param('int', "EMCY1", 0)
+                    # robot.clear_set()
+                    # robot.set_state('A',0)
+                    # robot.set_state('B', 0)
+                    # robot.send_cmd()
+                    time.sleep(0.01)
                 robot.soft_stop('AB')
                 """外部调用来停止线程"""
                 self.stop_event.set()
@@ -5887,5 +5945,4 @@ if __name__ == "__main__":
         background="white"  # 标签背景色
     )
     app = App(root)
-
     root.mainloop()
