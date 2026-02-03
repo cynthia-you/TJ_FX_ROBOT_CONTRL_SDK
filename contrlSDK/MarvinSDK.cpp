@@ -18,7 +18,16 @@ bool OnDownloadLog(char* local_path)
 
 void OnEMG_A()
 {
+	for (long i = 0; i <10; i++)
+	{
 	CRobot::OnSetIntPara((char *)"EMCY0", 0);
+	#ifdef CMPL_WIN
+		Sleep(5);
+	#endif 
+	#ifdef CMPL_LIN
+		usleep(5000);
+	#endif
+	}
 #ifdef CMPL_WIN
 	Sleep(10);
 #endif 
@@ -35,7 +44,16 @@ void OnEMG_A()
 }
 void OnEMG_B()
 {
+	for (long i = 0; i <10; i++)
+	{
 	CRobot::OnSetIntPara((char*)"EMCY1", 0);
+	#ifdef CMPL_WIN
+		Sleep(5);
+	#endif 
+	#ifdef CMPL_LIN
+		usleep(5000);
+	#endif
+	}
 #ifdef CMPL_WIN
 	Sleep(10);
 #endif 
@@ -52,8 +70,18 @@ void OnEMG_B()
 }
 void OnEMG_AB()
 {
+	for (long i = 0; i <10; i++)
+	{
 	CRobot::OnSetIntPara((char*)"EMCY0", 0);
 	CRobot::OnSetIntPara((char*)"EMCY1", 0);
+	#ifdef CMPL_WIN
+		Sleep(5);
+	#endif 
+	#ifdef CMPL_LIN
+		usleep(5000);
+	#endif
+	}
+	
 #ifdef CMPL_WIN
 	Sleep(10);
 #endif 
