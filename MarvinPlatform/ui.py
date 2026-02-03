@@ -5203,14 +5203,6 @@ class App:
         """急停按钮回调函数"""
         if self.connected:
             try:
-                for i in range(10):
-                    robot.set_param('int',"EMCY0", 0)
-                    robot.set_param('int', "EMCY1", 0)
-                    # robot.clear_set()
-                    # robot.set_state('A',0)
-                    # robot.set_state('B', 0)
-                    # robot.send_cmd()
-                    time.sleep(0.01)
                 robot.soft_stop('AB')
                 """外部调用来停止线程"""
                 self.stop_event.set()
@@ -5945,4 +5937,5 @@ if __name__ == "__main__":
         background="white"  # 标签背景色
     )
     app = App(root)
+
     root.mainloop()
