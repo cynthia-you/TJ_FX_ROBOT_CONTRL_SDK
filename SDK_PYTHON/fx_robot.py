@@ -618,10 +618,20 @@ class Marvin_Robot:
         '''
         try:
             if arm=='A':
+                for i in range(10):
+                    self.set_param('int', "EMCY0", 0)
+                    time.sleep(0.002)
                 return self.robot.OnEMG_A()
             elif arm=='B':
+                for i in range(10):
+                    self.set_param('int', "EMCY1", 0)
+                    time.sleep(0.002)
                 return self.robot.OnEMG_B()
             elif arm=='AB':
+                for i in range(10):
+                    self.set_param('int', "EMCY0", 0)
+                    self.set_param('int', "EMCY1", 0)
+                    time.sleep(0.002)
                 return self.robot.OnEMG_AB()
         except Exception as e:
             print("ERROR:", e)
