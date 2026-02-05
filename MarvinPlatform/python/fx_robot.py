@@ -34,7 +34,88 @@ def update_text_file_simple(mode, data_list, filename):
         print(f"更新文件时出错: {e}")
         return False
 
+def read_csv_file_to_float_strict(filename, expected_columns=16):
+    """
+    读取CSV格式的文件内容并转换为float，严格验证每列数量
+    参数:
+        filename: 文件名
+        expected_columns: 期望的列数（默认16）
 
+    返回:
+        如果文件为空: 返回0
+        如果文件有一行: 返回0
+        如果文件有两行且其中一行全为0:
+            - 返回 ('line1', [第一行数据])  # 如果第二行全为0
+            - 返回 ('line2', [第二行数据])  # 如果第一行全为0
+        如果文件有两行且都不为0: 返回 [[第一行数据], [第二行数据]]
+        如果文件有两行且都全为0: 返回0
+        如果文件不存在或转换失败: 返回-1
+    """
+    if not os.path.exists(filename):
+        print(f"文件不存在: {filename}")
+        return -1
+
+    if os.path.getsize(filename) == 0:
+        return 0
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+
+        non_empty_lines = [line.strip() for line in lines if line.strip()]
+
+        if len(non_empty_lines) == 0:
+            return 0
+
+        all_float_data = []
+        for line_num, line in enumerate(non_empty_lines, 1):
+            values = line.split(',')
+            # 过滤空值并去除空格
+            cleaned_values = [v.strip() for v in values if v.strip()]
+
+            # 验证列数
+            if len(cleaned_values) != expected_columns:
+                print(f"第{line_num}行: 期望{expected_columns}列，实际找到{len(cleaned_values)}列")
+                return -1
+
+            float_values = []
+            for value in cleaned_values:
+                try:
+                    float_value = float(value)
+                    float_values.append(float_value)
+                except ValueError:
+                    print(f"第{line_num}行: 无法将内容 '{value}' 转换为float")
+                    return -1
+
+            all_float_data.append(float_values)
+
+        # 根据行数处理
+        if len(all_float_data) == 1:
+            # 文件只有一行，返回0
+            return 0
+
+        elif len(all_float_data) == 2:
+            # 检查两行是否全为0
+            line1_all_zero = all(x == 0.0 for x in all_float_data[0])
+            line2_all_zero = all(x == 0.0 for x in all_float_data[1])
+
+            if line1_all_zero and line2_all_zero:
+                # 两行都全为0
+                return 0
+            elif line1_all_zero and not line2_all_zero:
+                # 第一行全为0，第二行不为0
+                return ('line2', all_float_data[1])
+            elif not line1_all_zero and line2_all_zero:
+                # 第一行不为0，第二行全为0
+                return ('line1', all_float_data[0])
+            else:
+                # 两行都不为0
+                return all_float_data
+        else:
+            print(f"文件包含{len(all_float_data)}行，只支持1-2行")
+            return -1
+    except Exception as e:
+        print(f"读取文件时出错: {e}")
+        return -1
 
 def decimal_to_hex(number, prefix=False, upper=True, float_precision=8):
     """
@@ -304,7 +385,7 @@ class Marvin_Robot:
         :return:
         '''
         sdk_char = ctypes.c_char_p(sdk_path.encode('utf-8'))
-        self.robot.OnUpdateSystem(sdk_char)
+        return self.robot.OnUpdateSystem(sdk_char)
 
     def download_sdk_log(self, log_path:str):
         '''下载SDK日志到本机
@@ -529,24 +610,23 @@ class Marvin_Robot:
                 os.remove(path1)
             return False
 
-
-    def soft_stop(self, arm:str):
+    def soft_stop(self, arm: str):
         '''机械臂急停
         :param arm: ‘A’, 'B', 'AB', 可以让一条臂软急停，或者两条臂都软急停。
         :return:
         '''
         try:
-            if arm=='A':
+            if arm == 'A':
                 for i in range(10):
                     self.set_param('int', "EMCY0", 0)
                     time.sleep(0.002)
                 return self.robot.OnEMG_A()
-            elif arm=='B':
+            elif arm == 'B':
                 for i in range(10):
                     self.set_param('int', "EMCY1", 0)
                     time.sleep(0.002)
                 return self.robot.OnEMG_B()
-            elif arm=='AB':
+            elif arm == 'AB':
                 for i in range(10):
                     self.set_param('int', "EMCY0", 0)
                     self.set_param('int', "EMCY1", 0)
@@ -554,7 +634,6 @@ class Marvin_Robot:
                 return self.robot.OnEMG_AB()
         except Exception as e:
             print("ERROR:", e)
-
 
     def get_servo_error_code(self, arm:str):
        '''获取机械臂伺服错误码
@@ -585,7 +664,6 @@ class Marvin_Robot:
        except Exception as e:
            print("ERROR:", e)
 
-
     def clear_error(self,arm:str):
         '''清错
         :return:无
@@ -597,7 +675,6 @@ class Marvin_Robot:
                 return self.robot.OnClearErr_B()
         except Exception as e:
             print(f'ERROR:{e}')
-
 
     def set_state(self,arm:str,state:int):
         '''设置状态
@@ -637,7 +714,6 @@ class Marvin_Robot:
                 return self.robot.OnSetImpType_B(type_int)
         except Exception as e:
             print(f'ERROR:{e}')
-
 
     def set_vel_acc(self, arm:str, velRatio: int, AccRatio: int):
         '''设置速度和加速度百分比
@@ -731,7 +807,6 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
-
     def set_force_control_params(self,arm:str, fcType: int, fxDirection: list, fcCtrlpara: list, fcAdjLmt: float):
         '''设置力控参数
         :param fcType: 力控类型 0:坐标空间力控;1:工具空间力控(暂未实现)
@@ -811,7 +886,6 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
-
     def send_pvt_file(self,arm:str, pvt_path: str, id: int):
         '''上传PVT文件给指定ID
         :param pvt_path: 本地pvt文件的绝对/相对路径
@@ -839,7 +913,6 @@ class Marvin_Robot:
                 return self.robot.OnSendPVT_B(pvt_char, id_int)
         except Exception as e:
             print(f'ERROR:{e}')
-
 
     def set_drag_space(self,arm:str, dgType: int):
         '''设置拖动空间
@@ -873,7 +946,6 @@ class Marvin_Robot:
         remote_char = ctypes.c_char_p(self.remote_file_path)
         return self.robot.OnRecvFile(local_char, remote_char)
 
-
     def send_file(self, local_path: str, remote_path: str):
         '''将上位机文件上传到机械臂控制器
         :param local_path: 本地绝对路径
@@ -886,7 +958,6 @@ class Marvin_Robot:
         remote_char = ctypes.c_char_p(self.remote_file_path)
         return self.robot.OnSendFile(local_char, remote_char)
 
-
     def log_switch(self,flag:str):
         try:
             if flag=='1':
@@ -895,7 +966,6 @@ class Marvin_Robot:
                 return self.robot.OnLogOff()
         except Exception as e:
             print(f'ERROR:{e}')
-
 
     def local_log_switch(self,flag:str):
         try:
@@ -922,14 +992,12 @@ class Marvin_Robot:
 
     def set_485_data(self, arm: str, data:bytes, size_int:int,com:int):
         '''发送数据到485的指定来源， 每次长度不超过256字节，超过就切成多个包发。
-
         :param arm: 机械手臂ID “A” OR “B”
         :param data: 要传递的字节数据 (长度不超过2256)
         :param size_int: int, 发送的字节长度，不能超过256
-        :param com: 信息来源， 1：‘C’端; 2：com1; 3:com2
+        :param com: 信息来源， 1:CAN端; 2：com1; 3:com2
         :return: bool
         '''
-
         try:
             # 定义函数原型
             self.robot.OnSetChDataA.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_long, ctypes.c_long]
@@ -978,7 +1046,7 @@ class Marvin_Robot:
     def get_485_data(self, arm: str,com:int):
         '''收指定来源的485数据
         :param arm: 机械手臂ID “A” OR “B”
-        :param com: 信息来源， 1：‘C’端; 2：com1; 3:com2
+        :param com: 信息来源， 1:CAN端; 2：com1; 3:com2
         :return: int, 长度size
         '''
         try:
@@ -1096,7 +1164,6 @@ class Marvin_Robot:
         return tool_result
 
 
-
     def help(self, method_name: str = None) -> None:
         """
         显示帮助信息
@@ -1168,88 +1235,7 @@ class Marvin_Robot:
             print(f"错误: 没有找到方法 '{method_name}'")
 
         print(f"{'=' * 50}")
-def read_csv_file_to_float_strict(filename, expected_columns=16):
-    """
-    读取CSV格式的文件内容并转换为float，严格验证每列数量
-    参数:
-        filename: 文件名
-        expected_columns: 期望的列数（默认16）
 
-    返回:
-        如果文件为空: 返回0
-        如果文件有一行: 返回0
-        如果文件有两行且其中一行全为0:
-            - 返回 ('line1', [第一行数据])  # 如果第二行全为0
-            - 返回 ('line2', [第二行数据])  # 如果第一行全为0
-        如果文件有两行且都不为0: 返回 [[第一行数据], [第二行数据]]
-        如果文件有两行且都全为0: 返回0
-        如果文件不存在或转换失败: 返回-1
-    """
-    if not os.path.exists(filename):
-        print(f"文件不存在: {filename}")
-        return -1
-
-    if os.path.getsize(filename) == 0:
-        return 0
-    try:
-        with open(filename, 'r', encoding='utf-8') as file:
-            lines = file.readlines()
-
-        non_empty_lines = [line.strip() for line in lines if line.strip()]
-
-        if len(non_empty_lines) == 0:
-            return 0
-
-        all_float_data = []
-        for line_num, line in enumerate(non_empty_lines, 1):
-            values = line.split(',')
-            # 过滤空值并去除空格
-            cleaned_values = [v.strip() for v in values if v.strip()]
-
-            # 验证列数
-            if len(cleaned_values) != expected_columns:
-                print(f"第{line_num}行: 期望{expected_columns}列，实际找到{len(cleaned_values)}列")
-                return -1
-
-            float_values = []
-            for value in cleaned_values:
-                try:
-                    float_value = float(value)
-                    float_values.append(float_value)
-                except ValueError:
-                    print(f"第{line_num}行: 无法将内容 '{value}' 转换为float")
-                    return -1
-
-            all_float_data.append(float_values)
-
-        # 根据行数处理
-        if len(all_float_data) == 1:
-            # 文件只有一行，返回0
-            return 0
-
-        elif len(all_float_data) == 2:
-            # 检查两行是否全为0
-            line1_all_zero = all(x == 0.0 for x in all_float_data[0])
-            line2_all_zero = all(x == 0.0 for x in all_float_data[1])
-
-            if line1_all_zero and line2_all_zero:
-                # 两行都全为0
-                return 0
-            elif line1_all_zero and not line2_all_zero:
-                # 第一行全为0，第二行不为0
-                return ('line2', all_float_data[1])
-            elif not line1_all_zero and line2_all_zero:
-                # 第一行不为0，第二行全为0
-                return ('line1', all_float_data[0])
-            else:
-                # 两行都不为0
-                return all_float_data
-        else:
-            print(f"文件包含{len(all_float_data)}行，只支持1-2行")
-            return -1
-    except Exception as e:
-        print(f"读取文件时出错: {e}")
-        return -1
 
 def _param_kind_to_str(kind):
     """将参数类型转换为可读字符串"""
@@ -1542,7 +1528,56 @@ def get_fault_descriptions(fault_codes_list, fault_dict):
             result += f"{i}. {desc}\n"
         return result.strip()
 
-
+tools_cfg={
+    "arm0": {
+        "tool-1": {
+            "dyn": [0,0,0,0,0,0,0,0,0,0],
+            "kine": [0,0,0,0,0,0]
+        },
+        "tool-2": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-3": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-4": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-5": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        }
+    },
+    "arm1": {
+        "tool-1": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-2": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-3": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-4": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-5": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        }
+    },
+    "current_tool":{
+        "arm0":None,
+        "arm1":None
+    }
+}
 if __name__ == "__main__":
 
     tj_robot = Marvin_Robot()
