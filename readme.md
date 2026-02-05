@@ -13,7 +13,19 @@
                  d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
                  
 ## 一、 SDK更新
+## 控制SDK
+### 1.1设置末端力控类型和笛卡尔方向的旋转
+	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	FX_DLL_EXPORT bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
+	//设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	FX_DLL_EXPORT bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
+### 1.2指定关节伺服软复位
+	// 左臂指定关节伺服软复位
+	FX_DLL_EXPORT void OnServoReset_A(int axis);
+	// 右臂指定关节伺服软复位
+	FX_DLL_EXPORT void OnServoReset_B(int axis);
 
+## 运动计算SDK
 ### 1.1 更新在线规划功能
 
      C++接口：
@@ -188,17 +200,14 @@
             控制SDK:
                  源码controlSDK_win: g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm
                  
-            运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
+                 运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
             
             编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
 
 
     2)LINUX下编译神DLL动态库:
-        控制SDK: x86_64-w64-mingw32-g++ MarvinSDK.cpp Robot.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp -Wall -O2 -shared -o libMarvinSDK.dll \
-                -DBUILDING_DLL \
-                -static -static-libgcc -static-libstdc++ \
-                -lws2_32 -lpthread \
-                -lwinmm
+        控制SDK:  x86_64-w64-mingw32-g++ MarvinSDK.cpp Robot.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp ACB.cpp -Wall -O2 -shared -o libMarvinSDK.dll     -DBUILDING_DLL     -DCMPL_WIN     -static -static-libgcc -static-libstdc++     -lws2_32 -lpthread     -lwinmm
+
 
         运动学SDK: g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll  
 
