@@ -385,7 +385,7 @@ class Marvin_Robot:
         :return:
         '''
         sdk_char = ctypes.c_char_p(sdk_path.encode('utf-8'))
-        self.robot.OnUpdateSystem(sdk_char)
+        return self.robot.OnUpdateSystem(sdk_char)
 
     def download_sdk_log(self, log_path:str):
         '''下载SDK日志到本机
@@ -610,32 +610,35 @@ class Marvin_Robot:
                 os.remove(path1)
             return False
 
-
-    def soft_stop(self, arm:str):
+    def soft_stop(self, arm: str):
         '''机械臂急停
         :param arm: ‘A’, 'B', 'AB', 可以让一条臂软急停，或者两条臂都软急停。
         :return:
         '''
         try:
             if arm=='A':
-                for i in range(10):
-                    self.set_param('int', "EMCY0", 0)
-                    time.sleep(0.002)
                 return self.robot.OnEMG_A()
             elif arm=='B':
-                for i in range(10):
-                    self.set_param('int', "EMCY1", 0)
-                    time.sleep(0.002)
                 return self.robot.OnEMG_B()
             elif arm=='AB':
-                for i in range(10):
-                    self.set_param('int', "EMCY0", 0)
-                    self.set_param('int', "EMCY1", 0)
-                    time.sleep(0.002)
                 return self.robot.OnEMG_AB()
         except Exception as e:
             print("ERROR:", e)
 
+    def servo_reset(self,arm:str,axis:int):
+        '''指定轴伺服软复位
+        :param arm: ‘A’, 'B'
+        :param axis: 指定关节：0-6
+        :return:
+        '''
+        try:
+            axis_int = ctypes.c_int(axis)
+            if arm=='A':
+                return self.robot.OnServoReset_A(axis_int)
+            elif arm=='B':
+                return self.robot.OnServoReset_B(axis_int)
+        except Exception as e:
+            print("ERROR:", e)
 
     def get_servo_error_code(self, arm:str):
        '''获取机械臂伺服错误码
@@ -666,7 +669,6 @@ class Marvin_Robot:
        except Exception as e:
            print("ERROR:", e)
 
-
     def clear_error(self,arm:str):
         '''清错
         :return:无
@@ -678,7 +680,6 @@ class Marvin_Robot:
                 return self.robot.OnClearErr_B()
         except Exception as e:
             print(f'ERROR:{e}')
-
 
     def set_state(self,arm:str,state:int):
         '''设置状态
@@ -719,7 +720,6 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
-
     def set_vel_acc(self, arm:str, velRatio: int, AccRatio: int):
         '''设置速度和加速度百分比
         :param velRatio: 速度百分比
@@ -759,7 +759,7 @@ class Marvin_Robot:
             print(f'ERROR:{e}')
 
     def set_joint_kd_params(self,arm:str, K: list, D: list):
-        '''设置关节阻抗参数参数在不同构型下的表现不同，请自行调节值到合适范围。
+        '''设置关节阻抗参数
 
         #关节阻抗时，需更低刚度避免震动，且希望机械臂有顺从性，因此采用低刚度配低阻尼。
         1-7关节刚度不超过2
@@ -785,9 +785,9 @@ class Marvin_Robot:
             print(f'ERROR:{e}')
 
     def set_cart_kd_params(self, arm:str, K: list, D: list, type: int):
-        '''设置笛卡阻抗尔参数,参数在不同构型下的表现不同，请自行调节值到合适范围。
+        '''设置笛卡阻抗尔参数
             # 在笛卡尔阻抗模式下：
-            刚度系数： 1-3平移方向刚度系数不超过12000, 4-6旋转方向不超过600。 零空间刚度系数不超过20
+            刚度系数： 1-3平移方向刚度系数不超过3000, 4-6旋转方向不超过100。 零空间刚度系数不超过20
             阻尼系数： 平移和旋转阻尼系数0-1之间。 零空间阻尼系数不超过1
             零空间控制是保持末端固定不动，手臂角度运动的控制方式。接口未开放
 
@@ -811,7 +811,6 @@ class Marvin_Robot:
                 return self.robot.OnSetCartKD_B(k_value, d_value, type_int)
         except Exception as e:
             print(f'ERROR:{e}')
-
 
     def set_force_control_params(self,arm:str, fcType: int, fxDirection: list, fcCtrlpara: list, fcAdjLmt: float):
         '''设置力控参数
@@ -843,6 +842,30 @@ class Marvin_Robot:
                     adj_double)
         except Exception as e:
             print(f'ERROR:{e}')
+
+    def set_EefCart_control_params(self,arm:str, fcType: int, CartCtrlPara: list):
+        '''设置力控参数
+        :param fcType: 1:工具空间力控
+        :param CartCtrlPara: list(7,1). 控制参数 目前全0
+        :return:
+            int : 1: True,  2: False
+        '''
+        try:
+            fc_int=ctypes.c_int(fcType)
+            d0, d1, d2, d3, d4, d5, d6 = CartCtrlPara
+            CartCtrlPara_arr = (ctypes.c_double * 7)(d0, d1, d2, d3, d4, d5, d6)
+
+            if arm=='A':
+                return self.robot.OnSetEefRot_A(
+                    fc_int,
+                    CartCtrlPara_arr)
+            elif arm=='B':
+                return self.robot.OnSetEefRot_B(
+                    fc_int,
+                    CartCtrlPara_arr)
+        except Exception as e:
+            print(f'ERROR:{e}')
+
 
     def set_joint_cmd_pose(self,arm:str, joints:list):
         '''设置关节跟踪指令值
@@ -1003,14 +1026,12 @@ class Marvin_Robot:
 
     def set_485_data(self, arm: str, data:bytes, size_int:int,com:int):
         '''发送数据到485的指定来源， 每次长度不超过256字节，超过就切成多个包发。
-
         :param arm: 机械手臂ID “A” OR “B”
         :param data: 要传递的字节数据 (长度不超过2256)
         :param size_int: int, 发送的字节长度，不能超过256
-        :param com: 信息来源， 1：‘C’端; 2：com1; 3:com2
+        :param com: 信息来源， 1:CAN端; 2：com1; 3:com2
         :return: bool
         '''
-
         try:
             # 定义函数原型
             self.robot.OnSetChDataA.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_long, ctypes.c_long]
@@ -1059,7 +1080,7 @@ class Marvin_Robot:
     def get_485_data(self, arm: str,com:int):
         '''收指定来源的485数据
         :param arm: 机械手臂ID “A” OR “B”
-        :param com: 信息来源， 1：‘C’端; 2：com1; 3:com2
+        :param com: 信息来源， 1:CAN端; 2：com1; 3:com2
         :return: int, 长度size
         '''
         try:
@@ -1541,7 +1562,56 @@ def get_fault_descriptions(fault_codes_list, fault_dict):
             result += f"{i}. {desc}\n"
         return result.strip()
 
-
+tools_cfg={
+    "arm0": {
+        "tool-1": {
+            "dyn": [0,0,0,0,0,0,0,0,0,0],
+            "kine": [0,0,0,0,0,0]
+        },
+        "tool-2": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-3": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-4": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-5": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        }
+    },
+    "arm1": {
+        "tool-1": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-2": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-3": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-4": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        },
+        "tool-5": {
+            "dyn": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "kine": [0, 0, 0, 0, 0, 0]
+        }
+    },
+    "current_tool":{
+        "arm0":None,
+        "arm1":None
+    }
+}
 if __name__ == "__main__":
 
     tj_robot = Marvin_Robot()
