@@ -1,4 +1,3 @@
-
 #include "MarvinSDK.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -18,22 +17,17 @@ bool OnDownloadLog(char* local_path)
 
 void OnEMG_A()
 {
-	for (long i = 0; i <10; i++)
+	for (long i = 0; i < 10; i++)
 	{
-	CRobot::OnSetIntPara((char *)"EMCY0", 0);
-	#ifdef CMPL_WIN
-		Sleep(5);
-	#endif 
-	#ifdef CMPL_LIN
-		usleep(5000);
-	#endif
+		CRobot::OnSetIntPara((char*)"EMCY0", 0);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif 
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
 	}
-#ifdef CMPL_WIN
-	Sleep(10);
-#endif 
-#ifdef CMPL_LIN
-	usleep(10000);
-#endif
+	
 	CRobot::OnClearSet();
 	CRobot::OnSetTargetState_A(ARM_STATE_IDLE);
 	CRobot::OnSetSend();
@@ -42,24 +36,20 @@ void OnEMG_A()
 	    printf("[Marvin SDK]: A arm soft stop! \n");
 	}
 }
+
 void OnEMG_B()
 {
-	for (long i = 0; i <10; i++)
+	for (long i = 0; i < 10; i++)
 	{
-	CRobot::OnSetIntPara((char*)"EMCY1", 0);
-	#ifdef CMPL_WIN
-		Sleep(5);
-	#endif 
-	#ifdef CMPL_LIN
-		usleep(5000);
-	#endif
+		CRobot::OnSetIntPara((char*)"EMCY1", 0);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif 
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
 	}
-#ifdef CMPL_WIN
-	Sleep(10);
-#endif 
-#ifdef CMPL_LIN
-	usleep(10000);
-#endif
+	
 	CRobot::OnClearSet();
 	CRobot::OnSetTargetState_B(ARM_STATE_IDLE);
 	CRobot::OnSetSend();
@@ -68,26 +58,21 @@ void OnEMG_B()
 	    printf("[Marvin SDK]: B arm soft stop! \n");
 	}
 }
+
 void OnEMG_AB()
 {
-	for (long i = 0; i <10; i++)
+	for (long i = 0; i < 10; i++)
 	{
-	CRobot::OnSetIntPara((char*)"EMCY0", 0);
-	CRobot::OnSetIntPara((char*)"EMCY1", 0);
-	#ifdef CMPL_WIN
-		Sleep(5);
-	#endif 
-	#ifdef CMPL_LIN
-		usleep(5000);
-	#endif
+		CRobot::OnSetIntPara((char*)"EMCY0", 0);
+		CRobot::OnSetIntPara((char*)"EMCY1", 0);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif 
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
 	}
-	
-#ifdef CMPL_WIN
-	Sleep(10);
-#endif 
-#ifdef CMPL_LIN
-	usleep(10000);
-#endif
+
 	CRobot::OnClearSet();
 	CRobot::OnSetTargetState_A(ARM_STATE_IDLE);
 	CRobot::OnSetTargetState_B(ARM_STATE_IDLE);
@@ -98,6 +83,35 @@ void OnEMG_AB()
 	    printf("[Marvin SDK]: A and B arm soft stop! \n");
 	}
 }
+
+void OnServoReset_A(int axis)
+{
+	for (long i = 0; i < 10; i++)
+	{
+		CRobot::OnSetIntPara((char*)"RESETS0", axis);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif 
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
+	}
+}
+
+void OnServoReset_B(int axis)
+{
+	for (long i = 0; i < 10; i++)
+	{
+		CRobot::OnSetIntPara((char*)"RESETS1", axis);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif 
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
+	}
+}
+
 void OnGetServoErr_A(long ErrCode[7])
 {
 	char name[30];
@@ -113,6 +127,7 @@ void OnGetServoErr_A(long ErrCode[7])
 	    printf("[Marvin SDK]: A arm Servo error code=[%d,%d,%d,%d,%d,%d,%d],\n",ErrCode[0],ErrCode[1],ErrCode[2] ,ErrCode[3] ,ErrCode[4] ,ErrCode[5] ,ErrCode[6]);
 	}
 }
+
 void OnGetServoErr_B(long ErrCode[7])
 {
 	char name[30];
@@ -130,18 +145,48 @@ void OnGetServoErr_B(long ErrCode[7])
 }
 
 
-
 void OnClearErr_A()
 {
 	char name[30];
 	memset(name, 0, 30);
 	sprintf(name, "RESET0");
-	CRobot::OnSetIntPara(name, 0);
+	for (long i = 0; i < 10; i++)
+	{
+		CRobot::OnSetIntPara(name, 0);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif 
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
+	}
+	
 	if(local_log_tag == true)
 	{
 	    printf("[Marvin SDK]: A arm clear error\n");
 	}
 }
+
+
+void OnClearErr_B()
+{
+	char name[30];
+	memset(name, 0, 30);
+	sprintf(name, "RESET1");
+	for (long i = 0; i < 10; i++)
+	{
+		CRobot::OnSetIntPara(name, 0);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif 
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
+	}
+
+	if(local_log_tag == true) printf("[Marvin SDK]: B arm clear error\n");
+}
+
 
 void OnLogOn()
 {
@@ -179,19 +224,10 @@ void OnLocalLogOff()
     CRobot::OnLocalLogOff();
 }
 
-void OnClearErr_B()
-{
-	char name[30];
-	memset(name, 0, 30);
-	sprintf(name, "RESET1");
-	CRobot::OnSetIntPara(name, 0);
-	if(local_log_tag == true) printf("[Marvin SDK]: B arm clear error\n");
-}
 
 
 bool OnSendPVT_A(char* local_file, long serial)
 {
-	// printf("9\n");
 	return CRobot::OnSendPVT_A(local_file, serial);
 }
 bool OnSendPVT_B(char* local_file, long serial)
@@ -233,6 +269,7 @@ long OnSavePara()
 {
 	return CRobot::OnSavePara();
 }
+
 bool OnGetBuf(DCSS * ret)
 {
 	return CRobot::OnGetBuf(ret);
@@ -386,89 +423,6 @@ bool OnSetChDataA(unsigned char data_ptr[256], long size_int,long set_ch)
 }
 
 
-//bool AscIIToHex(unsigned char ascbuf[256], long len, unsigned char hexbuf[256], long& retlen)
-//{
-//	unsigned char V = 0;
-//	retlen = 0;
-//	long cnt = 0;
-//	for (long i = 0; i < len; i++)
-//	{
-//		unsigned char c = ascbuf[i];
-//		unsigned char valid = 0;
-//		if (c >= '0' && c <= '9')
-//		{
-//			V *= 16;
-//			V += (c - '0');
-//			cnt++;
-//			valid = 1;
-//		}
-//
-//		if (c >= 'a' && c <= 'f')
-//		{
-//			V *= 16;
-//			V += (10 + c - 'a');
-//			cnt++;
-//			valid = 1;
-//		}
-//
-//		if (c >= 'A' && c <= 'F')
-//		{
-//			V *= 16;
-//			V += (10 + c - 'A');
-//			cnt++;
-//			valid = 1;
-//		}
-//
-//		if (c == ' ')
-//		{
-//			valid = 1;
-//		}
-//
-//		if (valid == 0)
-//		{
-//			return false;
-//		}
-//		if (cnt >= 3)
-//		{
-//			return false;
-//		}
-//
-//		if (c == ' ' || i == len-1)
-//		{
-//			if (cnt != 0)
-//			{
-//				hexbuf[retlen] = V;
-//				retlen++;
-//				if (retlen >= 63)
-//				{
-//					return false;
-//				}
-//				cnt = 0;
-//				V = 0;
-//			}
-//		}
-//	}
-//	if (retlen <= 0)
-//	{
-//		return false;
-//	}
-//	return true;
-//}
-
-//bool OnSetChDataA_hex(unsigned char data_ptr[256], long size_int,long set_ch)
-//{
-//
-//    unsigned char buf2[256];
-//    memset(buf2, 0, 256);
-//    long hlen;
-//    if (AscIIToHex(data_ptr, size_int, buf2, hlen) == false)
-//    {
-//        AfxMessageBox("FORMAT Err");
-//        return;
-//    }
-//	return CRobot::OnSetChDataA_hex(buf2, hlen, 1);
-//}
-
 long OnGetChDataB(unsigned char data_ptr[256], long* ret_ch)
 {
 	return CRobot::OnGetChDataB(data_ptr,ret_ch);
@@ -477,19 +431,6 @@ bool OnSetChDataB(unsigned char data_ptr[256], long size_int, long set_ch)
 {
 	return CRobot::OnSetChDataB(data_ptr,size_int,set_ch);
 }
-
-//bool OnSetChDataB_hex(unsigned char data_ptr[256], long size_int, long set_ch)
-//{
-//	unsigned char buf2[256];
-//    memset(buf2, 0, 256);
-//    long hlen;
-//    if (AscIIToHex(data_ptr, size_int, buf2, hlen) == false)
-//    {
-//        AfxMessageBox("FORMAT Err");
-//        return;
-//    }
-//	return CRobot::OnSetChDataB_hex(buf2, hlen, 1);
-//}
 
 bool OnClearChDataA()
 {

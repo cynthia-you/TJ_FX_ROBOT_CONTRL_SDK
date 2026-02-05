@@ -1,4 +1,3 @@
-
 #include "PointSet.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -972,27 +971,21 @@ bool CPointSet::OnSaveCSV(char* path)
 {
 	if (m_PointType == PotT_BEGIN)
 	{
-		printf("21\n");
 		return false;
 	}
 	long num = OnGetPointNum();
 	if (num <= 0)
 	{
-		printf("22\n");
 		return false;
 	}
 
 	if (path == NULL)
 	{
-		printf("23\n");
 		return false;
 	}
 	FILE* fp = fopen(path, "wb");
-	printf("24\n");
-	printf("path =%s\n",path);
 	if (fp == NULL)
 	{
-		printf("25\n");
 		return false;
 	}
 	fflush(fp);
@@ -1007,16 +1000,12 @@ bool CPointSet::OnSaveCSV(char* path)
 		for (long j = 0; j < m_PointType; j++)
 		{
 			fprintf(fp, "%lf,", tmp[j]);
-			printf("fp %lf,", tmp[j]);
 		}
 		fprintf(fp, "%c", r);
 	}
 	fclose(fp);
-	printf("26\n");
 	return true;
 }
-
-
 
 bool CPointSet::OnSaveRaw(char* path)
 {

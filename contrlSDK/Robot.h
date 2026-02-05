@@ -5,18 +5,16 @@
 #include  "ACB.h"
 #include "TCPFileClient.h"
 #ifdef CMPL_WIN
-#include<Windows.h>
-#include < mmiscapi2.h >
-#pragma comment(lib,"winmm.lib")
-#include <winsock.h>
-#include <stdio.h>
-#include <stdint.h>
-#pragma comment(lib,"ws2_32.lib")
+	#include <windows.h>
+	//#include <mmiscapi2.h>
+	#pragma comment(lib,"winmm.lib")
+	#include <winsock.h>
+	#include <stdio.h>
+	#include <stdint.h>
+	#pragma comment(lib,"ws2_32.lib")
 #endif
 #include "PointSet.h"
 #define    SDK_VERSION   1003
-
-
 
 
 
@@ -118,6 +116,7 @@ protected:
 	timer_t robot_timer;
 #endif	
 	DCSS    m_DCSS;
+	DCSS    m_temp_dcss;//win
 
 	DCSS    m_DCSS_Send;
 	FX_UCHAR m_RunState;
