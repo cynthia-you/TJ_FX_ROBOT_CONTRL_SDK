@@ -18,13 +18,17 @@ bool OnDownloadLog(char* local_path)
 
 void OnEMG_A()
 {
-	CRobot::OnSetIntPara((char *)"EMCY0", 0);
-#ifdef CMPL_WIN
-	Sleep(10);
-#endif 
-#ifdef CMPL_LIN
-	usleep(10000);
-#endif
+	for (long i = 0; i < 10; i++)
+	{
+		CRobot::OnSetIntPara((char*)"EMCY0", 0);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
+	}
+
 	CRobot::OnClearSet();
 	CRobot::OnSetTargetState_A(ARM_STATE_IDLE);
 	CRobot::OnSetSend();
@@ -33,15 +37,20 @@ void OnEMG_A()
 	    printf("[Marvin SDK]: A arm soft stop! \n");
 	}
 }
+
 void OnEMG_B()
 {
-	CRobot::OnSetIntPara((char*)"EMCY1", 0);
-#ifdef CMPL_WIN
-	Sleep(10);
-#endif 
-#ifdef CMPL_LIN
-	usleep(10000);
-#endif
+	for (long i = 0; i < 10; i++)
+	{
+		CRobot::OnSetIntPara((char*)"EMCY1", 0);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
+	}
+
 	CRobot::OnClearSet();
 	CRobot::OnSetTargetState_B(ARM_STATE_IDLE);
 	CRobot::OnSetSend();
@@ -50,16 +59,21 @@ void OnEMG_B()
 	    printf("[Marvin SDK]: B arm soft stop! \n");
 	}
 }
+
 void OnEMG_AB()
 {
-	CRobot::OnSetIntPara((char*)"EMCY0", 0);
-	CRobot::OnSetIntPara((char*)"EMCY1", 0);
-#ifdef CMPL_WIN
-	Sleep(10);
-#endif 
-#ifdef CMPL_LIN
-	usleep(10000);
-#endif
+	for (long i = 0; i < 10; i++)
+	{
+		CRobot::OnSetIntPara((char*)"EMCY0", 0);
+		CRobot::OnSetIntPara((char*)"EMCY1", 0);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
+	}
+
 	CRobot::OnClearSet();
 	CRobot::OnSetTargetState_A(ARM_STATE_IDLE);
 	CRobot::OnSetTargetState_B(ARM_STATE_IDLE);
@@ -70,6 +84,35 @@ void OnEMG_AB()
 	    printf("[Marvin SDK]: A and B arm soft stop! \n");
 	}
 }
+
+void OnServoReset_A(int axis)
+{
+	for (long i = 0; i < 10; i++)
+	{
+		CRobot::OnSetIntPara((char*)"RESETS0", axis);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
+	}
+}
+
+void OnServoReset_B(int axis)
+{
+	for (long i = 0; i < 10; i++)
+	{
+		CRobot::OnSetIntPara((char*)"RESETS1", axis);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
+	}
+}
+
 void OnGetServoErr_A(long ErrCode[7])
 {
 	char name[30];
@@ -85,6 +128,7 @@ void OnGetServoErr_A(long ErrCode[7])
 	    printf("[Marvin SDK]: A arm Servo error code=[%d,%d,%d,%d,%d,%d,%d],\n",ErrCode[0],ErrCode[1],ErrCode[2] ,ErrCode[3] ,ErrCode[4] ,ErrCode[5] ,ErrCode[6]);
 	}
 }
+
 void OnGetServoErr_B(long ErrCode[7])
 {
 	char name[30];
@@ -102,18 +146,48 @@ void OnGetServoErr_B(long ErrCode[7])
 }
 
 
-
 void OnClearErr_A()
 {
 	char name[30];
 	memset(name, 0, 30);
 	sprintf(name, "RESET0");
-	CRobot::OnSetIntPara(name, 0);
+	for (long i = 0; i < 10; i++)
+	{
+		CRobot::OnSetIntPara(name, 0);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
+	}
+
 	if(local_log_tag == true)
 	{
 	    printf("[Marvin SDK]: A arm clear error\n");
 	}
 }
+
+
+void OnClearErr_B()
+{
+	char name[30];
+	memset(name, 0, 30);
+	sprintf(name, "RESET1");
+	for (long i = 0; i < 10; i++)
+	{
+		CRobot::OnSetIntPara(name, 0);
+		#ifdef CMPL_WIN
+			Sleep(50);
+		#endif
+		#ifdef CMPL_LIN
+			usleep(50000);
+		#endif
+	}
+
+	if(local_log_tag == true) printf("[Marvin SDK]: B arm clear error\n");
+}
+
 
 void OnLogOn()
 {
@@ -151,14 +225,6 @@ void OnLocalLogOff()
     CRobot::OnLocalLogOff();
 }
 
-void OnClearErr_B()
-{
-	char name[30];
-	memset(name, 0, 30);
-	sprintf(name, "RESET1");
-	CRobot::OnSetIntPara(name, 0);
-	if(local_log_tag == true) printf("[Marvin SDK]: B arm clear error\n");
-}
 
 
 bool OnSendPVT_A(char* local_file, long serial)
@@ -261,6 +327,12 @@ bool OnSetCartKD_A(double K[7], double D[7], int type)
 {
 	return CRobot::OnSetCartKD_A(K, D, type);
 }
+
+bool  OnSetEefRot_A(int fcType, double CartCtrlPara[7])
+{
+	return CRobot::OnSetEefRot_A(fcType, CartCtrlPara);
+}
+
 bool OnSetDragSpace_A(int dgType)
 {
 	return CRobot::OnSetDragSpace_A(dgType);
@@ -304,6 +376,11 @@ bool OnSetJointKD_B(double K[7], double D[7])
 bool OnSetCartKD_B(double K[6], double D[6],int type)
 {
 	return CRobot::OnSetCartKD_B(K, D, type);
+}
+
+bool  OnSetEefRot_B(int fcType, double CartCtrlPara[7])
+{
+	return CRobot::OnSetEefRot_B(fcType, CartCtrlPara);
 }
 
 bool OnSetDragSpace_B(int dgType)
@@ -355,7 +432,6 @@ bool OnSetChDataB(unsigned char data_ptr[256], long size_int, long set_ch)
 {
 	return CRobot::OnSetChDataB(data_ptr,size_int,set_ch);
 }
-
 
 bool OnClearChDataA()
 {

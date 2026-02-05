@@ -2,481 +2,6 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-//CACB::CACB()
-//{
-//	init_tag_ = false;
-//	base_ = NULL;
-//	item_num = 0;
-//
-//	size_ = 10240;
-//	base_ = (unsigned char*)malloc(size_);
-//
-//	init_tag_ = true;
-//	write_pos_ = 1;
-//	read_pos_ = 0;
-//
-//	write_lock_ = 0;
-//	read_lock_ = 0;
-//	buf_serial_ = 0;
-//
-//	item_num = 0;
-//
-//
-//
-//}
-//
-//CACB::~CACB()
-//{
-//	if (init_tag_ == true)
-//	{
-//		free(base_);
-//	}
-//}
-//long CACB::OnGetStoreNum()
-//{
-//	return item_num;
-//}
-//
-//bool CACB::WriteBuf(unsigned char* data_ptr, long size_int)
-//{
-//	if (size_int < 1 || init_tag_ == false)
-//	{
-//		return false;
-//	}
-//	if (write_lock_ != 0)
-//	{
-//		return false;
-//	}
-//	write_lock_ = 1;
-//
-//	long emptysize;
-//	long wpos = write_pos_;
-//	long rpos = read_pos_;
-//
-//	unsigned long tmpserial = buf_serial_;
-//	tmpserial++;
-//	if (tmpserial >= 100000000)
-//	{
-//		tmpserial = 0;
-//	}
-//
-//
-//	if (wpos < rpos)
-//	{
-//		emptysize = rpos - wpos - 1;
-//		if (emptysize < size_int + 6)
-//		{
-//			write_lock_ = 0;
-//			return false;
-//		}
-//		base_[wpos] = size_int / 256;
-//		base_[wpos + 1] = size_int % 256;
-//
-//		base_[wpos + 2] = (unsigned char)(tmpserial / 0x1000000);
-//		base_[wpos + 3] = (unsigned char)((tmpserial % 0x1000000) / 0x10000);
-//		base_[wpos + 4] = (unsigned char)((tmpserial % 0x10000) / 0x100);
-//		base_[wpos + 5] = (unsigned char)((tmpserial % 0x100));
-//
-//
-//		memcpy(&base_[wpos + 6], data_ptr, size_int);
-//		wpos += 6;
-//		wpos += size_int;
-//		write_pos_ = wpos;
-//
-//		buf_serial_ = tmpserial;
-//		write_lock_ = 0;
-//		item_num++;
-//		return true;
-//	}
-//	else
-//	{
-//		long epos = size_ - wpos;
-//		emptysize = epos + rpos - 1;
-//
-//		if (emptysize < size_int + 6)
-//		{
-//			write_lock_ = 0;
-//			return false;
-//		}
-//
-//		base_[wpos] = size_int / 256;
-//		wpos++;
-//		wpos %= size_;
-//		base_[wpos] = size_int % 256;
-//		wpos++;
-//		wpos %= size_;
-//
-//		base_[wpos] = (unsigned char)(tmpserial / 0x1000000);
-//		wpos++;
-//		wpos %= size_;
-//		base_[wpos] = (unsigned char)((tmpserial % 0x1000000) / 0x10000);
-//		wpos++;
-//		wpos %= size_;
-//		base_[wpos] = (unsigned char)((tmpserial % 0x10000) / 0x100);
-//		wpos++;
-//		wpos %= size_;
-//		base_[wpos] = (unsigned char)((tmpserial % 0x100));
-//		wpos++;
-//		wpos %= size_;
-//
-//
-//		epos -= 6;
-//
-//		if (epos <= size_int)
-//		{
-//			if (epos > 0)
-//			{
-//				memcpy(&base_[wpos], data_ptr, epos);
-//				if (size_int - epos > 0)
-//				{
-//					memcpy(&base_[0], &data_ptr[epos], size_int - epos);
-//				}
-//			}
-//			else
-//			{
-//				memcpy(&base_[wpos], data_ptr, size_int);
-//			}
-//		}
-//		else
-//		{
-//			memcpy(&base_[wpos], data_ptr, size_int);
-//		}
-//		wpos += size_int;
-//		wpos %= size_;
-//		write_pos_ = wpos;
-//
-//		buf_serial_ = tmpserial;
-//		write_lock_ = 0;
-//		item_num++;
-//		return true;
-//	}
-//}
-//
-//long CACB::ReadBuf(unsigned char* data_ptr, long size_int)
-//{
-//	if (init_tag_ == false)
-//	{
-//		return -1;
-//	}
-//	if (read_lock_ != 0)
-//	{
-//		return -1;
-//	}
-//	read_lock_ = 1;
-//
-//	long wpos = write_pos_;
-//	long rpos = read_pos_;
-//	rpos++;
-//	rpos %= size_;
-//	if (rpos == wpos)
-//	{
-//		read_lock_ = 0;
-//		return 0;
-//	}
-//
-//	long sizetmp;
-//	sizetmp = base_[rpos] * 256;
-//	rpos++;
-//	rpos %= size_;
-//	sizetmp += base_[rpos];
-//	if (size_int < sizetmp)
-//	{
-//		read_lock_ = 0;
-//		return -2;
-//	}
-//
-//	rpos++;
-//	rpos %= size_;
-//
-//
-//	rpos += 4;
-//	rpos %= size_;
-//
-//	long explen = size_ - rpos;
-//	if (explen <= sizetmp)
-//	{
-//		memcpy(data_ptr, &base_[rpos], explen);
-//		if (sizetmp - explen > 0)
-//		{
-//			memcpy(&data_ptr[explen], base_, sizetmp - explen);
-//		}
-//	}
-//	else
-//	{
-//		memcpy(data_ptr, &base_[rpos], sizetmp);
-//	}
-//	rpos += (sizetmp - 1);
-//	rpos %= size_;
-//	read_pos_ = rpos;
-//	read_lock_ = 0;
-//
-//	item_num--;
-//	return sizetmp;
-//}
-//
-//
-//long CACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long& serial)
-//{
-//	if (init_tag_ == false)
-//	{
-//		return -1;
-//	}
-//	if (read_lock_ != 0)
-//	{
-//		return -1;
-//	}
-//	read_lock_ = 1;
-//
-//	long wpos = write_pos_;
-//	long rpos = read_pos_;
-//	rpos++;
-//	rpos %= size_;
-//	if (rpos == wpos)
-//	{
-//		read_lock_ = 0;
-//		return 0;
-//	}
-//
-//	long sizetmp;
-//	sizetmp = base_[rpos] * 256;
-//	rpos++;
-//	rpos %= size_;
-//	sizetmp += base_[rpos];
-//	if (size_int < sizetmp)
-//	{
-//		read_lock_ = 0;
-//		return -2;
-//	}
-//
-//	rpos++;
-//	rpos %= size_;
-//
-//
-//	unsigned long v1;
-//	unsigned long v2;
-//	unsigned long v3;
-//	unsigned long v4;
-//
-//	v1 = base_[rpos];
-//	rpos++;
-//	rpos %= size_;
-//	v2 = base_[rpos];
-//	rpos++;
-//	rpos %= size_;
-//	v3 = base_[rpos];
-//	rpos++;
-//	rpos %= size_;
-//	v4 = base_[rpos];
-//	rpos++;
-//	rpos %= size_;
-//
-//	serial = v1 * 0x1000000 + v2 * 0x10000 + v3 * 0x100 + v4;
-//
-//
-//	long explen = size_ - rpos;
-//	if (explen <= sizetmp)
-//	{
-//		memcpy(data_ptr, &base_[rpos], explen);
-//		if (sizetmp - explen > 0)
-//		{
-//			memcpy(&data_ptr[explen], base_, sizetmp - explen);
-//		}
-//	}
-//	else
-//	{
-//		memcpy(data_ptr, &base_[rpos], sizetmp);
-//	}
-//	rpos += (sizetmp - 1);
-//	rpos %= size_;
-//	read_pos_ = rpos;
-//	read_lock_ = 0;
-//	item_num--;
-//	return sizetmp;
-//}
-//
-//long CACB::PeekBuf(unsigned char* data_ptr, long size_int)
-//{
-//	if (init_tag_ == false)
-//	{
-//		return -1;
-//	}
-//
-//	if (size_int == 0 || data_ptr == NULL)
-//	{
-//		long wpos = write_pos_;
-//		long rpos = read_pos_;
-//		rpos++;
-//		rpos %= size_;
-//		if (rpos == wpos)
-//		{
-//			read_lock_ = 0;
-//			return 0;
-//		}
-//		return 1;
-//	}
-//	if (read_lock_ != 0)
-//	{
-//		return -1;
-//	}
-//	read_lock_ = 1;
-//
-//	long wpos = write_pos_;
-//	long rpos = read_pos_;
-//	rpos++;
-//	rpos %= size_;
-//	if (rpos == wpos)
-//	{
-//		read_lock_ = 0;
-//		return 0;
-//	}
-//
-//	long sizetmp;
-//	sizetmp = base_[rpos] * 256;
-//	rpos++;
-//	rpos %= size_;
-//	sizetmp += base_[rpos];
-//	if (size_int < sizetmp)
-//	{
-//		read_lock_ = 0;
-//		return -2;
-//	}
-//
-//	rpos++;
-//	rpos %= size_;
-//
-//	rpos += 4;
-//	rpos %= size_;
-//
-//	long explen = size_ - rpos;
-//	if (explen <= sizetmp)
-//	{
-//		memcpy(data_ptr, &base_[rpos], explen);
-//		if (sizetmp - explen > 0)
-//		{
-//			memcpy(&data_ptr[explen], base_, sizetmp - explen);
-//		}
-//	}
-//	else
-//	{
-//		memcpy(data_ptr, &base_[rpos], sizetmp);
-//	}
-//
-//	read_lock_ = 0;
-//	return sizetmp;
-//}
-//
-//long CACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long& serial)
-//{
-//	if (init_tag_ == false)
-//	{
-//		return -1;
-//	}
-//	if (read_lock_ != 0)
-//	{
-//		return -1;
-//	}
-//	read_lock_ = 1;
-//
-//	long wpos = write_pos_;
-//	long rpos = read_pos_;
-//	rpos++;
-//	rpos %= size_;
-//	if (rpos == wpos)
-//	{
-//		read_lock_ = 0;
-//		return 0;
-//	}
-//
-//	long sizetmp;
-//	sizetmp = base_[rpos] * 256;
-//	rpos++;
-//	rpos %= size_;
-//	sizetmp += base_[rpos];
-//	if (size_int < sizetmp)
-//	{
-//		read_lock_ = 0;
-//		return -2;
-//	}
-//
-//	rpos++;
-//	rpos %= size_;
-//
-//
-//	unsigned long v1;
-//	unsigned long v2;
-//	unsigned long v3;
-//	unsigned long v4;
-//
-//	v1 = base_[rpos];
-//	rpos++;
-//	rpos %= size_;
-//	v2 = base_[rpos];
-//	rpos++;
-//	rpos %= size_;
-//	v3 = base_[rpos];
-//	rpos++;
-//	rpos %= size_;
-//	v4 = base_[rpos];
-//	rpos++;
-//	rpos %= size_;
-//
-//	serial = v1 * 0x1000000 + v2 * 0x10000 + v3 * 0x100 + v4;
-//
-//
-//	long explen = size_ - rpos;
-//	if (explen <= sizetmp)
-//	{
-//		memcpy(data_ptr, &base_[rpos], explen);
-//		if (sizetmp - explen > 0)
-//		{
-//			memcpy(&data_ptr[explen], base_, sizetmp - explen);
-//		}
-//	}
-//	else
-//	{
-//		memcpy(data_ptr, &base_[rpos], sizetmp);
-//	}
-//	rpos += (sizetmp - 1);
-//	rpos %= size_;
-//	read_pos_ = rpos;
-//	read_lock_ = 0;
-//	return sizetmp;
-//
-//}
-//
-//
-//
-//
-//bool CACB::Empty()
-//{
-//	if (init_tag_ == false)
-//	{
-//		return false;
-//	}
-//	if (read_lock_ != 0 || write_lock_ != 0)
-//	{
-//		return false;
-//	}
-//
-//	read_lock_ = 1;
-//	write_lock_ = 1;
-//
-//	read_pos_ = 0;
-//	write_pos_ = 1;
-//
-//	write_lock_ = 0;
-//	read_lock_ = 0;
-//
-//
-//	item_num = 0;
-//
-//	return true;
-//}
-
 
 static CRobot* m_InsRobot = NULL;
 
@@ -493,7 +18,7 @@ bool CRobot::OnClearChDataA()
 	{
 		num = m_InsRobot->m_ACB1.ReadBuf((unsigned char*)&t, si);
 	}
-	// if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Clear 485 cache of A arm\n");
+	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Clear 485 cache of A arm\n");
 
 	return true;
 }
@@ -512,7 +37,7 @@ bool CRobot::OnClearChDataB()
 	{
 		num = m_InsRobot->m_ACB2.ReadBuf((unsigned char*)&t, si);
 	}
-    // if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Clear 485 cache of B arm\n");
+    if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Clear 485 cache of B arm\n");
 	return true;
 }
 
@@ -990,8 +515,6 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 }
 
 
-
-
 long CRobot::OnSetIntPara(char paraName[30], long setValue)
 {
 	if (paraName[29] != 0)
@@ -1456,15 +979,7 @@ void CRobot::DoRecv()
 		return;
 	}
 
-	// 临时存储最新的 DCSS 数据
-	bool got_dcss_data = false;
-	int total_packet_count = 0;  // 统计所有包
-
-	// 循环读取所有堆积的 UDP 数据包，直到缓冲区为空
-	// 目的：清空旧数据，只使用最新的数据包
-	while (total_packet_count <100)
-	{
-		_localLen = sizeof(_local);
+	_localLen = sizeof(_local);
 
 #ifdef CMPL_WIN
 		int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr*)&_local, &_localLen);
@@ -1473,105 +988,78 @@ void CRobot::DoRecv()
 		int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr*)&_local, (socklen_t*)&_localLen);
 #endif
 
-		if (Len <= 0)
-		{
-			break;
-		}
-
-		total_packet_count++;
-
-		// 处理机器人状态数据包（DCSS）
-		 // 处理DCSS包 - 总是保存最新的
-        if (Len == sizeof(DCSS) + 2 && recvbuf[0] == 'F' && recvbuf[1] == 'X')
-        {
-            DCSS* p = (DCSS*)&recvbuf[2];
-            memcpy(&m_temp_dcss, p, sizeof(m_temp_dcss));
-            got_dcss_data = true;
-        }
-		// 处理通信数据包（DDSS）- 每个包都需要处理
-        // 处理DDSS包
-        else if (Len == sizeof(DDSS) + 2 && recvbuf[0] == 'C' && recvbuf[1] == 'H')
-        {
-				DDSS* p = (DDSS*)&recvbuf[2];
-				if (p->m_CH == 1)
-				{
-					m_ACB1.WriteBuf((unsigned char *)p, sizeof(DDSS));
-				}
-
-				if (p->m_CH == 2)
-				{
-					m_ACB2.WriteBuf((unsigned char*)p, sizeof(DDSS));
-				}
-
-		}
-
-		// 安全限制：防止无限循环，最多读取 100 个 DCSS 包
-		// 如果缓冲区堆积超过 100 个包（0.1秒），说明系统严重过载
-		if (total_packet_count >= 100)
-		{
-			if (m_InsRobot->m_LocalLogTag == true)
-			{
-				printf("[Marvin SDK Warning]: UDP buffer overflow, cleared %d packets\n", total_packet_count);
-			}
-			break;
-		}
-	}
-
-	// 只在读取到新数据时更新 m_DCSS（使用最后一次读取的最新数据）
-	if (got_dcss_data)
+	if (Len == sizeof(DCSS) + 2)
 	{
-		memcpy(&m_DCSS, &m_temp_dcss, sizeof(m_DCSS));
-		// 数据采集处理
-		if (m_InsRobot->m_GatherTag == 1)
+		if (recvbuf[0] == 'F' && recvbuf[1] == 'X')
 		{
-			if (m_GatherRecordNum >= m_GatherRecordMaxNum)
+			DCSS* p = (DCSS*)&recvbuf[2];
+			memcpy(&m_DCSS, p, sizeof(m_DCSS));
+			if (m_InsRobot->m_GatherTag == 1)
 			{
-				m_GatherTag = 4;
-			}
-			else
-			{
-				double v[40];
-				for (long i = 0; i < m_GatherItemSize; i++)
+				if (m_GatherRecordNum >= m_GatherRecordMaxNum)
 				{
-					v[i+2] = *m_GatherItem[i];
+					m_GatherTag = 4;
 				}
-				v[0] = m_DCSS.m_Out[0].m_OutFrameSerial;
-				//if(m_InsRobot->m_LocalLogTag == true) printf("%lf\n",v[0]);
-				v[1] = m_DCSS.m_Out[1].m_OutFrameSerial;
-				m_GatherSet.OnSetPoint(v);
-				m_GatherRecordNum++;
+				else
+				{
+					double v[40];
+					for (long i = 0; i < m_GatherItemSize; i++)
+					{
+						v[i+2] = *m_GatherItem[i];
+					}
+					v[0] = m_DCSS.m_Out[0].m_OutFrameSerial;
+					//if(m_InsRobot->m_LocalLogTag == true) printf("%lf\n",v[0]);
+					v[1] = m_DCSS.m_Out[1].m_OutFrameSerial;
+					m_GatherSet.OnSetPoint(v);
+					m_GatherRecordNum++;
+				}
 			}
-		}
 
-		if (m_InsRobot->m_GatherTag == 2)
-		{
-			m_InsRobot->m_GatherTag = 4;
-		}
-
-		// 帧序号检测与丢帧统计
-		if (old_serial_tag == FX_FALSE)
-		{
-			old_serial_tag = true;
-			old_serial = m_DCSS.m_Out[0].m_OutFrameSerial;
-		}
-		else
-		{
-			old_serial += 1;
-			old_serial %= 1000000;
-			if (old_serial != m_DCSS.m_Out[0].m_OutFrameSerial)
+			if (m_InsRobot->m_GatherTag == 2)
 			{
-				miss_cnt++;
+				m_InsRobot->m_GatherTag = 4;
+			}
+
+			if (old_serial_tag == FX_FALSE)
+			{
+				old_serial_tag = true;
 				old_serial = m_DCSS.m_Out[0].m_OutFrameSerial;
 			}
 			else
 			{
-				miss_cnt = 0;
+				old_serial += 1;
+				old_serial %= 1000000;
+				if (old_serial != m_DCSS.m_Out[0].m_OutFrameSerial)
+				{
+					miss_cnt++;
+					old_serial = m_DCSS.m_Out[0].m_OutFrameSerial;
+				}
+				else
+				{
+					miss_cnt = 0;
+				}
 			}
+		}
+	}
+	else if(Len == sizeof(DDSS) + 2)
+	{
+		if (recvbuf[0] == 'C' && recvbuf[1] == 'H')
+		{
+			DDSS* p = (DDSS*)&recvbuf[2];
+			if (p->m_CH == 1)
+			{
+				m_ACB1.WriteBuf((unsigned char *)p, sizeof(DDSS));
+			}
+
+			if (p->m_CH == 2)
+			{
+				m_ACB2.WriteBuf((unsigned char*)p, sizeof(DDSS));
+			}
+
 		}
 	}
 
 }
-
 void CRobot::DoSend()
 {
 	if (m_SendTag == 100)
@@ -2062,8 +1550,6 @@ bool CRobot::OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[
 	pv[3] = fxDir[3];
 	pv[4] = fxDir[4];
 	pv[5] = fxDir[5];
-
-
 	pv[6] = fcCtrlPara[0];
 	pv[7] = fcCtrlPara[1];
 	pv[8] = fcCtrlPara[2];
@@ -2154,13 +1640,55 @@ bool CRobot::OnSetCartKD_A(double K[7], double D[7],int type)
 
 	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm Card k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
+	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm Cart k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
 	K[0],K[1],K[2],K[3],K[4],K[5],K[6],
 	D[0],D[1],D[2],D[3],D[4],D[5],D[6],
 	type);
 
 	return true;
 }
+
+bool CRobot::OnSetEefRot_A(int fcType, double CartCtrlPara[7])
+{
+	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
+
+	if (add_size + m_InsRobot->m_Slen >= 1400)
+	{
+		return false;
+	}
+
+	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 107;
+	m_InsRobot->m_Slen++;
+
+	FX_INT32* pv1 = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	pv1[0] = fcType;
+
+	m_InsRobot->m_Slen += sizeof(FX_INT32);
+	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	pv[0] = 0;
+	pv[1] = 0;
+	pv[2] = 0;
+	pv[3] = 0;
+	pv[4] = 0;
+	pv[5] = 0;
+	pv[6] = CartCtrlPara[0];
+	pv[7] = CartCtrlPara[1];
+	pv[8] = CartCtrlPara[2];
+	pv[9] = CartCtrlPara[3];
+	pv[10] = CartCtrlPara[4];
+	pv[11] = CartCtrlPara[5];
+	pv[12] = CartCtrlPara[6];
+	pv[13] = 0;
+
+	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
+
+	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	(*pnum)++;
+	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm flange Cart rotation parameters.\n fcType=%d,\n",fcType);
+    if(m_InsRobot->m_LocalLogTag == true) printf("CartCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n",CartCtrlPara[0],CartCtrlPara[1],CartCtrlPara[2],CartCtrlPara[3],CartCtrlPara[4],CartCtrlPara[5],CartCtrlPara[6]);
+	return true;
+}
+
 bool CRobot::OnSetJointKD_A(double K[7], double D[7])
 {
 	long add_size = 1 + sizeof(FX_FLOAT) * 14;
@@ -2502,12 +2030,53 @@ bool CRobot::OnSetCartKD_B(double K[6], double D[6],int type)
 
 	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm Card k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
+	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm Cart k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
 	K[0],K[1],K[2],K[3],K[4],K[5],K[6],
 	D[0],D[1],D[2],D[3],D[4],D[5],D[6],
 	type);
 
 	return true;
+}
+bool CRobot::OnSetEefRot_B(int fcType, double CartCtrlPara[7])
+{
+	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
+
+	if (add_size + m_InsRobot->m_Slen >= 1400)
+	{
+		return false;
+	}
+
+	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 207;
+	m_InsRobot->m_Slen++;
+
+	FX_INT32* pv1 = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	pv1[0] = fcType;
+
+	m_InsRobot->m_Slen += sizeof(FX_INT32);
+	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	pv[0] = 0;
+	pv[1] = 0;
+	pv[2] = 0;
+	pv[3] = 0;
+	pv[4] = 0;
+	pv[5] = 0;
+	pv[6] = CartCtrlPara[0];
+	pv[7] = CartCtrlPara[1];
+	pv[8] = CartCtrlPara[2];
+	pv[9] = CartCtrlPara[3];
+	pv[10] = CartCtrlPara[4];
+	pv[11] = CartCtrlPara[5];
+	pv[12] = CartCtrlPara[6];
+	pv[13] = 0;
+
+	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
+
+	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	(*pnum)++;
+	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm flange Cart rotation parameters.\n fcType=%d,\n",fcType);
+    if(m_InsRobot->m_LocalLogTag == true) printf("CartCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n",CartCtrlPara[0],CartCtrlPara[1],CartCtrlPara[2],CartCtrlPara[3],CartCtrlPara[4],CartCtrlPara[5],CartCtrlPara[6]);
+	return true;
+
 }
 bool CRobot::OnSetJointKD_B(double K[7], double D[7])
 {

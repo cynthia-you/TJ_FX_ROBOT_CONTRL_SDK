@@ -64,6 +64,7 @@ public:
 	static bool OnSetJointLmt_A(int velRatio, int AccRatio);
 	static bool OnSetJointKD_A(double K[7], double D[7]);
 	static bool OnSetCartKD_A(double K[7], double D[7], int type);
+	static bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
 	static bool OnSetDragSpace_A(int zsType);
 	static bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
 	static bool OnSetJointCmdPos_A(double joint[7]);
@@ -75,6 +76,7 @@ public:
 	static bool OnSetJointLmt_B(int velRatio, int AccRatio);
 	static bool OnSetJointKD_B(double K[7], double D[7]);
 	static bool OnSetCartKD_B(double K[6], double D[6],int type);
+	static bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	static bool OnSetDragSpace_B(int zsType);
 	static bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
 	static bool OnSetJointCmdPos_B(double joint[7]);
@@ -114,7 +116,7 @@ protected:
 	timer_t robot_timer;
 #endif	
 	DCSS    m_DCSS;
-	DCSS    m_temp_dcss;
+	DCSS    m_temp_dcss;//win
 
 	DCSS    m_DCSS_Send;
 	FX_UCHAR m_RunState;

@@ -14,6 +14,19 @@ extern "C" {
 #endif
 
 
+
+	// # ATTENTION
+	//    1.  请先熟练使用MARVIN_APP 或者https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/ 下各个版本里的FxStation.exe， 操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
+	//    2.  ./demo_linux_win/ 为c++ 和 python 的接口使用DEMO。每个demo顶部有该DEMO的案例说明和使用逻辑，请您一定先阅读，根据现场情况修改后运行。
+	//        这些demo的使用逻辑和使用参数为研发测试使用开发的，仅供参考，并非实际生产代码。
+	//            比如:
+	//                a.速度百分比和加速度百分比为了安全我们都设置为百分之十：10，在您经过丰富的测试后可调到全速100。
+	//                b.参数设置之间sleep 1秒或者500毫秒， 实际上参数设置之间小睡1毫秒即可。
+	//                c.设置目标关节后，测试里小睡几秒等机械臂运行到位，而在生产时可以通过循环订阅机械臂当前位置判断是否走到指定点位或者通过订阅低速标志来判断。
+	//                d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
+
+
+
 	//////// API之间SLEEP至少1毫秒. 个别API如清错建议至少200毫秒,保存文件建议至少1秒 ////////
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,6 +57,12 @@ extern "C" {
 	// 左右臂同时软急停
 	FX_DLL_EXPORT void OnEMG_AB();
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	//指定关节伺服软复位
+	// 左臂指定关节伺服软复位
+	FX_DLL_EXPORT void OnServoReset_A(int axis);
+	// 右臂指定关节伺服软复位
+	FX_DLL_EXPORT void OnServoReset_B(int axis);
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	//获取伺服错误
 	//获取左臂伺服错误码
 	FX_DLL_EXPORT void OnGetServoErr_A(long ErrCode[7]);
@@ -72,6 +91,9 @@ extern "C" {
 	FX_DLL_EXPORT long OnGetFloatPara(char paraName[30],double * retValue);
 	//3 保存参数
 	FX_DLL_EXPORT long OnSavePara();
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	//自动修正传感器偏置,测试中
+	FX_DLL_EXPORT long OnAutoRectifySensor();
 	////////////////////////////////////////////////////////////////////////////////////////////////
     //保存数据,该接口后要睡久一点,留够保存数据文件的时间,以防保存出错
 	//保存采集数据到指定文件，任意保存类型
@@ -114,10 +136,16 @@ extern "C" {
 	//设置右臂工具关节阻抗的刚度和阻尼参数
 	FX_DLL_EXPORT bool OnSetJointKD_B(double K[7], double D[7]);
 	//3 设置指定手臂的迪卡尔阻抗参数, 在扭矩模式迪卡尔阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(2) 下参数才有意义(以左臂为例)
-	//设置左臂工具笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
+	//3.1 设置笛卡尔阻抗的刚度和阻尼参数
+	//设置左臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
 	FX_DLL_EXPORT bool OnSetCartKD_A(double K[7], double D[7], int type);
-	//设置右臂工具笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
+	//设置右臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
 	FX_DLL_EXPORT bool OnSetCartKD_B(double K[6], double D[6],int type);
+	//3.2 设置末端力控类型和笛卡尔方向的旋转
+	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	FX_DLL_EXPORT bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
+	//设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	FX_DLL_EXPORT bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	//4 如果使用力控模式,在扭矩模式力控模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(3) 以下两个指令连用
 	//4.1 设置指定手臂的力控参数
 	//设置左臂力控参数
@@ -129,6 +157,7 @@ extern "C" {
 	FX_DLL_EXPORT bool OnSetForceCmd_A(double force);
 	//设置右臂力控目标
 	FX_DLL_EXPORT bool OnSetForceCmd_B(double force);
+
 
 	//设置指定手臂的目标状态:0下使能 1位置 2PVT 3扭矩 4协作释放
 	//设置左臂模式
