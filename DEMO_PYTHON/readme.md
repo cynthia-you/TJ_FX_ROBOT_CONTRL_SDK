@@ -104,6 +104,10 @@
         showcase_servo_error.py
 ### 20. 拖动保存的轨迹转为PVT文件
         showcase_process_collect_data_to_pvt_format.py
+### 21. 工具笛卡尔阻抗
+        showcase_torque_EefCart_impedance_arm_A.py
+### 22. 指定关节伺服软复位
+        showcase_servo_reset.py
 
 ## 二. 计算showcases
 
