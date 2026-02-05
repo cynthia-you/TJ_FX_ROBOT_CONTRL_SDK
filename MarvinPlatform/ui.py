@@ -9,13 +9,15 @@ import os
 import glob
 import math
 import sys
-from python.fx_robot import Marvin_Robot, DCSS, arm_err_code
+from python.fx_robot import Marvin_Robot, DCSS, arm_err_code,tools_cfg
 from python.fx_kine import Marvin_Kine
 import ast
 from PIL import Image, ImageDraw, ImageTk
 from pathlib import Path
 import difflib
 import re
+import json
+from typing import Optional
 
 class DataSubscriber:
     """数据订阅器，定期更新数据"""
@@ -286,6 +288,8 @@ class App:
         self.connected = True
         self.data_subscriber = None
         # 初始化工具参数变量
+        self.tools_cfg_path = 'tools_cfg.json'
+        self.tools_cfg = None
         self.init_tool_variables()
         # 初始化阻抗参数
         self.init_kd_variables()
@@ -303,18 +307,157 @@ class App:
         except Exception as e:
             messagebox.showerror("错误", f"读取文件失败: {str(e)}")
             return ""
+
     def init_tool_variables(self):
-        """初始化工具参数相关的StringVar变量"""
-        # 工具动力学参数 (10个值)
-        self.tool_a_entry = tk.StringVar(value="0,0,0,0,0,0,0,0,0,0")
-        self.tool_b_entry = tk.StringVar(value="0,0,0,0,0,0,0,0,0,0")
+        """初始化工具参数相关的StringVar变量，从JSON配置文件加载"""
+        # 使用函数加载配置
+        result = load_or_create_tools_config('tools_cfg.json')
+
+        if result is False:
+            # 配置文件是新创建的
+            try:
+                with open('tools_cfg.json', 'r', encoding='utf-8') as f:
+                    self.tools_cfg = json.load(f)
+            except Exception as e:
+                print(f"重新加载配置文件失败: {e}")
+                return
+        else:
+            self.tools_cfg = result
+
+        print(f'self.tools_cfg:{self.tools_cfg}')
+
+        # 确保current_tool存在
+        if "current_tool" not in self.tools_cfg:
+            self.tools_cfg["current_tool"] = {"arm0": None, "arm1": None}
+
+        # 提取所有工具的数据
+        self.tool_names = ["tool-1", "tool-2", "tool-3", "tool-4", "tool-5"]
+
+        # 初始化变量
+        self.tool_a_entry = tk.StringVar()
+        self.tool_b_entry = tk.StringVar()
         self.entry_tool_dyn = tk.StringVar(value="0,0,0,0,0,0,0,0,0,0")
-        # 工具运动学参数 (6个值)
-        self.tool_a1_entry = tk.StringVar(value="0,0,0,0,0,0")
-        self.tool_b1_entry = tk.StringVar(value="0,0,0,0,0,0")
+        self.tool_a1_entry = tk.StringVar()
+        self.tool_b1_entry = tk.StringVar()
+
         # 保存有效值的变量
         self._last_valid_tool_a = "0,0,0,0,0,0,0,0,0,0"
+        self._last_valid_tool_a1 = "0,0,0,0,0,0"
         self._last_valid_tool_b = "0,0,0,0,0,0,0,0,0,0"
+        self._last_valid_tool_b1 = "0,0,0,0,0,0"
+
+        # 从配置中提取预设值
+        self.arm0_dyn_presets = []
+        self.arm0_kine_presets = []
+        self.arm1_dyn_presets = []
+        self.arm1_kine_presets = []
+
+        for tool_name in self.tool_names:
+            # arm0的数据
+            if "arm0" in self.tools_cfg and tool_name in self.tools_cfg["arm0"]:
+                dyn_str = ",".join(str(x) for x in self.tools_cfg["arm0"][tool_name]["dyn"])
+                kine_str = ",".join(str(x) for x in self.tools_cfg["arm0"][tool_name]["kine"])
+                self.arm0_dyn_presets.append(dyn_str)
+                self.arm0_kine_presets.append(kine_str)
+
+            # arm1的数据
+            if "arm1" in self.tools_cfg and tool_name in self.tools_cfg["arm1"]:
+                dyn_str = ",".join(str(x) for x in self.tools_cfg["arm1"][tool_name]["dyn"])
+                kine_str = ",".join(str(x) for x in self.tools_cfg["arm1"][tool_name]["kine"])
+                self.arm1_dyn_presets.append(dyn_str)
+                self.arm1_kine_presets.append(kine_str)
+
+        # 设置下拉框的当前选择
+        if hasattr(self, 'tool_select_combobox_2'):
+            current_arm0 = self.tools_cfg["current_tool"]["arm0"]
+            if current_arm0 in self.tool_names:
+                self.tool_select_combobox_2.set(current_arm0)
+            else:
+                # 如果current_tool为None，默认选择第一个
+                self.tool_select_combobox_2.current(0)
+
+        if hasattr(self, 'tool_select_combobox_3'):
+            current_arm1 = self.tools_cfg["current_tool"]["arm1"]
+            if current_arm1 in self.tool_names:
+                self.tool_select_combobox_3.set(current_arm1)
+            else:
+                self.tool_select_combobox_3.current(0)
+
+        # 设置辨识部分下拉框的当前选择
+        if hasattr(self, 'tool_select_combobox_1'):
+            current_arm0 = self.tools_cfg["current_tool"]["arm0"]
+            if current_arm0 in self.tool_names:
+                self.tool_select_combobox_1.set(current_arm0)
+            else:
+                self.tool_select_combobox_1.current(0)
+
+        if hasattr(self, 'tool_select_combobox_11'):
+            current_arm1 = self.tools_cfg["current_tool"]["arm1"]
+            if current_arm1 in self.tool_names:
+                self.tool_select_combobox_11.set(current_arm1)
+            else:
+                self.tool_select_combobox_11.current(0)
+
+        # 设置初始值
+        self.update_tool_display('A','down_arm0')
+        self.update_tool_display('B','down_rm1')
+
+    def update_tool_display(self, arm_type,which_combobox:Optional[str]):
+        """更新工具参数显示"""
+        if not hasattr(self, 'tools_cfg'):
+            return
+        selected_tool = None
+        # 确定选择的是哪个下拉框
+        if arm_type == 'A':
+            if which_combobox == 'up_arm0' and hasattr(self, 'tool_select_combobox_1'):
+                selected_tool = self.tool_select_combobox_1.get()
+                # self.tools_cfg["current_tool"]["arm0"] = selected_tool
+
+            if which_combobox == 'down_arm0' and hasattr(self, 'tool_select_combobox_2'):
+                selected_tool = self.tool_select_combobox_2.get()
+                # self.tools_cfg["current_tool"]["arm0"] = selected_tool
+            if selected_tool is None:
+                selected_tool = "tool-1"  # 默认显示第一个工具
+            # 更新显示
+            if selected_tool and "arm0" in self.tools_cfg and selected_tool in self.tools_cfg["arm0"]:
+                dyn_data = self.tools_cfg["arm0"][selected_tool]["dyn"]
+                kine_data = self.tools_cfg["arm0"][selected_tool]["kine"]
+
+                dyn_str = ",".join(str(x) for x in dyn_data)
+                kine_str = ",".join(str(x) for x in kine_data)
+
+                if hasattr(self, 'tool_a_combobox'):
+                    self.tool_a_combobox.set(dyn_str)
+                    self.tool_a_entry.set(dyn_str)
+
+                if hasattr(self, 'tool_a1_combobox'):
+                    self.tool_a1_combobox.set(kine_str)
+                    self.tool_a1_entry.set(kine_str)
+
+        elif arm_type == 'B':
+            if which_combobox == 'up_arm1' and hasattr(self, 'tool_select_combobox_11'):
+                selected_tool = self.tool_select_combobox_11.get()
+                # self.tools_cfg["current_tool"]["arm1"] = selected_tool
+            if which_combobox == 'down_arm1' and hasattr(self, 'tool_select_combobox_3'):
+                selected_tool = self.tool_select_combobox_3.get()
+                # self.tools_cfg["current_tool"]["arm1"] = selected_tool
+            if selected_tool is None:
+                selected_tool = "tool-1"
+
+            if selected_tool and "arm1" in self.tools_cfg and selected_tool in self.tools_cfg["arm1"]:
+                dyn_data = self.tools_cfg["arm1"][selected_tool]["dyn"]
+                kine_data = self.tools_cfg["arm1"][selected_tool]["kine"]
+
+                dyn_str = ",".join(str(x) for x in dyn_data)
+                kine_str = ",".join(str(x) for x in kine_data)
+
+                if hasattr(self, 'tool_b_combobox'):
+                    self.tool_b_combobox.set(dyn_str)
+                    self.tool_b_entry.set(dyn_str)
+
+                if hasattr(self, 'tool_b1_combobox'):
+                    self.tool_b1_combobox.set(kine_str)
+                    self.tool_b1_entry.set(kine_str)
 
     def init_kd_variables(self):
         self.cart_k_b_entry = tk.StringVar(value="2000,2000,2000,60,60,60,20")
@@ -765,7 +908,7 @@ class App:
 
 
         '''第三列：力控指令和位置指令'''
-        left_second_control_frame = tk.Frame(left_content, bg="white", width=520)
+        left_second_control_frame = tk.Frame(left_content, bg="white", width=700)
         left_second_control_frame.pack(side="left", fill="y")
         left_second_control_frame.pack_propagate(False)  # 保持固定宽度
 
@@ -1281,7 +1424,7 @@ class App:
 
 
         '''第三列：力控指令和位置指令'''
-        right_second_control_frame = tk.Frame(right_content, bg="white", width=520)
+        right_second_control_frame = tk.Frame(right_content, bg="white", width=700)
         right_second_control_frame.pack(side="left", fill="y")
         right_second_control_frame.pack_propagate(False)  # 保持固定宽度
 
@@ -3858,21 +4001,10 @@ class App:
             font=("Arial", 10, "bold"))
         self.mode_btn.pack(side="right", padx=5)
 
-        # 工具参数设置
-        self.mode_btn = tk.Button(
-            self.control_frame,
-            text="工具参数设置",
-            width=15,
-            command=self.set_tool_dialog,
-            bg="#3BA4FD",
-            fg="white",
-            font=("Arial", 10, "bold"))
-        self.mode_btn.pack(side="right", padx=5)
-
         # 工具动力学辨识
         self.mode_btn = tk.Button(
             self.control_frame,
-            text="工具动力学辨识",
+            text="工具参数设置",
             width=15,
             command=self.tool_identy_dialog,
             bg="#3BA4FD",
@@ -3926,12 +4058,27 @@ class App:
         """菜单点击事件"""
         print(f"菜单点击: {item}")
 
+    def save_tools_config(self):
+        """保存工具配置到文件"""
+        try:
+            if hasattr(self, 'tools_cfg'):
+                with open('tools_cfg.json', 'w', encoding='utf-8') as f:
+                    json.dump(self.tools_cfg, f, indent=4, ensure_ascii=False)
+                print("工具配置已保存")
+            else:
+                print("警告：未找到工具配置数据")
+        except Exception as e:
+            print(f"保存工具配置失败: {e}")
+
     def on_close(self):
         """窗口关闭事件"""
         if messagebox.askokcancel("退出", "确定要退出应用程序吗?"):
-            '''save tools txt'''
-            robot.send_file(self.tools_txt, os.path.join('/home/fusion/', self.tools_txt))
-            time.sleep(0.2)
+            '''save tools cfg'''
+            self.save_tools_config()
+            print(f'last save tools:{self.tools_cfg}')
+            time.sleep(1)
+            robot.send_file(self.tools_cfg_path, '/home/fusion/tools_cfg.json')
+            time.sleep(1)
             if os.path.exists(self.tools_txt):
                 os.remove(self.tools_txt)
             if self.data_subscriber:
@@ -4699,88 +4846,32 @@ class App:
         else:
             messagebox.showerror('error', '请先连接机器人')
 
-    def set_tool_dialog(self):
-        drag_dialog = tk.Toplevel(self.root)
-        drag_dialog.title("工具参数设置")
-        drag_dialog.geometry("800x300")  # 调整尺寸以适应内容
-        drag_dialog.resizable(True, True)  # 允许调整大小以便查看完整内容
-        drag_dialog.transient(self.root)
-        drag_dialog.grab_set()
-
-        # 设置对话框居中显示
-        drag_dialog.update_idletasks()
-        x = (drag_dialog.winfo_screenwidth() - drag_dialog.winfo_width()) // 2
-        y = (drag_dialog.winfo_screenheight() - drag_dialog.winfo_height()) // 2
-        drag_dialog.geometry(f"+{x}+{y}")
-
-        # 创建主框架，使用pack布局
-        main_frame = tk.Frame(drag_dialog, bg="white", padx=10, pady=10)
-        main_frame.pack(fill="both", expand=True)
-
-        # 确保变量已初始化
-        if not hasattr(self, 'tool_a_entry'):
-            self.init_tool_variables()
-
-        # 1设置工具参数
-        tool_a_button = tk.Button(main_frame, text="设置左臂工具参数", width=20, bg='#7CCEF0',
-                                  command=lambda: self.tool_set('A'))
-        tool_a_button.grid(row=2, column=0, padx=5, pady=(5, 50))
-
-        tool_a_label_1 = tk.Label(main_frame, text="工具动力学参数(M~I_zz)", width=20, bg='white')
-        tool_a_label_1.grid(row=0, column=0, padx=5, pady=5)
-
-        # 2tool entry - 使用已有的StringVar
-        tool_a_entry_widget = tk.Entry(main_frame, textvariable=self.tool_a_entry, width=70)
-        tool_a_entry_widget.grid(row=0, column=1, padx=5, sticky="ew")
-
-        # 1设置工具运动学参数
-        tool_a_label_2 = tk.Label(main_frame, text="工具运动学参数", width=20, bg='white')
-        tool_a_label_2.grid(row=1, column=0, pady=5)
-
-        # 2tool entry - 使用已有的StringVar
-        tool_a1_entry_widget = tk.Entry(main_frame, textvariable=self.tool_a1_entry, width=70)
-        tool_a1_entry_widget.grid(row=1, column=1, padx=5)
-
-        # 1设置工具参数
-        tool_b_button = tk.Button(main_frame, text="设置右臂工具参数", width=20, bg='#7CCEF0', command=lambda: self.tool_set('B'))
-        tool_b_button.grid(row=5, column=0, padx=5,pady=5)
-
-        tool_b_label_1 = tk.Label(main_frame, text="工具动力学参数(M~I_zz)", width=25, bg='white')
-        tool_b_label_1.grid(row=3, column=0, padx=5)
-
-        # 2tool entry
-        tool_b_entry = tk.Entry(main_frame, textvariable=self.tool_b_entry,width=70)
-        tool_b_entry.grid(row=3, column=1, padx=5, sticky="ew")
-
-        # 1设置工具运动学参数
-        tool_b_label_2 = tk.Label(main_frame, text="工具运动学参数", width=25, bg='white')
-        tool_b_label_2.grid(row=4, column=0)
-
-        tool_b1_entry = tk.Entry(main_frame, textvariable=self.tool_b1_entry,width=70)
-        tool_b1_entry.grid(row=4, column=1, padx=5)
-
     def tool_identy_dialog(self):
-        drag_dialog = tk.Toplevel(self.root)
-        drag_dialog.title("工具动力学辨识")
-        drag_dialog.geometry("1000x400")  # 调整尺寸以适应内容
-        drag_dialog.resizable(True, True)  # 允许调整大小以便查看完整内容
-        drag_dialog.transient(self.root)
-        drag_dialog.grab_set()
+        tools_dialog = tk.Toplevel(self.root)
+        tools_dialog.title("末端工具功能")
+        tools_dialog.geometry("1000x800")  # 调整尺寸以适应内容
+        tools_dialog.resizable(True, True)  # 允许调整大小以便查看完整内容
+        tools_dialog.transient(self.root)
+        tools_dialog.grab_set()
 
         # 设置对话框居中显示
-        drag_dialog.update_idletasks()
-        x = (drag_dialog.winfo_screenwidth() - drag_dialog.winfo_width()) // 2
-        y = (drag_dialog.winfo_screenheight() - drag_dialog.winfo_height()) // 2
-        drag_dialog.geometry(f"+{x}+{y}")
+        tools_dialog.update_idletasks()
+        x = (tools_dialog.winfo_screenwidth() - tools_dialog.winfo_width()) // 2
+        y = (tools_dialog.winfo_screenheight() - tools_dialog.winfo_height()) // 2
+        tools_dialog.geometry(f"+{x}+{y}")
 
         # 创建主框架，使用pack布局
-        main_frame = tk.Frame(drag_dialog, bg="white", padx=10, pady=10)
+        main_frame = tk.Frame(tools_dialog, bg="white", padx=10, pady=10)
         main_frame.pack(fill="both", expand=True)
+
+        title_identy_tool_frame = tk.Frame(main_frame, bg="white")
+        title_identy_tool_frame.pack(fill="x", pady=(0, 10))
+        title_label = tk.Label(title_identy_tool_frame, text="工具动力学辨识", bg='white',font=("Arial", 14, "italic"))
+        title_label.pack(fill='x',pady=(5,5))
 
         # ============ 第一行：标题和文件选择 ============
         identy_tool_frame = tk.Frame(main_frame, bg="white")
         identy_tool_frame.pack(fill="x", pady=(0, 10))
-
         # 机型选择标签
         robot_type_label = tk.Label(identy_tool_frame, text="选择机型", bg='white', width=8)
         robot_type_label.grid(row=0, column=1, padx=5)
@@ -4868,76 +4959,254 @@ class App:
         tool_dyn_entry.grid(row=0, column=2, padx=5, sticky="ew")
 
 
-        close_button = tk.Button(identy_tool_frame1, text="一键导入到左臂工具动力学参数", width=20,command=lambda :self.load_tool_dyn_to_tool_api('A'))
-        close_button.grid(row=1, column=1, padx=(10,5), sticky="ew")
+        identy_tool_frame4 = tk.Frame(main_frame, bg="white")
+        identy_tool_frame4.pack(fill="x", pady=(0, 10))
 
-        save_button = tk.Button(identy_tool_frame1, text="一键导入到右臂工具动力学参数", width=20,command=lambda :self.load_tool_dyn_to_tool_api('B'))
-        save_button.grid(row=1, column=2, padx=(5,10), sticky="ew")
+        # 机型选择标签
+        which_tool_label = tk.Label(identy_tool_frame4, text="选择工具", bg='white')
+        which_tool_label.grid(row=0, column=0, padx=5)
+
+        # 机型选择下拉框
+        self.tool_select_combobox_1 = ttk.Combobox(
+            identy_tool_frame4,
+            values=["tool-1", "tool-2","tool-3", "tool-4","tool-5"],
+            width=10,
+            state="readonly"
+        )
+        self.tool_select_combobox_1.current(0)
+        self.tool_select_combobox_1.grid(row=0, column=1, padx=5)
+        # 绑定选择事件
+        self.tool_select_combobox_1.bind("<<ComboboxSelected>>",
+                                         lambda e: self.update_tool_display('A','up_arm0'))
+
+        close_button = tk.Button(identy_tool_frame4, text="一键导入到左臂工具动力学参数",bg='#E2F6FF',command=lambda :self.load_tool_dyn_to_tool_api('A','up_arm0'))
+        close_button.grid(row=0, column=2, padx=(5,20))
+
+
+        # 机型选择标签
+        which_tool_label = tk.Label(identy_tool_frame4, text="选择工具", bg='white')
+        which_tool_label.grid(row=0, column=3, padx=5)
+
+        # 机型选择下拉框
+        self.tool_select_combobox_11 = ttk.Combobox(
+            identy_tool_frame4,
+            values=["tool-1", "tool-2","tool-3", "tool-4","tool-5"],
+            width=10,
+            state="readonly"
+        )
+        self.tool_select_combobox_11.current(0)
+        self.tool_select_combobox_11.grid(row=0, column=4, padx=5)
+        # 绑定选择事件
+        self.tool_select_combobox_11.bind("<<ComboboxSelected>>",
+                                         lambda e: self.update_tool_display('B','up_arm1'))
+
+        save_button = tk.Button(identy_tool_frame4, text="一键导入到右臂工具动力学参数",bg = '#F6DFF6', command=lambda :self.load_tool_dyn_to_tool_api('B','up_arm1'))
+        save_button.grid(row=0, column=5, padx=5)
+
+
+        # 添加横线
+        horizontal_line1 = tk.Frame(main_frame, height=2, bg="#%02x%02x%02x" % (50, 150, 200))
+        horizontal_line1.pack(fill="x", pady=(10, 10))
+
+
+        title_tool_set_text_frame = tk.Frame(main_frame, bg="white")
+        title_tool_set_text_frame.pack(fill="x", pady=(0, 10))
+
+        title_tool_label = tk.Label(title_tool_set_text_frame, text="工具参数设置", bg='white',font=("Arial", 14, "italic"))
+        title_tool_label.pack(fill='x',pady=(5,5))
+
+        #right
+        tool_set_frame = tk.Frame(main_frame, bg="white")
+        tool_set_frame.pack(fill="x", pady=(0, 10))
+
+        # 确保变量已初始化
+        if not hasattr(self, 'tool_a_entry'):
+            self.init_tool_variables()
+
+        tool_a_label_1 = tk.Label(tool_set_frame, text="工具动力学参数(M~I_zz)", width=20, bg='white')
+        tool_a_label_1.grid(row=0, column=0, padx=5, pady=5)
+
+        # 改为下拉框 - 工具动力学参数 (arm0)
+        self.tool_a_combobox = ttk.Combobox(
+            tool_set_frame,
+            textvariable=self.tool_a_entry,
+            values=self.arm0_dyn_presets,
+            width=70,
+            state="readonly"
+        )
+        self.tool_a_combobox.grid(row=0, column=1, padx=5, sticky="ew")
+
+        # 1设置工具运动学参数
+        tool_a_label_2 = tk.Label(tool_set_frame, text="工具运动学参数", width=20, bg='white')
+        tool_a_label_2.grid(row=1, column=0, pady=5)
+
+        # 改为下拉框 - 工具运动学参数 (arm0)
+        self.tool_a1_combobox = ttk.Combobox(
+            tool_set_frame,
+            textvariable=self.tool_a1_entry,
+            values=self.arm0_kine_presets,
+            width=70,
+            state="normal"
+        )
+        self.tool_a1_combobox.grid(row=1, column=1, padx=5, sticky="ew")
+
+        # 1设置工具参数
+        tool_set_frame1 = tk.Frame(main_frame, bg="white")
+        tool_set_frame1.pack(fill="x", pady=(0, 10))
+        which_tool_label = tk.Label(tool_set_frame1, text="选择工具", bg='white')
+        which_tool_label.grid(row=0, column=0, padx=5,pady=(5,25))
+
+        # 机型选择下拉框
+        self.tool_select_combobox_2 = ttk.Combobox(
+            tool_set_frame1,
+            values=["tool-1", "tool-2", "tool-3", "tool-4", "tool-5"],
+            width=10,
+            state="readonly"
+        )
+        self.tool_select_combobox_2.current(0)
+        self.tool_select_combobox_2.grid(row=0, column=1, padx=5,pady=(5,25),sticky="ew")
+        # 绑定选择事件
+        self.tool_select_combobox_2.bind("<<ComboboxSelected>>",
+                                         lambda e: self.update_tool_display('A','down_arm0'))
+
+        tool_a_button = tk.Button(tool_set_frame1, text="设置左臂工具参数", width=20, bg='#7CCEF0',
+                                  command=lambda: self.tool_set('A'))
+        tool_a_button.grid(row=0, column=2, padx=5,pady=(5,25))
+
+
+        #right
+        tool_set_frame2 = tk.Frame(main_frame, bg="white")
+        tool_set_frame2.pack(fill="x", pady=(0, 10))
+
+        tool_b_label_1 = tk.Label(tool_set_frame2, text="工具动力学参数(M~I_zz)", width=25, bg='white')
+        tool_b_label_1.grid(row=0, column=0, padx=5)
+
+        # 改为下拉框 - 工具动力学参数 (arm1)
+        self.tool_b_combobox = ttk.Combobox(
+            tool_set_frame2,
+            textvariable=self.tool_b_entry,
+            values=self.arm1_dyn_presets,
+            width=70,
+            state="readonly"
+        )
+        self.tool_b_combobox.grid(row=0, column=1, padx=5, sticky="ew")
+
+        # 1设置工具运动学参数
+        tool_b_label_2 = tk.Label(tool_set_frame2, text="工具运动学参数", width=25, bg='white')
+        tool_b_label_2.grid(row=1, column=0, pady=5)
+
+        # 改为下拉框 - 工具运动学参数 (arm1)
+        self.tool_b1_combobox = ttk.Combobox(
+            tool_set_frame2,
+            textvariable=self.tool_b1_entry,
+            values=self.arm1_kine_presets,
+            width=70,
+            state="normal"
+        )
+        self.tool_b1_combobox.grid(row=1, column=1, padx=5)
+
+        # 1设置工具参数
+        tool_set_frame3 = tk.Frame(main_frame, bg="white")
+        tool_set_frame3.pack(fill="x", pady=(0, 10))
+        which_tool_label1 = tk.Label(tool_set_frame3, text="选择工具", bg='white')
+        which_tool_label1.grid(row=0, column=0, padx=5, pady=(5, 25))
+
+        # 机型选择下拉框
+        self.tool_select_combobox_3 = ttk.Combobox(
+            tool_set_frame3,
+            values=["tool-1", "tool-2", "tool-3", "tool-4", "tool-5"],
+            width=10,
+            state="readonly"
+        )
+        self.tool_select_combobox_3.current(0)
+        # 绑定选择事件
+        self.tool_select_combobox_3.bind("<<ComboboxSelected>>",
+                                         lambda e: self.update_tool_display('B','down_arm1'))
+
+        self.tool_select_combobox_3.grid(row=0, column=1, padx=5, pady=(5, 25), sticky="ew")
+
+
+        tool_b_button = tk.Button(tool_set_frame3, text="设置右臂工具参数", width=20, bg='#7CCEF0',
+                                  command=lambda: self.tool_set('B'))
+        tool_b_button.grid(row=0, column=2, padx=5, pady=(5,25))
+
+        tool_set_frame33 = tk.Frame(main_frame, bg="white")
+        tool_set_frame33.pack(fill="x", pady=(0, 10))
+        tool_reset_button = tk.Button(tool_set_frame33, text="工具信息全清零", width=20, bg='#FFFF00',
+                                  command=self.tool_reset)
+        tool_reset_button.grid(row=0, column=0, padx=5, pady=(5,15))
+
+    def tool_reset(self):
+        result = messagebox.askokcancel('确认操作','是否一键对所有工具信息清零？')
+        if result:
+            self.tools_cfg= {
+                    "arm0": {
+                        "tool-1": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+                        "tool-2": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+                        "tool-3": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+                        "tool-4": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+                        "tool-5": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]}
+                    },
+                    "arm1": {
+                        "tool-1": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+                        "tool-2": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+                        "tool-3": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+                        "tool-4": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+                        "tool-5": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]}
+                    },
+                    "current_tool": {"arm0": None, "arm1": None}  # 保持为None/null
+                }
+            self.save_tools_config()
+            self.update_tool_display('A','down_arm0')
+            self.update_tool_display('B', 'down_arm1')
 
     def tool_set(self, robot_id):
         if self.connected:
-            kine_p = 0
-            dyn_p = 0
+            """设置工具参数"""
             if robot_id == 'A':
-                kine_p = self.tool_a1_entry.get()
-                dyn_p = self.tool_a_entry.get()
-                # print(f'kine_p:{kine_p}')
-                is_valid,kine_p=self.validate_point(kine_p,6)
-                if is_valid:
-                    values = kine_p.split(',')
-                    kine_p = [float(value.strip()) for value in values]
-                else:
-                    messagebox.showerror("错误", f"{kine_p}")
+                selected_tool = self.tool_select_combobox_2.get() if hasattr(self,'tool_select_combobox_2') else "tool-1"
 
-                is_valid,dyn_p=self.validate_point(dyn_p,10)
-                if is_valid:
-                    values = dyn_p.split(',')
-                    dyn_p = [float(value.strip()) for value in values]
-                else:
-                    messagebox.showerror("错误", f"{dyn_p}")
+                # 获取当前显示的参数
+                dyn_str = self.tool_a_entry.get()
+                kine_str = self.tool_a1_entry.get()
+
+                # 将字符串转换为列表
+                dyn_list = [float(x) for x in dyn_str.split(',')]
+                kine_list = [float(x) for x in kine_str.split(',')]
+
+                # 更新配置文件
+                self.tools_cfg["arm0"][selected_tool]["dyn"] = dyn_list
+                self.tools_cfg["arm0"][selected_tool]["kine"] = kine_list
+                self.tools_cfg["current_tool"]["arm0"]=selected_tool
+                self.save_tools_config()
+                print(f"设置左臂工具 {selected_tool}: 动力学={dyn_list}, 运动学={kine_list}")
 
             elif robot_id == 'B':
-                kine_p = self.tool_b1_entry.get()
-                dyn_p = self.tool_b_entry.get()
-                # print(f'kine_p:{kine_p}')
-                is_valid, kine_p = self.validate_point(kine_p, 6)
-                if is_valid:
-                    values = kine_p.split(',')
-                    kine_p = [float(value.strip()) for value in values]
-                else:
-                    messagebox.showerror("错误", f"{kine_p}")
-                is_valid, dyn_p = self.validate_point(dyn_p, 10)
-                if is_valid:
-                    values = dyn_p.split(',')
-                    dyn_p = [float(value.strip()) for value in values]
-                else:
-                    messagebox.showerror("错误", f"{dyn_p}")
+                selected_tool = self.tool_select_combobox_3.get() if hasattr(self, 'tool_select_combobox_3') else "tool-1"
+                # 获取当前显示的参数
+                dyn_str = self.tool_b_entry.get()
+                kine_str = self.tool_b1_entry.get()
+                # 将字符串转换为列表
+                dyn_list = [float(x) for x in dyn_str.split(',')]
+                kine_list = [float(x) for x in kine_str.split(',')]
+                # 更新配置文件
+                self.tools_cfg["arm1"][selected_tool]["dyn"] = dyn_list
+                self.tools_cfg["arm1"][selected_tool]["kine"] = kine_list
+                self.tools_cfg["current_tool"]["arm1"] = selected_tool
+                self.save_tools_config()
+
+                print(f"设置右臂工具 {selected_tool}: 动力学={dyn_list}, 运动学={kine_list}")
 
             robot.clear_set()
-            robot.set_tool(arm=robot_id, kineParams=kine_p, dynamicParams=dyn_p)
+            robot.set_tool(arm=robot_id, kineParams=kine_list, dynamicParams=dyn_list)
             robot.send_cmd()
 
-            tool_mat = kk1.xyzabc_to_mat4x4(xyzabc=kine_p)
+            tool_mat = kk1.xyzabc_to_mat4x4(xyzabc=kine_list)
             if robot_id == "A":
                 kk1.set_tool_kine(tool_mat=tool_mat)
             elif robot_id == "B":
                 kk2.set_tool_kine(tool_mat=tool_mat)
 
-            '''save in txt and send it to controller'''
-            if not self.tool_result:
-                lines = ['0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n',
-                         '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n']
-                # 写回文件
-                with open(self.tools_txt, 'w', encoding='utf-8') as file:
-                    file.writelines(lines)
-                file.close()
-                time.sleep(0.5)
-            from python.fx_robot import update_text_file_simple
-            full_tool = dyn_p + kine_p
-            # print(f'full tool:{full_tool}')
-            update_text_file_simple(robot_id, full_tool, self.tools_txt)
-            robot.send_file(self.tools_txt, os.path.join('/home/fusion/', self.tools_txt))
-            time.sleep(1)
         else:
             messagebox.showerror('error', '请先连接机器人')
 
@@ -5132,34 +5401,65 @@ class App:
         else:
             messagebox.showerror('error', '请先连接机器人')
 
-    def load_tool_dyn_to_tool_api(self,robot_id):
+    def load_tool_dyn_to_tool_api(self, robot_id, which_combox):
         try:
             # 获取工具动力学参数值
             if hasattr(self, 'entry_tool_dyn'):
                 tool_dyn_value = self.entry_tool_dyn.get()
-                # 验证格式
-                success, result = self.validate_point(tool_dyn_value, 10)
-                if success:
-                    if robot_id=='A':
-                        # 如果tool_a_entry不存在，创建它
-                        if not hasattr(self, 'tool_a_entry'):
-                            self.tool_a_entry = tk.StringVar()
-                            self._last_valid_tool_a = result
-                        self.tool_a_entry.set(result)
+                print(f'******{tool_dyn_value}')
 
-                    elif robot_id=='B':
-                        # 如果tool_a_entry不存在，创建它
-                        if not hasattr(self, 'tool_b_entry'):
-                            self.tool_b_entry = tk.StringVar()
-                            self._last_valid_tool_a = result
-                        self.tool_b_entry.set(result)
-                    print(f"成功导入工具{robot_id}参数: {result}")
+                # 验证格式 - 先检查 validate_point 的返回类型
+                validation_result = self.validate_point(tool_dyn_value, 10)
+                print(f'******{validation_result}')
+
+                # 判断 validate_point 的返回类型
+                if isinstance(validation_result, tuple) and len(validation_result) == 2:
+                    # 如果返回的是元组 (success, result)
+                    success, result = validation_result
+                else:
+                    # 如果返回的是布尔值或其他类型
+                    success = validation_result
+                    result = tool_dyn_value if success else "参数验证失败"
+                if success:
+                    # 根据传入的参数确定要更新哪个工具
+                    selected_tool = None
+
+                    if robot_id == 'A':
+                        if which_combox == 'up_arm0':
+                            selected_tool = self.tool_select_combobox_1.get()
+                            # 将字符串转换为列表
+                            dyn_list = [float(x) for x in result.split(',')]
+                            print(f'*****{dyn_list}')
+                            self.tools_cfg["arm0"][selected_tool]["dyn"] = dyn_list
+                            self.save_tools_config()
+                            # 更新界面显示
+                            self.tool_a_entry.set(result)
+                            if hasattr(self, 'tool_a_combobox'):
+                                self.tool_a_combobox.set(result)
+
+                    elif robot_id == 'B':
+                        if which_combox == 'up_arm1':
+                            selected_tool = self.tool_select_combobox_11.get()
+                            # 将字符串转换为列表
+                            dyn_list = [float(x) for x in result.split(',')]
+                            self.tools_cfg["arm1"][selected_tool]["dyn"] = dyn_list
+                            self.save_tools_config()
+                            # 更新界面显示
+                            self.tool_b_entry.set(result)
+                            if hasattr(self, 'tool_b_combobox'):
+                                self.tool_b_combobox.set(result)
+
+                    print(f"成功导入工具{robot_id}参数到{selected_tool}: {result}")
+                    messagebox.showinfo("成功", f"已导入工具动力学参数到{robot_id}臂{selected_tool}")
                 else:
                     print(f"参数格式错误: {result}")
+                    messagebox.showerror("错误", f"参数格式错误: {result}")
             else:
                 print("找不到工具动力学参数输入框")
+                messagebox.showerror("错误", "找不到工具动力学参数输入框")
         except Exception as e:
             print(f"导入失败: {e}")
+            messagebox.showerror("错误", f"导入失败: {str(e)}")
 
     def tool_dyn_identy(self):
         print(f"ccs srs:{self.type_select_combobox_1.get()}")
@@ -5261,78 +5561,48 @@ class App:
                 self.data_subscriber = DataSubscriber(self.update_data)
 
                 '''tool '''
-                robot.receive_file(self.tools_txt, '/home/fusion/tool_dyn_kine.txt')
-                time.sleep(1)
-                self.tool_result = read_csv_file_to_float_strict(self.tools_txt, expected_columns=16)
-                print(f'self.tool_result:{self.tool_result}')
-                if self.tool_result == 0:
-                    messagebox.showinfo('success', '机器人连接成功. 机器人未设置工具信息，如果带工具，请设置工具信息')
-                elif self.tool_result == -1:
-                    messagebox.showerror('failed', '机器人连接成功. 工具信息文件tool_dyn_kine.txt有误。')
-                elif type(self.tool_result) == tuple:
-                    arm_side = self.tool_result[0]
-                    if arm_side == 'line1':
-                        messagebox.showinfo('success', '机器人连接成功. 机器人已设置左臂工具信息，右臂未设置.')
-                        tool_dyn_l = ""
-                        tool_kine_l = ""
-                        for i in range(10):
-                            tool_dyn_l += f"{self.tool_result[1][i]:.3f},"
-                            if i < 6:
-                                tool_kine_l += f"{self.tool_result[1][10 + i]:.3f},"
-                        tool_dyn_l = tool_dyn_l.rstrip(", ")
-                        tool_kine_l = tool_kine_l.rstrip(", ")
-                        self.tool_a_entry.set(tool_dyn_l)
-                        self.tool_a1_entry.set(tool_kine_l)
-                        tool_mat = kk1.xyzabc_to_mat4x4(self.tool_result[1][10:])
-                        kk1.set_tool_kine(tool_mat=tool_mat)
+                robot.receive_file(self.tools_cfg_path, '/home/fusion/tools_cfg.json')
+                time.sleep(0.5)
+                self.tools_cfg=load_or_create_tools_config(self.tools_cfg_path)
+                last_arm0_tool = None
+                last_arm1_tool = None
+                if self.tools_cfg:
+                    if self.tools_cfg["current_tool"].get("arm0") is None:
+                        last_arm0_tool=None
+                    elif self.tools_cfg["current_tool"].get("arm1") is None:
+                        last_arm1_tool=None
+                    else:
+                        last_arm0_tool=self.tools_cfg["current_tool"]["arm0"]
+                        last_arm1_tool=self.tools_cfg["current_tool"]["arm1"]
+                    print(f'last arm0 tool:{last_arm0_tool},last arm1 tool:{last_arm1_tool}')
 
-                    elif arm_side == 'line2':
-                        messagebox.showinfo('success', '机器人连接成功. 机器人已设置右臂工具信息，左臂未设置.')
-                        tool_dyn_r = ""
-                        tool_kine_r = ""
-                        for i in range(10):
-                            tool_dyn_r += f"{self.tool_result[1][i]:.3f},"
-                            if i < 6:
-                                tool_kine_r += f"{self.tool_result[1][10 + i]:.3f},"
-                        tool_dyn_r = tool_dyn_r.rstrip(", ")
-                        tool_kine_r = tool_kine_r.rstrip(", ")
-                        self.tool_b_entry.set(tool_dyn_r)
-                        self.tool_b1_entry.set(tool_kine_r)
-                        tool_mat1 = kk2.xyzabc_to_mat4x4(self.tool_result[1][10:])
-                        kk2.set_tool_kine(tool_mat=tool_mat1)
-                else:
-                    messagebox.showinfo('success', '机器人连接成功.  机器人已设置工具信息.')
-                    if isinstance(self.tool_result[0], list):
-                        # print(f"第一行: {self.tool_result[0]}")
-                        # print(f"第二行: {self.tool_result[1]}")
-                        tool_dyn_l=""
-                        tool_dyn_r = ""
-                        tool_kine_l=""
-                        tool_kine_r=""
-                        for i in range(10):
-                            tool_dyn_l += f"{self.tool_result[0][i]:.3f},"
-                            tool_dyn_r += f"{self.tool_result[1][i]:.3f},"
-                            if i < 6:
-                                tool_kine_l += f"{self.tool_result[0][10+i]:.3f},"
-                                tool_kine_r += f"{self.tool_result[1][10+i]:.3f},"
-                        tool_dyn_l = tool_dyn_l.rstrip(", ")
-                        tool_dyn_r = tool_dyn_r.rstrip(", ")
-                        tool_kine_l = tool_kine_l.rstrip(", ")
-                        tool_kine_r = tool_kine_r.rstrip(", ")
+                    if last_arm0_tool!=None and last_arm1_tool!=None:
+                        messagebox.showinfo('success', f'机器人连接成功。\n 机器人历史工具信息为,左臂：{last_arm0_tool}，右臂：{last_arm1_tool}.\n 如需修改请重新设置工具参数')
+                        # 设置历史数据
+                        robot.set_tool(arm='A', dynamicParams=self.tools_cfg["arm0"][last_arm0_tool]['dyn'], kineParams=self.tools_cfg["arm0"][last_arm0_tool]['kine'])
+                        robot.set_tool(arm='B',  dynamicParams=self.tools_cfg["arm1"][last_arm1_tool]['dyn'], kineParams=self.tools_cfg["arm1"][last_arm1_tool]['kine'])
 
-                        self.tool_a_entry.set(tool_dyn_l)
-                        self.tool_a1_entry.set(tool_kine_l)
-                        self.tool_b_entry.set(tool_dyn_r)
-                        self.tool_b1_entry.set(tool_kine_r)
-
-                        # 从控制器加载的工具信息
-                        robot.set_tool(arm='A', dynamicParams=self.tool_result[0][:10], kineParams=self.tool_result[0][10:])
-                        robot.set_tool(arm='B', dynamicParams=self.tool_result[1][:10], kineParams=self.tool_result[1][10:])
-
-                        tool_mat = kk1.xyzabc_to_mat4x4(self.tool_result[0][10:])
-                        tool_mat1 = kk2.xyzabc_to_mat4x4(self.tool_result[1][10:])
+                        tool_mat = kk1.xyzabc_to_mat4x4(self.tools_cfg["arm0"][last_arm0_tool]['kine'])
+                        tool_mat1 = kk2.xyzabc_to_mat4x4(self.tools_cfg["arm1"][last_arm1_tool]['kine'])
                         kk1.set_tool_kine(tool_mat=tool_mat)
                         kk2.set_tool_kine(tool_mat=tool_mat1)
+
+                    elif last_arm0_tool!=None and last_arm1_tool==None:
+                        messagebox.showinfo('success', f'机器人连接成功. 机器人已设置左臂工具信息：{last_arm0_tool}，右臂未设置.')
+                        # 设置历史数据
+                        robot.set_tool(arm='A', dynamicParams=self.tools_cfg["arm0"][last_arm0_tool]['dyn'], kineParams=self.tools_cfg["arm0"][last_arm0_tool]['kine'])
+                        tool_mat = kk1.xyzabc_to_mat4x4(self.tools_cfg["arm0"][last_arm0_tool]['kine'])
+                        kk1.set_tool_kine(tool_mat=tool_mat)
+
+                    elif last_arm0_tool==None and last_arm1_tool!=None:
+                        messagebox.showinfo('success', f'机器人连接成功. 机器人已设置右臂工具信息:{last_arm0_tool}，左臂未设置.')
+                        # 设置历史数据
+                        robot.set_tool(arm='B',  dynamicParams=self.tools_cfg["arm1"][last_arm1_tool]['dyn'], kineParams=self.tools_cfg["arm1"][last_arm1_tool]['kine'])
+                        tool_mat1 = kk2.xyzabc_to_mat4x4(self.tools_cfg["arm1"][last_arm1_tool]['kine'])
+                        kk2.set_tool_kine(tool_mat=tool_mat1)
+
+                    elif last_arm0_tool==None and last_arm1_tool==None:
+                        messagebox.showinfo('success',f'机器人连接成功. 机器人未设置工具信息.')
 
             if motion_tag == 0:
                 messagebox.showerror('failed!', "机器人连接不成功，请重连")
@@ -5573,6 +5843,102 @@ def read_csv_file_to_float_strict(filename, expected_columns=16):
     except Exception as e:
         print(f"读取文件时出错: {e}")
         return -1
+
+
+def load_or_create_tools_config(file_path):
+    tools_cfg= {
+        "arm0": {
+            "tool-1": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+            "tool-2": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+            "tool-3": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+            "tool-4": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+            "tool-5": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]}
+        },
+        "arm1": {
+            "tool-1": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+            "tool-2": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+            "tool-3": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+            "tool-4": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]},
+            "tool-5": {"dyn": [0,0,0,0,0,0,0,0,0,0], "kine": [0,0,0,0,0,0]}
+        },
+        "current_tool": {"arm0": None, "arm1": None}  # 保持为None/null
+    }
+    try:
+        # 检查文件是否存在
+        if not os.path.exists(file_path):
+            # 创建目录（如果不存在）
+            directory = os.path.dirname(file_path)
+            if directory and not os.path.exists(directory):
+                os.makedirs(directory, exist_ok=True)
+
+            # 写入默认配置
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(tools_cfg, f, indent=4, ensure_ascii=False)
+            print(f"文件不存在，已创建默认配置文件: {file_path}")
+            return False
+
+        # 检查文件是否为空
+        if os.path.getsize(file_path) == 0:
+            # 文件存在但为空，写入默认配置
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(tools_cfg, f, indent=4, ensure_ascii=False)
+            print(f"文件为空，已写入默认配置: {file_path}")
+            return False
+
+        # 尝试读取文件内容
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read().strip()
+            if not content:  # 文件内容全是空白字符
+                # 写入默认配置
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(tools_cfg, f, indent=4, ensure_ascii=False)
+                print(f"文件内容为空，已写入默认配置: {file_path}")
+                return False
+
+            # 解析JSON
+            config = json.loads(content)
+
+            # 检查必需的结构
+            required_keys = ["arm0", "arm1", "current_tool"]
+            for key in required_keys:
+                if key not in config:
+                    print(f"配置文件缺少必需键 '{key}'，使用默认配置替换")
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        json.dump(tools_cfg, f, indent=4, ensure_ascii=False)
+                    return False
+
+            # 检查tool结构
+            tool_names = ["tool-1", "tool-2", "tool-3", "tool-4", "tool-5"]
+            for arm_key in ["arm0", "arm1"]:
+                if arm_key in config:
+                    for tool_name in tool_names:
+                        if tool_name not in config[arm_key]:
+                            print(f"配置中 {arm_key} 缺少工具 {tool_name}，使用默认配置替换")
+                            with open(file_path, 'w', encoding='utf-8') as f:
+                                json.dump(tools_cfg, f, indent=4, ensure_ascii=False)
+                            return False
+
+            # 所有检查通过，返回配置
+            print(f"成功加载配置文件: {file_path}")
+            return config
+
+    except json.JSONDecodeError :
+        # JSON解析错误，使用默认配置替换
+        print(f"JSON解析错误，文件可能损坏，使用默认配置替换: {file_path}")
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(tools_cfg, f, indent=4, ensure_ascii=False)
+        return False
+    except Exception as e:
+        # 其他错误
+        print(f"加载配置文件时发生错误: {e}")
+        print(f"使用默认配置替换: {file_path}")
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(tools_cfg, f, indent=4, ensure_ascii=False)
+        except Exception as write_error:
+            print(f"写入默认配置失败: {write_error}")
+        return False
+
 
 def read_data(robot_id,com):
     '''接收CAN的HEX数据'''
@@ -5937,5 +6303,4 @@ if __name__ == "__main__":
         background="white"  # 标签背景色
     )
     app = App(root)
-
     root.mainloop()
