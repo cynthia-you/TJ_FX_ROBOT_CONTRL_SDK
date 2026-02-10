@@ -42,6 +42,44 @@
     	Vect7	                m_Output_RunLmtN; //各个关节运行的负限位   
     }FX_InvKineSolvePara;
 
+### 旋转类型介绍
+	该枚举用于自定义旋转，包含12种欧拉角旋转矩阵及12种固定角旋转矩阵
+	enum FX_ROTATION_TYPE
+	{
+		FX_ROT_NULL = 11, //末端位姿不变
+		//12种欧拉角旋转
+		//实现基于末端坐标系旋转的效果
+		FX_ROT_EULER_XYZ = 101,
+		FX_ROT_EULER_XZY = 102,
+		FX_ROT_EULER_YXZ = 103,
+		FX_ROT_EULER_YZX = 104,
+		FX_ROT_EULER_ZXY = 105,
+		FX_ROT_EULER_ZYX = 106,
+						   
+		FX_ROT_EULER_XYX = 107,
+		FX_ROT_EULER_XZX = 108,
+		FX_ROT_EULER_YXY = 109,
+		FX_ROT_EULER_YZY = 110,
+		FX_ROT_EULER_ZXZ = 111,
+		FX_ROT_EULER_ZYZ = 112,
+		
+		//12种固定角旋转
+		//实现基于基坐标系旋转的效果
+		FX_ROT_FIXED_XYZ = 201,
+		FX_ROT_FIXED_XZY = 202,
+		FX_ROT_FIXED_YXZ = 203,
+		FX_ROT_FIXED_YZX = 204,
+		FX_ROT_FIXED_ZXY = 205,
+		FX_ROT_FIXED_ZYX = 206,
+				
+		FX_ROT_FIXED_XYX = 207,
+		FX_ROT_FIXED_XZX = 208,
+		FX_ROT_FIXED_YXY = 209,
+		FX_ROT_FIXED_YZY = 210,
+		FX_ROT_FIXED_ZXZ = 211,
+		FX_ROT_FIXED_ZYZ = 212,
+	};
+	
 ###    0.SDK日志关闭
 FX_VOID  FX_LOG_SWITCH(FX_INT32L log_tag_input);
     log_tag_input：true 开； false关
@@ -203,8 +241,8 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
     • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为包含该段规划的关节点位文件
     输入：
         1. FX_INT32L RobotSerial：0，左臂；1，右臂
-        2. Start_XYZABC起始点末端的位姿信息，六维信息，目标末端点相对于基座的平移和欧拉旋转，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
-        3. End_XYZABC终止点末端的位姿信息，六维信息，目标末端点相对于基座的平移和欧拉旋转，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
+        2. Start_XYZABC起始点末端的位姿信息，六维信息，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
+        3. End_XYZABC终止点末端的位姿信息，六维信息，目标末端点的平移和欧拉旋转使用FX_Robot_CalEndXYZABC自定义输入，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
         4. Ref_Joints约束了规划的起始关节点信息。单位：度。 
         5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
@@ -273,8 +311,8 @@ FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End
     • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为点位缓存类函数
     输入：
         1. FX_INT32L RobotSerial：0，左臂；1，右臂
-        2. Start_XYZABC起始点末端的位姿信息，六维信息，目标末端点相对于基座的平移和欧拉旋转，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
-        3. End_XYZABC终止点末端的位姿信息，六维信息，目标末端点相对于基座的平移和欧拉旋转，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
+        2. Start_XYZABC起始点末端的位姿信息，六维信息，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
+        3. End_XYZABC终止点末端的位姿信息，六维信息，目标末端点的平移和欧拉旋转使用FX_Robot_CalEndXYZABC自定义输入，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
         4. Ref_Joints约束了规划的起始关节点信息。单位：度。 
         5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
@@ -301,8 +339,25 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect
         
     • 输出点位频率为500Hz
     • 该接口是不同于FX_Robot_PLN_MOVLA的规划接口，FX_Robot_PLN_MOVL_KeepJA根据起始关节和结束关节规划一条直线路径。
-    
-    
+
+###    16.MOVL终点位姿处理
+FX_BOOL  FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L RotType, Vect3 Angle_Param, Vect6 End_XYZABC)
+
+    • 输入起始点位姿、位置偏移、旋转类型及各轴旋转角度，输出为结束点位姿
+    输入：
+        1. Vect6 Start_XYZABC：起始点位姿（单位：mm/度）
+        2. Vect3 Pos_offset:末端点相对于起始点位置的偏移（单位：mm）
+        3. FX_INT32L RotType:自定义旋转类型，详情请参考旋转类型介绍
+        4. Vect3 Angle_Param:输入各轴旋转角度(例如：FX_ROT_EULER_XYZ类型，Angle_Param[0]为x轴旋转，Angle_Param[1]为y轴旋转，Angle_Param[2]为z轴旋转)
+    输出：
+        Vect6 End_XYZABC：结束点位姿（单位：mm/度）
+        
+    • 建议：如果只有位置平移，可以不使用本接口，直接基于Start_XYZABC进行位置偏移对End_XYZABC赋值
+	• 旋转类型大致分为三种：
+		1.FX_ROT_NULL：不进行姿态变换
+		2.FX_ROT_EULER_xxx:欧拉角变换，基于末端坐标系旋转
+		3.FX_ROT_FIXED_xxx:固定角变换，基于基坐标系旋转    
+    • 本接口输出的结束点位姿可以直接输入直线规划接口进行规划
 
 # 二、案例脚本
 ## C++开发的使用编译见：
