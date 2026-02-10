@@ -180,6 +180,34 @@ FX_VOID FX_Quaternions2Matrix3(Quaternion q, Matrix3 m);
 FX_VOID	 FX_Matrix2Quaternion3(Matrix3 m, Quaternion q);//FX_Matrix2Quaternion(Matrix3 m, Vect4 q)
 FX_VOID	 FX_Matrix2Quaternion4(Matrix4 m, Quaternion q);  
 	
+//////////////////Rotation matrix of Euler angular coordinate system
+FX_VOID  FX_RotEuler_XYZ(FX_DOUBLE x_dgr, FX_DOUBLE y_dgr, FX_DOUBLE z_dgr, Matrix4 m);
+FX_VOID  FX_RotEuler_XZY(FX_DOUBLE x_dgr, FX_DOUBLE z_dgr, FX_DOUBLE y_dgr, Matrix4 m);
+FX_VOID  FX_RotEuler_YXZ(FX_DOUBLE y_dgr, FX_DOUBLE x_dgr, FX_DOUBLE z_dgr, Matrix4 m);
+FX_VOID  FX_RotEuler_YZX(FX_DOUBLE y_dgr, FX_DOUBLE z_dgr, FX_DOUBLE x_dgr, Matrix4 m);
+FX_VOID  FX_RotEuler_ZXY(FX_DOUBLE z_dgr, FX_DOUBLE x_dgr, FX_DOUBLE y_dgr, Matrix4 m);
+FX_VOID  FX_RotEuler_ZYX(FX_DOUBLE z_dgr, FX_DOUBLE y_dgr, FX_DOUBLE x_dgr, Matrix4 m);
+					
+FX_VOID  FX_RotEuler_XYX(FX_DOUBLE x1_dgr, FX_DOUBLE y_dgr, FX_DOUBLE x2_dgr, Matrix4 m);
+FX_VOID  FX_RotEuler_XZX(FX_DOUBLE x1_dgr, FX_DOUBLE z_dgr, FX_DOUBLE x2_dgr, Matrix4 m);
+FX_VOID  FX_RotEuler_YXY(FX_DOUBLE y1_dgr, FX_DOUBLE x_dgr, FX_DOUBLE y2_dgr, Matrix4 m);
+FX_VOID  FX_RotEuler_YZY(FX_DOUBLE y1_dgr, FX_DOUBLE z_dgr, FX_DOUBLE y2_dgr, Matrix4 m);
+FX_VOID  FX_RotEuler_ZXZ(FX_DOUBLE z1_dgr, FX_DOUBLE x_dgr, FX_DOUBLE z2_dgr, Matrix4 m);
+FX_VOID  FX_RotEuler_ZYZ(FX_DOUBLE z1_dgr, FX_DOUBLE y_dgr, FX_DOUBLE z2_dgr, Matrix4 m);
+//////////////////Rotation matrix of fixed coordinate system
+FX_VOID  FX_RotFixed_XYZ(FX_DOUBLE x_dgr, FX_DOUBLE y_dgr, FX_DOUBLE z_dgr, Matrix4 m);
+FX_VOID  FX_RotFixed_XZY(FX_DOUBLE x_dgr, FX_DOUBLE z_dgr, FX_DOUBLE y_dgr, Matrix4 m);
+FX_VOID  FX_RotFixed_YXZ(FX_DOUBLE y_dgr, FX_DOUBLE x_dgr, FX_DOUBLE z_dgr, Matrix4 m);
+FX_VOID  FX_RotFixed_YZX(FX_DOUBLE y_dgr, FX_DOUBLE z_dgr, FX_DOUBLE x_dgr, Matrix4 m);
+FX_VOID  FX_RotFixed_ZXY(FX_DOUBLE z_dgr, FX_DOUBLE x_dgr, FX_DOUBLE y_dgr, Matrix4 m);
+FX_VOID  FX_RotFixed_ZYX(FX_DOUBLE z_dgr, FX_DOUBLE y_dgr, FX_DOUBLE x_dgr, Matrix4 m);
+		
+FX_VOID  FX_RotFixed_XYX(FX_DOUBLE x1_dgr, FX_DOUBLE y_dgr, FX_DOUBLE x2_dgr, Matrix4 m);
+FX_VOID  FX_RotFixed_XZX(FX_DOUBLE x1_dgr, FX_DOUBLE z_dgr, FX_DOUBLE x2_dgr, Matrix4 m);
+FX_VOID  FX_RotFixed_YXY(FX_DOUBLE y1_dgr, FX_DOUBLE x_dgr, FX_DOUBLE y2_dgr, Matrix4 m);
+FX_VOID  FX_RotFixed_YZY(FX_DOUBLE y1_dgr, FX_DOUBLE z_dgr, FX_DOUBLE y2_dgr, Matrix4 m);
+FX_VOID  FX_RotFixed_ZXZ(FX_DOUBLE z1_dgr, FX_DOUBLE x_dgr, FX_DOUBLE z2_dgr, Matrix4 m);
+FX_VOID  FX_RotFixed_ZYZ(FX_DOUBLE z1_dgr, FX_DOUBLE y_dgr, FX_DOUBLE z2_dgr, Matrix4 m);
 #ifdef __cplusplus
 }
 #endif

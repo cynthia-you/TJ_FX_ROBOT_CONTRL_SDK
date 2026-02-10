@@ -69,6 +69,39 @@ enum FX_PILOT_NSP_TYPES
 	FX_PILOT_NSP_TYPES_NEAR_DIR = 1,
 };
 
+enum FX_ROTATION_TYPE
+{
+	FX_ROT_NULL = 11,
+
+	FX_ROT_EULER_XYZ = 101,
+	FX_ROT_EULER_XZY = 102,
+	FX_ROT_EULER_YXZ = 103,
+	FX_ROT_EULER_YZX = 104,
+	FX_ROT_EULER_ZXY = 105,
+	FX_ROT_EULER_ZYX = 106,
+					   
+	FX_ROT_EULER_XYX = 107,
+	FX_ROT_EULER_XZX = 108,
+	FX_ROT_EULER_YXY = 109,
+	FX_ROT_EULER_YZY = 110,
+	FX_ROT_EULER_ZXZ = 111,
+	FX_ROT_EULER_ZYZ = 112,
+
+	FX_ROT_FIXED_XYZ = 201,
+	FX_ROT_FIXED_XZY = 202,
+	FX_ROT_FIXED_YXZ = 203,
+	FX_ROT_FIXED_YZX = 204,
+	FX_ROT_FIXED_ZXY = 205,
+	FX_ROT_FIXED_ZYX = 206,
+			
+	FX_ROT_FIXED_XYX = 207,
+	FX_ROT_FIXED_XZX = 208,
+	FX_ROT_FIXED_YXY = 209,
+	FX_ROT_FIXED_YZY = 210,
+	FX_ROT_FIXED_ZXZ = 211,
+	FX_ROT_FIXED_ZYZ = 212,
+};
+
 typedef struct
 {
 	/////////////////////////////// Kinematic
@@ -277,6 +310,7 @@ FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para
 FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_para);
 ////////////////////////////////////////////////////////////////////////////////////////////////
 /////Motion Planning
+FX_BOOL  FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L RotType, Vect3 Angle_Param, Vect6 End_XYZABC);
 FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_CHAR* OutPutPath);
 FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc,FX_CHAR* OutPutPath);
 ////Parameters Identification

@@ -3150,6 +3150,215 @@ FX_BOOL  FX_Robot_Kine_GetLinkPG(FX_INT32L RobotSerial, FX_DOUBLE PG[7][4][4])
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+FX_VOID  FX_MatrixTransform_Left(Vect6 Start_XYZABC, Vect3 Pos_offset, Matrix4 Fixed_Rot, Vect6 End_XYZABC)
+{
+	Matrix4 Start = { {0} };
+	Matrix4 End = { {0} };
+
+	FX_XYZABC2Matrix4DEG(Start_XYZABC, Start);
+	FX_MMM44(Fixed_Rot, Start, End);
+	FX_Matrix42XYZABCDEG(End, End_XYZABC);
+
+	End_XYZABC[0] = Start_XYZABC[0] + Pos_offset[0];
+	End_XYZABC[1] = Start_XYZABC[1] + Pos_offset[1];
+	End_XYZABC[2] = Start_XYZABC[2] + Pos_offset[2];
+}
+
+FX_VOID  FX_MatrixTransform_Right(Vect6 Start_XYZABC, Vect3 Pos_offset, Matrix4 Euler_Rot, Vect6 End_XYZABC)
+{
+	Matrix4 Start = { {0} };
+	Matrix4 End = { {0} };
+
+	FX_XYZABC2Matrix4DEG(Start_XYZABC, Start);
+	FX_MMM44(Start, Euler_Rot, End);
+	FX_Matrix42XYZABCDEG(End, End_XYZABC);
+
+	End_XYZABC[0] = Start_XYZABC[0] + Pos_offset[0];
+	End_XYZABC[1] = Start_XYZABC[1] + Pos_offset[1];
+	End_XYZABC[2] = Start_XYZABC[2] + Pos_offset[2];
+}
+
+FX_BOOL  FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L RotType, Vect3 Angle_Param, Vect6 End_XYZABC)
+{
+	switch (RotType)
+	{
+		case FX_ROT_EULER_XYZ:
+		{ 
+			Matrix4 ROT = { {0} }; 
+			FX_RotEuler_XYZ(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC,Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+			
+		case FX_ROT_EULER_XZY:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotEuler_XZY(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_EULER_YXZ:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotEuler_YXZ(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_EULER_YZX:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotEuler_YZX(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_EULER_ZXY:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotEuler_ZXY(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_EULER_ZYX:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotEuler_ZYX(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+							 
+		case FX_ROT_EULER_XYX:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotEuler_XYX(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_EULER_XZX:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotEuler_XZX(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_EULER_YXY:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotEuler_YXY(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_EULER_YZY:{ 
+			Matrix4 ROT = { {0} }; 
+			FX_RotEuler_YZY(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC,Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_EULER_ZXZ:{ 
+			Matrix4 ROT = { {0} }; 
+			FX_RotEuler_ZXZ(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC,Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_EULER_ZYZ:{ 
+			Matrix4 ROT = { {0} }; 
+			FX_RotEuler_ZYZ(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Right(Start_XYZABC,Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		///////////////////////////////////////////////////////////////////////////					 
+		case FX_ROT_FIXED_XYZ:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_XYZ(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_FIXED_XZY:
+		{ 
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_XZY(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_FIXED_YXZ:
+		{ 
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_YXZ(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_FIXED_YZX:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_YZX(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_FIXED_ZXY:
+		{ 
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_ZXY(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_FIXED_ZYX:
+		{ 
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_ZYX(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+							 
+		case FX_ROT_FIXED_XYX:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_XYX(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_FIXED_XZX:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_XZX(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_FIXED_YXY:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_YXY(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_FIXED_YZY:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_YZY(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_FIXED_ZXZ:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_ZXZ(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+		case FX_ROT_FIXED_ZYZ:
+		{
+			Matrix4 ROT = { {0} };
+			FX_RotFixed_ZYZ(Angle_Param[0], Angle_Param[1], Angle_Param[2], ROT);
+			FX_MatrixTransform_Left(Start_XYZABC, Pos_offset, ROT, End_XYZABC);
+			break;
+		}
+
+		default:
+			return FX_FALSE;
+	}
+
+	return FX_TRUE;
+}
+
 FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT8* OutPutPath)
 {
 	if (FX_LOG_TAG) FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL]\n");

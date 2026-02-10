@@ -38,4 +38,17 @@ protected:
 	long m_filt_pos;
 };
 
+class CMovingAverageFilter
+{
+public:
+	CMovingAverageFilter();
+	~CMovingAverageFilter();
+
+	bool FilterPointSet(CPointSet* input, CPointSet* output);
+	bool FilterSinglePoint(double** points, long index, long point_count,
+		long point_dim, double* filtered_point);
+
+private:
+	static const long WINDOW_SIZE = 5; 
+};
 #endif 

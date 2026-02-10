@@ -841,8 +841,15 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 		final_points.OnSetPoint(ret_joints);
 	}
 
-	char* pp = path;
-	final_points.OnSave(path);
+	CPointSet output;
+	output.OnInit(PotT_7d);
+	CMovingAverageFilter filter;
+	if (!filter.FilterPointSet(&final_points, &output))
+	{
+		printf("failed\n");
+	}
+	output.OnSave(path);
+	
 
 	return true;
 }
@@ -1097,6 +1104,9 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 	ret_pset->OnInit(PotT_7d);
 	ret_pset->OnEmpty();
 
+	CPointSet output;
+	output.OnInit(PotT_7d);
+
 	double tmppoints[7] = { 0 };
 	double TCP[4][4] = { {0} };
 	double ret_joints[9] = { 0 };
@@ -1175,7 +1185,13 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 		ret_joints[5] = sp.m_Output_RetJoint[5];
 		ret_joints[6] = sp.m_Output_RetJoint[6];
 
-		ret_pset->OnSetPoint(ret_joints);
+		output.OnSetPoint(ret_joints);
+		CMovingAverageFilter filter;
+		if (!filter.FilterPointSet(&output, ret_pset))
+		{
+			printf("failed\n");
+		}
+		//ret_pset->OnSetPoint(ret_joints);
 	}
 	return true;
 }
@@ -1892,3 +1908,145 @@ bool CAxisPln::OnMovJ(long RobotSetial, double start_joint[7], double end_joint[
 	return true;
 }
 
+
+
+/////////////////////////////////////////////
+
+CMovingAverageFilter::CMovingAverageFilter()
+{
+}
+
+CMovingAverageFilter::~CMovingAverageFilter()
+{
+}
+
+bool CMovingAverageFilter::FilterPointSet(CPointSet* input, CPointSet* output)
+{
+	if (input == NULL || output == NULL)
+	{
+		return false;
+	}
+
+	long point_count = input->OnGetPointNum();
+	if (point_count < WINDOW_SIZE)
+	{
+		// 如果点数少于窗口大小，直接复制
+		output->OnEmpty();
+		for (long i = 0; i < point_count; i++)
+		{
+			double* p = input->OnGetPoint(i);
+			if (p != NULL)
+			{
+				output->OnSetPoint(p);
+			}
+		}
+		return true;
+	}
+
+	// 获取点的维数
+	double* first_point = input->OnGetPoint(0);
+	if (first_point == NULL)
+	{
+		return false;
+	}
+
+	output->OnEmpty();
+
+	// 对每个点进行滤波处理
+	for (long i = 0; i < point_count; i++)
+	{
+		long start_idx = i - WINDOW_SIZE / 2;  // 窗口起始索引
+		long end_idx = start_idx + WINDOW_SIZE - 1;  // 窗口结束索引
+
+		// 边界处理：确保窗口不超出数组范围
+		if (start_idx < 0)
+		{
+			start_idx = 0;
+			end_idx = WINDOW_SIZE - 1;
+		}
+		if (end_idx >= point_count)
+		{
+			end_idx = point_count - 1;
+			start_idx = end_idx - WINDOW_SIZE + 1;
+			if (start_idx < 0)
+			{
+				start_idx = 0;
+			}
+		}
+
+		// 获取窗口内所有点
+		double* p = input->OnGetPoint(i);
+		if (p == NULL)
+		{
+			return false;
+		}
+
+		// 初始化滤波后的点
+		double filtered[7] = { 0 };
+		long window_count = end_idx - start_idx + 1;  // 实际窗口大小
+
+		long dim = 7;  // 默认为7维（关节）
+
+		for (long d = 0; d < dim; d++)
+		{
+			double sum = 0.0;
+			for (long j = start_idx; j <= end_idx; j++)
+			{
+				double* pj = input->OnGetPoint(j);
+				if (pj != NULL)
+				{
+					sum += pj[d];
+				}
+			}
+			filtered[d] = sum / window_count;
+		}
+
+		output->OnSetPoint(filtered);
+	}
+
+	return true;
+}
+
+bool CMovingAverageFilter::FilterSinglePoint(double** points, long index,
+	long point_count, long point_dim,
+	double* filtered_point)
+{
+	if (points == NULL || filtered_point == NULL || point_count < WINDOW_SIZE)
+	{
+		return false;
+	}
+
+	long start_idx = index - WINDOW_SIZE / 2;
+	long end_idx = start_idx + WINDOW_SIZE - 1;
+
+	// 边界处理
+	if (start_idx < 0)
+	{
+		start_idx = 0;
+		end_idx = WINDOW_SIZE - 1;
+	}
+	if (end_idx >= point_count)
+	{
+		end_idx = point_count - 1;
+		start_idx = end_idx - WINDOW_SIZE + 1;
+		if (start_idx < 0)
+		{
+			start_idx = 0;
+		}
+	}
+
+	long window_count = end_idx - start_idx + 1;
+
+	// 对每个维度进行均值滤波
+	for (long d = 0; d < point_dim; d++)
+	{
+		double sum = 0.0;
+		for (long j = start_idx; j <= end_idx; j++)
+		{
+			sum += points[j][d];
+		}
+		filtered_point[d] = sum / window_count;
+	}
+
+	return true;
+}
