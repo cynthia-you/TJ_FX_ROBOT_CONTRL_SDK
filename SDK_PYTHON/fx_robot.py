@@ -845,7 +845,7 @@ class Marvin_Robot:
 
     def set_EefCart_control_params(self,arm:str, fcType: int, CartCtrlPara: list):
         '''设置力控参数
-        :param fcType: 1:工具空间力控
+        :param fcType: 1:工具空间力控，用户自定义； 2：系统实时相应
         :param CartCtrlPara: list(7,1). 控制参数 目前全0
         :return:
             int : 1: True,  2: False
@@ -915,7 +915,6 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
-
     def send_pvt_file(self,arm:str, pvt_path: str, id: int):
         '''上传PVT文件给指定ID
         :param pvt_path: 本地pvt文件的绝对/相对路径
@@ -943,7 +942,6 @@ class Marvin_Robot:
                 return self.robot.OnSendPVT_B(pvt_char, id_int)
         except Exception as e:
             print(f'ERROR:{e}')
-
 
     def set_drag_space(self,arm:str, dgType: int):
         '''设置拖动空间
@@ -977,7 +975,6 @@ class Marvin_Robot:
         remote_char = ctypes.c_char_p(self.remote_file_path)
         return self.robot.OnRecvFile(local_char, remote_char)
 
-
     def send_file(self, local_path: str, remote_path: str):
         '''将上位机文件上传到机械臂控制器
         :param local_path: 本地绝对路径
@@ -990,7 +987,6 @@ class Marvin_Robot:
         remote_char = ctypes.c_char_p(self.remote_file_path)
         return self.robot.OnSendFile(local_char, remote_char)
 
-
     def log_switch(self,flag:str):
         try:
             if flag=='1':
@@ -999,7 +995,6 @@ class Marvin_Robot:
                 return self.robot.OnLogOff()
         except Exception as e:
             print(f'ERROR:{e}')
-
 
     def local_log_switch(self,flag:str):
         try:

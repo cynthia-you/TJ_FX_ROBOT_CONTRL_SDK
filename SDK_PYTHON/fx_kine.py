@@ -544,12 +544,12 @@ class Marvin_Kine:
                 如果选用用多组解m_OutPut_AllJoint. 请自行对选的解做判断,符合以下三个条件才能控制机械臂正常驱动:
                     1. 第二关节的角度不在正负0.05度范围内(在此范围将奇异)
                     2. 对输出的各个关节做软限位判定:
-                        调用接口ini_result=kk.load_config(config_path=os.path.join(current_path,'ccs_m6.MvKDCfg'))后,
+                        调用接口ini_result=kk.load_config(config_path=os.path.join(current_path,'ccs_m6_31.MvKDCfg'))后,
                         ini_result['PNVA'][:]矩阵里的请两列对应各个关节的正负限位
                         选取的解的每个关节都满足在限位置内
                     3. 如果条件1和2都满足,还要做六七关节干涉判定:
                         判定方法:
-                            调用接口ini_result=kk.load_config(config_path=os.path.join(current_path,'ccs_m6.MvKDCfg'))后,
+                            调用接口ini_result=kk.load_config(config_path=os.path.join(current_path,'ccs_m6_31.MvKDCfg'))后,
                             ini_result['BD'][:]矩阵里依次为++, -+,  --, +- 四个象限的干涉参数
                             以CCS为例:
                                 如果选的解的六七关节都为正, 则选用在++象限里的参数:[0.018004, -2.3205, 108.0],三个参数分别视为a0,a1,a2,
@@ -732,6 +732,89 @@ class Marvin_Kine:
             logger.info("xyzabc to mat4x4 Success")
             return fk_mat
 
+    def calculate_end_xyzabc(self,start_xyzabc:list,pose_offset:list, rot_type:int, angle_param:list):
+        '''
+        • 输入起始点位姿、位置偏移、旋转类型及各轴旋转角度，输出为结束点位姿
+        输入：
+            1.start_xyzabc：list(6,),起始点位姿（单位：mm/度）
+            2. pose_offset:list(3,),末端点相对于起始点位置的偏移（单位：mm）
+            3. rot_type:int,自定义旋转类型，见下方FX_ROTATION_TYPE里类型对应的value
+            4. angle_param:list(3,),输入各轴旋转角度(例如：FX_ROT_EULER_XYZ类型，Angle_Param[0]为x轴旋转，Angle_Param[1]为y轴旋转，Angle_Param[2]为z轴旋转)
+        输出：
+            end_xyzabc：list(6,),结束点位姿（单位：mm/度）
+
+        • 建议：如果只有位置平移，可以不使用本接口，直接基于start_xyzabc进行位置偏移对end_xyzabc赋值
+        • 旋转类型大致分为三种：
+            1.FX_ROT_NULL：不进行姿态变换
+            2.FX_ROT_EULER_xxx:欧拉角变换，基于末端坐标系旋转
+            3.FX_ROT_FIXED_xxx:固定角变换，基于基坐标系旋转
+            enum FX_ROTATION_TYPE
+            {
+                FX_ROT_NULL = 11,
+
+                FX_ROT_EULER_XYZ = 101,
+                FX_ROT_EULER_XZY = 102,
+                FX_ROT_EULER_YXZ = 103,
+                FX_ROT_EULER_YZX = 104,
+                FX_ROT_EULER_ZXY = 105,
+                FX_ROT_EULER_ZYX = 106,
+
+                FX_ROT_EULER_XYX = 107,
+                FX_ROT_EULER_XZX = 108,
+                FX_ROT_EULER_YXY = 109,
+                FX_ROT_EULER_YZY = 110,
+                FX_ROT_EULER_ZXZ = 111,
+                FX_ROT_EULER_ZYZ = 112,
+
+                FX_ROT_FIXED_XYZ = 201,
+                FX_ROT_FIXED_XZY = 202,
+                FX_ROT_FIXED_YXZ = 203,
+                FX_ROT_FIXED_YZX = 204,
+                FX_ROT_FIXED_ZXY = 205,
+                FX_ROT_FIXED_ZYX = 206,
+
+                FX_ROT_FIXED_XYX = 207,
+                FX_ROT_FIXED_XZX = 208,
+                FX_ROT_FIXED_YXY = 209,
+                FX_ROT_FIXED_YZY = 210,
+                FX_ROT_FIXED_ZXZ = 211,
+                FX_ROT_FIXED_ZYZ = 212,
+            };
+        • 本接口输出的结束点位姿可以直接输入直线规划接口进行规划
+        '''
+        if len(start_xyzabc) != 6:
+            raise ValueError("start_xyzabc must be (6,)")
+        if len(pose_offset) != 3:
+            raise ValueError("pose_offset must be (3,)")
+        if len(angle_param) != 3:
+            raise ValueError("angle_param must be (3,)")
+        if type(rot_type)!=int:
+            raise ValueError("rot_type must be (3,)")
+
+        s0, s1, s2, s3, s4, s5 = start_xyzabc
+        start = (ctypes.c_double * 6)(s0, s1, s2, s3, s4, s5)
+        ps0,ps1,ps2=pose_offset
+        pose_off=(ctypes.c_double * 3)(ps0,ps1,ps2)
+        angle0,angle1,angle2=angle_param
+        angle=(ctypes.c_double * 3)(angle0,angle1,angle2)
+        rot = ctypes.c_long(rot_type)
+
+        end_xyzabc = (c_double * 6)(0, 0, 0, 0, 0, 0)
+        self.kine.FX_Robot_CalEndXYZABC.argtypes = [c_double * 6, c_double * 3,c_long, c_double * 3,c_double*6]
+        self.kine.FX_Robot_CalEndXYZABC.restype = c_bool
+        success = self.kine.FX_Robot_CalEndXYZABC(start,pose_off,rot,angle,end_xyzabc)
+
+        if not success:
+            logger.error("get end_xyzabc Error")
+            return False
+        else:
+            logger.info("get end_xyzabc Success")
+
+            pose_6d = [end_xyzabc[i] for i in range(6)]
+            logger.info(f"end_xyzabc:{pose_6d}")
+            return pose_6d
+
+
     def movL(self,start_xyzabc:list, end_xyzabc:list,ref_joints:list,vel:float,acc:float,save_path):
         '''直线规划，规划文件的频率500Hz，即每2ms执行一行
         :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
@@ -884,7 +967,7 @@ class Marvin_Kine:
                :param start_joints:起始点各个关节位置（单位：角度）
                :param end_joints:终点各个关节位置（单位：角度）
                :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-               :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+               :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
                :return: 规划得到的点集列表
                特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的点集.
                        2 输出点位频率为500Hz
