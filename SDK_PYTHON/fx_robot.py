@@ -844,9 +844,9 @@ class Marvin_Robot:
             print(f'ERROR:{e}')
 
     def set_EefCart_control_params(self,arm:str, fcType: int, CartCtrlPara: list):
-        '''设置力控参数
-        :param fcType: 1:工具空间力控，用户自定义； 2：系统实时相应
-        :param CartCtrlPara: list(7,1). 控制参数 目前全0
+        '''设置末端笛卡尔阻抗参数
+        :param fcType: 1:用户自定义末端旋转； 2：系统实时计算并响应
+        :param CartCtrlPara: list(7,1). 控制参数前三个为旋转信息，基于基座的XYZ旋转。
         :return:
             int : 1: True,  2: False
         '''
