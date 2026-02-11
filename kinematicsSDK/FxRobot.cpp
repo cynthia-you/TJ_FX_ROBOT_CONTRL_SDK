@@ -3182,6 +3182,18 @@ FX_BOOL  FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L R
 {
 	switch (RotType)
 	{
+		case FX_ROT_NULL:
+		{
+			End_XYZABC[0] = Start_XYZABC[0] + Pos_offset[0];
+			End_XYZABC[1] = Start_XYZABC[1] + Pos_offset[1];
+			End_XYZABC[2] = Start_XYZABC[2] + Pos_offset[2];
+
+			End_XYZABC[3] = Start_XYZABC[3];
+			End_XYZABC[4] = Start_XYZABC[4];
+			End_XYZABC[5] = Start_XYZABC[5];
+
+			break;
+		}
 		case FX_ROT_EULER_XYZ:
 		{ 
 			Matrix4 ROT = { {0} }; 
