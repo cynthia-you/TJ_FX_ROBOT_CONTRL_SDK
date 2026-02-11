@@ -1,6 +1,6 @@
 # 本项目为天机MARVIN系列机器人的开源仓库
 
-# 本文档包含:SDK更新， 控制器版本更新, APP更新， 简要说明， 编译方法， 使用注意， 机器人报错及处理措施
+# 本文档包含:SDK更新，控制器版本更新， APP更新，简要说明，编译方法，使用注意，机器人报错及处理措施
 
 # ATTENTION
      1.  请先熟练使用MARVIN_APP 或者https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/ 下各个版本里的FxStation.exe， 操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
