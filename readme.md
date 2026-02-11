@@ -189,29 +189,38 @@
 ## 五、编译方法
 
 ### 5.1 编译
-    5.1.1编译SO动态库:
-    INUX设备编译:
-        控制SDK:  ./contrlSDK/makefile 生成libMarvinSDK.so
-        
-        运动学SDK: ./kinematicsSDK/makefile 生成libKine.so
+    5.1.1编译so动态库:
+    linux设备编译:
+        控制SDK(controlSDK):  ./contrlSDK/makefile 生成libMarvinSDK.so
+		
+        运动学SDK(kinematicsSDK): ./kinematicsSDK/makefile 生成libKine.so
+		
+	编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
 
-    5.1.2编译DLL动态库:
-    1)在WINDOWS下使用MINGW编译:
-            控制SDK:
-                 源码controlSDK_win: g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm
-                 
-                 运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
-            
+    5.1.2编译c++调用的dll动态库:
+    1)windows下使用MinGW编译dll动态库:
+			c++调用的DLL
+			控制SDK(controlSDK_win): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm
+			
+            运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
+			
             编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
 
+			
+	5.1.3 编译python调用的dll动态库
+    1)linux下编译dll动态库:
+        控制SDK(controlSDK):  x86_64-w64-mingw32-g++ MarvinSDK.cpp Robot.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp ACB.cpp -Wall -O2 -shared -o libMarvinSDK.dll     -DBUILDING_DLL     -DCMPL_WIN     -static -static-libgcc -static-libstdc++     -lws2_32 -lpthread     -lwinmm
+		
+        运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll 
 
-    2)LINUX下编译神DLL动态库:
-        控制SDK:  x86_64-w64-mingw32-g++ MarvinSDK.cpp Robot.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp ACB.cpp -Wall -O2 -shared -o libMarvinSDK.dll     -DBUILDING_DLL     -DCMPL_WIN     -static -static-libgcc -static-libstdc++     -lws2_32 -lpthread     -lwinmm
+	2）windows下使用MinGW编译dll动态库：
+			控制SDK（controlSDK）：g++ MarvinSDK.cpp Robot.cpp ACB.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+			
+			运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -w -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
 
 
-        运动学SDK: g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll  
+        
 
-        该指令生成的DLL PYTHON可调用, 但WINDOWS下C++使用不可
 
 ### 5.2 使用
     LINUX:
