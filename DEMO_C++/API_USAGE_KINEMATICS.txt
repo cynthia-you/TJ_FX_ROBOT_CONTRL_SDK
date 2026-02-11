@@ -1,5 +1,5 @@
 天机-孚晞  计算SDK API usage C++
-
+## linux下：
 demo1 运行所有接口功能： showcase_kinematics_all_functions.cpp
 g++ showcase_kinematics_all_functions.cpp -o kine -L. -lKine -Wl,-rpath=.
 ./kine
@@ -37,6 +37,10 @@ g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj -L. -lKine -
 demo9 左臂关节阻抗50HZ执行约束构型的在线直线规划点位：showcase_online_movl_keepja_execution.cpp
 g++ showcase_online_movl_keepja_execution.cpp -o online_movl_keepja -L. -lKine -lMarvinSDK -Wl,-rpath=.
 ./online_movl_keepja
+
+## windows下，示例一个编译方法，其他以此类推：
+g++ showcase_kinematics_all_functions.cpp -o kine.exe -L. -lKine
+kine.exe
 
 
 
