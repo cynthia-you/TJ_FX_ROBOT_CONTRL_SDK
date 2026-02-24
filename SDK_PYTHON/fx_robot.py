@@ -1345,8 +1345,8 @@ class RT_OUT(Structure):
         ("m_FB_Joint_Vel", c_float * 7),  # 关节速度反馈
         ("m_FB_Joint_PosE", c_float * 7),  # 关节位置(外编)
         ("m_FB_Joint_Cmd", c_float * 7),  # 位置关节指令
-        ("m_FB_Joint_CToq", c_float * 7),  # 关节指令扭矩
-        ("m_FB_Joint_SToq", c_float * 7),  # 关节实际扭矩
+        ("m_FB_Joint_CToq", c_float * 7),  # 关节电流
+        ("m_FB_Joint_SToq", c_float * 7),  # 关节扭矩
         ("m_FB_Joint_Them", c_float * 7),  # 关节温度
         ("m_EST_Joint_Firc", c_float * 7),  # 关节摩擦估计
         ("m_EST_Joint_Firc_Dot", c_float * 7),  # 关节力扰动估计值微分
