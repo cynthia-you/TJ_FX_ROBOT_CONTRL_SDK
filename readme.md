@@ -1,9 +1,9 @@
 # 本项目为天机MARVIN系列机器人的开源仓库
 
-# 本文档包含:SDK更新，控制器版本更新， APP更新，简要说明，编译方法，使用注意，机器人报错及处理措施
+# 本文档包含:一、SDK简要说明，二、编译方法，三、SDK更新，四、控制器版本更新， 五、APP更新，六、使用注意，七、机器人报错及处理措施
 
 # ATTENTION
-     1.  请先熟练使用MARVIN_APP 或者https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/ 下各个版本里的FxStation.exe， 操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
+     1.  请先熟练使用上位机软件（https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/tree/UI-MarvinPlatform） 或者https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/ 下各个版本里的FxStation.exe， 操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
      2.  DEMO_C++ 和 DEMO_PYTHON 为SDK接口在C++和PYTHON下的使用DEMO。每个demo顶部有该DEMO的案例说明和使用逻辑，请您一定先阅读，根据现场情况修改后运行。
          这些demo的使用逻辑和使用参数为研发测试使用开发的，仅供参考，并非实际生产代码。
              比如:
@@ -11,123 +11,17 @@
                  b.参数设置之间sleep 1秒或者500毫秒， 实际上参数设置之间小睡1毫秒即可。
                  c.设置目标关节后，测试里小睡几秒等机械臂运行到位，而在生产时可以通过循环订阅机械臂当前位置判断是否走到指定点位或者通过订阅低速标志来判断。
                  d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
-                 
-## 一、 SDK更新
-## 控制SDK
-### 1.1设置末端力控类型和笛卡尔方向的旋转
-	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	FX_DLL_EXPORT bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
-	//设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	FX_DLL_EXPORT bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
-### 1.2指定关节伺服软复位
-	// 左臂指定关节伺服软复位
-	FX_DLL_EXPORT void OnServoReset_A(int axis);
-	// 右臂指定关节伺服软复位
-	FX_DLL_EXPORT void OnServoReset_B(int axis);
 
-## 运动计算SDK
-### 1.1 更新在线规划功能
-
-     C++接口：
-          FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, CPointSet* ret_pset);
-          FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc,CPointSet* ret_pset);
-
-     c++ demo: 
-          1.演示左臂离线和在线规划功能接口：showcase_online_and_offline_pln_all_function.cpp
-          2.左臂关节阻抗50HZ执行离线直线规划文件：showcase_offline_movl_execution.cpp
-          3.左臂关节阻抗50HZ执行在线直线规划点：showcase_online_movla_execution.cpp
-          4.臂关节阻抗50HZ执行约束构型的离线直线规划文件：showcase_offline_movl_keepj_execution.cpp
-          5.左臂关节阻抗50HZ执行约束构型的在线直线规划点位：showcase_online_movl_keepja_execution.cpp
-
-     PY接口：
-          movLA(self, start_xyzabc: List[float], end_xyzabc: List[float],
-              ref_joints: List[float], vel: float, acc: float,
-              dimension: int = 7) -> List[List[float]]:
-              
-           movL_KeepJA(self, start_joints: List[float], end_joints: List[float],
-              vel: float, acc: float,
-              dimension: int = 7) -> List[List[float]]
-
-     py demo:
-          showcase_online_pln_movl.py
-          showcase_online_pln_movl_keepj.py
-          
-          
-
-### 1.2 PYTHON
-     1. 更新了计算的SDK:https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/SDK_PYTHON/fx_kine.py
-     2. 更新了SDK的DEMO:https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/DEMO_PYTHON/readme.md
-
-### 1.3 代码获取控制器版本号
-     C++:
-          char paraName[30]="VERSION";
-          long retValue=0;
-          OnGetIntPara(paraName,&retValue);
-          printf("CONTRL VERSION: %ld\n", retValue);
-
-     PYTHON:
-          ret,version=robot.get_param('int','VERSION')
-          print(f'controller version:{version}')
-
-     显示为1003xx, 如100335, 即大版本号:1003,子版本35
-
-
-
-## 二、 控制器版本更新
-
-     1003_37版本添加功能::
-     1. 新增任意状态下的轴外力检测,该轴外力可用于计算末端所受外力.
-
-     
-    1003_35版本添加功能:
-    1 增加内外编码器检测功能
-    2 修复伺服出错后所有轴全部下使能
-    https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/tag/marvin_tool_1003_35
-
-    
-    1003_34版本添加功能:
-    1 内编外编清0，编码器清错。
-    2 支持仅位置模式控制 增加了参数R.A0.BASIC.CtrlType和R.A1.BASIC.CtrlType。0表示控制模式都开放，1表示只有位置控制 (修改在机器人配置文件 *.ini)
-    
-    更能已同步更新到MARVIN_APP和FX-STATION
-
-    1003_34地址：
-        https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/tag/marvin_tool_1003_34
-        
-### 2.1 更新功能同步到MARVIN_APP
-
-### 2.2 机器人电机内外编清零和内编清错示例
-    控制器需要升级到1003_34版本
-       
-### 2.3 升级版本和参数都发布在releases下
-    https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases
-
-## 三、APP更新
-
-### 3.1 添加FXSTAION软件源码
-     https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/%E4%B8%8A%E4%BD%8D%E6%9C%BA%E8%BD%AF%E4%BB%B6MARVIN_APP/FxStation_1217.zip
-
-### 3.2 末端CAN/485 更新
-     1.机器人连接后点击接收按钮后开启读末端返回报文线程
-     2.可加入多个协议指令在列表
-     3.可删除下拉列表中的协议指令
-     MARVIN_APP_1128
-
-### 3.3 增加浮机参数计算功能
-     MARVIN_APP_1125及以上
-
-    
-    
-## 四、简要说明
+## 一、SDK简要说明
 
     MARVIN SDK说明：
          1. MARVIN系列机器人的SDK分为控制SDK和机器人计算SDK
-         2. 控制SDK支持win/linux平台下C++/python的使用和开发（已开源SDK代码）
+         2. 控制SDK支持win/linux平台下C++/python的使用和开发
          3. 计算SDK支持win/linux下的C++/python的使用（开源运动学SDK代码:正解,逆解,逆解零空间,雅可比矩阵,直线规划movL,工具负载的动力学辨识. 动力学计算接口及浮动机座接口请商询）
          4. 我司linux下仅有x_86架构机器开发和测试，特殊架构请编译测试
          5. 提供ubuntu-x_86/Windows 上位机控制软件APP(开源软件代码)
 
-    特别说明：为了您更流畅操控我们的机器人，请您务必先查阅文档和案列，使用操作APP后再根据您的控制需求开发业务和生产脚本。
+    特别说明：为了您更流畅操控我们的机器人，请您务必先查阅文档和案列，使用操作上位机软件UI-MarvinPlatform(LINUX/WINDOWS)/FxStation.exe(WINDOWS)后再根据您的控制需求开发业务和生产脚本。
 
      机器人控制的主逻辑为:
         UDP连接机器人,通过接收数的更新据确认为有效连接
@@ -180,16 +74,16 @@
     python_doc_contrl.md
     文档内含DEMO说明
 
-## 4.2 机器人计算SDK文档：
+## 1.2 机器人计算SDK文档：
     c++_doc_kine.md
     python_doc_kine.md
     文档内含DEMO说明
 
 
-## 五、编译方法
+## 二、编译方法
 
-### 5.1 编译
-    5.1.1编译so动态库:
+### 2.1 编译
+    2.1.1编译so动态库:
     linux设备编译:
         控制SDK(controlSDK):  ./contrlSDK/makefile 生成libMarvinSDK.so
 		
@@ -197,7 +91,7 @@
 		
 	编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
 
-    5.1.2编译c++调用的dll动态库:
+    2.1.2编译c++调用的dll动态库:
     1)windows下使用MinGW编译dll动态库:
 			c++调用的DLL
 			控制SDK(controlSDK_win): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm
@@ -207,7 +101,7 @@
             编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
 
 			
-	5.1.3 编译python调用的dll动态库
+	2.1.3 编译python调用的dll动态库
     1)linux下编译dll动态库:
         控制SDK(controlSDK):  x86_64-w64-mingw32-g++ MarvinSDK.cpp Robot.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp ACB.cpp -Wall -O2 -shared -o libMarvinSDK.dll     -DBUILDING_DLL     -DCMPL_WIN     -static -static-libgcc -static-libstdc++     -lws2_32 -lpthread     -lwinmm
 		
@@ -220,9 +114,7 @@
 
 
         
-
-
-### 5.2 使用
+### 2.2 使用
     LINUX:
         C++: 
             ./DEMO_C++/readme.md
@@ -236,6 +128,105 @@
             双击执行自动化demo生成脚本： ./DEMO_C++/auto_complie.bat
             
         PYTHON 代码跨平台, 参考DEMO_PYTHON/readme.md
+
+                 
+## 三、 SDK更新
+## 控制SDK
+### 3.1设置末端力控类型和笛卡尔方向的旋转
+	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	FX_DLL_EXPORT bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
+	//设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	FX_DLL_EXPORT bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
+### 3.2指定关节伺服软复位
+	// 左臂指定关节伺服软复位
+	FX_DLL_EXPORT void OnServoReset_A(int axis);
+	// 右臂指定关节伺服软复位
+	FX_DLL_EXPORT void OnServoReset_B(int axis);
+
+## 运动计算SDK
+### 3.3 更新在线规划功能
+
+     C++接口：
+          FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, CPointSet* ret_pset);
+          FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc,CPointSet* ret_pset);
+
+     c++ demo: 
+          1.演示左臂离线和在线规划功能接口：showcase_online_and_offline_pln_all_function.cpp
+          2.左臂关节阻抗50HZ执行离线直线规划文件：showcase_offline_movl_execution.cpp
+          3.左臂关节阻抗50HZ执行在线直线规划点：showcase_online_movla_execution.cpp
+          4.臂关节阻抗50HZ执行约束构型的离线直线规划文件：showcase_offline_movl_keepj_execution.cpp
+          5.左臂关节阻抗50HZ执行约束构型的在线直线规划点位：showcase_online_movl_keepja_execution.cpp
+
+     PY接口：
+          movLA(self, start_xyzabc: List[float], end_xyzabc: List[float],
+              ref_joints: List[float], vel: float, acc: float,
+              dimension: int = 7) -> List[List[float]]:
+              
+           movL_KeepJA(self, start_joints: List[float], end_joints: List[float],
+              vel: float, acc: float,
+              dimension: int = 7) -> List[List[float]]
+
+     py demo:
+          showcase_online_pln_movl.py
+          showcase_online_pln_movl_keepj.py
+          
+          
+
+### PYTHON
+     1. 更新了计算的SDK:https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/SDK_PYTHON/fx_kine.py
+     2. 更新了SDK的DEMO:https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/master/DEMO_PYTHON/readme.md
+
+### 代码获取控制器版本号
+     C++:
+          char paraName[30]="VERSION";
+          long retValue=0;
+          OnGetIntPara(paraName,&retValue);
+          printf("CONTRL VERSION: %ld\n", retValue);
+
+     PYTHON:
+          ret,version=robot.get_param('int','VERSION')
+          print(f'controller version:{version}')
+
+     显示为1003xx, 如100335, 即大版本号:1003,子版本35
+
+
+
+## 四、 控制器版本更新
+
+     1003_37版本添加功能::
+     1. 新增任意状态下的轴外力检测,该轴外力可用于计算末端所受外力.
+
+     
+    1003_35版本添加功能:
+    1 增加内外编码器检测功能
+    2 修复伺服出错后所有轴全部下使能
+    https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/tag/marvin_tool_1003_35
+
+    
+    1003_34版本添加功能:
+    1 内编外编清0，编码器清错。
+    2 支持仅位置模式控制 增加了参数R.A0.BASIC.CtrlType和R.A1.BASIC.CtrlType。0表示控制模式都开放，1表示只有位置控制 (修改在机器人配置文件 *.ini)
+    
+    更能已同步更新到MARVIN_APP和FX-STATION
+
+    1003_34地址：
+        https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/tag/marvin_tool_1003_34
+        
+
+### 4.1 机器人电机内外编清零和内编清错示例
+    控制器需要升级到1003_34版本
+       
+### 4.2 升级版本和参数都发布在releases下
+    https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases
+
+## 五、APP更新
+
+### 5.1 添加FXSTAION软件源码
+     https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/%E4%B8%8A%E4%BD%8D%E6%9C%BA%E8%BD%AF%E4%BB%B6MARVIN_APP/FxStation_1217.zip
+	 
+### 5.2 增加浮机参数计算功能
+     MARVIN_APP_1125及以上以及UI-MarvinPlatform
+
 
 
 ## 六、注意事项
