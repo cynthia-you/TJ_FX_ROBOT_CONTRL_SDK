@@ -3842,7 +3842,7 @@ class App:
             self.file_path_50.set(file_path)
             # messagebox.showinfo("成功", f"下采样数据文件已选择: {os.path.basename(file_path)}")
 
-            if len(self.processed_data) == 0:
+            if len(self.processed_data) != 0:
                 self.processed_data = []
 
             with open(file_path, 'r') as file:
