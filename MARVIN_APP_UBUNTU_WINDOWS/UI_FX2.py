@@ -3331,7 +3331,7 @@ class App:
 
     def brake(self, robot_id):
         if self.connected:
-            messagebox.showinfo('提示', '请确实伺服参数是否为166混合控制模式')
+            messagebox.showinfo('提示', '请确认伺服参数是否为166混合控制模式')
             if robot_id == 'A':
                 robot.set_param('int', 'BRAK0', 1)
             elif robot_id == 'B':
@@ -3341,7 +3341,7 @@ class App:
 
     def release_brake(self, robot_id):
         if self.connected:
-            messagebox.showinfo('提示', '请确实伺服参数是否为166混合控制模式')
+            messagebox.showinfo('提示', '请确认伺服参数是否为166混合控制模式')
             if robot_id == 'A':
                 robot.set_param('int', 'BRAK0', 2)
             elif robot_id == 'B':
