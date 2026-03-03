@@ -140,7 +140,7 @@ extern "C" {
 	//设置左臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
 	FX_DLL_EXPORT bool OnSetCartKD_A(double K[7], double D[7], int type);
 	//设置右臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
-	FX_DLL_EXPORT bool OnSetCartKD_B(double K[6], double D[6],int type);
+	FX_DLL_EXPORT bool OnSetCartKD_B(double K[7], double D[7],int type);
 	//3.2 设置末端力控类型和笛卡尔方向的旋转
 	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
 	FX_DLL_EXPORT bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
