@@ -268,7 +268,7 @@ extern "C" {
 	 bool OnSetJointKD_B(double K[7], double D[7]);
 	 //3 设置指定手臂的迪卡尔阻抗参数, 在扭矩模式迪卡尔阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(2) 下参数才有意义(以左臂为例)
 	 bool OnSetCartKD_A(double K[7], double D[7], int type);
-	 bool OnSetCartKD_B(double K[6], double D[6],int type);
+	 bool OnSetCartKD_B(double K[7], double D[7],int type);
 
 	//3.2 设置末端力控类型和笛卡尔方向的旋转
 	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
