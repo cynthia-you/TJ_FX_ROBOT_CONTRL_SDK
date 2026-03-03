@@ -75,7 +75,7 @@ public:
 	static bool OnSetTool_B(double kinePara[6], double dynPara[10]);
 	static bool OnSetJointLmt_B(int velRatio, int AccRatio);
 	static bool OnSetJointKD_B(double K[7], double D[7]);
-	static bool OnSetCartKD_B(double K[6], double D[6],int type);
+	static bool OnSetCartKD_B(double K[7], double D[7],int type);
 	static bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	static bool OnSetDragSpace_B(int zsType);
 	static bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
