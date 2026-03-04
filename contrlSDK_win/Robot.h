@@ -3,6 +3,7 @@
 #include "FxRtCSDef.h"
 #include "FxType.h"
 #include  "ACB.h"
+#include "ShMem.h"
 #include "TCPFileClient.h"
 #ifdef CMPL_WIN
 #include <Windows.h>
@@ -85,6 +86,7 @@ public:
 	static bool OnSetPVT_B(int id);
 
 	static bool OnSetSend();
+	static bool OnSetSendWaitResponse(long time_out);
 
 	static bool OnUpdateSystem(char* local_path);
 	static bool OnDownloadLog(char* local_path);
@@ -151,6 +153,10 @@ protected:
 	char m_SendBuf2[600];
 	DDSS* pDDSS1;
 	DDSS* pDDSS2;
+
+	unsigned char * m_psm;
+	CGACB  m_ACB_ShMem;
+	ShMem m_ShMem;
 
 };
 

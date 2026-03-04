@@ -192,6 +192,8 @@ extern "C" {
     // 注意 以上的API都要在 OnClearSet() 和 OnSetSend()之间使用 //
 	//发送指令给机器人
 	FX_DLL_EXPORT bool OnSetSend();
+	//发送指令给机器人 设置延时，测试延时
+	FX_DLL_EXPORT bool OnSetSendWaitResponse(long time_out);
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
     // 末端工具通讯用接口//

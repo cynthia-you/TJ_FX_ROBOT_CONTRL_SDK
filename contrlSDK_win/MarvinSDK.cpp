@@ -1,4 +1,3 @@
-
 #include "MarvinSDK.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -411,6 +410,11 @@ bool OnSetPVT_B(int id)
 bool OnSetSend()
 {
 	return CRobot::OnSetSend();
+}
+
+bool OnSetSendWaitResponse(long time_out)
+{
+	return CRobot::OnSetSendWaitResponse(time_out);
 }
 
 

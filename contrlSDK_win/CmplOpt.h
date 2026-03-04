@@ -1,8 +1,7 @@
 #ifndef FX_CMPLOPT_H_
 #define FX_CMPLOPT_H_
 
-//#define CMPL_LIN
-#define CMPL_WIN
+// 让编译器命令行定义，例如 -DCMPL_WIN 或者 -DCMPL_LIN
 
 #ifdef CMPL_WIN
     #include <windows.h>
@@ -23,7 +22,6 @@
     #include <sys/types.h>
     #include <sys/ipc.h>
     #include <sys/shm.h>
-    #include <stdio.h>
     #include <string.h>
     #include <sys/stat.h>
     #include <sys/types.h>
@@ -32,10 +30,6 @@
     #include <sys/times.h>
     #include <netinet/in.h>
     #include <arpa/inet.h>
-    #include <sys/ipc.h>
-    #include <sys/shm.h>
-    #include <fcntl.h>
-    #include <unistd.h>
     #include <netdb.h>
     #include <pthread.h>
     #include <errno.h>
@@ -53,4 +47,3 @@
 #endif
 
 #endif
-
