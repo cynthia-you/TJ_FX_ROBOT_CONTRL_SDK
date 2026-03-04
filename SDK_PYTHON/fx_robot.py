@@ -508,6 +508,15 @@ class Marvin_Robot:
         '''
         return self.robot.OnSetSend()
 
+    def send_cmd_wait_response(self, timeout:int):
+        '''发送指令等待回应
+        :param timeout: 等待延时， 单位：毫秒。 建议50-100毫秒
+        :return:
+            int: 1: True; 0: Flase
+        '''
+        timeout_long = ctypes.c_long(timeout)
+        return self.robot.OnSetSendWaitResponse(timeout_long)
+
     def collect_data(self,targetNum:int,targetID:list[int],recordNum:int):
         '''采集数据
         :param targetNum:targetNum采集列数 值最大35， 因为一次最多采集35个特征。
