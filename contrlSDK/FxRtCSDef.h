@@ -84,8 +84,8 @@ typedef struct
 
 	FX_FLOAT  m_Force_Cmd;			///* 力控指令*///8
 
-	FX_UCHAR m_SET_Tags[16];
-	FX_UCHAR m_Update_Tags[16];
+	FX_UCHAR m_SET_Tags[16];        ///* 设置记录*///
+	FX_UCHAR m_Update_Tags[16];     ///* 更新记录 *///
 
 	FX_UCHAR m_PvtID;
 	FX_UCHAR m_PvtID_Update;

@@ -1,15 +1,11 @@
 #ifndef FX_CMPLOPT_H_
 #define FX_CMPLOPT_H_
 
-// 移除默认的 CMPL_LIN 定义，让用户在编译时决定
-// #define CMPL_LIN
-// #define CMPL_WIN
-
-// 或者更好的方式：让编译器命令行定义，例如 -DCMPL_WIN
+// 让编译器命令行定义，例如 -DCMPL_WIN 或者 -DCMPL_LIN
 
 #ifdef CMPL_WIN
-    #include <winsock2.h>
     #include <windows.h>
+    #include <winsock2.h>
     #include <stdio.h>
     #include <stdlib.h>
     #define LOOPHANDLE HANDLE

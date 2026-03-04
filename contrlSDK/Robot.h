@@ -3,15 +3,16 @@
 #include "FxRtCSDef.h"
 #include "FxType.h"
 #include  "ACB.h"
+#include "ShMem.h"
 #include "TCPFileClient.h"
 #ifdef CMPL_WIN
-	#include <windows.h>
-	//#include <mmiscapi2.h>
-	#pragma comment(lib,"winmm.lib")
-	#include <winsock.h>
-	#include <stdio.h>
-	#include <stdint.h>
-	#pragma comment(lib,"ws2_32.lib")
+#include <Windows.h>
+//#include <mmiscapi2.h>
+#pragma comment(lib,"winmm.lib")
+#include <winsock.h>
+#include <stdio.h>
+#include <stdint.h>
+#pragma comment(lib,"ws2_32.lib")
 #endif
 #include "PointSet.h"
 #define    SDK_VERSION   1003
@@ -85,6 +86,7 @@ public:
 	static bool OnSetPVT_B(int id);
 
 	static bool OnSetSend();
+	static bool OnSetSendWaitResponse(long time_out);
 
 	static bool OnUpdateSystem(char* local_path);
 	static bool OnDownloadLog(char* local_path);
@@ -151,6 +153,10 @@ protected:
 	char m_SendBuf2[600];
 	DDSS* pDDSS1;
 	DDSS* pDDSS2;
+
+	unsigned char * m_psm;
+	CGACB  m_ACB_ShMem;
+	ShMem m_ShMem;
 
 };
 

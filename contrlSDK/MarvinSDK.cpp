@@ -22,12 +22,12 @@ void OnEMG_A()
 		CRobot::OnSetIntPara((char*)"EMCY0", 0);
 		#ifdef CMPL_WIN
 			Sleep(50);
-		#endif 
+		#endif
 		#ifdef CMPL_LIN
 			usleep(50000);
 		#endif
 	}
-	
+
 	CRobot::OnClearSet();
 	CRobot::OnSetTargetState_A(ARM_STATE_IDLE);
 	CRobot::OnSetSend();
@@ -44,12 +44,12 @@ void OnEMG_B()
 		CRobot::OnSetIntPara((char*)"EMCY1", 0);
 		#ifdef CMPL_WIN
 			Sleep(50);
-		#endif 
+		#endif
 		#ifdef CMPL_LIN
 			usleep(50000);
 		#endif
 	}
-	
+
 	CRobot::OnClearSet();
 	CRobot::OnSetTargetState_B(ARM_STATE_IDLE);
 	CRobot::OnSetSend();
@@ -67,7 +67,7 @@ void OnEMG_AB()
 		CRobot::OnSetIntPara((char*)"EMCY1", 0);
 		#ifdef CMPL_WIN
 			Sleep(50);
-		#endif 
+		#endif
 		#ifdef CMPL_LIN
 			usleep(50000);
 		#endif
@@ -91,7 +91,7 @@ void OnServoReset_A(int axis)
 		CRobot::OnSetIntPara((char*)"RESETS0", axis);
 		#ifdef CMPL_WIN
 			Sleep(50);
-		#endif 
+		#endif
 		#ifdef CMPL_LIN
 			usleep(50000);
 		#endif
@@ -105,7 +105,7 @@ void OnServoReset_B(int axis)
 		CRobot::OnSetIntPara((char*)"RESETS1", axis);
 		#ifdef CMPL_WIN
 			Sleep(50);
-		#endif 
+		#endif
 		#ifdef CMPL_LIN
 			usleep(50000);
 		#endif
@@ -155,12 +155,12 @@ void OnClearErr_A()
 		CRobot::OnSetIntPara(name, 0);
 		#ifdef CMPL_WIN
 			Sleep(50);
-		#endif 
+		#endif
 		#ifdef CMPL_LIN
 			usleep(50000);
 		#endif
 	}
-	
+
 	if(local_log_tag == true)
 	{
 	    printf("[Marvin SDK]: A arm clear error\n");
@@ -178,7 +178,7 @@ void OnClearErr_B()
 		CRobot::OnSetIntPara(name, 0);
 		#ifdef CMPL_WIN
 			Sleep(50);
-		#endif 
+		#endif
 		#ifdef CMPL_LIN
 			usleep(50000);
 		#endif
@@ -410,6 +410,11 @@ bool OnSetPVT_B(int id)
 bool OnSetSend()
 {
 	return CRobot::OnSetSend();
+}
+
+bool OnSetSendWaitResponse(long time_out)
+{
+	return CRobot::OnSetSendWaitResponse(time_out);
 }
 
 

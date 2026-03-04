@@ -63,7 +63,6 @@ long CRobot::OnGetChDataA(unsigned char data_ptr[256], long* ret_ch)
 	if(m_InsRobot->m_LocalLogTag == true)
 	{
 	    printf("[Marvin SDK]: Get 485 of A arm: \nchannel =%d\n",ret_ch);
-		// 同时显示十六进制和字符形式
 		printf("data:\n");
         for (int i = 0; i < 256; ++i) {
             printf("%02x ", data_ptr[i]);
@@ -107,7 +106,6 @@ bool CRobot::OnSetChDataA(unsigned char* data_ptr, long size_int, long set_ch)
 	if(m_InsRobot->m_LocalLogTag == true)
 	{
 	    printf("[Marvin SDK]: Set 485 of A arm: \nchannel =%d\n",set_ch);
-		// 同时显示十六进制和字符形式
 		printf("data:\n");
         for (int i = 0; i < 256; ++i) {
             printf("%02x ", data_ptr[i]);
@@ -133,10 +131,8 @@ bool CRobot::OnSetChDataA(unsigned char* data_ptr, long size_int, long set_ch)
 
 long CRobot::OnGetChDataB(unsigned char data_ptr[256], long* ret_ch)
 {
-//	printf("get 485 B :1\n");
 	if (m_InsRobot == NULL)
 	{
-//		printf("get 485 B :2\n");
 		return 0;
 	}
 	DDSS t;
@@ -144,7 +140,6 @@ long CRobot::OnGetChDataB(unsigned char data_ptr[256], long* ret_ch)
 	long num = m_InsRobot->m_ACB2.ReadBuf((unsigned char*)&t, si);
 	if (num == 0)
 	{
-//		printf("get 485 B :3\n");
 		return num;
 	}
 
@@ -156,7 +151,6 @@ long CRobot::OnGetChDataB(unsigned char data_ptr[256], long* ret_ch)
 	if(m_InsRobot->m_LocalLogTag == true)
 	{
 	    printf("[Marvin SDK]: Get 485 of B arm: \nchannel =%d\n",ret_ch);
-		// 同时显示十六进制和字符形式
 		printf("data:\n");
         for (int i = 0; i < 256; ++i) {
             printf("%02x ", data_ptr[i]);
@@ -199,7 +193,6 @@ bool CRobot::OnSetChDataB(unsigned char* data_ptr, long size_int, long set_ch)
 	if(m_InsRobot->m_LocalLogTag == true)
 	{
 	    printf("[Marvin SDK]: Set 485 of B arm: channel =%d\n",set_ch);
-		// 同时显示十六进制和字符形式
 		printf("data:\n");
         for (int i = 0; i < 256; ++i) {
             printf("%02x ", data_ptr[i]);
@@ -226,7 +219,6 @@ long CRobot::OnGetSDKVersion()
 
 bool CRobot::OnSendPVT_A(char* local_file, long serial)
 {
-    // printf("10\n");
 	if (serial < 0 || serial >= 100)
 	{
 		return false;
@@ -234,7 +226,6 @@ bool CRobot::OnSendPVT_A(char* local_file, long serial)
 	char remote[256];
 	memset(remote,0,256);
 	sprintf(remote, "\/home\/FUSION\/Config\/pvt\/user0\/%d.txt", serial);
-	// printf("11\n");
 	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Send A arm pvt of serial=%d to local=%s\n ", serial, local_file);
 	return OnSendFile(local_file, remote);
 }
@@ -253,16 +244,13 @@ bool CRobot::OnSendPVT_B(char* local_file, long serial)
 }
 bool  CRobot:: OnSendFile( char* local_file, char* remote_file)
 {
-	// printf("12\n");
 	if (m_InsRobot == NULL)
 	{
-	    // printf("13\n");
 		return false;
 	}
 
 	if (m_InsRobot->SendFile(local_file, remote_file) == FX_TRUE)
 	{
-	    // printf("14\n");
 	    if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: send file local file:%s, remote file: %s\n ", local_file, remote_file);
 		return true;
 	}
@@ -341,32 +329,67 @@ CRobot::CRobot()
 	pDDSS2->m_Serial = 1;
 	pDDSS2->m_CH = 2;
 
+	#ifdef _WIN32
+		const char* shm_name = "Global\\AAA";  // Windows
+	#else
+		const char* shm_name = "/AAA";         // Linux POSIX
+	#endif
 
 
+ 	ShmOnInit(&m_ShMem);
+    m_ShMem.OnMapMster(&m_ShMem,"AAA",102400);
+    m_psm = m_ShMem.OnGetMem(&m_ShMem);
+    m_ACB_ShMem.OnSetBuf(m_psm, 102400, "AAA");  
+	printf("sizeof(SharedControl)=%zu\n", sizeof(SharedControl)); 
+
+
+	// 添加调试输出
+	printf("Shared memory initialized: base=%p, size=%ld, ctrl=%p\n", 
+       m_psm, 102400, m_ACB_ShMem.GetCtrlPtr());
+
+	if (m_ACB_ShMem.GetCtrlPtr()) {
+		SharedControl* ctrl = m_ACB_ShMem.GetCtrlPtr();
+		// 检查控制块是否初始化
+		printf("write_pos=%d, read_pos=%d, buf_serial=%u, item_num=%d\n",
+			ctrl->write_pos, ctrl->read_pos, ctrl->buf_serial, ctrl->item_num);
+	}
+
+	printf("sizeof(DCSS) = %zu\n", sizeof(DCSS));
+	printf("sizeof(StateCtr) = %zu\n", sizeof(StateCtr));
+	printf("sizeof(RT_IN) = %zu\n", sizeof(RT_IN));
+	printf("sizeof(RT_OUT) = %zu\n", sizeof(RT_OUT));
+
+	printf("sizeof(DDSS) = %zu\n", sizeof(DDSS));
+    
 }
 
 bool CRobot::OnRelease()
 {
-	if (m_InsRobot == NULL)
-	{
-		return true;
-	}
+    if (m_InsRobot == NULL)
+    {
+        return true;
+    }
 #ifdef CMPL_WIN
-	timeKillEvent(m_InsRobot->m_TimeEventID);
-	Sleep(10);
+    timeKillEvent(m_InsRobot->m_TimeEventID);
+    Sleep(10);
 #endif
 #ifdef CMPL_LIN
-	if(m_InsRobot->m_LinkTag == FX_TRUE){
-		timer_delete(m_InsRobot->robot_timer);
-	}
-	usleep(10000);
+    if (m_InsRobot->m_LinkTag == FX_TRUE) {
+        timer_delete(m_InsRobot->robot_timer);
+    }
+    usleep(10000);
 #endif
-	delete m_InsRobot;
-	m_InsRobot = NULL;
-    //if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Robot released\n");
+
+    // m_InsRobot->m_ShMem.OnDest(&m_InsRobot->m_ShMem);// 先注释，防止销毁
+	m_InsRobot->m_ShMem.OnDest(&m_InsRobot->m_ShMem);
+
+    delete m_InsRobot;
+    m_InsRobot = NULL;
+
     printf("[Marvin SDK]: Robot released\n");
-	return true;
+    return true;
 }
+
 
 CRobot::~CRobot()
 {
@@ -402,7 +425,7 @@ bool CRobot::OnGetBuf(DCSS* ret)
 		return false;
 	}
 	memcpy(ret,&m_InsRobot->m_DCSS,sizeof(m_DCSS));
-//	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Subscribe robot info succeed \n");
+
 	return true;
 }
 
@@ -466,12 +489,9 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	m_InsRobot->_tosock_ = socket(AF_INET, SOCK_DGRAM, 0);
 
 	m_InsRobot->m_LinkTag = FX_TRUE;
-//	if(m_InsRobot->m_LocalLogTag == true)
-//	{
-//	    printf("[Marvin SDK]: Robot connected  IP=%d.%d.%d.%d\n", ip1, ip2, ip3, ip4);
-//	}
+
 #ifdef CMPL_WIN
-	m_InsRobot->m_TimeEventID = timeSetEvent(1, 1, CallBackFunc2, (DWORD)NULL, TIME_PERIODIC);    //??1ms�䣤���騰?��?
+	m_InsRobot->m_TimeEventID = timeSetEvent(1, 1, CallBackFunc2, (DWORD)NULL, TIME_PERIODIC);   
 #endif
 #ifdef CMPL_LIN
 	{
@@ -992,6 +1012,7 @@ void CRobot::DoRecv()
 	{
 		if (recvbuf[0] == 'F' && recvbuf[1] == 'X')
 		{
+			m_ACB_ShMem.WriteBuf((unsigned char *)recvbuf, Len);
 			DCSS* p = (DCSS*)&recvbuf[2];
 			memcpy(&m_DCSS, p, sizeof(m_DCSS));
 			if (m_InsRobot->m_GatherTag == 1)
@@ -1008,13 +1029,12 @@ void CRobot::DoRecv()
 						v[i+2] = *m_GatherItem[i];
 					}
 					v[0] = m_DCSS.m_Out[0].m_OutFrameSerial;
-					//if(m_InsRobot->m_LocalLogTag == true) printf("%lf\n",v[0]);
 					v[1] = m_DCSS.m_Out[1].m_OutFrameSerial;
 					m_GatherSet.OnSetPoint(v);
 					m_GatherRecordNum++;
 				}
 			}
-			
+
 			if (m_InsRobot->m_GatherTag == 2)
 			{
 				m_InsRobot->m_GatherTag = 4;
@@ -1065,7 +1085,6 @@ void CRobot::DoSend()
 	if (m_SendTag == 100)
 	{
 		int tt = sendto(_tosock_, (char*)m_SendBuf, m_Slen, 0, (struct sockaddr*)&_to, sizeof(_to));
-//		printf("dosend %d\n",m_Slen);
 		m_SendTag = 0;
 		m_Slen = 0;
 
@@ -1121,22 +1140,17 @@ bool CRobot::OnSaveGatherData(char* path)
 bool CRobot::OnSaveGatherDataCSV(char* path)
 {
 	GetIns();
-//	printf("1\n");
     printf("OnSaveGatherDataCSV set saved path=%s\n",path);
 	if (m_InsRobot->m_LinkTag == false)
 	{
-	    printf("2\n");
 		return false;
 	}
 
 	if (m_InsRobot->m_GatherTag != 4)
 	{
-		printf("3\n");
 		return false;
 	}
-    printf("5\n");
 	bool ret = m_InsRobot->m_GatherSet.OnSaveCSV(path);
-	printf("6\n");
 	m_InsRobot->m_GatherTag = 0;
 	if(m_InsRobot->m_LocalLogTag == true)
 	{
@@ -1332,7 +1346,7 @@ bool CRobot::OnStartGather(long targetNum, long targetID[35], long recordNum)
 bool CRobot::OnClearSet()
 {
 	if (m_InsRobot->m_SendTag == 100)
-	{///////////////
+	{
 		return false;
 	}
 	m_InsRobot->m_SendTag = 0;
@@ -1423,12 +1437,6 @@ bool CRobot::OnSetPVT_A(int id)
 	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
 
-
-// 	printf("%c%c %d %d %d\n",m_InsRobot->m_SendBuf[0]
-// 		,m_InsRobot->m_SendBuf[1]
-// 		,m_InsRobot->m_SendBuf[2]
-// 	,m_InsRobot->m_SendBuf[3]
-// ,m_InsRobot->m_SendBuf[4]);
 	if(m_InsRobot->m_LocalLogTag == true)
 	{
 	    printf("[Marvin SDK]: Set A arm PVT id=%d\n",id);
@@ -2249,27 +2257,21 @@ bool CRobot::OnDownloadLog(char* local_path)
 
 FX_BOOL CRobot::SendFile(char* local_file, char* remote_file)
 {
-	// printf("15\n");
 	if (m_LinkTag == false)
 	{
-	    // printf("16\n");
 		return FX_FALSE;
 	}
 	CTCPFileClient cln;
 	if (cln.OnLinkTo(m_ip1, m_ip2, m_ip3, m_ip4, 10240) == false)
 	{
-		// printf("17\n");
 		return FX_FALSE;
 	}
 	bool ret = cln.OnSendFile(local_file, remote_file);
 	cln.OnQuit();
 	if (ret == true)
 	{
-	    // printf("18\n");
 		return FX_TRUE;
 	}
-
-	// printf("19\n");
 	return FX_FALSE;
 }
 
