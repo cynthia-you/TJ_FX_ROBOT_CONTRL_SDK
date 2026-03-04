@@ -272,10 +272,17 @@ bool CRobot::OnRecvFile(char* local_file, char* remote_file)
 }
 
 #ifdef CMPL_WIN
+long tmpct_win = 0;
 void CALLBACK CallBackFunc2(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2)
 {
 	m_InsRobot->DoRecv();
 	m_InsRobot->DoSend();
+	tmpct_win ++;
+	if(tmpct_win >= 500)
+	{
+        tmpct_win=0;
+        m_InsRobot->DoRecv();
+	}
 }
 #endif
 
@@ -286,9 +293,10 @@ void  CallBackFunc(union sigval v)
 	m_InsRobot->DoRecv();
 	m_InsRobot->DoSend();
 	tmpct ++;
-	if(tmpct % 1000 == 0)
+	if(tmpct >= 500)
 	{
-		//if(m_InsRobot->m_LocalLogTag == true) printf("tmpct  = %d\n",tmpct);
+        tmpct=0;
+        m_InsRobot->DoRecv();
 	}
 }
 #endif
