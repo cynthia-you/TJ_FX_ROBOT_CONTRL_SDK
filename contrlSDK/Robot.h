@@ -94,11 +94,16 @@ public:
 
 	void DoRecv();
 	void DoSend();
+	void ReadPendingData();
 
     bool       m_LocalLogTag;
 protected:
 	CRobot();
 	static CRobot* GetIns();
+	unsigned char m_send_response_local_tag;
+	unsigned char m_send_response_recv_tag;
+	long       m_send_response_timeout_cnt;
+
 	long       m_ParaSerial;
 	long       m_GatherTag;
 	FX_FLOAT * m_GatherItem[40];
