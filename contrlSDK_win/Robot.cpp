@@ -499,7 +499,7 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	m_InsRobot->m_LinkTag = FX_TRUE;
 
 #ifdef CMPL_WIN
-	m_InsRobot->m_TimeEventID = timeSetEvent(1, 1, CallBackFunc2, (DWORD)NULL, TIME_PERIODIC);   
+	m_InsRobot->m_TimeEventID = timeSetEvent(1, 1, CallBackFunc2, (DWORD)NULL, TIME_PERIODIC);
 #endif
 #ifdef CMPL_LIN
 	{
@@ -510,12 +510,12 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 		evp.sigev_value.sival_ptr = &m_InsRobot->robot_timer;
 		evp.sigev_notify = SIGEV_THREAD;
 		evp.sigev_notify_function = CallBackFunc;
-		evp.sigev_value.sival_int = 0;  
+		evp.sigev_value.sival_int = 0;
 		ret = timer_create(CLOCK_REALTIME, &evp, &m_InsRobot->robot_timer);
 		if( ret){
 			return false;
 		}
-	
+
 		ts.it_interval.tv_sec = 0;
 		ts.it_interval.tv_nsec = 1000000;
 		ts.it_value.tv_sec = 0;
@@ -527,6 +527,8 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 		}
 	}
 #endif
+
+    m_InsRobot->ReadPendingData();
 	m_InsRobot->m_RunState = 0;
 
 	m_InsRobot->m_ip1 = ip1;
@@ -542,6 +544,199 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 
 }
 
+
+
+//bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
+//{
+//    GetIns();
+//    if (m_InsRobot->m_LinkTag == FX_TRUE)
+//    {
+//        return false;
+//    }
+//#ifdef CMPL_WIN
+//    WSADATA wsadata;
+//    int ret;
+//    ret = WSAStartup(0x101, &wsadata);
+//    if (ret != 0)
+//    {
+//        return false;
+//    }
+//#endif
+//    memset(&m_InsRobot->_local, 0, sizeof(m_InsRobot->_local));
+//    m_InsRobot->_localLen = sizeof(sockaddr_in);
+//    m_InsRobot->_local.sin_family = AF_INET;
+//    m_InsRobot->_local.sin_port = htons(4730);
+//    m_InsRobot->_local.sin_addr.s_addr = INADDR_ANY;
+//    m_InsRobot->_local_sock = socket(AF_INET, SOCK_DGRAM, 0);
+//
+//    // 检查socket创建是否成功
+//    if (m_InsRobot->_local_sock == INVALID_SOCKET)
+//    {
+//        if(m_InsRobot->m_LocalLogTag == true) printf("socket creation failure\n");
+//        return false;
+//    }
+//
+//    unsigned long on = 1;
+//#ifdef CMPL_WIN
+//    if (0 != ioctlsocket(m_InsRobot->_local_sock, FIONBIO, &on))
+//    {
+//        closesocket(m_InsRobot->_local_sock);
+//        return false;
+//    }
+//#endif
+//#ifdef CMPL_LIN
+//    if (0 != ioctl(m_InsRobot->_local_sock, FIONBIO, &on))
+//    {
+//        close(m_InsRobot->_local_sock);
+//        return false;
+//    }
+//#endif
+//    // 绑定Socket并检查结果
+//    if (bind(m_InsRobot->_local_sock, (struct sockaddr*)&m_InsRobot->_local, sizeof(m_InsRobot->_local)) != 0)
+//    {
+//        if(m_InsRobot->m_LocalLogTag == true) printf("port bind failure, possibly occupied by another program\n");
+//        // 关闭socket连接
+//        #ifdef CMPL_WIN
+//            closesocket(m_InsRobot->_local_sock);
+//        #endif
+//        #ifdef CMPL_LIN
+//            close(m_InsRobot->_local_sock);
+//        #endif
+//        m_InsRobot->_local_sock = 0;
+//        return false;
+//    }
+//    memset(&m_InsRobot->_to, 0, sizeof(_to));
+//    char ip_str[100];
+//    sprintf(ip_str, "%d.%d.%d.%d", ip1, ip2, ip3, ip4);
+//    m_InsRobot->_toLen = sizeof(sockaddr_in);
+//    m_InsRobot->_to.sin_family = AF_INET;
+//    m_InsRobot->_to.sin_port = htons(4729);
+//    m_InsRobot->_to.sin_addr.s_addr = inet_addr(ip_str);
+//    m_InsRobot->_tosock_ = socket(AF_INET, SOCK_DGRAM, 0);
+//
+//    // 检查_tosock_创建是否成功
+//    if (m_InsRobot->_tosock_ == INVALID_SOCKET)
+//    {
+//        if(m_InsRobot->m_LocalLogTag == true) printf("target socket creation failure\n");
+//        #ifdef CMPL_WIN
+//            closesocket(m_InsRobot->_local_sock);
+//        #endif
+//        #ifdef CMPL_LIN
+//            close(m_InsRobot->_local_sock);
+//        #endif
+//        return false;
+//    }
+//
+//    m_InsRobot->m_LinkTag = FX_TRUE;
+//
+//#ifdef CMPL_WIN
+//    m_InsRobot->m_TimeEventID = timeSetEvent(1, 1, CallBackFunc2, (DWORD)NULL, TIME_PERIODIC);
+//#endif
+//#ifdef CMPL_LIN
+//    {
+//        struct sigevent evp;
+//        struct itimerspec ts;
+//        int ret;
+//        memset   (&evp, 0, sizeof(evp));
+//        evp.sigev_value.sival_ptr = &m_InsRobot->robot_timer;
+//        evp.sigev_notify = SIGEV_THREAD;
+//        evp.sigev_notify_function = CallBackFunc;
+//        evp.sigev_value.sival_int = 0;
+//        ret = timer_create(CLOCK_REALTIME, &evp, &m_InsRobot->robot_timer);
+//        if( ret){
+//            return false;
+//        }
+//
+//        ts.it_interval.tv_sec = 0;
+//        ts.it_interval.tv_nsec = 1000000;
+//        ts.it_value.tv_sec = 0;
+//        ts.it_value.tv_nsec = 1000000;
+//        ret = timer_settime(m_InsRobot->robot_timer, TIMER_ABSTIME, &ts, NULL);
+//        if( ret )
+//        {
+//            return false;
+//        }
+//    }
+//#endif
+//
+//    // 通过对象实例调用ReadPendingData
+//    m_InsRobot->ReadPendingData();  // 修改这里：通过m_InsRobot指针调用
+//
+//    m_InsRobot->m_RunState = 0;
+//
+//    m_InsRobot->m_ip1 = ip1;
+//    m_InsRobot->m_ip2 = ip2;
+//    m_InsRobot->m_ip3 = ip3;
+//    m_InsRobot->m_ip4 = ip4;
+//
+//    if(m_InsRobot->m_LocalLogTag == true)
+//    {
+//        printf("[Marvin SDK]: Robot connected  IP=%d.%d.%d.%d\n", ip1, ip2, ip3, ip4);
+//    }
+//    return true;
+//}
+
+void CRobot::ReadPendingData()
+{
+    // 确保使用m_InsRobot前检查是否为NULL
+    if (!m_InsRobot) {
+        return;
+    }
+
+    char buffer[2048];
+    sockaddr_in fromAddr;
+    socklen_t fromLen = sizeof(fromAddr);
+    int dataCount = 0;
+
+    if(m_InsRobot->m_LocalLogTag == true)
+    {
+        printf("[Marvin SDK]: Checking for pending data...\n");
+    }
+
+    // 设置为非阻塞接收，读取所有待处理数据
+    while (true)
+    {
+        memset(buffer, 0, sizeof(buffer));
+        memset(&fromAddr, 0, sizeof(fromAddr));
+        fromLen = sizeof(fromAddr);
+
+        int len = recvfrom(m_InsRobot->_local_sock, buffer, sizeof(buffer) - 1, 0,
+                          (struct sockaddr*)&fromAddr, &fromLen);
+
+        if (len <= 0)
+        {
+            // 没有更多数据可读
+            break;
+        }
+
+        dataCount++;
+        buffer[len] = '\0'; // 确保字符串结束
+
+        if(m_InsRobot->m_LocalLogTag == true)
+        {
+            // Windows兼容的IP地址转换方法
+            char fromIp[32];  // 足够存储IPv4地址
+            #ifdef CMPL_WIN
+                // Windows上使用inet_ntoa
+                sprintf(fromIp, "%s", inet_ntoa(fromAddr.sin_addr));
+            #else
+                // Linux上使用inet_ntop
+                inet_ntop(AF_INET, &(fromAddr.sin_addr), fromIp, sizeof(fromIp));
+            #endif
+
+            printf("[Marvin SDK]: Read pending data %d bytes from %s:%d\n",
+                   len, fromIp, ntohs(fromAddr.sin_port));
+        }
+
+        // 这里可以添加数据处理逻辑
+        // ProcessReceivedData(buffer, len, &fromAddr);
+    }
+
+    if(m_InsRobot->m_LocalLogTag == true && dataCount > 0)
+    {
+        printf("[Marvin SDK]: Read %d pending packets\n", dataCount);
+    }
+}
 
 long CRobot::OnSetIntPara(char paraName[30], long setValue)
 {
@@ -2224,6 +2419,69 @@ bool CRobot::OnSetImpType_B(int type)
 
 /// ////////////////////////////////
 
+bool CRobot::OnSetSendWaitResponse(long time_out)
+{
+	if (m_InsRobot->m_SendTag == 100)
+	{
+		return false;
+	}
+
+	if (m_InsRobot->m_send_response_local_tag < 7)
+	{
+		m_InsRobot->m_send_response_local_tag = 7;
+	}
+	if (m_InsRobot->m_send_response_local_tag > 100)
+	{
+		m_InsRobot->m_send_response_local_tag = 7;
+	}
+
+	m_InsRobot->m_send_response_local_tag++;
+
+	long add_size = 1 + sizeof(FX_CHAR);
+
+	if (add_size + m_InsRobot->m_Slen >= 1400)
+	{
+		return false;
+	}
+
+	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 251;
+	m_InsRobot->m_Slen++;
+	char* pv = (char*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	pv[0] = m_InsRobot->m_send_response_local_tag;
+
+	m_InsRobot->m_Slen += sizeof(char);
+
+	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	(*pnum)++;
+
+
+	m_InsRobot->m_send_response_timeout_cnt = time_out;
+	if (m_InsRobot->m_send_response_timeout_cnt < 20)
+	{
+		m_InsRobot->m_send_response_timeout_cnt = 20;
+	}
+
+	if (m_InsRobot->m_send_response_timeout_cnt > 1000)
+	{
+		m_InsRobot->m_send_response_timeout_cnt = 1000;
+	}
+
+
+	m_InsRobot->m_SendTag = 100;
+
+	while (m_InsRobot->m_send_response_timeout_cnt > 0)
+	{
+		if (m_InsRobot->m_send_response_recv_tag == m_InsRobot->m_send_response_local_tag)
+		{
+			if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: OnSetSendWaitResponse\n");
+			return true;
+		}
+
+		Sleep(1);
+	}
+
+	return false;
+}
 
 bool CRobot::OnSetSend()
 {
