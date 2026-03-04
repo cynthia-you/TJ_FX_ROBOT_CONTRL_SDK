@@ -510,11 +510,12 @@ class Marvin_Robot:
 
     def send_cmd_wait_response(self, timeout:int):
         '''发送指令等待回应
-        :param timeout: 等待延时， 单位：毫秒。 建议50-100毫秒
-        :return:
-            int: 1: True; 0: Flase
+        :param timeout: 等待指令响应延时的时间， 单位：毫秒。 建议50-100毫秒
+        :return: 延时时间
+            -1： 错误
         '''
         timeout_long = ctypes.c_long(timeout)
+        self.robot.OnSetSendWaitResponse.restype = ctypes.c_long
         return self.robot.OnSetSendWaitResponse(timeout_long)
 
     def collect_data(self,targetNum:int,targetID:list[int],recordNum:int):
