@@ -412,7 +412,7 @@ bool OnSetSend()
 	return CRobot::OnSetSend();
 }
 
-bool OnSetSendWaitResponse(long time_out)
+long OnSetSendWaitResponse(long time_out)
 {
 	return CRobot::OnSetSendWaitResponse(time_out);
 }

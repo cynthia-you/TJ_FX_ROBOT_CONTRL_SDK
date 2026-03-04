@@ -193,7 +193,7 @@ extern "C" {
 	//发送指令给机器人
 	FX_DLL_EXPORT bool OnSetSend();
 	//发送指令给机器人 设置延时，测试延时
-	FX_DLL_EXPORT bool OnSetSendWaitResponse(long time_out);
+	FX_DLL_EXPORT long OnSetSendWaitResponse(long time_out);
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
     // 末端工具通讯用接口//

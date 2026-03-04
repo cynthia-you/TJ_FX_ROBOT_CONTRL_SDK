@@ -86,7 +86,7 @@ public:
 	static bool OnSetPVT_B(int id);
 
 	static bool OnSetSend();
-	static bool OnSetSendWaitResponse(long time_out);
+	static long OnSetSendWaitResponse(long time_out);
 
 	static bool OnUpdateSystem(char* local_path);
 	static bool OnDownloadLog(char* local_path);
