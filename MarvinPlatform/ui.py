@@ -714,7 +714,7 @@ class App:
         self.reset_button.pack(pady=(0, 10))
 
         # 状态选择下拉框
-        state_options = ["关节跟随", "关节阻抗", "笛卡尔阻抗", "PVT", "拖动"]
+        state_options = ["关节跟随", "关节阻抗", "笛卡尔阻抗", "PVT", "拖动","末端笛卡尔阻抗"]
         self.state_var = tk.StringVar()
         self.state_var.set(state_options[0])
         self.state_combobox = ttk.Combobox(
@@ -762,7 +762,27 @@ class App:
             command=lambda: self.error_get('A'),
             font=("Arial", 10, "bold")
         )
-        self.get_servo_error_left_btn.pack(side="left")
+        self.get_servo_error_left_btn.pack(side="left",padx=(0, 20))
+
+        self.servo_reset_left_label= tk.Label(servo_frame, text="轴:",font=("Arial", 9, "bold"), bg='white' ).pack(side="left", padx=(0, 0))
+        self.servo_axis_select_combobox_left = ttk.Combobox(
+            servo_frame,
+            values=["0", "1", "2", "3", "4", "5", "6"],
+            width=2,
+            state="readonly"  # 禁止直接输入
+        )
+        self.servo_axis_select_combobox_left.current(0)
+        self.servo_axis_select_combobox_left.pack(side="left",padx=(0, 5))
+
+        self.servo_reset_btn_left= tk.Button(
+            servo_frame,
+            text="软复位",
+            width=5,
+            command=lambda: self.servo_set('A'),
+            font=("Arial", 10, "bold"),
+            bg='#F5F5DC'
+        )
+        self.servo_reset_btn_left.pack(side="left",)
 
         # 协作控制和刹车按钮
         control_frame = tk.Frame(error_handle_frame,bg='white')
@@ -908,7 +928,7 @@ class App:
 
 
         '''第三列：力控指令和位置指令'''
-        left_second_control_frame = tk.Frame(left_content, bg="white", width=700)
+        left_second_control_frame = tk.Frame(left_content, bg="white", width=650)
         left_second_control_frame.pack(side="left", fill="y")
         left_second_control_frame.pack_propagate(False)  # 保持固定宽度
 
@@ -1231,7 +1251,7 @@ class App:
         self.reset_button_r.pack(pady=(0, 10))
 
         # 状态选择下拉框
-        state_options = ["关节跟随", "关节阻抗", "笛卡尔阻抗", "PVT", "拖动"]
+        state_options = ["关节跟随", "关节阻抗", "笛卡尔阻抗", "PVT", "拖动","末端笛卡尔阻抗",]
         self.state_var_r = tk.StringVar()
         self.state_var_r.set(state_options[0])
         self.state_combobox_r = ttk.Combobox(
@@ -1279,7 +1299,28 @@ class App:
             command=lambda: self.error_get('B'),
             font=("Arial", 10, "bold")
         )
-        self.get_servo_error_right_btn.pack(side="left")
+        self.get_servo_error_right_btn.pack(side="left",padx=(0, 20))
+
+        self.servo_reset_right_label = tk.Label(servo_frame, text="轴:", font=("Arial", 9, "bold"), bg='white').pack(
+            side="left", padx=(0, 0))
+        self.servo_axis_select_combobox_right = ttk.Combobox(
+            servo_frame,
+            values=["0", "1", "2", "3", "4", "5", "6"],
+            width=2,
+            state="readonly"  # 禁止直接输入
+        )
+        self.servo_axis_select_combobox_right.current(0)
+        self.servo_axis_select_combobox_right.pack(side="left", padx=(0, 5))
+
+        self.servo_reset_btn_right = tk.Button(
+            servo_frame,
+            text="软复位",
+            width=5,
+            command=lambda: self.servo_set('B'),
+            font=("Arial", 10, "bold"),
+            bg='#F5F5DC'
+        )
+        self.servo_reset_btn_right.pack(side="left", )
 
         # 协作控制和刹车按钮
         control_frame = tk.Frame(error_handle_frame,bg='white')
@@ -1424,7 +1465,7 @@ class App:
 
 
         '''第三列：力控指令和位置指令'''
-        right_second_control_frame = tk.Frame(right_content, bg="white", width=700)
+        right_second_control_frame = tk.Frame(right_content, bg="white", width=650)
         right_second_control_frame.pack(side="left", fill="y")
         right_second_control_frame.pack_propagate(False)  # 保持固定宽度
 
@@ -1594,6 +1635,8 @@ class App:
         menu = tk.Menu(self.root, tearoff=0)
         # 添加菜单项
         menu.add_command(label="系统升级", command=self.system_update_dialog)
+        menu.add_separator()
+        menu.add_command(label="直线规划", command=self.movl_dialog)
         menu.add_separator()
         menu.add_command(label="传感器与编码器", command=self.sensor_decoder_dialog)
         menu.add_separator()
@@ -3025,6 +3068,7 @@ class App:
                 elif robot_id == 'B':
                     self.period_file_path_2.set(file_path)
                     # messagebox.showinfo("成功", f"2#周期运行文件已选择: {os.path.basename(file_path)}")
+
     def process_line(self, line_num, line):
         """处理单行数据，将其转换为浮点数列表"""
         try:
@@ -3055,7 +3099,6 @@ class App:
         )
         self.thread.daemon = True
         self.thread.start()
-
 
     def run_period_file(self, robot_id):
         if self.connected:
@@ -3528,6 +3571,62 @@ class App:
                     messagebox.showerror("错误", f"状态切换过程中发生错误: {str(e)}")
                     self.state_var.set("关节跟随")
 
+        #handle eef cart impedance
+        elif selected_state=="末端笛卡尔阻抗":
+            if messagebox.askyesno("确认状态切换", f"确定要切换到 {selected_state} 模式吗？"):
+                try:
+                    robot.clear_set()
+                    robot.set_state(arm=robot_id, state=3)
+                    robot.set_impedance_type(arm=robot_id, type=2)
+                    robot.send_cmd()
+                except Exception as e:
+                    messagebox.showerror("错误", f"状态切换过程中发生错误: {str(e)}")
+                    self.state_var.set("关节跟随")
+
+                eefcart_dialog = tk.Toplevel(self.root)
+                eefcart_dialog.title("工具笛卡尔阻抗")
+                eefcart_dialog.geometry("500x350")  # 增加高度以容纳新选项
+                eefcart_dialog.configure(bg="white")
+                eefcart_dialog.resizable(True, True)  # 允许调整大小以便查看完整内容
+                eefcart_dialog.transient(self.root)
+                eefcart_dialog.grab_set()
+
+
+                # 设置对话框居中显示
+                eefcart_dialog.update_idletasks()
+                x = (eefcart_dialog.winfo_screenwidth() - eefcart_dialog.winfo_width()) // 2
+                y = (eefcart_dialog.winfo_screenheight() - eefcart_dialog.winfo_height()) // 2
+                eefcart_dialog.geometry(f"+{x}+{y}")
+
+                adaptive_frame = tk.Frame(eefcart_dialog,bg='white')
+                adaptive_frame.pack(fill="x", padx=(5,5),pady=(10,30))
+
+                adaptive_btn = tk.Button(adaptive_frame, text="实时工具笛卡尔阻抗",width=20,bg='#F8F8FF',
+                                              command=lambda: self.usr_set_eefcart(2,robot_id)
+                                         )
+                adaptive_btn.pack(pady=(10,30))
+
+                # 添加横线
+                horizontal_line1 = tk.Frame(adaptive_frame, height=2, bg="#%02x%02x%02x" % (50, 150, 200))
+                horizontal_line1.pack(fill="x", pady=(10, 10))
+
+                #usrdfine
+                usr_define_frame = tk.Frame(eefcart_dialog,bg='white')
+                usr_define_frame.pack(fill="x", padx=(5,5),pady=(10,30))
+
+                usr_text_label = tk.Label(usr_define_frame, text="自定义旋转方向")
+                usr_text_label.grid(row=0, column=0, padx=(5,0))
+
+                self.eefcart_rot_entry = tk.Entry(usr_define_frame, )
+                self.eefcart_rot_entry.insert(0, "0,0,0")
+                self.eefcart_rot_entry.grid(row=0, column=1, padx=(3,3), sticky="ew")
+                get_crt_rot_button = tk.Button(usr_define_frame, text="当前末端旋转信息",command=lambda: self.get_crt_rot(robot_id))
+                get_crt_rot_button.grid(row=0, column=2, padx=(0,5))
+                usr_set_button = tk.Button(usr_define_frame, text="设置生效",
+                                             command=lambda: self.usr_set_eefcart(1,robot_id))
+                usr_set_button.grid(row=0, column=3, padx=5)
+
+
         # 处理PVT模式
         elif selected_state == 'PVT':
             if messagebox.askyesno("确认状态切换", f"确定要切换到 {selected_state} 模式吗？"):
@@ -3542,6 +3641,7 @@ class App:
                 drag_dialog = tk.Toplevel(self.root)
                 drag_dialog.title("拖动选项")
                 drag_dialog.geometry("500x350")  # 增加高度以容纳新选项
+                drag_dialog.configure(bg="white")
                 drag_dialog.transient(self.root)
                 drag_dialog.grab_set()
 
@@ -3552,7 +3652,7 @@ class App:
                 drag_dialog.geometry(f"+{x}+{y}")
 
                 # 第一行：是否保存拖动数据复选框
-                pvt_frame = tk.Frame(drag_dialog)
+                pvt_frame = tk.Frame(drag_dialog,bg='white')
                 pvt_frame.pack(fill="x", pady=(15, 10), padx=20)
 
                 # 2选择PVT号
@@ -3588,6 +3688,7 @@ class App:
             drag_dialog = tk.Toplevel(self.root)
             drag_dialog.title("拖动选项")
             drag_dialog.geometry("300x500")
+            drag_dialog.configure(bg="white")
             drag_dialog.transient(self.root)
             drag_dialog.grab_set()
 
@@ -3604,7 +3705,7 @@ class App:
             save_drag_var = tk.BooleanVar(value=False)  # 新增：是否保存拖动数据
 
             # 第一行：是否保存拖动数据复选框
-            save_frame = tk.Frame(drag_dialog)
+            save_frame = tk.Frame(drag_dialog,bg='white')
             save_frame.pack(fill="x", pady=(15, 10), padx=20)
 
             save_checkbox = tk.Checkbutton(
@@ -3612,7 +3713,7 @@ class App:
                 text="保存拖动数据",
                 variable=save_drag_var,
                 font=('Arial', 10),
-                # bg='white'
+                bg='white'
             )
             save_checkbox.pack(anchor='w')
 
@@ -3621,10 +3722,10 @@ class App:
             separator1.pack(fill="x", padx=20, pady=(0, 10))
 
             # 第二行：拖动类型标题
-            tk.Label(drag_dialog, text="选择拖动类型:", font=('Arial', 10)).pack(pady=(0, 5), anchor='w', padx=20)
+            tk.Label(drag_dialog, text="选择拖动类型:", bg='white',font=('Arial', 10)).pack(pady=(0, 5), anchor='w', padx=20)
 
             # 关节拖动选项
-            joint_frame = tk.Frame(drag_dialog)
+            joint_frame = tk.Frame(drag_dialog,bg='white')
             joint_frame.pack(anchor='w', padx=40, pady=5)
 
             tk.Radiobutton(
@@ -3632,12 +3733,13 @@ class App:
                 text="关节拖动",
                 variable=drag_type_var,
                 value="joint_drag",
+                bg='white',
                 font=('Arial', 9),
                 command=lambda: axis_var.set("")  # 清空轴选择
             ).pack(anchor='w')
 
             # 第三行：笛卡尔拖动单选按钮
-            cartesian_frame = tk.Frame(drag_dialog)
+            cartesian_frame = tk.Frame(drag_dialog,bg='white')
             cartesian_frame.pack(anchor='w', padx=40, pady=5)
 
             tk.Radiobutton(
@@ -3645,14 +3747,15 @@ class App:
                 text="笛卡尔拖动",
                 variable=drag_type_var,
                 value="cartesian_drag",
+                bg='white',
                 font=('Arial', 9)
             ).pack(anchor='w')
 
             # 笛卡尔拖动的轴选择
-            axis_frame = tk.Frame(drag_dialog)
+            axis_frame = tk.Frame(drag_dialog,bg='white')
             axis_frame.pack(anchor='w', padx=60, pady=5)
 
-            tk.Label(axis_frame, text="选择拖动轴:", font=('Arial', 9)).pack(anchor='w', pady=(5, 0))
+            tk.Label(axis_frame, text="选择拖动轴:",bg='white', font=('Arial', 9)).pack(anchor='w', pady=(5, 0))
 
             # 创建轴选择单选按钮组
             axis_options = ["X拖动", "Y拖动", "Z拖动", "R拖动"]
@@ -3664,6 +3767,7 @@ class App:
                     variable=axis_var,
                     value=axis,
                     font=('Arial', 9),
+                    bg='white',
                     state=tk.DISABLED  # 初始禁用，等待选择笛卡尔拖动
                 ).pack(anchor='w')
 
@@ -3799,7 +3903,7 @@ class App:
             separator2.pack(fill="x", padx=20, pady=(10, 5))
 
             # 按钮框架
-            button_frame = tk.Frame(drag_dialog)
+            button_frame = tk.Frame(drag_dialog,bg='white')
             button_frame.pack(pady=10)
 
             tk.Button(
@@ -3824,6 +3928,28 @@ class App:
             self.root.wait_window(drag_dialog)
         else:
             self.state_var.set("关节跟随")
+
+    def get_crt_rot(self,robot_id):
+        rot_text=''
+        if robot_id=='A':
+            rot_text=f"{self.pose_6d_l[3]:.3f}, {self.pose_6d_l[4]:.3f}, {self.pose_6d_l[5]:.3f}"
+        elif robot_id=='B':
+            rot_text=f"{self.pose_6d_r[3]: .3f}, {self.pose_6d_r[4]: .3f}, {self.pose_6d_r[5]: .3f}"
+        self.eefcart_rot_entry.delete(0,tk.END)
+        self.eefcart_rot_entry.insert(0,rot_text)
+
+    def usr_set_eefcart(self,type,robot_id):
+        if type==2:
+            robot.set_EefCart_control_params(arm=robot_id,fcType=2,CartCtrlPara=[0]*7)
+        if type==1:
+            rot=self.eefcart_rot_entry.get()
+            ret,rot_value=self.validate_point(rot,3)
+            if ret:
+                values = rot_value.split(',')
+                rot = [float(value.strip()) for value in values]
+                robot.set_EefCart_control_params(arm=robot_id, fcType=1, CartCtrlPara=[rot[0],rot[1],rot[2],0,0,0,0])
+            else:
+                messagebox.showerror("错误", f"选中的点格式无效: {rot_value}")
 
     def send_pvt(self, robot_id):
         if self.connected:
@@ -4088,10 +4214,24 @@ class App:
 
     def error_get(self, robot_id):
         if self.connected:
-            errors = robot.get_servo_error_code(robot_id)
+            errors = robot.get_servo_error_code(robot_id,lang='CN')
             print(f'servo error:{errors}')
             if errors:
                 messagebox.showinfo(f'{robot_id} arm error:\n', errors)
+        else:
+            messagebox.showerror('error', '请先连接机器人')
+
+    def servo_set(self,robot_id):
+        if self.connected:
+            try:
+                axis=0
+                if robot_id=='A':
+                    axis=self.servo_axis_select_combobox_left.get()
+                if robot_id=='B':
+                    axis=self.servo_axis_select_combobox_right.get()
+                robot.servo_reset(arm=robot_id,axis=axis)
+            except Exception as e:
+                messagebox.showerror("错误", f"轴软复位出错: {str(e)}")
         else:
             messagebox.showerror('error', '请先连接机器人')
 
@@ -4318,7 +4458,9 @@ class App:
         )
         if file_path:
             self.file_path_50.set(file_path)
-            # messagebox.showinfo("成功", f"下采样数据文件已选择: {os.path.basename(file_path)}")
+
+            if len(self.processed_data) != 0:
+                self.processed_data = []
 
             with open(file_path, 'r') as file:
                 lines = file.readlines()
@@ -4845,6 +4987,290 @@ class App:
                 messagebox.showerror('error', e)
         else:
             messagebox.showerror('error', '请先连接机器人')
+
+    def movl_dialog(self):
+        pln_window = tk.Toplevel(self.root)
+        pln_window.title("直线规划功能")
+        pln_window.geometry("1000x400")
+        pln_window.configure(bg="white")
+        pln_window.transient(self.root)  # 设置为主窗口的子窗口
+        pln_window.resizable(True, True)
+        pln_window.grab_set()  # 模态窗口
+        # 功能按钮框架
+
+        self.pln_frame_1 = tk.Frame(pln_window, bg="white")
+        self.pln_frame_1.pack(fill="x", padx=5, pady=(15, 10))
+        #显示当前关节和当前xyzabc
+        self.arm_text = tk.Label(self.pln_frame_1, text="关节实时数据", bg="#2196F3",
+                                        fg="white", font=("Arial", 10, "bold"))
+        self.arm_text.pack(fill='x')
+
+        self.pln_frame_2 = tk.Frame(pln_window, bg="white")
+        self.pln_frame_2.pack(fill="x", padx=5, pady=(10, 10))
+
+        self.choose_arm = tk.Label(self.pln_frame_2, text="选择手臂" ,bg='white')
+        self.choose_arm.grid(row=0, column=0, padx=(5, 5))
+
+        self.arm_select_combobox= ttk.Combobox(
+            self.pln_frame_2,
+            values=["0", "1"],
+            width=3,
+            state="readonly"  # 禁止直接输入
+        )
+        self.arm_select_combobox.current(0)  # 默认选中第一个选项
+        self.arm_select_combobox.grid(row=0, column=1, padx=(5, 5))
+        # 绑定选择事件
+        self.arm_select_combobox.bind("<<ComboboxSelected>>", self.update_pln_rt_data)
+
+        self.jv_text = tk.Label(self.pln_frame_2, text="当前关节",bg='white')
+        self.jv_text.grid(row=0, column=2, padx=(5, 5))
+
+        self.crt_jv_entry = tk.Entry(self.pln_frame_2, width=50)
+        self.crt_jv_entry.insert(0, '0,0,0,0,0,0,0')
+        self.crt_jv_entry.grid(row=0, column=3, padx=(5, 5),sticky='ew')
+
+        self.cart_text = tk.Label(self.pln_frame_2, text="当前末端姿态",bg='white')
+        self.cart_text.grid(row=0, column=4, padx=(5, 5))
+
+        self.crt_cart_entry = tk.Entry(self.pln_frame_2, width=50)
+        self.crt_cart_entry.insert(0, '0,0,0,0,0,0')
+        self.crt_cart_entry.grid(row=0, column=5, padx=(5, 5))
+
+        #
+        self.pln_frame_3 = tk.Frame(pln_window, bg="white")
+        self.pln_frame_3.pack(fill="x", padx=5, pady=(15, 10))
+        #显示当前关节和当前xyzabc
+        self.arm_text_1 = tk.Label(self.pln_frame_3, text="末端直线", bg="#2196F3",
+                                        fg="white", font=("Arial", 10, "bold"))
+        self.arm_text_1.pack(fill='x')
+
+        self.pln_frame_31 = tk.Frame(pln_window, bg="white")
+        self.pln_frame_31.pack(fill="x", padx=5, pady=(10, 5))
+        #点动距离，速度
+        tk.Label(self.pln_frame_31 , text="规划速度：", font=('Arial', 9), bg='white').pack(side="left", padx=(0, 0))
+        self.pln_speed_entry_1 = tk.Entry(self.pln_frame_31 , width=5, font=('Arial', 9), justify='center')
+        self.pln_speed_entry_1.pack(side="left")
+        self.pln_speed_entry_1.insert(0, "100")
+        tk.Label(self.pln_frame_31 , text="1mm/s-500mm/s", font=('Arial', 9), bg='white').pack(side="left", padx=(0, 40))
+
+        tk.Label(self.pln_frame_31 , text="单步距离：", font=('Arial', 9), bg='white').pack(side="left", padx=(5, 0))
+        self.pln_speed_entry_2 = tk.Entry(self.pln_frame_31 , width=5, font=('Arial', 9), justify='center')
+        self.pln_speed_entry_2.pack(side="left")
+        self.pln_speed_entry_2.insert(0, "50")
+        tk.Label(self.pln_frame_31 , text="1mm-500mm", font=('Arial', 9), bg='white').pack(side="left", padx=(0, 40))
+
+        tk.Label(self.pln_frame_31 , text="指定末端位置姿态：", font=('Arial', 9), bg='white').pack(side="left", padx=(5, 0))
+        self.pln_speed_entry_3 = tk.Entry(self.pln_frame_31 , width=50, font=('Arial', 9), justify='center')
+        self.pln_speed_entry_3.pack(side="left")
+        self.pln_speed_entry_3.insert(0, "0,0,0,0,0,0")
+        # tk.Label(self.pln_frame_31 , text="", font=('Arial', 9), bg='white').pack(side="left", padx=(0, 10))
+
+        self.pln_frame_311 = tk.Frame(pln_window, bg="white")
+        self.pln_frame_311.pack(fill='x')
+        tk.Label(self.pln_frame_311, text="单步", font=('Arial', 9), bg='white').grid(row=0, column=0, padx=(5, 5),pady=5)
+        bt1_x_p = tk.Button(self.pln_frame_311, text="x+",command=lambda :self.pln_movla('x+'))
+        bt1_x_p.grid(row=0, column=1, padx=(5, 5),pady=5)
+        bt1_y_p = tk.Button(self.pln_frame_311, text="y+",command=lambda :self.pln_movla('y+'))
+        bt1_y_p.grid(row=0, column=2, padx=(5, 5))
+        bt1_z_p = tk.Button(self.pln_frame_311, text="z+",command=lambda :self.pln_movla('z+'))
+        bt1_z_p.grid(row=0, column=3, padx=(5, 5))
+
+        tk.Label(self.pln_frame_311, text="单步", font=('Arial', 9), bg='white').grid(row=1, column=0, padx=(5, 5),pady=5)
+        bt1_x1_p = tk.Button(self.pln_frame_311, text="x+",command=lambda :self.pln_movla('x-'))
+        bt1_x1_p.grid(row=1, column=1, padx=(5, 5))
+        bt1_y1_p = tk.Button(self.pln_frame_311, text="y-",command=lambda :self.pln_movla('y-'))
+        bt1_y1_p.grid(row=1, column=2, padx=(5, 5))
+        bt1_z1_p = tk.Button(self.pln_frame_311, text="z-",command=lambda :self.pln_movla('z-'))
+        bt1_z1_p.grid(row=1, column=3, padx=(5, 5))
+
+        specific_pln = tk.Button(self.pln_frame_311, text="直线运行的到指定位置姿态",command=lambda :self.pln_movla('s'))
+        specific_pln.grid(row=1, column=7, padx=(400, 5))
+
+
+        self.pln_frame_4 = tk.Frame(pln_window, bg="white")
+        self.pln_frame_4.pack(fill="x", padx=5, pady=(20, 10))
+        #显示当前关节和当前xyzabc
+        self.arm_text_2 = tk.Label(self.pln_frame_4, text="两个关节走直线", bg="#2196F3",
+                                        fg="white", font=("Arial", 10, "bold"))
+        self.arm_text_2.pack(fill='x')
+
+        self.pln_frame_41 = tk.Frame(pln_window, bg="white")
+        self.pln_frame_41.pack(fill="x", padx=5, pady=(10, 5))
+        # 点动距离，速度
+        tk.Label(self.pln_frame_41, text="规划速度：", font=('Arial', 9), bg='white').pack(side="left", padx=(0, 0))
+        self.pln_speed_entry_4 = tk.Entry(self.pln_frame_41, width=5, font=('Arial', 9), justify='center')
+        self.pln_speed_entry_4.pack(side="left")
+        self.pln_speed_entry_4.insert(0, "100")
+        tk.Label(self.pln_frame_41, text="1mm/s-500mm/s", font=('Arial', 9), bg='white').pack(side="left", padx=(0, 40))
+
+        tk.Label(self.pln_frame_41, text="指定终点关节：", font=('Arial', 9), bg='white').pack(side="left",
+                                                                                                  padx=(5, 0))
+        self.pln_speed_entry_5 = tk.Entry(self.pln_frame_41, width=50, font=('Arial', 9), justify='center')
+        self.pln_speed_entry_5.pack(side="left")
+        self.pln_speed_entry_5.insert(0, "0,0,0,0,0,0,0")
+        # tk.Label(self.pln_frame_41 , text="角度", font=('Arial', 9), bg='white').pack(side="left", padx=(0, 10))
+
+        tk.Button(self.pln_frame_41, text="直线运行的到指定关节构型", command=lambda: self.pln_movlkeepj).pack(side="left", padx=(0, 10))
+
+
+    def update_pln_rt_data(self):
+        joint_text=''
+        cart_text=''
+        arm = int(self.arm_select_combobox.get())
+        robot_id='A'
+        if arm == 0:
+            joint_pos=self.result['outputs'][0]['fb_joint_pos']
+            cart_pos=self.pose_6d_l
+            result = messagebox.askokcancel('确认操作', f'手臂{arm} 将切换到笛卡尔阻抗模式')
+            if result:
+                '''设置阻抗参数'''
+                robot.clear_set()
+                robot.set_cart_kd_params(arm=robot_id, K=[12000, 12000, 12000, 600, 600, 600, 20],
+                                         D=[0.4, 0.4, 0.17, 0.23, 0.23, 0.2, 0.2],
+                                         type=2)
+                robot.send_cmd()
+                time.sleep(0.02)
+
+                '''设置扭矩模式,笛卡尔阻抗模式,速度加速度百分比'''
+                robot.clear_set()
+                robot.set_state(arm=robot_id, state=3)  # state=3扭矩模式
+                robot.set_impedance_type(arm=robot_id, type=2)  # type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
+                robot.set_vel_acc(arm=robot_id, velRatio=100, AccRatio=100)
+                robot.send_cmd()
+                time.sleep(0.02)
+        elif arm == 1:
+            robot_id='B'
+            joint_pos=self.result['outputs'][1]['fb_joint_pos']
+            cart_pos = self.pose_6d_r
+            result = messagebox.askokcancel('确认操作', f'手臂{arm} 将切换到笛卡尔阻抗模式')
+            if result:
+                '''设置阻抗参数'''
+                robot.clear_set()
+                robot.set_cart_kd_params(arm=robot_id, K=[12000, 12000, 12000, 600, 600, 600, 20],
+                                         D=[0.4, 0.4, 0.17, 0.23, 0.23, 0.2, 0.2],
+                                         type=2)
+                robot.send_cmd()
+                time.sleep(0.02)
+
+                '''设置扭矩模式,笛卡尔阻抗模式,速度加速度百分比'''
+                robot.clear_set()
+                robot.set_state(arm=robot_id, state=3)  # state=3扭矩模式
+                robot.set_impedance_type(arm=robot_id, type=2)  # type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
+                robot.set_vel_acc(arm=robot_id, velRatio=100, AccRatio=100)
+                robot.send_cmd()
+                time.sleep(0.02)
+
+        for i in range(7):
+            joint_text += f"{joint_pos[i]:.3f}, "
+        joint_text = joint_text.rstrip(", ")  # 移除最后一个逗号和空格
+        for i in range(6):
+            cart_text += f"{cart_pos[i]:.1f}, "
+        cart_text = cart_text.rstrip(", ")  # 移除最后一个逗号和空格
+
+        self.crt_jv_entry.delete(0, tk.END)
+        self.crt_jv_entry.insert(0, joint_text)
+        self.crt_cart_entry.delete(0, tk.END)
+        self.crt_cart_entry.insert(0, cart_text)
+
+    def pln_movlkeepj(self):
+        end_jv=''
+        speed = int(self.pln_speed_entry_4.get())
+        robot_id = 'A'
+        arm = int(self.arm_select_combobox.get())
+        if arm == 1:
+            robot_id = 'B'
+        elif arm == 0:
+            robot_id = 'A'
+        ret, end_jv = self.validate_point(self.pln_speed_entry_5.get(), 7)
+        if ret:
+            values = end_jv.split(',')
+            end_jv = [float(value.strip()) for value in values]
+
+        if robot_id == 'A':
+            points =kk1.movL_KeepJA(start_joints=self.result['outputs'][0]['fb_joint_pos'],
+                        end_joints=end_jv,
+                            vel=speed, acc=speed)
+        elif robot_id == 'B':
+            points =kk1.movL_KeepJA(start_joints=self.result['outputs'][1]['fb_joint_pos'],
+                        end_joints=end_jv,
+                            vel=speed, acc=speed)
+        if not points:
+            messagebox.showerror('error', f'规划失败，请检查当前构型和指定末端位置姿态是否正常')
+        for idx, target_joints in enumerate(points):
+            robot.clear_set()
+            robot.set_joint_cmd_pose(arm=robot_id, joints=target_joints)
+            robot.send_cmd()
+            time.sleep(0.002)
+
+    def pln_movla(self,type):
+        '''
+        获取指令类型来规划并用笛卡尔阻抗500HZ执行
+        '''
+        end_xyzabc=None
+        speed=int(self.pln_speed_entry_1.get())
+        robot_id='A'
+        arm=int(self.arm_select_combobox.get())
+        if arm==1:
+            robot_id='B'
+        elif arm==0:
+            robot_id = 'A'
+
+        if type=='s':
+            ret, xyzabc = self.validate_point(self.pln_speed_entry_3.get(), 6)
+            if ret:
+                values = xyzabc.split(',')
+                end_xyzabc = [float(value.strip()) for value in values]
+
+        else:
+            if robot_id=='A':
+                end_xyzabc = self.pose_6d_l.copy()
+            elif robot_id=='B':
+                end_xyzabc = self.pose_6d_r.copy()
+            if type=='x+':
+                distance = int(self.pln_speed_entry_2.get())
+                end_xyzabc[0] += distance
+            elif type == 'x-':
+                distance = int(self.pln_speed_entry_2.get())
+                end_xyzabc[0] -= distance
+            elif type == 'y+':
+                distance = int(self.pln_speed_entry_2.get())
+                end_xyzabc[1] += distance
+            elif type == 'y-':
+                distance = int(self.pln_speed_entry_2.get())
+                end_xyzabc[1] -= distance
+            elif type == 'z+':
+                distance = int(self.pln_speed_entry_2.get())
+                end_xyzabc[2] += distance
+            elif type == 'z-':
+                distance = int(self.pln_speed_entry_2.get())
+                end_xyzabc[2] -= distance
+
+
+        if robot_id == 'A':
+            points = kk1.movLA(
+                start_xyzabc=self.pose_6d_l,
+                end_xyzabc=end_xyzabc,
+                ref_joints=self.result['outputs'][0]['fb_joint_pos'],
+                vel=speed,
+                acc=speed
+            )
+
+        elif robot_id == 'B':
+            points = kk2.movLA(
+                start_xyzabc=self.pose_6d_r,
+                end_xyzabc=end_xyzabc,
+                ref_joints=self.result['outputs'][1]['fb_joint_pos'],
+                vel=speed,
+                acc=speed
+            )
+        if not points:
+            messagebox.showerror('error', f'规划失败，请检查当前构型和指定末端位置姿态是否正常')
+        for idx, target_joints in enumerate(points):
+            robot.clear_set()
+            robot.set_joint_cmd_pose(arm=robot_id, joints=target_joints)
+            robot.send_cmd()
+            time.sleep(0.002)
+
 
     def tool_identy_dialog(self):
         tools_dialog = tk.Toplevel(self.root)
@@ -5595,7 +6021,7 @@ class App:
                         kk1.set_tool_kine(tool_mat=tool_mat)
 
                     elif last_arm0_tool==None and last_arm1_tool!=None:
-                        messagebox.showinfo('success', f'机器人连接成功. 机器人已设置右臂工具信息:{last_arm0_tool}，左臂未设置.')
+                        messagebox.showinfo('success', f'机器人连接成功. 机器人已设置右臂工具信息:{last_arm1_tool}，左臂未设置.')
                         # 设置历史数据
                         robot.set_tool(arm='B',  dynamicParams=self.tools_cfg["arm1"][last_arm1_tool]['dyn'], kineParams=self.tools_cfg["arm1"][last_arm1_tool]['kine'])
                         tool_mat1 = kk2.xyzabc_to_mat4x4(self.tools_cfg["arm1"][last_arm1_tool]['kine'])
@@ -5712,10 +6138,10 @@ class App:
         joint_pos_l = self.result['outputs'][0][key]
         '''xyzabc'''
         fk_mat_l = kk1.fk(joints=joint_pos_l)
-        pose_6d_l = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_l)  # 用关节正解的姿态转XYZABC
+        self.pose_6d_l = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_l)  # 用关节正解的姿态转XYZABC
         # print(f'pose_6d_1:{pose_6d_1}')
         # 格式化笛卡尔数据为单行
-        cartesian_text_l = f"{pose_6d_l[0]:.3f},{pose_6d_l[1]:.3f},{pose_6d_l[2]:.3f},{pose_6d_l[3]:.3f}, {pose_6d_l[4]:.3f}, {pose_6d_l[5]:.3f}"
+        cartesian_text_l = f"{self.pose_6d_l[0]:.3f},{self.pose_6d_l[1]:.3f},{self.pose_6d_l[2]:.3f},{self.pose_6d_l[3]:.3f}, {self.pose_6d_l[4]:.3f}, {self.pose_6d_l[5]:.3f}"
         # 格式化关节数据为单行：
         joint_text_l = ""
         for i in range(7):
@@ -5738,10 +6164,10 @@ class App:
         joint_pos_r = self.result['outputs'][1][key]
         '''xyzabc'''
         fk_mat_r = kk2.fk(joints=joint_pos_r)
-        pose_6d_r = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_r)  # 用关节正解的姿态转XYZABC
+        self.pose_6d_r = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_r)  # 用关节正解的姿态转XYZABC
         # print(f'pose_6d_2:{pose_6d_2}')
         # 格式化笛卡尔数据为单行
-        cartesian_text_r = f"{pose_6d_r[0]:.3f},{pose_6d_r[1]:.3f},{pose_6d_r[2]:.3f},{pose_6d_r[3]:.3f}, {pose_6d_r[4]:.3f}, {pose_6d_r[5]:.3f}"
+        cartesian_text_r = f"{self.pose_6d_r[0]:.3f},{self.pose_6d_r[1]:.3f},{self.pose_6d_r[2]:.3f},{self.pose_6d_r[3]:.3f}, {self.pose_6d_r[4]:.3f}, {self.pose_6d_r[5]:.3f}"
         # 格式化关节数据为单行：
         joint_text_r = ""
         for i in range(7):
@@ -6111,7 +6537,7 @@ def process_and_downsample(file_path, format_unify=True):
         parts = first_line.split('@')
         if len(parts) == 2:
             # 处理=和@之间的数字
-            first_part = re.sub(r'(=)\d+(@?)', r'\g<1>7\2', parts[0])
+            first_part = re.sub(r'(=)\d+(@?)', r'\g<1>9\2', parts[0])
             # 获取原始行数并减半（1000Hz->500Hz）
             try:
                 original_rows = int(parts[1])
@@ -6130,7 +6556,7 @@ def process_and_downsample(file_path, format_unify=True):
         processed_lines.append(first_line + '\n')
 
     # 新的特征字母顺序
-    new_letters = ['X', 'Y', 'Z', 'A', 'B', 'C', 'U']
+    new_letters = ['X', 'Y', 'Z', 'A', 'B', 'C', 'U','V','W']
     # 下采样处理：从第1行开始，每隔一行取一行并处理
     original_data_lines = 0
     processed_data_lines = 0
@@ -6194,6 +6620,9 @@ def process_and_downsample(file_path, format_unify=True):
                         for j in range(7):
                             new_features.append(f"{new_letters[j]} {selected_values[j]}")
 
+                        new_features.append(f"{new_letters[7]} {0.000000}")
+                        new_features.append(f"{new_letters[8]} {0.000000}")
+
                         processed_line = '$'.join(new_features) + '$'
                         processed_lines.append(processed_line + '\n')
                         processed_data_lines += 1
@@ -6234,6 +6663,8 @@ def process_and_downsample(file_path, format_unify=True):
                         new_features = []
                         for j in range(7):
                             new_features.append(f"{new_letters[j]} {selected_values[j]}")
+                        new_features.append(f"{new_letters[7]} {0.000000}")
+                        new_features.append(f"{new_letters[8]} {0.000000}")
                         processed_line = '$'.join(new_features) + '$'
                         processed_lines.append(processed_line + '\n')
                         processed_data_lines += 1
@@ -6260,8 +6691,8 @@ def process_and_downsample(file_path, format_unify=True):
     print(f"格式统一：{'是' if format_unify else '否'}")
     print("新的特征对应关系:")
     print("原始: X Y Z A B C U V W")
-    print("新的: X Y Z A B C U")
-    print("对应: - - Z→X A→Y B→Z C→A U→B V→C W→U")
+    print("新的: X Y Z A B C U V W")
+    print("对应: - - Z→X A→Y B→Z C→A U→B V→C W→U V W")
 
 if __name__ == "__main__":
     # 定义常量
@@ -6278,6 +6709,8 @@ if __name__ == "__main__":
 
     kk1 = Marvin_Kine()
     kk2 = Marvin_Kine()
+    kk1.log_switch(0)
+    kk2.log_switch(0)
     ini_result1 = kk1.load_config(arm_type=0, config_path=glob.glob('config/*.MvKDCfg')[0])
     initial_kine_tag1 = kk1.initial_kine(robot_type=ini_result1['TYPE'][0],
                                          dh=ini_result1['DH'][0],
