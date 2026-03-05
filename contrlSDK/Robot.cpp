@@ -304,7 +304,10 @@ void  CallBackFunc(union sigval v)
 
 CRobot::CRobot()
 {
-    m_LocalLogTag = true;
+    m_send_response_recv_tag = 0;
+	m_send_response_timeout_cnt = 0;
+
+	m_LocalLogTag = true;
 	m_ParaSerial = 1;
 	m_GatherTag = 0;
 	m_SendTag = 0;
@@ -1197,6 +1200,11 @@ long CRobot::OnSavePara()
 
 void CRobot::DoRecv()
 {
+	if (m_send_response_timeout_cnt > 0)
+	{
+		m_send_response_timeout_cnt--;
+	}
+	
 	if (m_LinkTag == FX_FALSE)
 	{
 		return;
@@ -1218,6 +1226,7 @@ void CRobot::DoRecv()
 			m_ACB_ShMem.WriteBuf((unsigned char *)recvbuf, Len);
 			DCSS* p = (DCSS*)&recvbuf[2];
 			memcpy(&m_DCSS, p, sizeof(m_DCSS));
+			m_send_response_recv_tag = m_DCSS.m_Out[0].m_pad[0];
 			if (m_InsRobot->m_GatherTag == 1)
 			{
 				if (m_GatherRecordNum >= m_GatherRecordMaxNum)
@@ -2419,11 +2428,11 @@ bool CRobot::OnSetImpType_B(int type)
 
 /// ////////////////////////////////
 
-bool CRobot::OnSetSendWaitResponse(long time_out)
+long CRobot::OnSetSendWaitResponse(long time_out)
 {
 	if (m_InsRobot->m_SendTag == 100)
 	{
-		return false;
+		return -1;
 	}
 
 	if (m_InsRobot->m_send_response_local_tag < 7)
@@ -2441,7 +2450,7 @@ bool CRobot::OnSetSendWaitResponse(long time_out)
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
 	{
-		return false;
+		return -1;
 	}
 
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 251;
@@ -2466,21 +2475,24 @@ bool CRobot::OnSetSendWaitResponse(long time_out)
 		m_InsRobot->m_send_response_timeout_cnt = 1000;
 	}
 
-
+    long tmpt = m_InsRobot->m_send_response_timeout_cnt;
 	m_InsRobot->m_SendTag = 100;
 
 	while (m_InsRobot->m_send_response_timeout_cnt > 0)
 	{
+		// printf("m_InsRobot->m_send_response_recv_tag:%d,\n",m_InsRobot->m_send_response_recv_tag);
+		// printf("m_InsRobot->m_send_response_local_tag:%d,\n",m_InsRobot->m_send_response_local_tag);
+		
 		if (m_InsRobot->m_send_response_recv_tag == m_InsRobot->m_send_response_local_tag)
 		{
 			if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: OnSetSendWaitResponse\n");
-			return true;
+			return tmpt - m_InsRobot->m_send_response_timeout_cnt;
 		}
 
 		Sleep(1);
 	}
-
-	return false;
+	// if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: OnSetSendWaitResponse failed\n");
+	return -1;
 }
 
 bool CRobot::OnSetSend()
