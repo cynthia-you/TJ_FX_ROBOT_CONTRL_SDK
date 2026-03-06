@@ -353,14 +353,11 @@ CRobot::CRobot()
     m_ACB_ShMem.OnSetBuf(m_psm, 102400, "AAA");  
 	printf("sizeof(SharedControl)=%zu\n", sizeof(SharedControl)); 
 
-
-	// 添加调试输出
 	printf("Shared memory initialized: base=%p, size=%ld, ctrl=%p\n", 
        m_psm, 102400, m_ACB_ShMem.GetCtrlPtr());
 
 	if (m_ACB_ShMem.GetCtrlPtr()) {
 		SharedControl* ctrl = m_ACB_ShMem.GetCtrlPtr();
-		// 检查控制块是否初始化
 		printf("write_pos=%d, read_pos=%d, buf_serial=%u, item_num=%d\n",
 			ctrl->write_pos, ctrl->read_pos, ctrl->buf_serial, ctrl->item_num);
 	}
@@ -2488,8 +2485,13 @@ long CRobot::OnSetSendWaitResponse(long time_out)
 			if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: OnSetSendWaitResponse\n");
 			return tmpt - m_InsRobot->m_send_response_timeout_cnt;
 		}
+		#ifdef CMPL_WIN
+		    Sleep(1);
+		#endif
+		#ifdef CMPL_LIN
+		    usleep(1000);
+		#endif
 
-		Sleep(1);
 	}
 	// if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: OnSetSendWaitResponse failed\n");
 	return -1;
