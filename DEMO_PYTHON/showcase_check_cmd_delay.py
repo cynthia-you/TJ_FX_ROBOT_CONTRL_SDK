@@ -56,13 +56,15 @@ else:
 robot.clear_set()
 robot.set_state(arm='A', state=1)
 timeout=robot.send_cmd_wait_response(100)
-logger.info(f'100ms 内测到的执行的相应延迟是 ：{timeout} ms')
+logger.info(f'100ms 内测到的执行的响应延迟是 ：{timeout} ms')
 time.sleep(1)
 
 robot.clear_set()
 robot.set_state(arm='A', state=0)
-logger.info(f'100ms 内测到的执行的相应延迟是 ：{timeout} ms')
+timeout=robot.send_cmd_wait_response(100)
+logger.info(f'100ms 内测到的执行的响应延迟是 ：{timeout} ms')
 time.sleep(1)
+
 
 
 robot.release_robot()
