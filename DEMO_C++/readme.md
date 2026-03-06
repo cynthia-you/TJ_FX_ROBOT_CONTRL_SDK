@@ -88,4 +88,6 @@
 
 ### 13. 在关节阻抗模式下,进去关节拖动,拖动并保存数据的控制案列
             showcase_drag_JointImpedance_save_data.cpp
-            
+
+### 14. 检查指令下发的延迟时间
+            showcase_cmd_delay.cpp
