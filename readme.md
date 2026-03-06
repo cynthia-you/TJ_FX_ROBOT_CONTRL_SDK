@@ -82,12 +82,12 @@
 
 ## 二、编译方法
 
-## 注：最新controlSDK 和 kinematicsSDK 代码兼容windows 和linux平台。
+## 注：最新contrlSDK 和 kinematicsSDK 代码兼容windows 和linux平台。
 
 ### 2.1 编译
     2.1.1 编译so动态库:
     linux设备编译:
-        控制SDK(controlSDK):  ./contrlSDK/makefile 生成libMarvinSDK.so
+        控制SDK(contrlSDK):  ./contrlSDK/makefile 生成libMarvinSDK.so
 		
         运动学SDK(kinematicsSDK): ./kinematicsSDK/makefile 生成libKine.so
 		
@@ -96,7 +96,7 @@
     2.1.2 编译c++调用的dll动态库:
     1)windows下使用MinGW编译dll动态库:
 			c++调用的DLL
-			控制SDK(controlSDK): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
+			控制SDK(contrlSDK): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
 			
             运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
 			
@@ -105,12 +105,12 @@
 			
 	2.1.3 编译python调用的dll动态库
     1)linux下编译dll动态库:
-        控制SDK(controlSDK):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
+        控制SDK(contrlSDK):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
 		
         运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll 
 
 	2）windows下使用MinGW编译dll动态库：
-			控制SDK（controlSDK）：g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+			控制SDK（contrlSDK）：g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
 
 			运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -w -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
 
