@@ -82,6 +82,8 @@
 
 ## 二、编译方法
 
+## 注：最新controlSDK 和 kinematicsSDK 代码兼容windows 和linux平台。
+
 ### 2.1 编译
     2.1.1 编译so动态库:
     linux设备编译:
