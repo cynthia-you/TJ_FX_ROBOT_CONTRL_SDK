@@ -108,6 +108,8 @@
         showcase_torque_EefCart_impedance_arm_A.py
 ### 22. 指定关节伺服软复位
         showcase_servo_reset.py
+### 23. 检查指令下发的延迟时间
+        showcase_check_cmd_delay.py
 
 ## 二. 计算showcases
 
