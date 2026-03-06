@@ -504,18 +504,19 @@ bool OnSendPVT_B(char* local_file, long serial);
     
 
 ### (10) 运动相关指令发送  可以以1000HZ频率进行发送
-
+//清空待发送数据缓冲区
 bool OnClearSet();
-    清空待发送数据缓冲区
-
     
+
+//发送指令
 bool OnSetSend();
+//发送指令给机器人 设置等待指令响应最大时间：time_out，返回为控制器接收到指令的延时时间
+long OnSetSendWaitResponse(long time_out);
 
     发送指令
-
-    以下指令必须在OnClearSet()和中间OnSetSend()设置生效：
+    以下指令必须在OnClearSet()和中间OnSetSend()/OnSetSendWaitResponse(long time_out)设置生效：
     ////×以下指令可以单条发送，也可以多条一起发送发×/////
-   // 注意 以下的API都要在 OnClearSet() 和 OnSetSend()之间使用 //
+   // 注意 以下的API都要在 OnClearSet() 和 OnSetSend()/OnSetSendWaitResponse(long time_out)之间使用 //
 
 	//清伺服错误,在使用OnLinkTo接口后,立即清错以防总线通讯异常导致
 	//清除左臂错误

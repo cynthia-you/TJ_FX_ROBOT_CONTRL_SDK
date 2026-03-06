@@ -1,6 +1,6 @@
 # 本项目为天机MARVIN系列机器人的开源仓库
 
-# 本文档包含:一、SDK简要说明，二、编译方法，三、SDK更新，四、控制器版本更新， 五、APP更新，六、使用注意，七、机器人报错及处理措施
+# 本文档包含:一、SDK简要说明，二、编译方法，三、SDK更新，四、控制器版本更新，五、APP更新，六、使用注意，七、机器人报错及处理措施
 
 # ATTENTION
      1.  请先熟练使用上位机软件（https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/tree/UI-MarvinPlatform） 或者https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases/ 下各个版本里的FxStation.exe， 操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
@@ -83,7 +83,7 @@
 ## 二、编译方法
 
 ### 2.1 编译
-    2.1.1编译so动态库:
+    2.1.1 编译so动态库:
     linux设备编译:
         控制SDK(controlSDK):  ./contrlSDK/makefile 生成libMarvinSDK.so
 		
@@ -91,10 +91,10 @@
 		
 	编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
 
-    2.1.2编译c++调用的dll动态库:
+    2.1.2 编译c++调用的dll动态库:
     1)windows下使用MinGW编译dll动态库:
 			c++调用的DLL
-			控制SDK(controlSDK_win): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm
+			控制SDK(controlSDK): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
 			
             运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
 			
@@ -103,13 +103,13 @@
 			
 	2.1.3 编译python调用的dll动态库
     1)linux下编译dll动态库:
-        控制SDK(controlSDK):  x86_64-w64-mingw32-g++ MarvinSDK.cpp Robot.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp ACB.cpp ShMem.cpp -Wall -O2 -shared -o libMarvinSDK.dll     -DBUILDING_DLL     -DCMPL_WIN     -static -static-libgcc -static-libstdc++     -lws2_32 -lpthread     -lwinmm
+        控制SDK(controlSDK):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
 		
         运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll 
 
 	2）windows下使用MinGW编译dll动态库：
-			控制SDK（controlSDK）：g++ MarvinSDK.cpp Robot.cpp ACB.cpp FXDG.cpp PointSet.cpp FileOP.cpp FilePortal.cpp Parser.cpp TCPAgent.cpp TCPFileClient.cpp ShMem.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
-			
+			控制SDK（controlSDK）：g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+
 			运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -w -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
 
 

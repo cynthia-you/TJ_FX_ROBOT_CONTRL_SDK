@@ -117,6 +117,9 @@
   发送指令
   - send_cmd()
 
+  发送指令，在设置的等待时间内获取指令响应的延时时间（毫秒）
+  - send_cmd_wait_response(time_wait)
+
   发送PVT路径到指定ID给指定手臂
   - send_pvt_file(arm: str, pvt_path: str, id: int)
 
