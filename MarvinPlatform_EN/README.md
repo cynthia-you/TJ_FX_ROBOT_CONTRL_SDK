@@ -15,7 +15,7 @@ The srs model uses srs.MvKDCfg. Multiple *.MvKDCfg files will cause parsing erro
 3.2. Ensure that the dynamic libraries SO: libMarvinSDK.so and libKine.so in ./contrlSDK and ./kinematicsSDK are recompiled in the current upper computer environment (recompiling is recommended). SDK source code address: [https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/master/](https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/tree/master)
 3.3. Replace the libMarvinSDK.so and libKine.so generated in 3.2 into ./MarvinPlatform_EN/python/
 4. Running the APP:
-4.1. Run ui.py from the source code
+4.1. Run ui_EN.py from the source code
 4.2. After generating an executable file, run it for easier distribution to other computers without a Python environment: python setup.py
 
 ## MARVIN APP User Manual
