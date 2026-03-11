@@ -2,7 +2,6 @@
 #define FX_CMPLOPT_H_
 
 // 让编译器命令行定义，例如 -DCMPL_WIN 或者 -DCMPL_LIN
-
 #ifdef CMPL_WIN
     #include <windows.h>
     #include <winsock2.h>

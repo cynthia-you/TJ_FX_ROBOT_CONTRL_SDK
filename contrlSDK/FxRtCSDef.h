@@ -3,6 +3,11 @@
 
 #include "FxType.h"
 
+
+#define MAX_ROWS 7
+#define MAX_COLS 50
+
+
 typedef enum
 {
 	ARM_STATE_IDLE = 0,             //////// 下伺服
@@ -40,9 +45,10 @@ typedef struct
 	FX_FLOAT    m_EST_Joint_Firc_Dot[7];	///* 关节力扰动估计值微分 */				70-76
 	FX_FLOAT    m_EST_Joint_Force[7];	///* 关节力扰动估计值 */						80-86
 	FX_FLOAT    m_EST_Cart_FN[6];		///* 末端扰动估计值 */							90-95
-	FX_CHAR     m_TipDI;
+	FX_CHAR     m_TipDI;				//末端按钮是否按下
 	FX_CHAR     m_LowSpdFlag;			//机器人停止运动标志， 可用于判断是否运动到位。
-	FX_CHAR     m_pad[2];
+	FX_CHAR     m_pad[1];
+	FX_CHAR		m_TrajState;			//规划状态： 0: no traj; 1: receving; 2: recevied; >=3: running traj
 }RT_OUT;
 
 typedef struct
@@ -134,6 +140,9 @@ typedef enum
     DCSS_CMD_ARM0_SET_FORCE_CMD = 109,
     DCSS_CMD_ARM0_SET_PVT_CMD = 110,
     DCSS_CMD_ARM0_SET_IMP_TYPE = 111,
+	DCSS_CMD_ARM0_INIT_TRAJ = 112, //【先初始化，int32总点数】
+    DCSS_CMD_ARM0_SET_TRAJ = 113, //【开始发, frame_id + float7*50/ 剩余】
+    DCSS_CMD_ARM0_RUN_TRAJ = 114,// 【运行信号】
 
     DCSS_CMD_CFG_OPERATION = 150,
 
@@ -148,6 +157,9 @@ typedef enum
     DCSS_CMD_ARM1_SET_FORCE_CMD = 209,
     DCSS_CMD_ARM1_SET_PVT_CMD = 210,
     DCSS_CMD_ARM1_SET_IMP_TYPE = 211,
+	DCSS_CMD_ARM1_INIT_TRAJ = 212,
+    DCSS_CMD_ARM1_SET_TRAJ = 213,
+    DCSS_CMD_ARM1_RUN_TRAJ = 214,
 
 }DCSSCmdType;
 

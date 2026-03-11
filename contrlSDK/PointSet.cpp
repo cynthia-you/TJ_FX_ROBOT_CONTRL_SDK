@@ -984,7 +984,6 @@ bool CPointSet::OnSaveCSV(char* path)
 		return false;
 	}
 	FILE* fp = fopen(path, "wb");
-	printf("path =%s\n",path);
 	if (fp == NULL)
 	{
 		return false;
@@ -1001,7 +1000,6 @@ bool CPointSet::OnSaveCSV(char* path)
 		for (long j = 0; j < m_PointType; j++)
 		{
 			fprintf(fp, "%lf,", tmp[j]);
-			printf("fp %lf,", tmp[j]);
 		}
 		fprintf(fp, "%c", r);
 	}

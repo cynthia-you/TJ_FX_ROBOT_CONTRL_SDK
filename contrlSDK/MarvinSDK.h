@@ -189,12 +189,18 @@ extern "C" {
 	//选择在右臂运行的PVT号并立即n运行轨迹
 	FX_DLL_EXPORT bool OnSetPVT_B(int id);
 
+
     // 注意 以上的API都要在 OnClearSet() 和 OnSetSend()之间使用 //
 	//发送指令给机器人
 	FX_DLL_EXPORT bool OnSetSend();
 	//发送指令给机器人 设置延时，测试延时
 	FX_DLL_EXPORT long OnSetSendWaitResponse(long time_out);
 	////////////////////////////////////////////////////////////////////////////////////////////////
+
+	//pln
+	FX_DLL_EXPORT bool OnInitPlnLmt(char * path);
+	FX_DLL_EXPORT bool OnSetPln_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	FX_DLL_EXPORT bool OnSetPln_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
 
     // 末端工具通讯用接口//
 	//清除左臂末端模块的缓存数据

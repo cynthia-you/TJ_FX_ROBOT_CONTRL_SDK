@@ -5,6 +5,7 @@
 #include  "ACB.h"
 #include "ShMem.h"
 #include "TCPFileClient.h"
+#include "CAxisSpPln.h"
 #ifdef CMPL_WIN
 #include <Windows.h>
 //#include <mmiscapi2.h>
@@ -57,6 +58,8 @@ public:
 	static bool OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4);
 	static bool OnRelease();
 
+	void ReadPendingData();
+
 	static bool OnClearSet();
 	
 
@@ -85,24 +88,42 @@ public:
 	static bool OnSetImpType_B(int type);
 	static bool OnSetPVT_B(int id);
 
+	static bool OnInitPlnLmt(char * path);
+	static bool OnSetPln_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	static bool OnSetPln_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+
+	static bool OnSetTrajInit_A(int pointNum);
+	static bool OnSetTrajInit_B(int pointNum);
+
+	static bool OnSetTrajSet_A(long serial,long pointNum, double* data);
+	static bool OnSetTrajSet_B(long serial,long pointNum, double* data);
+
+	static bool OnSetTrajRun_A();
+	static bool OnSetTrajRun_B();
 	static bool OnSetSend();
 	static long OnSetSendWaitResponse(long time_out);
-
 	static bool OnUpdateSystem(char* local_path);
 	static bool OnDownloadLog(char* local_path);
 
 
 	void DoRecv();
 	void DoSend();
-	void ReadPendingData();
+	void DoCnt();
 
     bool       m_LocalLogTag;
+
 protected:
 	CRobot();
 	static CRobot* GetIns();
 	unsigned char m_send_response_local_tag;
 	unsigned char m_send_response_recv_tag;
 	long       m_send_response_timeout_cnt;
+	long       m_last_response_timeout_cnt;
+	long       m_respones_time_cnt;
+	long       m_respones_time_tag;
+
+
+
 
 	long       m_ParaSerial;
 	long       m_GatherTag;
@@ -115,6 +136,8 @@ protected:
 	FX_INT32 old_serial;
 	FX_BOOL m_LinkTag;
 	FX_BOOL old_serial_tag;
+
+
 #ifdef CMPL_WIN
 	MMRESULT m_TimeEventID;
 #endif
@@ -140,7 +163,7 @@ protected:
 
 	char recvbuf[2000];
 
-	char m_SendBuf[1400];
+	char m_SendBuf[1500];
 	long m_Slen;
 	long m_SendTag;
 	FX_BOOL SendFile(char* local_file, char* remote_file);
@@ -158,6 +181,9 @@ protected:
 	char m_SendBuf2[600];
 	DDSS* pDDSS1;
 	DDSS* pDDSS2;
+
+	CAxisSpPln pln_A;
+	CAxisSpPln pln_B;
 
 	unsigned char * m_psm;
 	CGACB  m_ACB_ShMem;

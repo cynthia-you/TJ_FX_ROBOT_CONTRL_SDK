@@ -407,6 +407,22 @@ bool OnSetPVT_B(int id)
 	return CRobot::OnSetPVT_B(id);
 }
 
+bool OnInitPlnLmt(char * path)
+{
+	return CRobot::OnInitPlnLmt(path);
+}
+
+bool OnSetPln_A( double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio)
+{
+	return CRobot::OnSetPln_A(start_joints, stop_joints, vel_ratio, acc_ratio);
+}
+
+bool OnSetPln_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio)
+{
+	return CRobot::OnSetPln_B(start_joints, stop_joints,vel_ratio,acc_ratio);
+}
+
+
 bool OnSetSend()
 {
 	return CRobot::OnSetSend();
