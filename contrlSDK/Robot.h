@@ -7,8 +7,13 @@
 #include "TCPFileClient.h"
 #include "CAxisSpPln.h"
 #ifdef CMPL_WIN
-#include <Windows.h>
-//#include <mmiscapi2.h>
+    #include <Windows.h>
+#else
+    #include <sys/mman.h>
+    #include <sys/stat.h>
+    #include <fcntl.h>
+    #include <unistd.h>
+    #include <errno.h>
 #pragma comment(lib,"winmm.lib")
 #include <winsock.h>
 #include <stdio.h>
