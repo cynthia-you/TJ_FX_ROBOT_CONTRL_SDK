@@ -87,9 +87,13 @@
 ### 2.1 编译
     2.1.1 编译so动态库:
     linux设备编译:
-        控制SDK(contrlSDK):  ./contrlSDK/makefile 生成libMarvinSDK.so
+        控制SDK(contrlSDK)，以下方法均可编译: 
+			1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
+			2./contrlSDK/makefile 生成libMarvinSDK.so
 		
-        运动学SDK(kinematicsSDK): ./kinematicsSDK/makefile 生成libKine.so
+        运动学SDK(kinematicsSDK)，以下方法均可编译: 
+			1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
+			2./kinematicsSDK/makefile 生成libKine.so
 		
 	编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
 
