@@ -62,7 +62,8 @@ typedef struct
 	FX_FLOAT    m_EST_Cart_FN[6];		///* 末端扰动估计值 */							90-95
 	FX_CHAR     m_TipDI;
 	FX_CHAR     m_LowSpdFlag;			//机器人停止运动标志， 可用于判断是否运动到位。
-	FX_CHAR     m_pad[2];
+	FX_CHAR     m_pad[1];
+	FX_CHAR		m_TrajState;			//规划状态： 0: no traj; 1: receving; 2: recevied; >=3: running traj
 }RT_OUT;
 
 typedef struct
@@ -270,18 +271,29 @@ extern "C" {
 	 bool OnSetCartKD_A(double K[7], double D[7], int type);
 	 bool OnSetCartKD_B(double K[7], double D[7],int type);
 
-	//3.2 设置末端力控类型和笛卡尔方向的旋转
-	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
-	//设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
+	 //3 设置指定手臂的迪卡尔阻抗参数, 在扭矩模式迪卡尔阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(2) 下参数才有意义(以左臂为例)
+	 //3.1 设置笛卡尔阻抗的刚度和阻尼参数
+	 //设置左臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
+	 bool OnSetCartKD_A(double K[7], double D[7], int type);
+	 //设置右臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
+	 bool OnSetCartKD_B(double K[7], double D[7],int type);
+	 //3.2 设置末端力控类型和笛卡尔方向的旋转
+	 //设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	 bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
+	 //设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	 bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	 //4 如果使用力控模式,在扭矩模式力控模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(3) 以下两个指令连用
 	 //4.1 设置指定手臂的力控参数
+	 //设置左臂力控参数
 	 bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
+	 //设置右臂力控参数
 	 bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
 	 //4.2 设置指定手臂的力值
+	 //设置左臂力控目标
 	 bool OnSetForceCmd_A(double force);
+	 //设置右臂力控目标
 	 bool OnSetForceCmd_B(double force);
+
 
 	 //设置指定手臂的目标状态:0下使能 1位置 2PVT 3扭矩 4协作释放
 	 bool OnSetTargetState_A(int state);
@@ -309,6 +321,11 @@ extern "C" {
 	 //发送指令给机器人 设置等待时间，获取指令响应的延时（毫秒）
 	 long OnSetSendWaitResponse(long time_out);
 	 ////////////////////////////////////////////////////////////////////////////////////////////////
+
+	 //pln
+	 bool OnInitPlnLmt(char * path);
+	 bool OnSetPln_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	 bool OnSetPln_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
 
      // 末端工具通讯用接口//
      //1 清缓存数据
