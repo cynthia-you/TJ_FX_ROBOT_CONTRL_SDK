@@ -336,131 +336,126 @@ CRobot::CRobot()
 #ifdef CMPL_WIN
     char* shm_name = "AAA";  // Windows
 #else
-    char* shm_name = "/AAA";         // Linux POSIX
+    char* shm_name = "/var/tmp/AAA_shm";  // 在/var/tmp创建文件（重启后保留）
 #endif
 
     ShmOnInit(&m_ShMem);
 
-// 共享内存的创建和检查逻辑
+// Windows 下检查共享内存是否存在
 #ifdef CMPL_WIN
-    printf("Checking Windows shared memory: %s (using Local namespace)\n", shm_name);
-    // 先尝试以Master权限创建
-    HANDLE hMapFile = CreateFileMappingA(
-        INVALID_HANDLE_VALUE,
-        NULL,
-        PAGE_READWRITE,
-        0,
-        102400,
+    printf("Checking Windows shared memory: %s\n", shm_name);
+    HANDLE hMapFile = OpenFileMappingA(
+        FILE_MAP_ALL_ACCESS,
+        FALSE,
         shm_name
     );
     if (hMapFile != NULL)
     {
-        DWORD err = GetLastError();
-        if (err == ERROR_ALREADY_EXISTS)
-        {
-            printf("Shared memory %s already exists (opened existing)\n", shm_name);
-            CloseHandle(hMapFile);  // 关闭，让OnMapMster去连接
-        }
-        else
-        {
-            printf("Successfully created new shared memory %s\n", shm_name);
-            CloseHandle(hMapFile);  // 关闭，让OnMapMster去创建/连接
-        }
+        CloseHandle(hMapFile);
     }
     else
     {
         DWORD err = GetLastError();
-        printf("Failed to create/check shared memory, error: %lu\n", err);
+        if (err == ERROR_FILE_NOT_FOUND)
+        {
+            printf("Shared memory %s does not exist (error: %lu), will be created\n", shm_name, err);
+        }
+        else
+        {
+            printf("Error checking shared memory %s, error code: %lu\n", shm_name, err);
+        }
     }
+
 #else
-    // Linux 下检查共享内存是否存在
-    printf("Checking Linux POSIX shared memory: %s\n", shm_name);
-    int shm_fd = shm_open(shm_name, O_RDONLY, 0666);
-    if (shm_fd != -1)
+    // Linux下使用传统文件方式创建共享内存
+    printf("Checking Linux file-based shared memory: %s\n", shm_name);
+    FILE* fp = fopen(shm_name, "rb");
+    if (fp != NULL)
     {
-        close(shm_fd);
-        printf("Shared memory %s already exists\n", shm_name);
+        fclose(fp);
+        printf("Shared memory file %s already exists\n", shm_name);
+        struct stat st;
+        if (stat(shm_name, &st) == 0)
+        {
+            printf("  Size: %ld bytes\n", st.st_size);
+        }
     }
     else
     {
-        if (errno == ENOENT)
+        printf("Shared memory file %s does not exist, will be created\n", shm_name);
+        fp = fopen(shm_name, "wb");
+        if (fp != NULL)
         {
-            printf("Shared memory %s does not exist, will be created\n", shm_name);
+            fseek(fp, 102399, SEEK_SET);
+            fputc(0, fp);
+            fclose(fp);
+            chmod(shm_name, 0666);
+            printf("  Created shared memory file with size 102400 bytes\n");
+            struct stat st;
+            if (stat(shm_name, &st) == 0)
+            {
+                printf("  File permissions: %o\n", st.st_mode & 0777);
+            }
         }
         else
         {
-            printf("Error checking shared memory %s, errno: %d\n", shm_name, errno);
+            printf("  Failed to create shared memory file, errno: %d (%s)\n", errno, strerror(errno));
         }
     }
+    printf("  /var/tmp/ directory permissions:\n");
+    system("ls -ld /var/tmp/");
 #endif
 
-    // 尝试以Master模式映射共享内存
     int master_result = m_ShMem.OnMapMster(&m_ShMem, shm_name, 102400);
-    printf("OnMapMster returned: %d\n", master_result);
     m_psm = m_ShMem.OnGetMem(&m_ShMem);
+
     if(m_psm == NULL)
     {
         printf("Map Master Err - m_psm is NULL\n");
 
 #ifdef CMPL_WIN
-    DWORD err = GetLastError();
-    printf("  Windows Error Code: %lu\n", err);
-    if (err == 5)  // 拒绝访问
-    {
-        printf("  Access denied. This may be due to:\n");
-        printf("    1. Using 'Global\\' namespace without admin privileges\n");
-        printf("    2. Another process has the shared memory open with exclusive access\n");
-        printf("    3. Security descriptor issues\n");
-        printf("\n  Trying alternative approach...\n");
-        // 尝试先创建再映射
-        HANDLE hTemp = CreateFileMappingA(
-            INVALID_HANDLE_VALUE,
-            NULL,
-            PAGE_READWRITE,
-            0,
-            102400,
-            shm_name
-        );
-
-        if (hTemp != NULL)
+        DWORD err = GetLastError();
+#else
+        char cmd[256];
+        snprintf(cmd, sizeof(cmd), "ls -la %s 2>/dev/null || echo '  File not found'", shm_name);
+        system(cmd);
+        int fd = open(shm_name, O_RDWR);
+        if (fd != -1)
         {
-            DWORD createErr = GetLastError();
-            if (createErr == ERROR_ALREADY_EXISTS)
+            void* test_map = mmap(NULL, 102400, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+            if (test_map != MAP_FAILED)
             {
-                printf("  Shared memory already exists, trying to open...\n");
+                munmap(test_map, 102400);
             }
             else
             {
-                printf("  Successfully created shared memory\n");
+                printf("    Direct mmap failed, errno: %d (%s)\n", errno, strerror(errno));
             }
-            CloseHandle(hTemp);
+            close(fd);
         }
         else
         {
-            printf("  Still cannot create shared memory, error: %lu\n", GetLastError());
+            printf("    Failed to open file, errno: %d (%s)\n", errno, strerror(errno));
         }
-    }
 #endif
-    printf("Map Master Err try to Map Slave\n");
-    // Master失败，尝试以Slave模式映射
-    int slave_result = m_ShMem.OnMapSlave(&m_ShMem, shm_name);
-    printf("OnMapSlave returned: %d\n", slave_result);
-    m_psm = m_ShMem.OnGetMem(&m_ShMem);
-    if(m_psm == NULL)
-    {
-        printf("Map Slave Err - m_psm is NULL\n");
-    #ifdef CMPL_WIN
+
+        int slave_result = m_ShMem.OnMapSlave(&m_ShMem, shm_name);
+        m_psm = m_ShMem.OnGetMem(&m_ShMem);
+        if(m_psm == NULL)
+        {
+            printf("Map Slave Err - m_psm is NULL\n");
+
+#ifdef CMPL_WIN
             DWORD err = GetLastError();
             printf("  Windows Error Code: %lu\n", err);
-            if (err == 2)  // 文件不存在
-            {
-                printf("  Shared memory does not exist and cannot be created.\n");
-                printf("  This usually means the Master process needs to run first\n");
-                printf("  or the application needs administrator privileges.\n");
-            }
-    #else
+            printf("  Checking if Global\\ path requires admin privileges\n");
+#else
             printf("  errno: %d (%s)\n", errno, strerror(errno));
-    #endif
+            printf("  Checking file existence:\n");
+            char cmd[256];
+            snprintf(cmd, sizeof(cmd), "ls -la %s 2>/dev/null || echo '  File not found'", shm_name);
+            system(cmd);
+#endif
         }
         else
         {
@@ -471,17 +466,17 @@ CRobot::CRobot()
     {
         printf("Map Master success - m_psm = %p\n", m_psm);
     }
-
     if(m_psm != NULL)
     {
         m_ACB_ShMem.OnSetBuf(m_psm, 102400);
         m_ACB_ShMem.Empty();
-    }else
-    {
-        printf("Shared memory setup FAILED - m_psm is NULL\n");
     }
+    else
+    {
 
+    }
 }
+
 
 bool CRobot::OnRelease()
 {

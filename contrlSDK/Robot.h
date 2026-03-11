@@ -8,22 +8,20 @@
 #include "CAxisSpPln.h"
 #ifdef CMPL_WIN
     #include <Windows.h>
+    #pragma comment(lib,"winmm.lib")
+    #include <winsock.h>
+    #include <stdio.h>
+    #include <stdint.h>
+    #pragma comment(lib,"ws2_32.lib")
 #else
     #include <sys/mman.h>
     #include <sys/stat.h>
     #include <fcntl.h>
     #include <unistd.h>
     #include <errno.h>
-#pragma comment(lib,"winmm.lib")
-#include <winsock.h>
-#include <stdio.h>
-#include <stdint.h>
-#pragma comment(lib,"ws2_32.lib")
 #endif
 #include "PointSet.h"
 #define    SDK_VERSION   1003
-
-
 
 class  CRobot
 {
