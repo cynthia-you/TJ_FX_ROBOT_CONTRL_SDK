@@ -7,6 +7,27 @@
 #include <time.h>
 #include <math.h>
 
+#ifdef _WIN32
+    #include <windows.h>
+    #define SLEEP(ms) Sleep(ms)
+#else
+    #include <unistd.h>
+    #define SLEEP(ms) usleep((ms) * 1000)
+#endif
+
+bool checkJointsReached(double target_joints[7],
+                    double current_joints[7],
+                    double tolerance = 0.05)
+{
+    for (int i = 0; i < 7; i++) {
+        double error = std::abs(target_joints[i] - current_joints[i]);
+        if (error >= tolerance) {
+            return false;
+        }
+    }
+    return true;
+}
+
 int main()
 {
     ////'''#################################################################
@@ -84,7 +105,7 @@ int main()
     }
 
 
-    //设置速度加速度百分比
+     //设置速度加速度百分比
     long return_delay=0;
     long wait_respond_time=100;
     int vel=100;
@@ -93,7 +114,7 @@ int main()
     OnSetJointLmt_A(vel, acc);
     return_delay=OnSetSendWaitResponse(wait_respond_time);
     printf(" cmd delay in 100ms is:%d\n", return_delay);
-    sleep(1);
+    SLEEP(100);
 
 
     //设置position
@@ -102,11 +123,13 @@ int main()
     OnSetTargetState_A(1);
     return_delay1=OnSetSendWaitResponse(wait_respond_time);
     printf(" cmd delay in 100ms is:%d\n", return_delay1);
-    sleep(1);
+    SLEEP(100);
 
     if (OnInitPlnLmt((char*)"ccs_m6_40.MvKDCfg")!=true)
     {
         printf("load cfg failed!\n");
+    }else{
+        printf("load NPVA success!\n");
     }
 
     //走到初始零位
@@ -116,11 +139,16 @@ int main()
     return_delay1 = OnSetSendWaitResponse(wait_respond_time);
     printf(" cmd delay in 100ms is:%d\n", return_delay1);
 
-    // 等待运动完成
+
+    double fb_joints[7]={0.0};
     do {
         OnGetBuf(&dcss);
-    } while (dcss.m_Out[0].m_LowSpdFlag == 1);
-    sleep(2);
+        for (long joint = 0; joint < 7; joint++) {
+            fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
+        }
+        SLEEP(1);
+    } while (!checkJointsReached(initial_pos, fb_joints));
+
 
     //定义规划器的速度和加速度比例：范围0~1.
     double vel_ratio=0.2;
@@ -133,6 +161,7 @@ int main()
 
     for (j = 0; j < 5; j++)
     {
+        printf("---iter---:%ld\n",j);
         // 刷新直到轨迹状态为0
         do {
             OnGetBuf(&dcss);
@@ -161,14 +190,23 @@ int main()
         }
 
          // 等待轨迹规划完成
+         do {
+            OnGetBuf(&dcss);
+            for (long joint = 0; joint < 7; joint++) {
+                fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
+            }
+            SLEEP(1);
+        } while (!checkJointsReached(stop_joints, fb_joints));
+
+
+        // 刷新直到轨迹状态为0
         do {
             OnGetBuf(&dcss);
-        } while (dcss.m_Out[0].m_LowSpdFlag == 1);
-        sleep(1);
+        } while (dcss.m_Out[0].m_TrajState != 0);
 
 
         // 直接下发关节命令，有通讯抖动
-        stop_joints[3] += 20;
+         stop_joints[3] += 20;
         OnClearSet();
         OnSetJointCmdPos_A(stop_joints);
         return_delay1 = OnSetSendWaitResponse(wait_respond_time);
@@ -177,11 +215,14 @@ int main()
         // 等待运动完成
         do {
             OnGetBuf(&dcss);
-        } while (dcss.m_Out[0].m_LowSpdFlag == 1);
-        sleep(2);
+            for (long joint = 0; joint < 7; joint++) {
+                fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
+            }
+            SLEEP(1);
+        } while (!checkJointsReached(stop_joints, fb_joints));
     }
 
-    sleep(5);
+    SLEEP(30000);
     OnRelease();
     return 1;
 }
