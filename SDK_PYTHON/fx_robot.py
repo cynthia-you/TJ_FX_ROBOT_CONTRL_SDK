@@ -1015,6 +1015,63 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
+        def pln_init(self,config_path):
+        ''' 使用前，请一定确认机型，导入正确的配置文件。导入机械臂配置信息
+        :param config_path: 本地机械臂配置文件a.MvKDCfg, 可相对路径.
+        :return:
+            ture or false
+        '''
+        if not os.path.exists(config_path):
+            raise ValueError("no config file")
+        self.robot.OnInitPlnLmt.argtypes = [
+            c_char_p,  # FX_CHAR* path
+        ]
+        self.robot.OnInitPlnLmt.restype = c_bool
+        return self.robot.OnInitPlnLmt(config_path.encode('utf-8'))
+
+    def setPln_joint(self,arm:str,start_joints:list, target_joints:list, velRatio:float,accRatio:float):
+        '''位置模式下使用该接口传输目标关节点位，防止通信抖动
+        :param arm: 机械手臂ID “A” OR “B”
+        :param start_joints list(7, 1).起始点关节位置，单位角度
+        :param target_joints list(7, 1).目标关节位置，单位角度
+        :param velRatio float .规划插点的速度百分比， 范围0~1
+        :param accRatio float .规划插点的加速度百分比，范围0~1
+        :return:
+            ture or false
+        '''
+        try:
+            if arm not in ['A', 'B']:  # 正确的逻辑：使用not in
+                raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+            if len(start_joints) != 7:
+                raise ValueError("shape error: start joints must be (7,)")
+            if len(target_joints) != 7:
+                raise ValueError("shape error: target joints must be (7,)")
+            if type(velRatio)!=float:
+                raise ValueError("value error: velRatio must be float, range:0~1 ")
+            if type(accRatio)!=float:
+                raise ValueError("value error: accRatio must be float, range:0~1 ")
+            if velRatio>1 or velRatio<=0:
+                raise ValueError("value error: velRatio range:0~1 ")
+            if accRatio>1 or accRatio<=0:
+                raise ValueError("value error: accRatio range:0~1 ")
+
+            sj0,sj1,sj2,sj3,sj4,sj5,sj6 = start_joints
+            tj0,tj1,tj2,tj3,tj4,tj5,tj6 = target_joints
+            k_double = ctypes.c_double * 7
+            start_value = k_double(sj0,sj1,sj2,sj3,sj4,sj5,sj6 )
+            d_double = ctypes.c_double * 7
+            target_value = d_double(tj0,tj1,tj2,tj3,tj4,tj5,tj6)
+            vel = ctypes.c_double(velRatio)
+            acc = ctypes.c_double(accRatio)
+
+            if arm == "A":
+                return self.robot.OnSetPln_A(start_value, target_value, vel,acc)
+            if arm == "B":
+                return self.robot.OnSetPln_B(start_value, target_value, vel,acc)
+        except Exception as e:
+            print(f'ERROR:{e}')
+    
+
     def clear_485_cache(self,arm:str):
         '''清空发送缓存
 
