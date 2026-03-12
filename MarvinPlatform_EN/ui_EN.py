@@ -229,7 +229,7 @@ class App:
         self.create_status_bar()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         self.correct_password = "1"
-        self.connected = True
+        self.connected = False
         self.data_subscriber = None
         self.tools_cfg_path = 'tools_cfg.json'
         self.tools_cfg = None
@@ -6341,4 +6341,5 @@ if __name__ == "__main__":
         background="white"  # 标签背景色
     )
     app = App(root)
+
     root.mainloop()
