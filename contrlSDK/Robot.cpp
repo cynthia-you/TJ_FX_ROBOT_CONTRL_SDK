@@ -3179,6 +3179,7 @@ long CRobot::OnSetSendWaitResponse(long time_out)
 	if (m_InsRobot->m_respones_time_tag == 1)
 	{
 		m_InsRobot->m_respones_time_tag = 0;
+		if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: OnSetSendWaitResponse\n");
 		return m_InsRobot->m_respones_time_cnt;
 	}
 
