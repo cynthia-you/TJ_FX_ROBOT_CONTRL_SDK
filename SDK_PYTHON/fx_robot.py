@@ -1,12 +1,12 @@
+import csv
 import ctypes
 import inspect
-from textwrap import dedent
-from ctypes import *
-import re
-from typing import Union
 import os
+import re
 import time
-import csv
+from ctypes import *
+from textwrap import dedent
+from typing import Union
 
 current_file_path = os.path.abspath(__file__)
 current_path = os.path.dirname(current_file_path)
@@ -249,10 +249,13 @@ def structure2dict(dcss):
             }
         ]
     }
+
     # 3. 处理实时输出数组
     result["outputs"] = [
         {
             "frame_serial": rt_out.m_OutFrameSerial,
+            "pad": rt_out.m_pad,
+            "traj_state":rt_out.m_TrajState,
             "tip_di": rt_out.m_TipDI,
             "low_speed_flag": rt_out.m_LowSpdFlag,
             "fb_joint_pos": [round(rt_out.m_FB_Joint_Pos[j], 4) for j in range(7)],
@@ -512,7 +515,8 @@ class Marvin_Robot:
         '''发送指令等待回应
         :param timeout: 等待指令响应延时的时间， 单位：毫秒。 建议50-100毫秒
         :return: 延时时间
-            -1： 错误
+            0：超时
+            -1：错误
         '''
         timeout_long = ctypes.c_long(timeout)
         self.robot.OnSetSendWaitResponse.restype = ctypes.c_long
@@ -650,10 +654,11 @@ class Marvin_Robot:
         except Exception as e:
             print("ERROR:", e)
 
-    def get_servo_error_code(self, arm:str):
+    def get_servo_error_code(self, arm:str,lang='CN'):
        '''获取机械臂伺服错误码
        :param self:
        :param arm:
+       :param lang: 'CN' or 'EN'
        :return: (7,1)错误列表， 16进制
        '''
        try:
@@ -665,7 +670,7 @@ class Marvin_Robot:
                err_code = [0] * 7
                for i in range(7):
                    err_code[i] = decimal_to_hex(err_code_value[i], prefix=True)
-               err_code=get_fault_descriptions(err_code,fault_code_dict)
+               err_code=get_fault_descriptions(err_code,lang)
                return err_code
            elif arm=='B':
                self.robot.OnGetServoErr_B.argtypes = [ctypes.POINTER(ctypes.c_long * 7)]
@@ -673,7 +678,7 @@ class Marvin_Robot:
                err_code = [0] * 7
                for i in range(7):
                    err_code[i] = decimal_to_hex(err_code_value[i], prefix=True)
-               err_code = get_fault_descriptions(err_code, fault_code_dict)
+               err_code = get_fault_descriptions(err_code,lang)
                return err_code
 
        except Exception as e:
@@ -1015,7 +1020,7 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
-        def pln_init(self,config_path):
+    def pln_init(self,config_path):
         ''' 使用前，请一定确认机型，导入正确的配置文件。导入机械臂配置信息
         :param config_path: 本地机械臂配置文件a.MvKDCfg, 可相对路径.
         :return:
@@ -1027,6 +1032,7 @@ class Marvin_Robot:
             c_char_p,  # FX_CHAR* path
         ]
         self.robot.OnInitPlnLmt.restype = c_bool
+
         return self.robot.OnInitPlnLmt(config_path.encode('utf-8'))
 
     def setPln_joint(self,arm:str,start_joints:list, target_joints:list, velRatio:float,accRatio:float):
@@ -1070,11 +1076,9 @@ class Marvin_Robot:
                 return self.robot.OnSetPln_B(start_value, target_value, vel,acc)
         except Exception as e:
             print(f'ERROR:{e}')
-    
 
     def clear_485_cache(self,arm:str):
         '''清空发送缓存
-
         :param arm: 机械手臂ID “A” OR “B”
         :return: bool
         '''
@@ -1221,7 +1225,6 @@ class Marvin_Robot:
 
         if success1:
             print('Identify tool dynamics successful')
-
             # 提取结果
             dyn_para = []
             m_val = mm_ptr.contents.value
@@ -1239,7 +1242,6 @@ class Marvin_Robot:
         else:
             print('****error: Identify tool dynamics failed!')
             return False
-
 
     def get_tool_info(self,):
         '''检查控制器是否已经保存工具信息
@@ -1421,7 +1423,8 @@ class RT_OUT(Structure):
         ("m_EST_Cart_FN", c_float * 6),  # 末端笛卡尔空间力扰动估计值
         ("m_TipDI", c_char),  # 末端数字输入
         ("m_LowSpdFlag", c_char),  # 低速标志
-        # ("m_pad", c_char * 2)  # 填充字节
+        ("m_pad", c_char),  # 填充字节
+        ("m_TrajState", c_char) #规划状态： 0: no traj; 1: receving; 2: recevied; >=3: running traj
     ]
 
 
@@ -1459,7 +1462,24 @@ arm_err_code={
     '14':"配置文件选择了浮动基座选项，但是UMI设置在配置文件未开"
 }
 
-fault_code_dict = {
+arm_err_code_EN={
+'1':"Bus topology error",
+'2':"Servo failure",
+'3':"PVT error",
+'4':"Failed to request position advance",
+'5':"Failed to advance position",
+'6':"Failed to request torque advance",
+'7':"Failed to advance torque",
+'8':"Failed to request servo up",
+'9':"Failed to request servo up",
+'10':"Failed to request servo down",
+'11':"Failed to request servo down",
+'12':"Internal error",
+'13':"Emergency stop",
+'14':"Floating base option selected in configuration file, but UMI setting not enabled in configuration file"
+}
+
+fault_code_dict_CN = {
     "0x2280": "驱动器短路",
     "0x2310": "U相输出电流过大",
     "0x2311": "V相输出电流过大",
@@ -1576,7 +1596,127 @@ fault_code_dict = {
     "0xFF90": "第2速度跟随误差过大",
     "0xFF91": "驱动器内部异常2",
 }
-def get_fault_descriptions(fault_codes_list, fault_dict):
+
+
+fault_code_dict_EN = {
+    "0x2280": "Drive short circuit",
+    "0x2310": "U-phase output overcurrent",
+    "0x2311": "V-phase output overcurrent",
+    "0x2320": "Drive hardware overcurrent",
+    "0x2330": "Drive output short to ground",
+    "0x3130": "Main power input abnormal",
+    "0x3210": "DC bus overvoltage",
+    "0x3220": "DC bus undervoltage",
+    "0x4210": "Power module overtemperature",
+    "0x6010": "CPU1 watchdog timeout",
+    "0x6011": "CPU2 watchdog timeout",
+    "0x7112": "Dynamic braking resistor overload",
+    "0x8311": "Motor continuous overload",
+    "0x8611": "Position following error too large",
+    "0x8612": "Positive software limit",
+    "0x8613": "Negative software limit",
+    "0x8800": "Encoder data overflow",
+    "0x8801": "Reserved",
+    "0xFF00": "CPU1 operation abnormal",
+    "0xFF01": "CPU2 operation abnormal",
+    "0xFF02": "CPU1 memory abnormal",
+    "0xFF03": "CPU2 memory abnormal",
+    "0xFF04": "CPU memory conflict",
+    "0xFF05": "Magnetic pole positioning error",
+    "0xFF06": "Encoder data abnormal",
+    "0xFF07": "Encoder communication abnormal",
+    "0xFF08": "Encoder communication timeout",
+    "0xFF09": "Encoder internal error 1",
+    "0xFF10": "Other drive axis abnormal",
+    "0xFF11": "Motor brake disconnection",
+    "0xFF12": "Reserved",
+    "0xFF13": "Reserved",
+    "0xFF14": "Control encoder overspeed",
+    "0xFF15": "Drive continuous overload",
+    "0xFF16": "Reserved",
+    "0xFF17": "Drive output missing phase",
+    "0xFF18": "Motor stall",
+    "0xFF19": "Coprocessor communication abnormal",
+    "0xFF20": "Encoder AB signal change abnormal",
+    "0xFF21": "Current following error too large",
+    "0xFF22": "Position target value abnormal",
+    "0xFF23": "Encoder power-on position abnormal",
+    "0xFF24": "Position target value overflow",
+    "0xFF25": "Motor brake abnormal",
+    "0xFF26": "Control power undervoltage",
+    "0xFF27": "STO1 triggered",
+    "0xFF28": "STO2 triggered",
+    "0xFF29": "Positive hardware limit switch triggered",
+    "0xFF30": "Negative hardware limit switch triggered",
+    "0xFF31": "Motor overspeed",
+    "0xFF32": "Emergency stop input switch triggered",
+    "0xFF33": "Torque saturation detection fault",
+    "0xFF34": "Speed following error too large",
+    "0xFF35": "Drive overcurrent 2",
+    "0xFF36": "Homing failed",
+    "0xFF37": "EtherCAT process data error",
+    "0xFF38": "EtherCAT bus command illegal",
+    "0xFF39": "EtherCAT communication cycle error",
+    "0xFF40": "Position planning operation error",
+    "0xFF41": "EtherCAT illegal sync mode",
+    "0xFF42": "Position target value out of range",
+    "0xFF43": "Rectifier module overtemperature",
+    "0xFF44": "Heatsink overtemperature",
+    "0xFF45": "Motor U-phase continuous overload",
+    "0xFF46": "Motor V-phase continuous overload",
+    "0xFF48": "Reserved",
+    "0xFF49": "Drive internal error",
+    "0xFF50": "Limit switch abnormal",
+    "0xFF51": "EtherCAT bus communication abnormal",
+    "0xFF52": "Interface encoder resolution changed",
+    "0xFF53": "Encoder overtemperature",
+    "0xFF54": "Encoder battery undervoltage fault",
+    "0xFF55": "Reserved",
+    "0xFF56": "Reserved",
+    "0xFF57": "Control mode setting error",
+    "0xFF58": "Power-on position deviation too large",
+    "0xFF59": "Encoder acceleration abnormal fault",
+    "0xFF60": "Motor locked rotor",
+    "0xFF61": "Motor overtemperature",
+    "0xFF62": "Incremental encoder Z signal abnormal",
+    "0xFF63": "Write EPROM data abnormal",
+    "0xFF64": "Read EPROM data abnormal",
+    "0xFF65": "Control/power module mismatch",
+    "0xFF66": "Drag enable abnormal",
+    "0xFF67": "CPU overtemperature",
+    "0xFF68": "CPU1 overload",
+    "0xFF69": "CPU2 overload",
+    "0xFF70": "CPU1 handshake failure",
+    "0xFF71": "DriveMaster communication timeout",
+    "0xFF72": "Reserved",
+    "0xFF73": "Torque sensor abnormal",
+    "0xFF74": "Reserved",
+    "0xFF75": "ESC configuration EEPROM abnormal",
+    "0xFF76": "ESC internal access error",
+    "0xFF77": "Servo enable not ready",
+    "0xFF78": "CPU2 handshake failure",
+    "0xFF79": "CPU1 main task timeout",
+    "0xFF80": "Main power loss",
+    "0xFF81": "DC bus charging relay abnormal",
+    "0xFF82": "CPU internal error",
+    "0xFF83": "Actual position value overflow",
+    "0xFF84": "Reserved",
+    "0xFF85": "Encoder internal error 2",
+    "0xFF86": "Reserved",
+    "0xFF87": "Encoder internal error 3",
+    "0xFF88": "Reserved",
+    "0xFF89": "Reserved",
+    "0xFF8A": "STO1 circuit diagnosis abnormal",
+    "0xFF8B": "STO2 circuit diagnosis abnormal",
+    "0xFF8C": "Hall signal abnormal",
+    "0xFF8D": "Encoder Hall-AB signal missing phase abnormal",
+    "0xFF8E": "2nd position following error too large",
+    "0xFF8F": "STO wiring abnormal",
+    "0xFF90": "2nd speed following error too large",
+    "0xFF91": "Drive internal error 2",
+}
+
+def get_fault_descriptions(fault_codes_list,lang='CN'):
     """
     根据故障代码列表和故障字典，返回故障描述的字符串
     支持多个关节的错误信息显示
@@ -1587,39 +1727,35 @@ def get_fault_descriptions(fault_codes_list, fault_dict):
     Returns:
         包含所有关节故障描述的字符串
     """
+    fault_dict=fault_code_dict_CN
+    if lang=='EN':
+        fault_dict=fault_code_dict_EN
     if not fault_codes_list:
-        return "无故障信息"
+        return "None fault codes list"
     all_descriptions = []
     for joint_idx, code in enumerate(fault_codes_list, 1):
-        # 处理可能的格式差异
         code_str = str(code)
-        # 如果是整数，转换为十六进制字符串
         if isinstance(code, int):
             code_str = hex(code)
-        # 统一为小写字母以匹配字典键
         code_str_lower = code_str.lower()
-        # 检查是否为无错误代码
         if code_str in ["0x0000", "0000", "0", "0x0", "0X0", ""]:
             continue
-        # 查找故障名称
         fault_name = None
         if code_str in fault_dict:
             fault_name = fault_dict[code_str]
         elif code_str_lower in fault_dict:
             fault_name = fault_dict[code_str_lower]
         else:
-            # 如果未找到，使用默认描述
-            fault_name = f"未知故障({code_str})"
+            fault_name = f"unknown error({code_str})"
         if fault_name:
-            all_descriptions.append(f"关节{joint_idx}: {code_str} - {fault_name}")
+            all_descriptions.append(f"joint {joint_idx}: {code_str} - {fault_name}")
 
-    # 返回格式化的字符串
     if not all_descriptions:
         return "None"
     elif len(all_descriptions) == 1:
         return all_descriptions[0]
     else:
-        result = "各关节故障信息:\n"
+        result = "Fault information for each joint:\n"
         for i, desc in enumerate(all_descriptions, 1):
             result += f"{i}. {desc}\n"
         return result.strip()
