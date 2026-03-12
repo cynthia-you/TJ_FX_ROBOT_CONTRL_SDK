@@ -285,7 +285,7 @@ class App:
         # 密码设置
         self.correct_password = "1"
         # 初始未连接
-        self.connected = True
+        self.connected = False
         self.data_subscriber = None
         # 初始化工具参数变量
         self.tools_cfg_path = 'tools_cfg.json'
@@ -6736,4 +6736,5 @@ if __name__ == "__main__":
         background="white"  # 标签背景色
     )
     app = App(root)
+
     root.mainloop()
