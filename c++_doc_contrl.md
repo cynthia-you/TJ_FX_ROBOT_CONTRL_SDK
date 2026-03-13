@@ -210,7 +210,8 @@ bool OnGetBuf(DCSS * ret);
         FX_FLOAT    m_EST_Cart_FN[6];		///* 末端扰动估计值 */						90-95
         FX_CHAR     m_TipDI;                ///* 是否按住拖动按钮信号 */	
         FX_CHAR     m_LowSpdFlag;			///* 机器人停止运动标志， 可用于判断是否运动到位。 */	
-        FX_CHAR     m_pad[2];               ///* 填充，没有实义 */	
+        FX_CHAR     m_pad[1];               ///* 填充，没有实义 */
+	    FX_CHAR		m_TrajState;			//规划状态： 0: no traj; 1: receving; 2: recevied; >=3: running traj
     }RT_OUT; ///* 机器人反馈数据*/
     
     typedef struct
@@ -748,6 +749,27 @@ bool OnSetDragSpace_B(int dgType);
     3,       //笛卡尔空间Y方向拖动
     4,       //笛卡尔空间Z方向拖动
     5,       //笛卡尔空间旋转方向拖动
+
+
+###（30） 规划功能
+ //关节空间PLN方式发送指令
+ bool OnInitPlnLmt(char * path);
+ bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+ bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+    
+    path： 机器人配置参数文件*.MvKDCfg，请确认参数与使用机型是否对应
+    start_joints： 起点各关节位置/当前点关节位置， 单位：度
+    stop_joints： 目标点点关节位置， 单位：度
+    vel_ratio：规划器速度比例：范围0~1
+    acc_ratio：规划器加速度比例：范围0~1
+
+// 笛卡尔空间PLN方式发送指令
+ bool OnSetPlnCart_A(CPointSet* pset);
+ bool OnSetPlnCart_B(CPointSet* pset);
+    
+    CPointSet：使用计算库kinematicsSDK 的规划接口FX_Robot_PLN_MOVLA 得到的点集作为输入
+    
+
 
 
 

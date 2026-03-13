@@ -174,6 +174,11 @@
   更新SDK版本
   - update_SDK(sdk_path: str)
 
+  规划方式下发点位
+  - pln_init(config_path)
+  - setPln_joint(start_joints:list, target_joints:list, velRatio:float,accRatio:float)
+  - setPln_Cart(arm:str, pset: ctypes.c_void_p)
+
 
 ## 三、API用法
 ### 3.1 API接口说明

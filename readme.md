@@ -104,7 +104,7 @@
 			
             运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll    
 			
-            编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
+    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
 
 			
 	2.1.3 编译python调用的dll动态库
@@ -118,6 +118,7 @@
 
 			运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -w -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
 
+    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
 
         
 ### 2.2 使用
@@ -138,19 +139,33 @@
                  
 ## 三、 SDK更新
 ## 控制SDK
-### 3.1设置末端力控类型和笛卡尔方向的旋转
+### 3.1 以规划方式下发关节指令消除抖动：
+    //关节空间PLN方式发送指令
+    FX_DLL_EXPORT bool OnInitPlnLmt(char * path);
+	FX_DLL_EXPORT bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	FX_DLL_EXPORT bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+
+### 3.2 以规划方式下发指令实现走直线
+    // 笛卡尔空间PLN方式发送指令
+	FX_DLL_EXPORT void* FX_CPointSet_Create();
+	FX_DLL_EXPORT void FX_CPointSet_Destroy(void* pset);
+	FX_DLL_EXPORT bool OnSetPlnCart_A(void* pset);
+	FX_DLL_EXPORT bool OnSetPlnCart_B(void* pset);
+
+### 3.13设置末端力控类型和笛卡尔方向的旋转
 	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
 	FX_DLL_EXPORT bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
 	//设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
 	FX_DLL_EXPORT bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
-### 3.2指定关节伺服软复位
+
+### 3.4指定关节伺服软复位
 	// 左臂指定关节伺服软复位
 	FX_DLL_EXPORT void OnServoReset_A(int axis);
 	// 右臂指定关节伺服软复位
 	FX_DLL_EXPORT void OnServoReset_B(int axis);
 
 ## 运动计算SDK
-### 3.3 更新在线规划功能
+### 3.5 更新在线规划功能
 
      C++接口：
           FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, CPointSet* ret_pset);
