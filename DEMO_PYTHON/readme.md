@@ -110,6 +110,10 @@
         showcase_servo_reset.py
 ### 23. 检查指令下发的延迟时间
         showcase_check_cmd_delay.py
+### 24. 关节空间以规划方式下发指令，消除抖动
+        showcase_pln_joint_positionMode.py
+### 25. 笛卡尔空间以规划方式下发指令，实现直线约束
+        showcase_pln_cart_positionMode.py
 
 ## 二. 计算showcases
 
@@ -136,3 +140,6 @@
             
 ### 8.在线直线规划，约束构型并以笛卡尔阻抗模式以50HZ频率执行点位
             showcase_online_pln_movl_keepj.py
+
+### 9.在线直线规划，约束构型并以笛卡尔阻抗模式以50HZ频率执行点位，定于旋转
+            showcase_online_pln_movl_with_specific_rot.py
