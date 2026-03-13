@@ -125,7 +125,8 @@ bool CAxisPln::OnPln(double start_pos, double end_pos, double vel, double acc, d
 		double* pre = ret->OnGetPoint(i - 1);
 		double* cur = ret->OnGetPoint(i);
 		double* nex = ret->OnGetPoint(i + 1);
-		cur[1] = (nex[0] - pre[0]) * 250.0; 
+		cur[1] = (nex[0] - pre[0]) * 50.0;
+		//cur[1] = (nex[0] - pre[0]) * 250.0;
 	}
 	
 	return true;
@@ -467,7 +468,7 @@ bool CAxisPln::InitPln(double s, double v, double a, double j)
 long CAxisPln::OnGetPlnNum()
 {
 	double t = m_time_acc + m_time_dacc + m_time_vel;
-	double t_num = t / 0.002;
+	double t_num = t / 0.02; //50Hz
 	long ret = t_num + 2;
 	return ret;
 }
@@ -479,7 +480,7 @@ double CAxisPln::OnGetPln(double* ret_v)
 	{
 		double s = 0.5 * m_a * m_cur_time * m_cur_time;
 		*ret_v = m_cur_time * m_a; 
-		m_cur_time += 0.002;
+		m_cur_time += 0.02;
 		return s;
 	}
 	if (m_cur_time <= (m_time_acc + m_time_vel))
@@ -488,7 +489,7 @@ double CAxisPln::OnGetPln(double* ret_v)
 		double s2 = m_v * (m_cur_time - m_time_acc);
 		double s = s1 + s2;
 		*ret_v = m_v;
-		m_cur_time += 0.002;
+		m_cur_time += 0.02;
 		return s;
 	}
 
@@ -503,7 +504,7 @@ double CAxisPln::OnGetPln(double* ret_v)
 
 		*ret_v = v_t;
 
-		m_cur_time += 0.002;
+		m_cur_time += 0.02;
 		return s;
 	}
 
@@ -1089,11 +1090,13 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 	////////////////////InvKine//////////////
 	FX_InvKineSolvePara sp;
 
-	sp.m_Input_IK_ZSPType = 0;
+	sp.m_Input_IK_ZSPType = 1;
 	for (i = 0; i < 6; i++)
 	{
 		sp.m_Input_IK_ZSPPara[i] = 0;
 	}
+
+	sp.m_Input_IK_ZSPPara[2] = -1;
 	for (i = 0; i < 7; i++)
 	{
 		sp.m_Input_IK_RefJoint[i] = ref_joints[i];
