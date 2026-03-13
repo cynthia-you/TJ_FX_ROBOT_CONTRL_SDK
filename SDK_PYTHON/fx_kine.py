@@ -858,8 +858,8 @@ class Marvin_Kine:
 
     def movLA(self, start_xyzabc: List[float], end_xyzabc: List[float],
               ref_joints: List[float], vel: float, acc: float,
-              dimension: int = 7) -> List[List[float]]:
-
+              dimension: int = 7) -> tuple[List[List[float]], ctypes.c_void_p]:
+   
         '''直线规划，执行MOVLA规划并返回点集数据(频率500Hz)
         :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
         :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
@@ -867,23 +867,17 @@ class Marvin_Kine:
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
         :return: 规划得到的点集列表
-        特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+          特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
                 2 输出规划文件的频率为500Hz
                 3 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
         '''
         Serial = ctypes.c_long(self.robot_tag)
-
-        # 创建起点数组
         if len(start_xyzabc) != 6:
             raise ValueError("start_xyzabc must have 6 elements")
         start_array = (ctypes.c_double * 6)(*start_xyzabc)
-
-        # 创建终点数组
         if len(end_xyzabc) != 6:
             raise ValueError("end_xyzabc must have 6 elements")
         end_array = (ctypes.c_double * 6)(*end_xyzabc)
-
-        # 创建关节角数组
         if len(ref_joints) != 7:
             raise ValueError("ref_joints must have 7 elements")
         joints_array = (ctypes.c_double * 7)(*ref_joints)
@@ -891,13 +885,10 @@ class Marvin_Kine:
         vel_value = ctypes.c_double(vel)
         acc_value = ctypes.c_double(acc)
 
-        # 创建CPointSet对象
         pset = self.create_point_set(dimension)
         if not pset:
             raise RuntimeError("Failed to create CPointSet object")
-
         try:
-            # 调用规划函数
             success = self.kine.FX_Robot_PLN_MOVLA_C(
                 Serial,
                 ctypes.cast(start_array, ctypes.POINTER(ctypes.c_double)),
@@ -907,18 +898,16 @@ class Marvin_Kine:
                 acc_value,
                 pset
             )
-
-            if success:
-                # 获取点集数据
-                data = self.get_point_set_data(pset, dimension)
-                print(f'Plan MOVLA successful, got {len(data)} points')
-                return data
-            else:
-                print('Plan MOVLA failed!')
-                return []
-        finally:
-            # 确保清理资源
+            if not success:
+                self.destroy_point_set(pset)
+                return [], None
+            data = self.get_point_set_data(pset, dimension)
+            print(f'Plan MOVLA successful, got {len(data)} points')
+            return data, pset
+        except Exception as e:
             self.destroy_point_set(pset)
+            raise e
+
 
     def movL_KeepJ(self,start_joints:list, end_joints:list,vel:float,acc:float,save_path):
         '''直线规划保持关节构型, 规划文件的点位频率50Hz，即每20ms执行一行

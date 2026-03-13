@@ -1032,7 +1032,6 @@ class Marvin_Robot:
             c_char_p,  # FX_CHAR* path
         ]
         self.robot.OnInitPlnLmt.restype = c_bool
-
         return self.robot.OnInitPlnLmt(config_path.encode('utf-8'))
 
     def setPln_joint(self,arm:str,start_joints:list, target_joints:list, velRatio:float,accRatio:float):
@@ -1046,7 +1045,7 @@ class Marvin_Robot:
             ture or false
         '''
         try:
-            if arm not in ['A', 'B']:  # 正确的逻辑：使用not in
+            if arm not in ['A', 'B']:
                 raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
             if len(start_joints) != 7:
                 raise ValueError("shape error: start joints must be (7,)")
@@ -1071,11 +1070,30 @@ class Marvin_Robot:
             acc = ctypes.c_double(accRatio)
 
             if arm == "A":
-                return self.robot.OnSetPln_A(start_value, target_value, vel,acc)
+                return self.robot.OnSetPlnJoint_A(start_value, target_value, vel,acc)
             if arm == "B":
-                return self.robot.OnSetPln_B(start_value, target_value, vel,acc)
+                return self.robot.OnSetPlnJoint_B(start_value, target_value, vel,acc)
         except Exception as e:
             print(f'ERROR:{e}')
+
+    def setPln_Cart(self,arm:str, pset: ctypes.c_void_p) -> bool:
+        """
+        对已规划的 pset 执行 OnSetPlnCart_A 操作
+        """
+        if arm not in ['A', 'B']:
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        success=False
+        if arm=='A':
+            self.robot.OnSetPlnCart_A.argtypes = [ctypes.c_void_p]
+            self.robot.OnSetPlnCart_A.restype = ctypes.c_bool
+            success = self.robot.OnSetPlnCart_A(pset)
+        elif arm=='B':
+            self.robot.OnSetPlnCart_B.argtypes = [ctypes.c_void_p]
+            self.robot.OnSetPlnCart_B.restype = ctypes.c_bool
+            success = self.robot.OnSetPlnCart_B(pset)
+        if not success:
+            raise RuntimeError("setPln_Cart failed")
+        return success
 
     def clear_485_cache(self,arm:str):
         '''清空发送缓存
