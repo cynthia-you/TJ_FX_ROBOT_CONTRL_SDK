@@ -152,7 +152,7 @@
 	FX_DLL_EXPORT bool OnSetPlnCart_A(void* pset);
 	FX_DLL_EXPORT bool OnSetPlnCart_B(void* pset);
 
-### 3.13设置末端力控类型和笛卡尔方向的旋转
+### 3.3设置末端力控类型和笛卡尔方向的旋转
 	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
 	FX_DLL_EXPORT bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
 	//设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
