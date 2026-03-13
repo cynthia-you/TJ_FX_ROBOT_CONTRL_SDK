@@ -412,16 +412,25 @@ bool OnInitPlnLmt(char * path)
 	return CRobot::OnInitPlnLmt(path);
 }
 
-bool OnSetPln_A( double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio)
+bool OnSetPlnJoint_A( double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio)
 {
-	return CRobot::OnSetPln_A(start_joints, stop_joints, vel_ratio, acc_ratio);
+	return CRobot::OnSetPlnJoint_A(start_joints, stop_joints, vel_ratio, acc_ratio);
 }
 
-bool OnSetPln_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio)
+bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio)
 {
-	return CRobot::OnSetPln_B(start_joints, stop_joints,vel_ratio,acc_ratio);
+	return CRobot::OnSetPlnJoint_B(start_joints, stop_joints,vel_ratio,acc_ratio);
 }
 
+bool OnSetPlnCart_A(void* pset)
+{
+	return CRobot::OnSetPlnCart_A(static_cast<CPointSet*>(pset));
+}
+
+bool OnSetPlnCart_B(void* pset)
+{
+	return CRobot::OnSetPlnCart_B(static_cast<CPointSet*>(pset));
+}
 
 bool OnSetSend()
 {
@@ -460,4 +469,15 @@ bool OnClearChDataA()
 bool OnClearChDataB()
 {
 	return CRobot::OnClearChDataB();
+}
+
+
+void* FX_CPointSet_Create() {
+	return new CPointSet();
+}
+
+void FX_CPointSet_Destroy(void* pset) {
+	if (pset) {
+		delete static_cast<CPointSet*>(pset);
+	}
 }

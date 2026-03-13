@@ -2003,7 +2003,201 @@ bool CRobot::OnInitPlnLmt(char * path)
 	return true;
 }
 
-bool CRobot::OnSetPln_A(double start_joints[7], double stop_joints[7], double vel_ratio,double acc_ratio)
+bool CRobot::OnSetPlnCart_A(CPointSet* pset)
+{
+	DCSS t;
+
+	long num = pset->OnGetPointNum();
+	if(num <=5)
+	{
+		return false;
+	}
+
+	CRobot::OnClearSet();
+	CRobot::OnSetTrajInit_A(num);
+	if( CRobot::OnSetSendWaitResponse(100)<0)
+	{
+		return false;
+	}
+
+	if (CRobot::OnGetBuf(&t) == true)
+	{
+		if (t.m_Out[0].m_TrajState !=1)
+		{
+			return false;
+		}
+	}
+
+	long send_g_num = num / 50;
+	long relic_num = num % 50;
+	long ii,jj,kk;
+
+	double SendData[350];
+	double * retp;
+	long spos;
+	long ipos = 0;
+	for ( ii = 0; ii < send_g_num; ii++)
+	{
+		spos = 0;
+		for ( jj = 0; jj< 50; jj++)
+		{
+			retp = pset->OnGetPoint(ipos);
+			ipos++;
+			for(kk = 0; kk < 7; kk ++)
+			{
+				SendData[spos] = retp[kk];
+				spos ++;
+			}
+		}
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_A(ii,50,SendData);
+		if( CRobot::OnSetSendWaitResponse(100)<0)
+		{
+			return false;
+		}
+
+	}
+	
+
+	if(relic_num != 0)
+	{
+		spos = 0;
+		for ( jj = 0; jj< relic_num; jj++)
+		{
+			retp = pset->OnGetPoint(ipos);
+			ipos++;
+			for(kk = 0; kk < 7; kk ++)
+			{
+				SendData[spos] = retp[kk];
+				spos ++;
+			}
+		}
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_A(send_g_num,relic_num,SendData);
+		if( CRobot::OnSetSendWaitResponse(200)<0)
+		{
+			return false;
+		}
+	}
+
+	if (CRobot::OnGetBuf(&t) == true)
+	{
+		if (t.m_Out[0].m_TrajState !=2)
+		{
+			return false;
+		}
+	}
+
+
+	CRobot::OnClearSet();
+	CRobot::OnSetTrajRun_A();
+	if( CRobot::OnSetSendWaitResponse(50)<0)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+
+
+bool CRobot::OnSetPlnCart_B(CPointSet* pset)
+{
+	DCSS t;
+
+	long num = pset->OnGetPointNum();
+	if(num <=5)
+	{
+		return false;
+	}
+
+	CRobot::OnClearSet();
+	CRobot::OnSetTrajInit_B(num);
+	if( CRobot::OnSetSendWaitResponse(100)<0)
+	{
+		return false;
+	}
+
+	if (CRobot::OnGetBuf(&t) == true)
+	{
+		if (t.m_Out[1].m_TrajState !=1)
+		{
+			return false;
+		}
+	}
+
+	long send_g_num = num / 50;
+	long relic_num = num % 50;
+	long ii,jj,kk;
+
+	double SendData[350];
+	double * retp;
+	long spos;
+	long ipos = 0;
+	for ( ii = 0; ii < send_g_num; ii++)
+	{
+		spos = 0;
+		for ( jj = 0; jj< 50; jj++)
+		{
+			retp = pset->OnGetPoint(ipos);
+			ipos++;
+			for(kk = 0; kk < 7; kk ++)
+			{
+				SendData[spos] = retp[kk];
+				spos ++;
+			}
+		}
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_B(ii,50,SendData);
+		if( CRobot::OnSetSendWaitResponse(100)<0)
+		{
+			return false;
+		}
+
+	}
+	
+
+	if(relic_num != 0)
+	{
+		spos = 0;
+		for ( jj = 0; jj< relic_num; jj++)
+		{
+			retp = pset->OnGetPoint(ipos);
+			ipos++;
+			for(kk = 0; kk < 7; kk ++)
+			{
+				SendData[spos] = retp[kk];
+				spos ++;
+			}
+		}
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_B(send_g_num,relic_num,SendData);
+		if( CRobot::OnSetSendWaitResponse(200)<0)
+		{
+			return false;
+		}
+	}
+
+	if (CRobot::OnGetBuf(&t) == true)
+	{
+		if (t.m_Out[1].m_TrajState !=2)
+		{
+			return false;
+		}
+	}
+
+
+	CRobot::OnClearSet();
+	CRobot::OnSetTrajRun_B();
+	if( CRobot::OnSetSendWaitResponse(50)<0)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool CRobot::OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], double vel_ratio,double acc_ratio)
 {
 	DCSS t;
 
@@ -2900,7 +3094,7 @@ bool CRobot::OnSetImpType_B(int type)
 	return true;
 }
 
-bool CRobot::OnSetPln_B(double start_joints[7], double stop_joints[7], double vel_ratio,double acc_ratio)
+bool CRobot::OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_ratio,double acc_ratio)
 {
 	DCSS t;
 

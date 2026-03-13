@@ -1,6 +1,7 @@
 #ifndef FX_SDKIF_H_ 
 #define FX_SDKIF_H_
 #include "Robot.h"
+#include "PointSet.h"
 
 #ifdef CMPL_WIN
 #define FX_DLL_EXPORT __declspec(dllexport) 
@@ -197,10 +198,17 @@ extern "C" {
 	FX_DLL_EXPORT long OnSetSendWaitResponse(long time_out);
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
-	//pln
+	//pln 
+	//关节空间PLN方式发送指令
 	FX_DLL_EXPORT bool OnInitPlnLmt(char * path);
-	FX_DLL_EXPORT bool OnSetPln_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
-	FX_DLL_EXPORT bool OnSetPln_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	FX_DLL_EXPORT bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	FX_DLL_EXPORT bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+
+	// 笛卡尔空间PLN方式发送指令
+	FX_DLL_EXPORT void* FX_CPointSet_Create();
+	FX_DLL_EXPORT void FX_CPointSet_Destroy(void* pset);
+	FX_DLL_EXPORT bool OnSetPlnCart_A(void* pset);
+	FX_DLL_EXPORT bool OnSetPlnCart_B(void* pset);
 
     // 末端工具通讯用接口//
 	//清除左臂末端模块的缓存数据

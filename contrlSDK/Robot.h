@@ -92,8 +92,11 @@ public:
 	static bool OnSetPVT_B(int id);
 
 	static bool OnInitPlnLmt(char * path);
-	static bool OnSetPln_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
-	static bool OnSetPln_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	static bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	static bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+
+	static bool OnSetPlnCart_A(CPointSet* pset);
+	static bool OnSetPlnCart_B(CPointSet* pset);
 
 	static bool OnSetTrajInit_A(int pointNum);
 	static bool OnSetTrajInit_B(int pointNum);
@@ -103,6 +106,7 @@ public:
 
 	static bool OnSetTrajRun_A();
 	static bool OnSetTrajRun_B();
+	
 	static bool OnSetSend();
 	static long OnSetSendWaitResponse(long time_out);
 	static bool OnUpdateSystem(char* local_path);
