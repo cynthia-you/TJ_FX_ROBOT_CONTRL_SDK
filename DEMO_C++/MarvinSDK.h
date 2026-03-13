@@ -1,6 +1,8 @@
 #ifndef FX_MARVINSDK_H_ 
 #define FX_MARVINSDK_H_
 
+#include "PointSet.h"
+
 #define FX_VOID  	void
 #define FX_BOOL  	unsigned char
 #define FX_TRUE  	1
@@ -155,6 +157,9 @@ typedef enum
     DCSS_CMD_ARM0_SET_FORCE_CMD = 109,
     DCSS_CMD_ARM0_SET_PVT_CMD = 110,
     DCSS_CMD_ARM0_SET_IMP_TYPE = 111,
+	DCSS_CMD_ARM0_INIT_TRAJ = 112,
+    DCSS_CMD_ARM0_SET_TRAJ = 113,
+    DCSS_CMD_ARM0_RUN_TRAJ = 114,
 
     DCSS_CMD_CFG_OPERATION = 150,
 
@@ -169,6 +174,9 @@ typedef enum
     DCSS_CMD_ARM1_SET_FORCE_CMD = 209,
     DCSS_CMD_ARM1_SET_PVT_CMD = 210,
     DCSS_CMD_ARM1_SET_IMP_TYPE = 211,
+	DCSS_CMD_ARM1_INIT_TRAJ = 212,
+    DCSS_CMD_ARM1_SET_TRAJ = 213,
+    DCSS_CMD_ARM1_RUN_TRAJ = 214,
 
 }DCSSCmdType;
 
@@ -323,9 +331,13 @@ extern "C" {
 	 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 	 //pln
+	 //关节空间PLN方式发送指令
 	 bool OnInitPlnLmt(char * path);
-	 bool OnSetPln_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
-	 bool OnSetPln_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	 bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	 bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+    // 笛卡尔空间PLN方式发送指令
+	 bool OnSetPlnCart_A(CPointSet* pset);
+	 bool OnSetPlnCart_B(CPointSet* pset);
 
      // 末端工具通讯用接口//
      //1 清缓存数据
