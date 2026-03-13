@@ -91,3 +91,9 @@
 
 ### 14. 检查指令下发的延迟时间
             showcase_cmd_delay.cpp
+
+### 15. 关节空间以规划方式下发指令，消除抖动
+            showcase_pln_jointSpace_PositionMode.cpp
+
+### 16. 笛卡尔空间以规划方式下发指令，实现直线约束
+            showcase_pln_cartSpace_PositionMode.cpp
