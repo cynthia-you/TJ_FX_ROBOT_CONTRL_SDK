@@ -162,20 +162,24 @@
 	FX_DLL_EXPORT bool OnSetPlnCart_A(void* pset);
 	FX_DLL_EXPORT bool OnSetPlnCart_B(void* pset);
 
-### 3.3设置末端力控类型和笛卡尔方向的旋转
+### 3.3 规划中断运行
+	FX_DLL_EXPORT bool OnStopPlnJoint_A();
+	FX_DLL_EXPORT bool OnStopPlnJoint_B();
+
+### 3.4 设置末端力控类型和笛卡尔方向的旋转
 	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
 	FX_DLL_EXPORT bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
 	//设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
 	FX_DLL_EXPORT bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
-### 3.4指定关节伺服软复位
+### 3.5 指定关节伺服软复位
 	// 左臂指定关节伺服软复位
 	FX_DLL_EXPORT void OnServoReset_A(int axis);
 	// 右臂指定关节伺服软复位
 	FX_DLL_EXPORT void OnServoReset_B(int axis);
 
 ## 运动计算SDK
-### 3.5 更新在线规划功能
+### 3.6 更新在线规划功能
 
      C++接口：
           FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, CPointSet* ret_pset);
