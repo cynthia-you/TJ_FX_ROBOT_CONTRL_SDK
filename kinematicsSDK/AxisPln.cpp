@@ -1096,7 +1096,6 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 		sp.m_Input_IK_ZSPPara[i] = 0;
 	}
 
-	sp.m_Input_IK_ZSPPara[2] = -1;
 	for (i = 0; i < 7; i++)
 	{
 		sp.m_Input_IK_RefJoint[i] = ref_joints[i];
