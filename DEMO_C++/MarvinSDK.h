@@ -285,15 +285,12 @@ extern "C" {
 	 bool OnSetCartKD_A(double K[7], double D[7], int type);
 	 //设置右臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
 	 bool OnSetCartKD_B(double K[7], double D[7],int type);
-	 //3.2 自定义设置末端笛卡尔方向的旋转
+	 //3.2 设置末端笛卡尔方向的旋转
 	 //自定义设置左臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	 bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
-	 //自定义设置右臂臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	 bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
-	 //3.3 实时末端笛卡尔方向的旋转
 	 //设置左臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
 	 bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
-	 //设置右臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
+	 //自定义设置右臂臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+     //设置右臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
 	 bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	 //4 如果使用力控模式,在扭矩模式力控模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(3) 以下两个指令连用
 	 //4.1 设置指定手臂的力控参数
