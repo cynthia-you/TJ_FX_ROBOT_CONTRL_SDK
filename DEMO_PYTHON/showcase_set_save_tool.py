@@ -38,14 +38,14 @@ robot=Marvin_Robot()
 
 '''初始化运动计算接口'''
 kk1 = Marvin_Kine()
-ini_result1 = kk1.load_config(arm_type=0, config_path='ccs_m6.MvKDCfg')
+ini_result1 = kk1.load_config(arm_type=0, config_path='ccs_m6_40.MvKDCfg')
 initial_kine_tag1 = kk1.initial_kine(robot_type=ini_result1['TYPE'][0],
                                      dh=ini_result1['DH'][0],
                                      pnva=ini_result1['PNVA'][0],
                                      j67=ini_result1['BD'][0])
 
 kk2 = Marvin_Kine()
-ini_result2 = kk2.load_config(arm_type=1, config_path='ccs_m6.MvKDCfg')
+ini_result2 = kk2.load_config(arm_type=1, config_path='ccs_m6_40.MvKDCfg')
 initial_kine_tag2 = kk2.initial_kine(robot_type=ini_result2['TYPE'][0],
                                          dh=ini_result2['DH'][0],
                                          pnva=ini_result2['PNVA'][0],

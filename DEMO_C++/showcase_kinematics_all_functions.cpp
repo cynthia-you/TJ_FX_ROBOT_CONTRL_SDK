@@ -48,7 +48,7 @@ void RobotKineDemo()
     // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
     // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg； 
     // srs机型为srs.MvKDCfg.
-    if (LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
+    if (LOADMvCfg((char*)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
     {
         printf("Robot Load CFG Success\n");
     }

@@ -42,7 +42,7 @@ void RobotPLNDemo()
     FX_DOUBLE Mass[2][7];
     FX_DOUBLE MCP[2][7][3];
     FX_DOUBLE I[2][7][6];
-    if (LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
+    if (LOADMvCfg((char*)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
     {
         printf("Robot Load CFG Success\n");
     }

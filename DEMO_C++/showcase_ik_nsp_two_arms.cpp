@@ -42,7 +42,7 @@ void ikNspTwoArmsDemo()
 
 
     ////////////////////////加载计算参数
-    if (LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
+    if (LOADMvCfg((char*)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
     {
         printf("oad CFG Success\n");
     }

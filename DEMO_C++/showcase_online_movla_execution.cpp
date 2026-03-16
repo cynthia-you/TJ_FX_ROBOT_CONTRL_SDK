@@ -155,7 +155,7 @@ int main()
     FX_DOUBLE Mass[2][7];
     FX_DOUBLE MCP[2][7][3];
     FX_DOUBLE I[2][7][6];
-    if (LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_FALSE)
+    if (LOADMvCfg((char*)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_FALSE)
     {
         printf("Load CFG Error\n");
         return -1;
