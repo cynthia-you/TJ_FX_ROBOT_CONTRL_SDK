@@ -5,6 +5,8 @@
 #include "unistd.h"
 #include <iostream>
 #include <cstdlib>
+#include <cassert>
+#include <math.h> 
 
 static CRobot* m_InsRobot = NULL;
 
@@ -46,6 +48,12 @@ bool CRobot::OnClearChDataB()
 
 long CRobot::OnGetChDataA(unsigned char data_ptr[256], long* ret_ch)
 {
+	if (*ret_ch != 1 && *ret_ch != 2 && *ret_ch != 3)
+    {
+		printf("OnGetChDataA ERROR: Invalid ret_ch number %d (valid range: 1~3)\n", ret_ch);
+		return false;
+    }
+
 	if (m_InsRobot == NULL)
 	{
 		return 0;
@@ -88,8 +96,14 @@ bool CRobot::OnSetChDataA(unsigned char* data_ptr, long size_int, long set_ch)
 {
 	if (size_int <= 0 || size_int >256)
 	{
+		printf("OnSetChDataA ERROR: Channel must in the range of  0~255\n");
 		return false;
 	}
+    if (set_ch != 1 && set_ch != 2 && set_ch != 3)
+    {
+        printf("OnSetChDataA ERROR: Invalid set_ch number %d (valid range: 1~3)\n", set_ch);
+		return false;
+    }
 	if (m_InsRobot == NULL)
 	{
 		return false;
@@ -129,6 +143,11 @@ bool CRobot::OnSetChDataA(unsigned char* data_ptr, long size_int, long set_ch)
 
 long CRobot::OnGetChDataB(unsigned char data_ptr[256], long* ret_ch)
 {
+	if (*ret_ch != 1 && *ret_ch != 2 && *ret_ch != 3)
+    {
+		printf("OnGetChDataB ERROR: Invalid ret_ch number %d (valid range: 1~3)\n", ret_ch);
+		return false;
+    }
 	if (m_InsRobot == NULL)
 	{
 		return 0;
@@ -171,8 +190,15 @@ bool CRobot::OnSetChDataB(unsigned char* data_ptr, long size_int, long set_ch)
 {
 	if (size_int <= 0 || size_int >256)
 	{
+		printf("OnSetChDataB ERROR: Channel must in the range of 0~255\n");
 		return false;
 	}
+    if (set_ch != 1 && set_ch != 2 && set_ch != 3)
+    {
+        printf("OnSetChDataB ERROR: Invalid set_ch number %d (valid range: 1~3)\n", set_ch);
+		return false;
+    }
+
 	if (m_InsRobot == NULL)
 	{
 		return false;
@@ -544,6 +570,26 @@ bool CRobot::OnGetBuf(DCSS* ret)
 
 bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 {
+	assert(ip1 >= 0 && ip1 <= 255);
+    assert(ip2 >= 0 && ip2 <= 255);
+    assert(ip3 >= 0 && ip3 <= 255);
+    assert(ip4 >= 0 && ip4 <= 255);
+    if (ip1 == 0 && ip2 == 0 && ip3 == 0 && ip4 == 0)
+    {
+        printf("OnLinkTo ERROR: Invalid IP address: 0.0.0.0");
+        return false;
+    }
+    if (ip1 == 255 && ip2 == 255 && ip3 == 255 && ip4 == 255)
+    {
+        printf("OnLinkTo ERROR: Invalid IP address: broadcast address");
+        return false;
+    }
+	if (ip1 == 127)
+    {
+        printf("OnLinkTo ERROR: Loopback address not allowed");
+        return false;
+    }
+	
 	GetIns();
 	if (m_InsRobot->m_LinkTag == FX_TRUE)
 	{
@@ -1481,7 +1527,6 @@ bool CRobot::OnStopGather()
 bool CRobot::OnSaveGatherData(char* path)
 {
 	GetIns();
-	// printf("OnSaveGatherData set saved path=%s\n",path);
 	if (m_InsRobot->m_LinkTag == false)
 	{
 		return false;
@@ -1505,7 +1550,6 @@ bool CRobot::OnSaveGatherData(char* path)
 bool CRobot::OnSaveGatherDataCSV(char* path)
 {
 	GetIns();
-    printf("OnSaveGatherDataCSV set saved path=%s\n",path);
 	if (m_InsRobot->m_LinkTag == false)
 	{
 		return false;
@@ -1527,6 +1571,27 @@ bool CRobot::OnSaveGatherDataCSV(char* path)
 
 bool CRobot::OnStartGather(long targetNum, long targetID[35], long recordNum)
 {
+	if (targetNum < 0)
+    {
+        printf("OnStartGather ERROR: Invalid targetNum %ld (valid range: 0~35)\n", targetNum);
+        return false;
+    }
+	else if (targetNum >35)
+    {
+        printf("OnStartGather WARINING: targetNum %ld exceeds maximum, set to 35)\n", targetNum);
+        targetNum=35;
+    }
+    if (recordNum < 1000)
+    {
+        printf("OnStartGather WARNING: recordNum %ld is below minimum, set to 1000\n", recordNum);
+        recordNum = 1000;
+    }
+    else if (recordNum > 1000000)
+    {
+        printf("OnStartGather WARNING : recordNum %ld exceeds maximum, set to 1000000\n", recordNum);
+        recordNum = 1000000;
+    }
+
 	GetIns();
 	if(m_InsRobot->m_LocalLogTag == true)
 	{
@@ -1729,6 +1794,26 @@ bool CRobot::OnClearSet()
 
 bool CRobot::OnSetJointLmt_A(int velRatio, int AccRatio)
 {
+	if (velRatio < 1)
+    {
+        printf("OnSetJointLmt_A WARNING: velRatio %d is below minimum, set to 1\n", velRatio);
+        velRatio = 1;
+    }
+    else if (velRatio > 100)
+    {
+        printf("OnSetJointLmt_A WARNING: velRatio %d exceeds maximum, set to 100\n", velRatio);
+        velRatio = 100;
+    }
+    if (AccRatio < 1)
+    {
+        printf("OnSetJointLmt_A WARNING: AccRatio %d is below minimum, set to 1\n", AccRatio);
+        AccRatio = 1;
+    }
+    else if (AccRatio > 100)
+    {
+        printf("OnSetJointLmt_A WARNING: AccRatio %d exceeds maximum, set to 100\n", AccRatio);
+        AccRatio = 100;
+    }
 	long add_size = 1 + sizeof(FX_INT16) * 2;
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -1780,6 +1865,7 @@ bool CRobot::OnSetPVT_A(int id)
 {
 	if (id < 0 || id >= 100)
 	{
+		printf("OnSetPVT_A ERROR: Invalid id  %d (valid range: 0~99)n", id);
 		return false;
 	}
 	long add_size = 1 + sizeof(FX_UCHAR);
@@ -1811,6 +1897,7 @@ bool CRobot::OnSetPVT_B(int id)
 {
 	if (id < 0 || id >= 100)
 	{
+		printf("OnSetPVT_B ERROR: Invalid id  %d (valid range: 0~99)n", id);
 		return false;
 	}
 	long add_size = 1 + sizeof(FX_UCHAR);
@@ -1839,6 +1926,11 @@ bool CRobot::OnSetPVT_B(int id)
 
 bool CRobot::OnSetForceCmd_A(double force)
 {
+    if (isnan(force) || isinf(force))
+	{
+		printf("OnSetForceCmd_A ERROR: force %d is invalid (NaN or Inf)\n");
+		return false;
+	}
 	long add_size = 1 + sizeof(FX_FLOAT);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -1866,6 +1958,19 @@ bool CRobot::OnSetForceCmd_A(double force)
 
 bool CRobot::OnSetJointCmdPos_A(double joint[7])
 {
+	if (joint == nullptr)
+    {
+        printf("OnSetJointCmdPos_A ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(joint[i]) || isinf(joint[i]))
+        {
+            printf("OnSetJointCmdPos_A ERROR: joint[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
 	long add_size = 1 + sizeof(FX_FLOAT) * 7;
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -1980,10 +2085,10 @@ bool CRobot::OnInitPlnLmt(char * path)
 
     for (j = 0; j < 7; j++)
     {
-        npos[j] = NPVA[0][j][0];  // 第1个参数给 npos
-        ppos[j] = NPVA[0][j][1];   // 第2个参数给 ppos
-        vel[j] = NPVA[0][j][2];    // 第3个参数给 vel
-        acc[j] = NPVA[0][j][3];    // 第4个参数给 acc
+        npos[j] = NPVA[0][j][0];  
+        ppos[j] = NPVA[0][j][1];  
+        vel[j] = NPVA[0][j][2];   
+        acc[j] = NPVA[0][j][3];   
     }
 	{
 		m_InsRobot->pln_A.OnSetLmt(7,npos,ppos,vel,acc);
@@ -1991,10 +2096,10 @@ bool CRobot::OnInitPlnLmt(char * path)
 
 	for (j = 0; j < 7; j++)
     {
-        npos[j] = NPVA[1][j][0];  // 第1个参数给 npos
-        ppos[j] = NPVA[1][j][1];   // 第2个参数给 ppos
-        vel[j] = NPVA[1][j][2];    // 第3个参数给 vel
-        acc[j] = NPVA[1][j][3];    // 第4个参数给 acc
+        npos[j] = NPVA[1][j][0];  
+        ppos[j] = NPVA[1][j][1];  
+        vel[j] = NPVA[1][j][2];   
+        acc[j] = NPVA[1][j][3];   
 
     }
 	{
@@ -2199,6 +2304,49 @@ bool CRobot::OnSetPlnCart_B(CPointSet* pset)
 
 bool CRobot::OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], double vel_ratio,double acc_ratio)
 {
+	if (start_joints == nullptr || stop_joints==nullptr)
+    {
+        printf("OnSetPlnJoint_A ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(start_joints[i]) || isinf(start_joints[i]))
+        {
+            printf("OnSetPlnJoint_A ERROR: start_joints[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(stop_joints[i]) || isinf(stop_joints[i]))
+        {
+            printf("OnSetPlnJoint_A ERROR: stop_joints[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
+	if (vel_ratio < 0)
+    {
+        printf("OnSetPlnJoint_A ERROR: Invalid vel_ratio %d (valid range: 0~1)\n", vel_ratio);
+        return false;
+    }
+	if (vel_ratio > 1)
+    {
+        printf("OnSetPlnJoint_A WARNING: Invalid vel_ratio %d (valid range: 0~1), set vel_ratio to 1\n", vel_ratio);
+        vel_ratio=1.0;
+    }
+	if (acc_ratio < 0)
+    {
+        printf("OnSetPlnJoint_A ERROR: Invalid acc_ratio %d (valid range: 0~1)\n", acc_ratio);
+        return false;
+    }
+	if (acc_ratio > 1)
+    {
+        printf("OnSetPlnJoint_A WARNING: Invalid acc_ratio %d (valid range: 0~1), set acc_ratio to 1\n", acc_ratio);
+        acc_ratio=1.0;
+    }
+
+
 	DCSS t;
 
 	double vr = vel_ratio;
@@ -2410,6 +2558,37 @@ bool CRobot::OnSetTrajSet_A(long serial,long pointNum, double* data)
 
 bool CRobot::OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt)
 {
+	if (fxDir == nullptr || fcCtrlPara == nullptr)
+    {
+        printf("OnSetForceCtrPara_A ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 6; ++i)
+    {
+        if (isnan(fxDir[i]) || isinf(fxDir[i]))
+        {
+            printf("OnSetForceCtrPara_A ERROR: fxDir[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(fcCtrlPara[i]) || isinf(fcCtrlPara[i]))
+        {
+            printf("OnSetForceCtrPara_A ERROR: fcCtrlPara[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
+	if (fcType!=0)
+        {
+            printf("OnSetForceCtrPara_A WARNING: fcType set to 0\n",fcType);
+            fcType=0;
+        }
+	if (isnan(fcAdjLmt) || isinf(fcAdjLmt))
+	{
+		printf("OnSetForceCtrPara_A ERROR: fcAdjLmt %d is invalid (NaN or Inf)\n");
+		return false;
+	}
 	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2453,6 +2632,12 @@ bool CRobot::OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[
 
 bool CRobot::OnSetDragSpace_A(int zsType)
 {
+	if (zsType <0 || zsType >5)
+    {
+        printf("OnSetDragSpace_A ERROR: Invalid zsType  %d (valid range: 0~5), exit drag mode\n", zsType);
+		zsType=0;
+    } 
+
 	long add_size = 1 + sizeof(FX_FLOAT) * 6 + sizeof(FX_INT32) ;
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2487,6 +2672,47 @@ bool CRobot::OnSetDragSpace_A(int zsType)
 
 bool CRobot::OnSetCartKD_A(double K[7], double D[7],int type)
 {
+	if (K == nullptr || D == nullptr)
+    {
+        printf("OnSetCartKD_A ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(K[i]) || isinf(K[i]))
+        {
+            printf("OnSetCartKD_A ERROR: K[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+		if (K[i] < 0.0)
+        {
+            printf("OnSetCartKD_A WARNING: K[%d] is negative (%f), set to 0\n", i, K[i]);
+            K[i] = 0.0;
+        }
+    }
+    for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(D[i]) || isinf(D[i]))
+        {
+            printf("OnSetCartKD_A ERROR: D[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+		if (D[i] < 0.0)
+        {
+            printf("OnSetCartKD_A WARNING: D[%d] is negative (%f), set to 0\n", i, D[i]);
+            D[i] = 0.0;
+        }
+        else if (D[i] > 1.0)
+        {
+            printf("OnSetCartKD_A WARNING: D[%d] exceeds 1 (%f), set to 1\n", i, D[i]);
+            D[i] = 1.0;
+        }
+    }
+	if (type !=2)
+	{
+		type=2;
+	}
+
 	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2533,6 +2759,25 @@ bool CRobot::OnSetCartKD_A(double K[7], double D[7],int type)
 
 bool CRobot::OnSetEefRot_A(int fcType, double CartCtrlPara[7])
 {
+	if (CartCtrlPara == nullptr)
+    {
+        printf("OnSetEefRot_A ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(CartCtrlPara[i]) || isinf(CartCtrlPara[i]))
+        {
+            printf("OnSetEefRot_A ERROR: CartCtrlPara[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
+	if (fcType != 1 && fcType != 2)
+    {
+        printf("OnSetEefRot_A ERROR: Invalid fcType number %d (valid range: 1~2)\n", fcType);
+		return false;
+    }
+
 	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2574,6 +2819,43 @@ bool CRobot::OnSetEefRot_A(int fcType, double CartCtrlPara[7])
 
 bool CRobot::OnSetJointKD_A(double K[7], double D[7])
 {
+	
+	if (K == nullptr || D == nullptr)
+    {
+        printf("OnSetJointKD_A ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(K[i]) || isinf(K[i]))
+        {
+            printf("OnSetJointKD_A ERROR: K[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+		if (K[i] < 0.0)
+        {
+            printf("OnSetJointKD_A WARNING: K[%d] is negative (%f), set to 0\n", i, K[i]);
+            K[i] = 0.0;
+        }
+    }
+    for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(D[i]) || isinf(D[i]))
+        {
+            printf("OnSetJointKD_A ERROR: D[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+		if (D[i] < 0.0)
+        {
+            printf("OnSetJointKD_A WARNING: D[%d] is negative (%f), set to 0\n", i, D[i]);
+            D[i] = 0.0;
+        }
+        else if (D[i] > 1.0)
+        {
+            printf("OnSetJointKD_A WARNING: D[%d] exceeds 1 (%f), set to 1\n", i, D[i]);
+            D[i] = 1.0;
+        }
+    }
 	long add_size = 1 + sizeof(FX_FLOAT) * 14;
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2615,6 +2897,28 @@ bool CRobot::OnSetJointKD_A(double K[7], double D[7])
 
 bool CRobot::OnSetTool_A(double kinePara[6], double dynPara[10])
 {
+	if (kinePara == nullptr || dynPara == nullptr)
+    {
+        printf("OnSetTool_A ERROR: Null pointer input\n");
+        return false;
+    }
+    for (int i = 0; i < 6; ++i)
+    {
+        if (isnan(kinePara[i]) || isinf(kinePara[i]))
+        {
+            printf("OnSetTool_A ERROR: kinePara[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+    }
+    for (int i = 0; i < 10; ++i)
+    {
+         if (isnan(dynPara[i]) || isinf(dynPara[i]))
+        {
+            printf("OnSetTool_A ERROR: dynPara[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+    }
+	
 	long add_size = 1 + sizeof(FX_FLOAT) * 16;
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2657,6 +2961,11 @@ bool CRobot::OnSetTool_A(double kinePara[6], double dynPara[10])
 
 bool CRobot::OnSetTargetState_A(int state)
 {
+	if(state<0 || state>4)
+	{
+		printf("OnSetTargetState_A ERROR: Invalid state %d (valid range: 0~4), set state to 0(disable)\n ",state);
+		state=0;
+	}
 	long add_size = 1 + sizeof(FX_INT32);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2679,6 +2988,11 @@ bool CRobot::OnSetTargetState_A(int state)
 
 bool CRobot::OnSetImpType_A(int type)
 {
+	if (type != 1 && type != 2 && type != 3)
+    {
+        printf("OnSetImpType_A ERROR: Invalid type  %d (valid range: 1~3)\n", type);
+		return false;
+    }
 	long add_size = 1 + sizeof(FX_INT32);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2703,6 +3017,26 @@ bool CRobot::OnSetImpType_A(int type)
 
 bool CRobot::OnSetJointLmt_B(int velRatio, int AccRatio)
 {
+	if (velRatio < 1)
+    {
+        printf("OnSetJointLmt_B WARNING: velRatio %d is below minimum, set to 1\n", velRatio);
+        velRatio = 1;
+    }
+    else if (velRatio > 100)
+    {
+        printf("OnSetJointLmt_B WARNING: velRatio %d exceeds maximum, set to 100\n", velRatio);
+        velRatio = 100;
+    }
+    if (AccRatio < 1)
+    {
+        printf("OnSetJointLmt_B WARNING: AccRatio %d is below minimum, set to 1\n", AccRatio);
+        AccRatio = 1;
+    }
+    else if (AccRatio > 100)
+    {
+        printf("OnSetJointLmt_B WARNING: AccRatio %d exceeds maximum, set to 100\n", AccRatio);
+        AccRatio = 100;
+    }
 	long add_size = 1 + sizeof(FX_INT16) * 2;
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2747,6 +3081,11 @@ bool CRobot::OnSetJointLmt_B(int velRatio, int AccRatio)
 
 bool CRobot::OnSetForceCmd_B(double force)
 {
+	if (isnan(force) || isinf(force))
+	{
+		printf("OnSetForceCmd_B ERROR: force %d is invalid (NaN or Inf)\n");
+		return false;
+	}
 	long add_size = 1 + sizeof(FX_FLOAT);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2769,6 +3108,19 @@ bool CRobot::OnSetForceCmd_B(double force)
 
 bool CRobot::OnSetJointCmdPos_B(double joint[7])
 {
+	if (joint == nullptr)
+    {
+        printf("OnSetJointCmdPos_B ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(joint[i]) || isinf(joint[i]))
+        {
+            printf("OnSetJointCmdPos_B ERROR: joint[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
 	long add_size = 1 + sizeof(FX_FLOAT) * 7;
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2799,6 +3151,38 @@ bool CRobot::OnSetJointCmdPos_B(double joint[7])
 
 bool CRobot::OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt)
 {
+	if (fxDir == nullptr || fcCtrlPara == nullptr)
+    {
+        printf("OnSetForceCtrPara_B ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 6; ++i)
+    {
+        if (isnan(fxDir[i]) || isinf(fxDir[i]))
+        {
+            printf("OnSetForceCtrPara_B ERROR: fxDir[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(fcCtrlPara[i]) || isinf(fcCtrlPara[i]))
+        {
+            printf("OnSetForceCtrPara_B ERROR: fcCtrlPara[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
+	if (fcType!=0)
+	{
+		printf("OnSetForceCtrPara_B WARNING: fcType set to 0\n",fcType);
+        fcType=0;
+    }
+	if (isnan(fcAdjLmt) || isinf(fcAdjLmt))
+        {
+            printf("OnSetForceCtrPara_B ERROR: fcAdjLmt %d is invalid (NaN or Inf)\n");
+            return false;
+        }
+		
 	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2845,6 +3229,11 @@ bool CRobot::OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[
 
 bool CRobot::OnSetDragSpace_B(int zsType)
 {
+	if (zsType <0 || zsType >5)
+    {
+        printf("OnSetDragSpace_B ERROR: Invalid zsType  %d (valid range: 0~5), exit drag mode\n", zsType);
+		zsType=0;
+    } 
 	long add_size = 1 + sizeof(FX_FLOAT) * 6 + sizeof(FX_INT32);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2877,8 +3266,48 @@ bool CRobot::OnSetDragSpace_B(int zsType)
 	return true;
 }
 
-bool CRobot::OnSetCartKD_B(double K[6], double D[6],int type)
+bool CRobot::OnSetCartKD_B(double K[7], double D[7],int type)
 {
+	if (K == nullptr || D == nullptr)
+    {
+        printf("OnSetCartKD_B ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(K[i]) || isinf(K[i]))
+        {
+            printf("OnSetCartKD_B ERROR: K[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+		if (K[i] < 0.0)
+        {
+            printf("OnSetCartKD_B WARNING: K[%d] is negative (%f), set to 0\n", i, K[i]);
+            K[i] = 0.0;
+        }
+    }
+    for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(D[i]) || isinf(D[i]))
+        {
+            printf("OnSetCartKD_B ERROR: D[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+		if (D[i] < 0.0)
+        {
+            printf("OnSetCartKD_B WARNING: D[%d] is negative (%f), set to 0\n", i, D[i]);
+            D[i] = 0.0;
+        }
+        else if (D[i] > 1.0)
+        {
+            printf("OnSetCartKD_B WARNING: D[%d] exceeds 1 (%f), set to 1\n", i, D[i]);
+            D[i] = 1.0;
+        }
+    }
+	if (type !=2)
+	{
+		type=2;
+	}
 	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2925,6 +3354,25 @@ bool CRobot::OnSetCartKD_B(double K[6], double D[6],int type)
 
 bool CRobot::OnSetEefRot_B(int fcType, double CartCtrlPara[7])
 {
+	if (CartCtrlPara == nullptr)
+    {
+        printf("OnSetEefRot_B ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(CartCtrlPara[i]) || isinf(CartCtrlPara[i]))
+        {
+            printf("OnSetEefRot_B ERROR: CartCtrlPara[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
+	if (fcType != 1 && fcType != 2)
+    {
+        printf("OnSetEefRot_B ERROR: Invalid fcType number %d (valid range: 1~2)\n", fcType);
+		return false;
+    }
+
 	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2967,6 +3415,42 @@ bool CRobot::OnSetEefRot_B(int fcType, double CartCtrlPara[7])
 
 bool CRobot::OnSetJointKD_B(double K[7], double D[7])
 {
+	if (K == nullptr || D == nullptr)
+    {
+        printf("OnSetJointKD_B ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(K[i]) || isinf(K[i]))
+        {
+            printf("OnSetJointKD_B ERROR: K[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+		if (K[i] < 0.0)
+        {
+            printf("OnSetJointKD_B WARNING: K[%d] is negative (%f), set to 0\n", i, K[i]);
+            K[i] = 0.0;
+        }
+    }
+    for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(D[i]) || isinf(D[i]))
+        {
+            printf("OnSetJointKD_B ERROR: D[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+		if (D[i] < 0.0)
+        {
+            printf("OnSetJointKD_B WARNING: D[%d] is negative (%f), set to 0\n", i, D[i]);
+            D[i] = 0.0;
+        }
+        else if (D[i] > 1.0)
+        {
+            printf("OnSetJointKD_B WARNING: D[%d] exceeds 1 (%f), set to 1\n", i, D[i]);
+            D[i] = 1.0;
+        }
+    }
 	long add_size = 1 + sizeof(FX_FLOAT) * 14;
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -3008,6 +3492,28 @@ bool CRobot::OnSetJointKD_B(double K[7], double D[7])
 
 bool CRobot::OnSetTool_B(double kinePara[6], double dynPara[10])
 {
+	if (kinePara == nullptr || dynPara == nullptr)
+    {
+        printf("OnSetTool_B ERROR: Null pointer input\n");
+        return false;
+    }
+    for (int i = 0; i < 6; ++i)
+    {
+        if (isnan(kinePara[i]) || isinf(kinePara[i]))
+        {
+            printf("OnSetTool_B ERROR: kinePara[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+    }
+    for (int i = 0; i < 10; ++i)
+    {
+        if (isnan(dynPara[i]) || isinf(dynPara[i]))
+        {
+            printf("OnSetTool_B ERROR: dynPara[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+    }
+	
 	long add_size = 1 + sizeof(FX_FLOAT) * 16;
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -3050,6 +3556,11 @@ bool CRobot::OnSetTool_B(double kinePara[6], double dynPara[10])
 
 bool CRobot::OnSetTargetState_B(int state)
 {
+	if(state<0 || state>4)
+	{
+		printf("OnSetTargetState_B ERROR: Invalid state %d (valid range: 0~4), set state to 0(disable)\n ",state);
+		state=0;
+	}
 	long add_size = 1 + sizeof(FX_INT32);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -3073,6 +3584,11 @@ bool CRobot::OnSetTargetState_B(int state)
 
 bool CRobot::OnSetImpType_B(int type)
 {
+	if (type != 1 && type != 2 && type != 3)
+    {
+        printf("OnSetImpType_B ERROR: Invalid type  %d (valid range: 1~3)\n", type);
+		return false;
+    }
 	long add_size = 1 + sizeof(FX_INT32);
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -3096,6 +3612,47 @@ bool CRobot::OnSetImpType_B(int type)
 
 bool CRobot::OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_ratio,double acc_ratio)
 {
+	if (start_joints == nullptr || stop_joints==nullptr)
+    {
+        printf("OnSetPlnJoint_B ERROR: Null pointer input\n");
+        return false;
+    }
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(start_joints[i]) || isinf(start_joints[i]))
+        {
+            printf("OnSetPlnJoint_B ERROR: start_joints[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
+	for (int i = 0; i < 7; ++i)
+    {
+        if (isnan(stop_joints[i]) || isinf(stop_joints[i]))
+        {
+            printf("OnSetPlnJoint_B ERROR: stop_joints[%d] is invalid (NaN or Inf)\n", i);
+            return false;
+        }
+	}
+	if (vel_ratio < 0)
+    {
+        printf("OnSetPlnJoint_B ERROR: Invalid vel_ratio %d (valid range: 0~1)\n", vel_ratio);
+        return false;
+    }
+	if (vel_ratio > 1)
+    {
+        printf("OnSetPlnJoint_B WARNING: Invalid vel_ratio %d (valid range: 0~1), set vel_ratio to 1\n", vel_ratio);
+        vel_ratio=1.0;
+    }
+	if (acc_ratio < 0)
+    {
+        printf("OnSetPlnJoint_B ERROR: Invalid acc_ratio %d (valid range: 0~1)\n", acc_ratio);
+        return false;
+    }
+	if (acc_ratio > 1)
+    {
+        printf("OnSetPlnJoint_B WARNING: Invalid acc_ratio %d (valid range: 0~1), set acc_ratio to 1\n", acc_ratio);
+        acc_ratio=1.0;
+    }
 	DCSS t;
 
 	double vr = vel_ratio;
