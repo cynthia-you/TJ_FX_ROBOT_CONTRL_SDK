@@ -115,8 +115,11 @@ if tool_result == 0:
     update_text_file_simple('A', full_tool_left, 'tool_dyn_kine.txt')
     time.sleep(0.5)
     # 设置工具
+    robot.clear_set()
     robot.set_tool(arm='A', dynamicParams=tool_left_dynamic, kineParams=tool_left_kinematics)
-
+    robot.send_cmd()
+    time.sleep(0.5) 
+    
     '''设置或者修改右臂的动力学信息和运动学信息'''
     # tool_right_dynamic工具动力学信息,长度为10  m,mcp_x,mcp_y,mcp_z,ixx,ixy,ixz,iyy,iyz,izz
     # m， 质量 单位千克
@@ -131,8 +134,10 @@ if tool_result == 0:
     update_text_file_simple('B', full_tool_right, 'tool_dyn_kine.txt')
     time.sleep(0.5)
     # 设置工具
+    robot.clear_set()
     robot.set_tool(arm='B', dynamicParams=tool_right_dynamic, kineParams=tool_right_kinematics)
-
+    robot.send_cmd()
+    time.sleep(0.5)
     # 保存两个臂的运动学和动力学信息到控制器下，
     robot.send_file('tool_dyn_kine.txt', os.path.join('/home/fusion/', 'tool_dyn_kine.txt'))
     time.sleep(1)
@@ -154,7 +159,10 @@ elif type(tool_result) == tuple:
         tool_dyn_l = tool_dyn_l.rstrip(", ")
         tool_kine_l = tool_kine_l.rstrip(", ")
         #控制器设置生效
+        robot.clear_set()
         robot.set_tool(arm='A', dynamicParams=tool_result[1][:10], kineParams=tool_result[1][10:])
+        robot.send_cmd()
+        time.sleep(0.5)
         #计算解算设置生效
         tool_mat = kk1.xyzabc_to_mat4x4(tool_result[1][10:])
         kk1.set_tool_kine(tool_mat=tool_mat)
@@ -170,7 +178,10 @@ elif type(tool_result) == tuple:
         tool_dyn_r = tool_dyn_r.rstrip(", ")
         tool_kine_r = tool_kine_r.rstrip(", ")
         #控制器设置生效
+        robot.clear_set()
         robot.set_tool(arm='B', dynamicParams=tool_result[1][:10], kineParams=tool_result[1][10:])
+        robot.send_cmd()
+        time.sleep(0.5)
         #计算解算设置生效
         tool_mat1 = kk2.xyzabc_to_mat4x4(tool_result[1][10:])
         kk2.set_tool_kine(tool_mat=tool_mat1)
@@ -193,8 +204,11 @@ else:
         tool_kine_r = tool_kine_r.rstrip(", ")
 
         # 从控制器加载的工具信息
+        robot.clear_set()
         robot.set_tool(arm='A', dynamicParams=tool_result[0][:10], kineParams=tool_result[0][10:])
         robot.set_tool(arm='B', dynamicParams=tool_result[1][:10], kineParams=tool_result[1][10:])
+        robot.send_cmd()
+        time.sleep(0.5)
 
         tool_mat = kk1.xyzabc_to_mat4x4(tool_result[0][10:])
         tool_mat1 = kk2.xyzabc_to_mat4x4(tool_result[1][10:])
@@ -221,7 +235,10 @@ full_tool_left = tool_left_dynamic + tool_left_kinematics
 update_text_file_simple('A', full_tool_left, 'tool_dyn_kine.txt')
 time.sleep(0.5)
 # 设置工具
+robot.clear_set()
 robot.set_tool(arm='A', dynamicParams=tool_left_dynamic, kineParams=tool_left_kinematics)
+robot.send_cmd()
+time.sleep(0.5)
 '''设置或者修改右臂的动力学信息和运动学信息'''
 # tool_right_dynamic工具动力学信息,长度为10  m,mcp_x,mcp_y,mcp_z,ixx,ixy,ixz,iyy,iyz,izz
 # m， 质量 单位千克
@@ -235,7 +252,10 @@ full_tool_right = tool_right_dynamic + tool_right_kinematics
 update_text_file_simple('B', full_tool_right, 'tool_dyn_kine.txt')
 time.sleep(0.5)
 # 设置工具
+robot.clear_set()
 robot.set_tool(arm='B', dynamicParams=tool_right_dynamic, kineParams=tool_right_kinematics)
+robot.send_cmd()
+time.sleep(0.5)
 # 保存两个臂的运动学和动力学信息到控制器下，
 robot.send_file('tool_dyn_kine.txt', os.path.join('/home/fusion/', 'tool_dyn_kine.txt'))
 time.sleep(1)
