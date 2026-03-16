@@ -229,7 +229,7 @@ class App:
         self.create_status_bar()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         self.correct_password = "1"
-        self.connected = False
+        self.connected = True
         self.data_subscriber = None
         self.tools_cfg_path = 'tools_cfg.json'
         self.tools_cfg = None
@@ -5604,9 +5604,10 @@ class App:
                     if last_arm0_tool!=None and last_arm1_tool!=None:
                         messagebox.showinfo('Success', f'Robot connection successful. \nRobot history tool information is as follows: \nleft：{last_arm0_tool}，right：{last_arm1_tool}.\n 如需修改请重新设置工具参数')
                         # 设置历史数据
+                        robot.clear_set()
                         robot.set_tool(arm='A', dynamicParams=self.tools_cfg["arm0"][last_arm0_tool]['dyn'], kineParams=self.tools_cfg["arm0"][last_arm0_tool]['kine'])
                         robot.set_tool(arm='B',  dynamicParams=self.tools_cfg["arm1"][last_arm1_tool]['dyn'], kineParams=self.tools_cfg["arm1"][last_arm1_tool]['kine'])
-
+                        robot.send_cmd()
                         tool_mat = kk1.xyzabc_to_mat4x4(self.tools_cfg["arm0"][last_arm0_tool]['kine'])
                         tool_mat1 = kk2.xyzabc_to_mat4x4(self.tools_cfg["arm1"][last_arm1_tool]['kine'])
                         kk1.set_tool_kine(tool_mat=tool_mat)
@@ -5616,14 +5617,18 @@ class App:
                         messagebox.showinfo('Success',
                                             f'Robot connection successful. \nLeft arm tool:{last_arm0_tool}，Right arm not set.')
                         # 设置历史数据
+                        robot.clear_set()
                         robot.set_tool(arm='A', dynamicParams=self.tools_cfg["arm0"][last_arm0_tool]['dyn'], kineParams=self.tools_cfg["arm0"][last_arm0_tool]['kine'])
+                        robot.send_cmd()
                         tool_mat = kk1.xyzabc_to_mat4x4(self.tools_cfg["arm0"][last_arm0_tool]['kine'])
                         kk1.set_tool_kine(tool_mat=tool_mat)
 
                     elif last_arm0_tool==None and last_arm1_tool!=None:
                         messagebox.showinfo('Success', f'Robot connection successful. \nRight arm tool:{last_arm1_tool}，Left arm not set.')
                         # 设置历史数据
+                        robot.clear_set()
                         robot.set_tool(arm='B',  dynamicParams=self.tools_cfg["arm1"][last_arm1_tool]['dyn'], kineParams=self.tools_cfg["arm1"][last_arm1_tool]['kine'])
+                        robot.send_cmd()
                         tool_mat1 = kk2.xyzabc_to_mat4x4(self.tools_cfg["arm1"][last_arm1_tool]['kine'])
                         kk2.set_tool_kine(tool_mat=tool_mat1)
 
@@ -6341,5 +6346,4 @@ if __name__ == "__main__":
         background="white"  # 标签背景色
     )
     app = App(root)
-
     root.mainloop()
