@@ -160,6 +160,7 @@ typedef enum
 	DCSS_CMD_ARM0_INIT_TRAJ = 112,
     DCSS_CMD_ARM0_SET_TRAJ = 113,
     DCSS_CMD_ARM0_RUN_TRAJ = 114,
+	DCSS_CMD_ARM0_STOP_TRAJ = 115,
 
     DCSS_CMD_CFG_OPERATION = 150,
 
@@ -177,6 +178,8 @@ typedef enum
 	DCSS_CMD_ARM1_INIT_TRAJ = 212,
     DCSS_CMD_ARM1_SET_TRAJ = 213,
     DCSS_CMD_ARM1_RUN_TRAJ = 214,
+	DCSS_CMD_ARM1_STOP_TRAJ = 215,
+
 
 }DCSSCmdType;
 
@@ -336,10 +339,15 @@ extern "C" {
 	 //关节空间PLN方式发送指令
 	 bool OnInitPlnLmt(char * path);
 	 bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
-	 bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	 bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);	
+
     // 笛卡尔空间PLN方式发送指令
 	 bool OnSetPlnCart_A(CPointSet* pset);
 	 bool OnSetPlnCart_B(CPointSet* pset);
+
+	//中断规划运行
+	bool OnStopPlnJoint_A();
+	bool OnStopPlnJoint_B();
 
      // 末端工具通讯用接口//
      //1 清缓存数据
