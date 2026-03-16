@@ -34,7 +34,7 @@ kk.log_switch(0)#0 off, 1 on
     srs机型为srs.MvKDCfg. 多个*.MvKDCfg会解析出错
 一定要确认arm_type是左臂0 还是右臂1
 '''
-ini_result=kk.load_config(arm_type=0,config_path=os.path.join(current_path,'ccs_m6_31.MvKDCfg'))
+ini_result=kk.load_config(arm_type=0,config_path=os.path.join(current_path,'ccs_m6_40.MvKDCfg'))
 print(ini_result)
 print('-'*50)
 
