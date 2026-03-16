@@ -120,8 +120,18 @@
 
     编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
 
+### 2.2 自动化编译
+	1)linux下可使用marvinSDK_ubuntu.sh 自动编译替换
+			# 赋予脚本执行权限
+			chmod +x marvinSDK_ubuntu.sh
+
+			# 运行自动化编译脚本
+			./marvinSDK_ubuntu.sh
+	2）windows下可使用./marvinSDK_windows.bat 自动编译替换
+			# 直接运行批处理脚本
+			./marvinSDK_windows.bat
         
-### 2.2 使用
+### 2.3 使用
     LINUX:
         C++: 
             ./DEMO_C++/readme.md
