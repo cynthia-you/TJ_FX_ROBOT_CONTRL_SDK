@@ -33,8 +33,8 @@
         ...
         |
         任务完成,释放机器人以便别的程序或者用户连接机器人
-
-
+C:\Users\Botyard\TJ\TJ_master\kinematicsSDK\libKine.d
+C:\Users\Botyard\TJ\TJ_master\SDK_PYTHON\libMarvinSDK.dll
     在机器人的控制状态目前提供以下:
         1)位置模式/关节跟随模式(该模式高刚度,高精度,碰撞有危险)
         2)PVT模式/离线轨迹复现模式(提前规划500HZ的轨迹,速度,加速度也要规划)
