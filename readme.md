@@ -120,7 +120,7 @@
 
     编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
 
-### 2.2 自动化编译
+### 2.2 自动化编译动态链库
 	1)linux下可使用marvinSDK_ubuntu.sh 自动编译替换.so
 			# 赋予脚本执行权限
 			chmod +x marvinSDK_ubuntu.sh
