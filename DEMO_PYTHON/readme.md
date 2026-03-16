@@ -114,6 +114,8 @@
         showcase_pln_joint_positionMode.py
 ### 25. 笛卡尔空间以规划方式下发指令，实现直线约束
         showcase_pln_cart_positionMode.py
+### 26. 关节空间以规划方式下发指令，并中断运行
+        showcase_pln_cart_positionMode_with_break.py
 
 ## 二. 计算showcases
 
