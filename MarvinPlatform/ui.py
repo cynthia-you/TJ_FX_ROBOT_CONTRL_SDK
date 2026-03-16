@@ -6005,9 +6005,10 @@ class App:
                     if last_arm0_tool!=None and last_arm1_tool!=None:
                         messagebox.showinfo('success', f'机器人连接成功。\n 机器人历史工具信息为,左臂：{last_arm0_tool}，右臂：{last_arm1_tool}.\n 如需修改请重新设置工具参数')
                         # 设置历史数据
+                        robot.clear_set()
                         robot.set_tool(arm='A', dynamicParams=self.tools_cfg["arm0"][last_arm0_tool]['dyn'], kineParams=self.tools_cfg["arm0"][last_arm0_tool]['kine'])
                         robot.set_tool(arm='B',  dynamicParams=self.tools_cfg["arm1"][last_arm1_tool]['dyn'], kineParams=self.tools_cfg["arm1"][last_arm1_tool]['kine'])
-
+                        robot.send_cmd()
                         tool_mat = kk1.xyzabc_to_mat4x4(self.tools_cfg["arm0"][last_arm0_tool]['kine'])
                         tool_mat1 = kk2.xyzabc_to_mat4x4(self.tools_cfg["arm1"][last_arm1_tool]['kine'])
                         kk1.set_tool_kine(tool_mat=tool_mat)
@@ -6016,14 +6017,18 @@ class App:
                     elif last_arm0_tool!=None and last_arm1_tool==None:
                         messagebox.showinfo('success', f'机器人连接成功. 机器人已设置左臂工具信息：{last_arm0_tool}，右臂未设置.')
                         # 设置历史数据
+                        robot.clear_set()
                         robot.set_tool(arm='A', dynamicParams=self.tools_cfg["arm0"][last_arm0_tool]['dyn'], kineParams=self.tools_cfg["arm0"][last_arm0_tool]['kine'])
+                        robot.send_cmd()
                         tool_mat = kk1.xyzabc_to_mat4x4(self.tools_cfg["arm0"][last_arm0_tool]['kine'])
                         kk1.set_tool_kine(tool_mat=tool_mat)
 
                     elif last_arm0_tool==None and last_arm1_tool!=None:
                         messagebox.showinfo('success', f'机器人连接成功. 机器人已设置右臂工具信息:{last_arm1_tool}，左臂未设置.')
                         # 设置历史数据
+                        robot.clear_set()
                         robot.set_tool(arm='B',  dynamicParams=self.tools_cfg["arm1"][last_arm1_tool]['dyn'], kineParams=self.tools_cfg["arm1"][last_arm1_tool]['kine'])
+                        robot.send_cmd()
                         tool_mat1 = kk2.xyzabc_to_mat4x4(self.tools_cfg["arm1"][last_arm1_tool]['kine'])
                         kk2.set_tool_kine(tool_mat=tool_mat1)
 
@@ -6736,5 +6741,4 @@ if __name__ == "__main__":
         background="white"  # 标签背景色
     )
     app = App(root)
-
     root.mainloop()
