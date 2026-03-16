@@ -86,6 +86,10 @@ void OnEMG_AB()
 
 void OnServoReset_A(int axis)
 {
+	if (axis < 0 || axis > 6)
+    {
+        printf("OnServoReset_A ERROR : Invalid axis number %d (valid range: 0~6)\n", axis);
+    }
 	for (long i = 0; i < 10; i++)
 	{
 		CRobot::OnSetIntPara((char*)"RESETS0", axis);
@@ -100,6 +104,10 @@ void OnServoReset_A(int axis)
 
 void OnServoReset_B(int axis)
 {
+	if (axis < 0 || axis > 6)
+    {
+        printf("OnServoReset_B ERROR : Invalid axis number %d (valid range: 0~6)\n", axis);
+    }
 	for (long i = 0; i < 10; i++)
 	{
 		CRobot::OnSetIntPara((char*)"RESETS1", axis);
@@ -420,6 +428,16 @@ bool OnSetPlnJoint_A( double start_joints[7], double stop_joints[7],double vel_r
 bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio)
 {
 	return CRobot::OnSetPlnJoint_B(start_joints, stop_joints,vel_ratio,acc_ratio);
+}
+
+bool OnStopPlnJoint_B()
+{
+	return CRobot::OnStopPlnJoint_B();
+}
+
+bool OnStopPlnJoint_A()
+{
+	return CRobot::OnStopPlnJoint_A();
 }
 
 bool OnSetPlnCart_A(void* pset)

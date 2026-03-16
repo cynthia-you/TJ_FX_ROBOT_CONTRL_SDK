@@ -106,7 +106,10 @@ public:
 
 	static bool OnSetTrajRun_A();
 	static bool OnSetTrajRun_B();
-	
+
+	static bool OnStopPlnJoint_A();
+	static bool OnStopPlnJoint_B();
+
 	static bool OnSetSend();
 	static long OnSetSendWaitResponse(long time_out);
 	static bool OnUpdateSystem(char* local_path);
@@ -128,9 +131,6 @@ protected:
 	long       m_last_response_timeout_cnt;
 	long       m_respones_time_cnt;
 	long       m_respones_time_tag;
-
-
-
 
 	long       m_ParaSerial;
 	long       m_GatherTag;
