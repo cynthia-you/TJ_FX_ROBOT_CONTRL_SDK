@@ -157,9 +157,7 @@ for i in range(10):
     time.sleep(0.2)
 
     '''规划中断'''
-    robot.clear_set()
     robot.stopRunPln_joint(arm='A')
-    robot.send_cmd()
     time.sleep(0.2)
 
     data = robot.subscribe(dcss)

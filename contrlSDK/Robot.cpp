@@ -2509,6 +2509,24 @@ bool CRobot::OnSetTrajRun_A()
 
 bool CRobot::OnStopPlnJoint_A()
 {
+	CRobot::OnClearSet();
+	CRobot::OnStopPlnJoint_interA();
+	if( CRobot::OnSetSendWaitResponse(50)<0)
+	{
+		return false;
+	}else
+	{
+		if(m_InsRobot->m_LocalLogTag == true)
+		{
+			printf("[Marvin SDK]: A arm stop run Planning Trajectory \n");
+		}
+		return true;
+	}
+}
+
+
+bool CRobot::OnStopPlnJoint_interA()
+{
 	long add_size = 1 + sizeof(FX_FLOAT) * 1;
 
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2520,10 +2538,6 @@ bool CRobot::OnStopPlnJoint_A()
 
 	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
-	{
-	    printf("[Marvin SDK]: A arm stop run Planning Trajectory \n");
-	}
 	return true;
 }
 
@@ -3833,7 +3847,25 @@ bool CRobot::OnSetTrajRun_B()
 	return true;
 }
 
+
 bool CRobot::OnStopPlnJoint_B()
+{
+	CRobot::OnClearSet();
+	CRobot::OnStopPlnJoint_interB();
+	if( CRobot::OnSetSendWaitResponse(50)<0)
+	{
+		return false;
+	} else
+	{
+		if(m_InsRobot->m_LocalLogTag == true)
+		{
+			printf("[Marvin SDK]: B arm stop run Planning Trajectory \n");
+		}
+		return true;
+	}
+}
+
+bool CRobot::OnStopPlnJoint_interB()
 {
 	long add_size = 1 + sizeof(FX_FLOAT) * 1;
 
@@ -3846,10 +3878,7 @@ bool CRobot::OnStopPlnJoint_B()
 
 	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
-	{
-	    printf("[Marvin SDK]: B arm stop run Planning Trajectory \n");
-	}
+
 	return true;
 }
 
