@@ -1034,6 +1034,20 @@ class Marvin_Robot:
         self.robot.OnInitPlnLmt.restype = c_bool
         return self.robot.OnInitPlnLmt(config_path.encode('utf-8'))
 
+    def stopRunPln_joint(self, arm: str):
+        '''
+        停止之前的规划运动
+        '''
+        try:
+            if arm not in ['A', 'B']:
+                raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+            if arm == "A":
+                return self.robot.OnStopPlnJoint_A()
+            if arm == "B":
+                return self.robot.OnStopPlnJoint_B()
+        except Exception as e:
+            print(f'ERROR:{e}')
+
     def setPln_joint(self,arm:str,start_joints:list, target_joints:list, velRatio:float,accRatio:float):
         '''位置模式下使用该接口传输目标关节点位，防止通信抖动
         :param arm: 机械手臂ID “A” OR “B”
