@@ -1,9 +1,9 @@
-# 天机-孚晞 机器人控制工具包 MarvinSDK
+0# 天机-孚晞 机器人控制工具包 MarvinSDK
 ## 机器人型号： MARVIN人形双臂, 单臂
 ## 版本： 1003
 ## 支持平台： LINUX 及 WINDOWS
 ## LINUX支持： ubuntu18.04 - ubuntu24.04
-## 更新日期：2025-09
+## 更新日期：2026-03
 
 
 # ATTENTION
@@ -750,8 +750,20 @@ bool OnSetDragSpace_B(int dgType);
     4,       //笛卡尔空间Z方向拖动
     5,       //笛卡尔空间旋转方向拖动
 
+### (21) 设置末端笛卡尔方向的旋转
+//自定义设置末端笛卡尔方向的旋转
+//自定义设置左臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
+//自定义设置右臂臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
-###（30） 规划功能
+//实时末端笛卡尔方向的旋转
+//设置左臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
+bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
+//设置右臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
+bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
+
+### （22） 规划功能
  //关节空间PLN方式发送指令
  bool OnInitPlnLmt(char * path);
  bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
@@ -759,7 +771,7 @@ bool OnSetDragSpace_B(int dgType);
     
     path： 机器人配置参数文件*.MvKDCfg，请确认参数与使用机型是否对应
     start_joints： 起点各关节位置/当前点关节位置， 单位：度
-    stop_joints： 目标点点关节位置， 单位：度
+    stop_joints： 目标点关节位置， 单位：度
     vel_ratio：规划器速度比例：范围0~1
     acc_ratio：规划器加速度比例：范围0~1
 
