@@ -167,19 +167,17 @@ pose_6d_end[2] += 200  # Z方向移动200mm
 points,pset = kk.movLA(start_xyzabc=pose_6d_start, end_xyzabc=pose_6d_end,
                   ref_joints=initial_pos, vel=1000, acc=1000)
 
+'''多次循环实现规划运行和中断'''
 for i in range(10):
     if pset:
         '''规划下发并执行'''
         robot.setPln_Cart(arm='A', pset=pset)
 
-    '''等待规划轨迹执行3s中断'''
-    time.sleep(3)
-
+    '''等待规划轨迹执行1s中断'''
+    time.sleep(1)
 
     '''规划中断'''
-    robot.clear_set()
     robot.stopRunPln_joint(arm='A')
-    robot.send_cmd()
     time.sleep(0.2)
 
     data = robot.subscribe(dcss)
