@@ -31,7 +31,7 @@ bool checkJointsReached(double target_joints[7],
 int main()
 {
     ////'''#################################################################
-    ////该DEMO 为位置模式下解决指令抖动/通讯抖动问题的用例位置和到位规划功能的混合使用案例
+    ////该DEMO 为位置模式下解决指令抖动/通讯抖动问题，用规划形式下发指令并实现中断的案例
     ///指定目标位置下发执行存在指令抖动/通讯抖动问题
     ///因此使用起点A到目标点B的规划功能下发，控制器内部以50HZ执行规划点位，解决直接接收目标点B的通讯抖动问题。
     ////
@@ -41,7 +41,7 @@ int main()
     ////    3 为了防止伺服有错，先清错
     ////    4 设置位置模式和速度加速度
     ////    5 运动到初始位置
-    ////    4 完成4次循环：规划点位下发+位置指令下发
+    ////    4 完成4次循环：规划点位下发，并中断
     ////    5 任务完成，释放内存使别的程序或者用户可以连接机器人
     ////'''#################################################################
      auto print_matrix = [](auto* mat, size_t rows, size_t cols, const char* name = "", int precision = 2) {
@@ -123,7 +123,6 @@ int main()
     OnSetTargetState_A(1);
     return_delay1=OnSetSendWaitResponse(wait_respond_time);
     printf(" cmd delay in 100ms is:%d\n", return_delay1);
-    SLEEP(100);
 
     if (OnInitPlnLmt((char*)"ccs_m6_40.MvKDCfg")!=true)
     {
@@ -138,6 +137,7 @@ int main()
     OnSetJointCmdPos_A(initial_pos);
     return_delay1 = OnSetSendWaitResponse(wait_respond_time);
     printf(" cmd delay in 100ms is:%d\n", return_delay1);
+    //等待到达工作起点，稳态
     SLEEP(3000);
 
     double fb_joints[7]={0.0};
@@ -154,10 +154,11 @@ int main()
     double vel_ratio=0.2;
     double acc_ratio=0.2;
 
-
     long j=0;
     double start_joints[7]={0};
-    double stop_joints[7]={0};
+    double stop_joints[7]={0,0,30,0,0,0,0};
+    print_array(start_joints, 7, "start joints of arm A");
+    print_array(stop_joints, 7, "stop joints of arm A");
 
     for (j = 0; j < 5; j++)
     {
@@ -167,21 +168,6 @@ int main()
             OnGetBuf(&dcss);
         } while (dcss.m_Out[0].m_TrajState != 0);
 
-        // 打印当前关节位置
-        print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "current joints of arm A");
-
-        // 设置起始关节位置
-        for (long i = 0; i < 7; i++)
-        {
-            start_joints[i] = dcss.m_Out[0].m_FB_Joint_Pos[i];
-        }
-
-        print_array(start_joints, 7, "start joints of arm A");
-
-        // 更新停止关节位置
-        stop_joints[3] -= 20;
-        print_array(stop_joints, 7, "stop joints of arm A");
-
         // 调用轨迹规划函数下发点位，解决通讯抖动
         if (OnSetPlnJoint_A(start_joints, stop_joints, vel_ratio, acc_ratio) != true)
         {
@@ -189,38 +175,17 @@ int main()
             return -1;
         }
 
-         // 等待轨迹规划完成
-         do {
-            OnGetBuf(&dcss);
-            for (long joint = 0; joint < 7; joint++) {
-                fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
-            }
-            SLEEP(1);
-        } while (!checkJointsReached(stop_joints, fb_joints));
+        // 等待轨迹规划执行1s
+        SLEEP(1000);
 
-
-        // 刷新直到轨迹状态为0
-        do {
-            OnGetBuf(&dcss);
-        } while (dcss.m_Out[0].m_TrajState != 0);
-
-
-        // 直接下发关节命令，有通讯抖动
-         stop_joints[3] += 20;
-        OnClearSet();
-        OnSetJointCmdPos_A(stop_joints);
-        return_delay1 = OnSetSendWaitResponse(wait_respond_time);
-        printf(" cmd delay in 100ms is:%d\n", return_delay1);
-
-        // 等待运动完成
-        do {
-            OnGetBuf(&dcss);
-            for (long joint = 0; joint < 7; joint++) {
-                fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
-            }
-            SLEEP(1);
-        } while (!checkJointsReached(stop_joints, fb_joints));
+        //中断规划执行
+        OnStopPlnJoint_A();
+        SLEEP(200);
+        // 打印当前关节位置
+        print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "arm A break at:");
     }
+
+
 
     //任务完成,下使能，释放内存使别的程序或者用户可以连接机器人
     SLEEP(50);

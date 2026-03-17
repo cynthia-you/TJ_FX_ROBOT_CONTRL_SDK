@@ -16,7 +16,7 @@
 #endif
 
 //'''#################################################################
-//该DEMO 为在位置模式下,避免通讯抖动，使用规划方式将目标点发送至机器人
+//该DEMO 为在位置模式下,避免通讯抖动，使用规划方式将目标点发送至机器人并中断执行的案列
 //
 //使用逻辑
 //    1 初始化订阅数据的结构体
@@ -26,7 +26,7 @@
 //    5 设置速度加速度和位置模式
 //    6 走到初始运动点
 //    7 计算配置初始化
-//    8 在笛卡尔空间YZ平面执行一个矩形框，分别规划和执行四条边
+//    8 多次循环：在笛卡尔空间Z方向运动并中断
 //    9 下使能释放内存使别的程序或者用户可以连接机器人
 //'''#################################################################
 
@@ -77,7 +77,7 @@ int main()
     else 
     {
 
-             //防总线通信异常,先清错
+       //防总线通信异常,先清错
        SLEEP(50);
        OnClearSet();
        OnClearErr_A();
@@ -109,11 +109,11 @@ int main()
    }
 
 
-
+    
     //控制日志开
     OnLogOn();
 	OnLocalLogOn();
-
+    
     //控制日志关
     // OnLogOff();
     // OnLocalLogOff();
@@ -237,152 +237,31 @@ int main()
 
     //5. 运行在线规划,规划文件为50HZ
     CPointSet pset_movla;
-    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla) == FX_FALSE)
+    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 1000, 1000, &pset_movla) == FX_FALSE)
     {
         printf("MOVLA Error\n");
         return -1;
     }
 
-    //6. 下发点位
-    if (!OnSetPlnCart_A(&pset_movla))
+    for (i = 0; i < 10; i++)
     {
-        printf("Failed to run MOVLA plan\n");
-        return -1;
-    }
-    SLEEP(20);
-
-    //7. 等待运动完成, 判断是否到达目标点位，并继续下一段规划
-    do {
-        OnGetBuf(&dcss);
-        SLEEP(1);
-    } while (dcss.m_Out[0].m_TrajState != 0);
-
-    // line-2
-    CPointSet pset_movla1;
-    {
-        for (i = 0; i < 6; i++)
-        {
-            start[i] = end[i];
-        }
-        end[1]-=200;
-
-        long num1=pset_movla.OnGetPointNum();
-        double* joint1 = pset_movla.OnGetPoint(num1-1);
-        jv[0]=joint1[0];
-        jv[1]=joint1[1];
-        jv[2]=joint1[2];
-        jv[3]=joint1[3];
-        jv[4]=joint1[4];
-        jv[5]=joint1[5];
-        jv[6]=joint1[6];
-        
-        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla1) == FX_FALSE)
-        {
-            printf("MOVLA Error\n");
-            return -1;
-        }
-
-        if (!OnSetPlnCart_A(&pset_movla1))
+        //6. 下发点位
+        if (!OnSetPlnCart_A(&pset_movla))
         {
             printf("Failed to run MOVLA plan\n");
             return -1;
         }
-    }
-    SLEEP(20);
-    do {
-        OnGetBuf(&dcss);
-        SLEEP(1);
-    } while (dcss.m_Out[0].m_TrajState != 0);
 
-    CPointSet pset_movla2;
-    // line-3
-    {
-        for (i = 0; i < 6; i++)
-        {
-            start[i] = end[i];
-        }
-        end[2]-=200;
+        // 等待轨迹规划执行1s
+        SLEEP(1000);
 
-        long num2=pset_movla1.OnGetPointNum();
-        double* joint2 = pset_movla1.OnGetPoint(num2-1);
-        jv[0]=joint2[0];
-        jv[1]=joint2[1];
-        jv[2]=joint2[2];
-        jv[3]=joint2[3];
-        jv[4]=joint2[4];
-        jv[5]=joint2[5];
-        jv[6]=joint2[6];
-        
-        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla2) == FX_FALSE)
-        {
-            printf("MOVLA Error\n");
-            return -1;
-        }
+        //中断规划执行
+        OnStopPlnJoint_A();
+        SLEEP(200);
 
-        if (!OnSetPlnCart_A(&pset_movla2))
-        {
-            printf("Failed to run MOVLA plan\n");
-            return -1;
-        }
+
     }
 
-    SLEEP(20);
-    do {
-        OnGetBuf(&dcss);
-        SLEEP(1);
-    } while (dcss.m_Out[0].m_TrajState != 0);
-
-    CPointSet pset_movla3;
-    // line-4
-    {
-        for (i = 0; i < 6; i++)
-        {
-            start[i] = end[i];
-        }
-        end[1]+=200;
-
-        long num3=pset_movla2.OnGetPointNum();
-        double* joint3 = pset_movla2.OnGetPoint(num3-1);
-        jv[0]=joint3[0];
-        jv[1]=joint3[1];
-        jv[2]=joint3[2];
-        jv[3]=joint3[3];
-        jv[4]=joint3[4];
-        jv[5]=joint3[5];
-        jv[6]=joint3[6];
-        
-        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla3) == FX_FALSE)
-        {
-            printf("MOVLA Error\n");
-            return -1;
-        }
-
-        if (!OnSetPlnCart_A(&pset_movla3))
-        {
-            printf("Failed to run MOVLA plan\n");
-            return -1;
-        }
-    }
-
-    long num4=pset_movla3.OnGetPointNum();
-    double* joint4 = pset_movla3.OnGetPoint(num4-1);
-    jv[0]=joint4[0];
-    jv[1]=joint4[1];
-    jv[2]=joint4[2];
-    jv[3]=joint4[3];
-    jv[4]=joint4[4];
-    jv[5]=joint4[5];
-    jv[6]=joint4[6];
-
-    SLEEP(20);
-    // 等待运动完成
-    do {
-    OnGetBuf(&dcss);
-    SLEEP(1);
-    for (long joint = 0; joint < 7; joint++) {
-        fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
-    }
-    } while (!checkJointsReached(jv, fb_joints));
 
     //任务完成,下使能，释放内存使别的程序或者用户可以连接机器人   
     SLEEP(50);
