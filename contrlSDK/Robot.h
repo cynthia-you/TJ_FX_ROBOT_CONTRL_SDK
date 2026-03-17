@@ -107,6 +107,9 @@ public:
 	static bool OnSetTrajRun_A();
 	static bool OnSetTrajRun_B();
 
+	static bool OnStopPlnJoint_interA();
+	static bool OnStopPlnJoint_interB();
+
 	static bool OnStopPlnJoint_A();
 	static bool OnStopPlnJoint_B();
 
