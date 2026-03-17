@@ -1090,6 +1090,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 	////////////////////InvKine//////////////
 	FX_InvKineSolvePara sp;
 
+	sp.m_Input_IK_ZSPType = 0;
 	for (i = 0; i < 6; i++)
 	{
 		sp.m_Input_IK_ZSPPara[i] = 0;
