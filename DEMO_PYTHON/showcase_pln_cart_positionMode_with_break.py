@@ -6,12 +6,13 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 current_file_path = os.path.abspath(__file__)
 current_path = os.path.dirname(current_file_path)
+from SDK_PYTHON.fx_kine import Marvin_Kine, FX_InvKineSolvePara, convert_to_8x8_matrix
 from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS
 import time
 import logging
 
 '''#################################################################
-该DEMO 为关节位置下使用规划点位执行消除指令/通讯抖动,中断规划的案例
+该DEMO 为位置模式下，使用规划点位执行消除指令/通讯抖动，并中断规划运行的案例
 
 使用逻辑
     1 初始化订阅数据的结构体
@@ -21,7 +22,7 @@ import logging
     5 为了防止伺服有错，先清错
     6 设置速度加速度百分比，位置模式，并订阅查看设置是否成功
     7 直接指令走到零位
-    8 完成多次次循环：规划点位下发并中断
+    8 多次循环：走Z方向直线和中断运行
     9 任务完成,下使能,释放内存使别的程序或者用户可以连接机器人
 '''################################################################
 
@@ -114,13 +115,8 @@ logger.info(f'set vel={sub_data["inputs"][0]["joint_vel_ratio"]}, acc={sub_data[
 
 
 
-'''设置循环的规划点位'''
-joint_cmd_1 = [69.02, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35]
-joint_cmd_2 = [9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35]
-
-
 '''设置初始位置'''
-initial_pos=joint_cmd_1
+initial_pos=[44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1]
 robot.clear_set()
 robot.set_joint_cmd_pose(arm='A',joints=initial_pos)
 timeout = robot.send_cmd_wait_response(100)
@@ -128,33 +124,57 @@ logger.info(f'set joint cmd, 100ms 内测到的执行的响应延迟是 ：{time
 time.sleep(3)
 
 
-'''初始化规划器'''
-ret=robot.pln_init(config_path='ccs_m6_40.MvKDCfg')
-if not ret:
-    logger.info('load config failed')
-else:
-    logger.info(f'load cfg success')
 
-'''定义规划器的速度和加速度比例：范围0~1.'''
-vel_ratio=0.2
-acc_ratio=0.2
+'''实列化计算'''
+kk = Marvin_Kine()
+'''关闭日志'''
+kk.log_switch(0)  # 0 off, 1 on
+'''
+配置导入
+!!! 非常重要！！！
+使用前，请一定确认机型，导入正确的配置文件config_path，文件导错，计算会错误啊啊啊,甚至看起来运行正常，但是值错误！！！
+一定要确认arm_type是左臂0 还是右臂1
+'''
+ini_result = kk.load_config(arm_type=0, config_path=os.path.join(current_path, 'ccs_m6_40.MvKDCfg'))
+print(ini_result)
+
+'''
+初始化动力学
+'''
+initial_kine_tag = kk.initial_kine(
+    robot_type=ini_result['TYPE'][0],
+    dh=ini_result['DH'][0],
+    pnva=ini_result['PNVA'][0],
+    j67=ini_result['BD'][0])
+
+'''
+    将起点的关节角度通过正运动学得到起点的末端位置姿态矩阵
+    起点的末端位置姿态矩阵转为XYZABC
+    定义直线结束点的XYZABC，showcase是规划了末端Z方向移动100毫米
+'''
+fk_mat = kk.fk(joints=initial_pos)
+if fk_mat:
+    print(f'fk matrix:{fk_mat}')
+
+pose_6d_start = kk.mat4x4_to_xyzabc(pose_mat=fk_mat)
+print(f'pose_6d_start:{pose_6d_start}')
 
 
-'''多次次循环：用规划关节'''
+'''z+200'''
+pose_6d_end = pose_6d_start.copy()
+pose_6d_end[2] += 200  # Z方向移动200mm
+'''直线规划（MOVLA）'''
+points,pset = kk.movLA(start_xyzabc=pose_6d_start, end_xyzabc=pose_6d_end,
+                  ref_joints=initial_pos, vel=1000, acc=1000)
+
 for i in range(10):
-    logger.info(f'iter:{i}')
-    '''等待控制器无规划轨迹信号'''
-    while True:
-        data = robot.subscribe(dcss)
-        time.sleep(0.001)
-        if data['outputs'][0]['traj_state'] ==  b'\x00':
-            break
+    if pset:
+        '''规划下发并执行'''
+        robot.setPln_Cart(arm='A', pset=pset)
 
-    pln_re=robot.setPln_joint(arm='A',start_joints=joint_cmd_1,target_joints=joint_cmd_2,velRatio=vel_ratio,accRatio=acc_ratio)
-    if not pln_re:
-        logger.info('pln fail')
-        exit(-1)
-    time.sleep(0.2)
+    '''等待规划轨迹执行3s中断'''
+    time.sleep(3)
+
 
     '''规划中断'''
     robot.clear_set()
