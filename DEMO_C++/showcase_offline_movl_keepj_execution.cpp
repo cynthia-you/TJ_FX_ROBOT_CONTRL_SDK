@@ -186,7 +186,8 @@ int main()
     //3. 运行离线规划得到规划文件movl_keepj.txt
     char op[] = "movl_keepj.txt";
     char* path = op;
-    if (FX_Robot_PLN_MOVL_KeepJ(0, angle1, angle2, 100, 100,path)== FX_FALSE)
+    long freq=500;
+    if (FX_Robot_PLN_MOVL_KeepJ(0, angle1, angle2, 100, 100, freq, path)== FX_FALSE)
     {
         printf("MOVL KeepJ Error\n");
     }

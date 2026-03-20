@@ -183,7 +183,8 @@ int main()
 
     //3. 运行在线规划，用关节阻抗执行规划文件：规划文件为500HZ， 下采样为50HZ执行
     CPointSet pset_movl_keepja;
-    if (FX_Robot_PLN_MOVL_KeepJA(0, angle1, angle2, 100, 100,&pset_movl_keepja)== FX_FALSE)
+    long freq=500;
+    if (FX_Robot_PLN_MOVL_KeepJA(0, angle1, angle2, 100, 100,freq,&pset_movl_keepja)== FX_FALSE)
     {
         printf("MOVL KeepJA Error\n");
         return -1;

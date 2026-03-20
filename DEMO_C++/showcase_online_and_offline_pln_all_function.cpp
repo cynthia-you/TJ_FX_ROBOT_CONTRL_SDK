@@ -42,7 +42,7 @@ void RobotPLNDemo()
     FX_DOUBLE Mass[2][7];
     FX_DOUBLE MCP[2][7][3];
     FX_DOUBLE I[2][7][6];
-    if (LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
+    if (LOADMvCfg((char*)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
     {
         printf("Robot Load CFG Success\n");
     }
@@ -127,8 +127,8 @@ void RobotPLNDemo()
 
     char op[] = "test.txt";
     char* path = op;
-
-    if (FX_Robot_PLN_MOVL(0, start, end, jv, 100, 100, path) == FX_FALSE)
+    long freq=500;
+    if (FX_Robot_PLN_MOVL(0, start, end, jv, 100, 100, freq, path) == FX_FALSE)
     {
         printf("Robot MOVL Error\n");
     }
@@ -165,7 +165,7 @@ void RobotPLNDemo()
 
      ////////////////////////7. ֱ在线直线规划（MOVLA）并执行点
      CPointSet pset_movla;
-     if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla) == FX_FALSE)
+     if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla) == FX_FALSE)
      {
          printf("Robot MOVLA Error\n");
      }
@@ -197,7 +197,7 @@ void RobotPLNDemo()
      char op1[] = "testkeepj.txt";
      char* path1 = op1;
 
-     if (FX_Robot_PLN_MOVL_KeepJ(0, angle1, angle2, 100, 100,path1)== FX_FALSE)
+     if (FX_Robot_PLN_MOVL_KeepJ(0, angle1, angle2, 100, 100,freq,path1)== FX_FALSE)
      {
          printf("Robot MOVL KeepJ Error\n");
      }
@@ -233,7 +233,7 @@ void RobotPLNDemo()
 
      ////////////////////////10. 在线直线规划（MOVL_KeepJA）并执行点
      CPointSet pset_movl_keepja;
-     if (FX_Robot_PLN_MOVL_KeepJA(0, angle1, angle2, 100, 100,&pset_movl_keepja)== FX_FALSE)
+     if (FX_Robot_PLN_MOVL_KeepJA(0, angle1, angle2, 100, 100,freq,&pset_movl_keepja)== FX_FALSE)
      {
          printf("Robot MOVL KeepJA Error\n");
      }

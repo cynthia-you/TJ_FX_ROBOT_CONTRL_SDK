@@ -154,7 +154,7 @@ int main()
     FX_DOUBLE Mass[2][7];
     FX_DOUBLE MCP[2][7][3];
     FX_DOUBLE I[2][7][6];
-    if (LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_FALSE)
+    if (LOADMvCfg((char*)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_FALSE)
     {
         printf("Load CFG Error\n");
         return -1;
@@ -209,7 +209,8 @@ int main()
     //5. 运行离线规划得到规划文件movl.txt
     char op[] = "movl.txt";
     char* path = op;
-    if (FX_Robot_PLN_MOVL(0, start, end, jv, 100, 100, path) == FX_FALSE)
+    long freq=500;
+    if (FX_Robot_PLN_MOVL(0, start, end, jv, 100, 100, freq, path) == FX_FALSE)
     {
         printf("MOVL offline Error\n");
         return -1;

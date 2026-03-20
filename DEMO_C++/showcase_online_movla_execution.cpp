@@ -101,8 +101,8 @@ int main()
 
     //设置控制模式为关节阻抗
     OnClearSet();
-    OnSetTargetState_A(3) ; //3:torque mode; 1:position mode
-    OnSetImpType_A(1) ;//type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
+    OnSetTargetState_A(1) ; //3:torque mode; 1:position mode
+    //OnSetImpType_A(1) ;//type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
     OnSetSend();
     usleep(100000);
 
@@ -155,7 +155,7 @@ int main()
     FX_DOUBLE Mass[2][7];
     FX_DOUBLE MCP[2][7][3];
     FX_DOUBLE I[2][7][6];
-    if (LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_FALSE)
+    if (LOADMvCfg((char*)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_FALSE)
     {
         printf("Load CFG Error\n");
         return -1;
@@ -204,11 +204,12 @@ int main()
     {
         end[i] = xyzabc[i];
     }
-    end[0]+=50;//末端X方向移动50毫米
+    end[2]+=200;//末端X方向移动50毫米
 
     //5. 运行在线规划,规划文件为500HZ， 下采样为50HZ执行
     CPointSet pset_movla;
-    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla) == FX_FALSE)
+    long freq=50;
+    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq,&pset_movla) == FX_FALSE)
     {
         printf("MOVLA Error\n");
         return -1;

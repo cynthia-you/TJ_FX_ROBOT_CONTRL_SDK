@@ -48,7 +48,7 @@ void RobotKineDemo()
     // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
     // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg； 
     // srs机型为srs.MvKDCfg.
-    if (LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
+    if (LOADMvCfg((char*)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
     {
         printf("Robot Load CFG Success\n");
     }
@@ -229,8 +229,8 @@ void RobotKineDemo()
 
     char op[] = "test_movl.txt";
     char* path = op;
-
-    if (FX_Robot_PLN_MOVL(0, start, end, jv, 100, 100, path) == FX_FALSE)
+    long freq_movl=500;
+    if (FX_Robot_PLN_MOVL(0, start, end, jv, 100, 100, freq_movl, path) == FX_FALSE)
     {
         printf("Robot MOVL Error\n");
     }
@@ -243,7 +243,8 @@ void RobotKineDemo()
 
     ////////////////////////10. ֱ在线直线规划（MOVLA）并执行点
      CPointSet pset_movla;
-     if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla) == FX_FALSE)
+     long freq=500;
+     if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq,&pset_movla) == FX_FALSE)
      {
          printf("Robot MOVLA Error\n");
      }
@@ -261,7 +262,7 @@ void RobotKineDemo()
      char op1[] = "test_movl_keepj.txt";
      char* path1 = op1;
 
-     if (FX_Robot_PLN_MOVL_KeepJ(0, angle1, angle2, 100, 100,path1)== FX_FALSE)
+     if (FX_Robot_PLN_MOVL_KeepJ(0, angle1, angle2, 100, 100, freq, path1)== FX_FALSE)
      {
          printf("Robot MOVL KeepJ Error\n");
      }
@@ -274,7 +275,7 @@ void RobotKineDemo()
 
      ////////////////////////12. 在线直线规划（MOVL_KeepJA）并执行点
      CPointSet pset_movl_keepja;
-     if (FX_Robot_PLN_MOVL_KeepJA(0, angle1, angle2, 100, 100,&pset_movl_keepja)== FX_FALSE)
+     if (FX_Robot_PLN_MOVL_KeepJA(0, angle1, angle2, 100, 100, freq, &pset_movl_keepja)== FX_FALSE)
      {
          printf("Robot MOVL KeepJA Error\n");
      }

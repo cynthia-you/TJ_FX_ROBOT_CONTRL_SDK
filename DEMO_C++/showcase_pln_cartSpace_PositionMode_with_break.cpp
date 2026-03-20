@@ -237,7 +237,8 @@ int main()
 
     //5. 运行在线规划,规划文件为50HZ
     CPointSet pset_movla;
-    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 1000, 1000, &pset_movla) == FX_FALSE)
+    long freq=50;
+    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 1000, 1000, freq, &pset_movla) == FX_FALSE)
     {
         printf("MOVLA Error\n");
         return -1;

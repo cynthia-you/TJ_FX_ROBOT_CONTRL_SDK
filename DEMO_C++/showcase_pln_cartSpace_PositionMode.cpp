@@ -237,7 +237,8 @@ int main()
 
     //5. 运行在线规划,规划文件为50HZ
     CPointSet pset_movla;
-    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla) == FX_FALSE)
+    long freq=50;
+    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla) == FX_FALSE)
     {
         printf("MOVLA Error\n");
         return -1;
@@ -276,7 +277,7 @@ int main()
         jv[5]=joint1[5];
         jv[6]=joint1[6];
         
-        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla1) == FX_FALSE)
+        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla1) == FX_FALSE)
         {
             printf("MOVLA Error\n");
             return -1;
@@ -313,7 +314,7 @@ int main()
         jv[5]=joint2[5];
         jv[6]=joint2[6];
         
-        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla2) == FX_FALSE)
+        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla2) == FX_FALSE)
         {
             printf("MOVLA Error\n");
             return -1;
@@ -351,7 +352,7 @@ int main()
         jv[5]=joint3[5];
         jv[6]=joint3[6];
         
-        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, &pset_movla3) == FX_FALSE)
+        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla3) == FX_FALSE)
         {
             printf("MOVLA Error\n");
             return -1;
