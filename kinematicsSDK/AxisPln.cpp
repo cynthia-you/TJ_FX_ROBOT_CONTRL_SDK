@@ -18,6 +18,26 @@ CAxisPln::~CAxisPln()
 
 }
 
+void CAxisPln::OnSetFreq(long freq)
+{
+	const double base_freq = 1000.0; // 1msÏµÍ³
+	double ratio = base_freq / (double)freq;
+	double rounded = round(ratio);
+
+	//An improperly set frequency will lead to uneven performance in each control cycle.
+	if (fabs(ratio - rounded) < 1e-3)
+	{
+		m_freq = (double)freq;
+		m_cycle = 1 / m_freq;
+	}
+	else
+	{
+		//default 500Hz
+		m_cycle = 0.002; 
+		m_freq = 500.0;
+	}
+}
+
 bool CAxisPln::OnPln(double start_pos, double end_pos, double vel, double acc, double jerk, CPointSet* ret)
 {
 	ret->OnInit(PotT_2d);
@@ -125,7 +145,7 @@ bool CAxisPln::OnPln(double start_pos, double end_pos, double vel, double acc, d
 		double* pre = ret->OnGetPoint(i - 1);
 		double* cur = ret->OnGetPoint(i);
 		double* nex = ret->OnGetPoint(i + 1);
-		cur[1] = (nex[0] - pre[0]) * 50.0;
+		cur[1] = (nex[0] - pre[0]) * m_freq;
 		//cur[1] = (nex[0] - pre[0]) * 250.0;
 	}
 	
@@ -468,7 +488,7 @@ bool CAxisPln::InitPln(double s, double v, double a, double j)
 long CAxisPln::OnGetPlnNum()
 {
 	double t = m_time_acc + m_time_dacc + m_time_vel;
-	double t_num = t / 0.02; //50Hz
+	double t_num = t / m_cycle;
 	long ret = t_num + 2;
 	return ret;
 }
@@ -480,7 +500,7 @@ double CAxisPln::OnGetPln(double* ret_v)
 	{
 		double s = 0.5 * m_a * m_cur_time * m_cur_time;
 		*ret_v = m_cur_time * m_a; 
-		m_cur_time += 0.02;
+		m_cur_time += m_cycle;
 		return s;
 	}
 	if (m_cur_time <= (m_time_acc + m_time_vel))
@@ -489,7 +509,7 @@ double CAxisPln::OnGetPln(double* ret_v)
 		double s2 = m_v * (m_cur_time - m_time_acc);
 		double s = s1 + s2;
 		*ret_v = m_v;
-		m_cur_time += 0.02;
+		m_cur_time += m_cycle;
 		return s;
 	}
 
@@ -504,7 +524,7 @@ double CAxisPln::OnGetPln(double* ret_v)
 
 		*ret_v = v_t;
 
-		m_cur_time += 0.02;
+		m_cur_time += m_cycle;
 		return s;
 	}
 

@@ -40,20 +40,20 @@ FX_BOOL FX_CPointSet_OnSetPoint(void* pset, FX_DOUBLE point_value[]) {
 
 // C风格包装的MOVLA函数
 FX_BOOL FX_Robot_PLN_MOVLA_C(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC,
-                            Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, void* ret_pset) {
+                            Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, void* ret_pset) {
     if (!ret_pset) return FX_FALSE;
     CPointSet* pointSet = static_cast<CPointSet*>(ret_pset);
     // 调用原始的C++函数
     return FX_Robot_PLN_MOVLA(RobotSerial, Start_XYZABC, End_XYZABC,
-                             Ref_Joints, Vel, ACC, pointSet);
+                             Ref_Joints, Vel, ACC, Freq, pointSet);
 }
 
 FX_BOOL  FX_Robot_PLN_MOVL_KeepJA_C(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints,
-                            FX_DOUBLE vel, FX_DOUBLE acc, void* ret_pset){
+                            FX_DOUBLE vel, FX_DOUBLE acc, FX_INT32L Freq, void* ret_pset){
     if (!ret_pset) return FX_FALSE;
     CPointSet* pointSet = static_cast<CPointSet*>(ret_pset);
     return FX_Robot_PLN_MOVL_KeepJA(RobotSerial, startjoints, stopjoints,
-                            vel, acc, pointSet);
+                            vel, acc, Freq,pointSet);
 
 }
 

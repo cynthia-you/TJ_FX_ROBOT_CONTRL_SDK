@@ -10,6 +10,8 @@ public:
 	CAxisPln();
 	virtual ~CAxisPln();
 
+	void OnSetFreq(long freq);
+
 	bool OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, char* path);
 	bool OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, CPointSet * ret_pset);
 	bool OnMovJ(long RobotSetial, double start_joint[7], double end_joint[7], double vel, double acc, double jerk, char* path);
@@ -36,6 +38,9 @@ protected:
 	double m_filt_value[500];
 	long m_filt_cnt;
 	long m_filt_pos;
+
+	double m_freq;
+	double m_cycle;  //frequency to cycle
 };
 
 class CMovingAverageFilter

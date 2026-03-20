@@ -3698,8 +3698,7 @@ FX_BOOL  FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L R
 
 	return FX_TRUE;
 }
-
-FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT8* OutPutPath)
+FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, FX_INT8* OutPutPath)
 {
 	if (FX_LOG_TAG) FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL]\n");
 
@@ -3731,6 +3730,7 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
 	FX_DOUBLE jerk = ACC*10;
 
 	CAxisPln Spln;
+	Spln.OnSetFreq(Freq);
 	FX_BOOL result = Spln.OnMovL(RobotSerial, refJ, start_pos, end_pos, Vel, ACC, jerk, OutPutPath);
 
 	if (result != FX_FALSE)
@@ -3744,7 +3744,7 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
 	}
 }
 
-FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, CPointSet* ret_pset)
+FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, CPointSet* ret_pset)
 {
 	if (FX_LOG_TAG) FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVLA]\n");
 
@@ -3764,6 +3764,7 @@ FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End
 	FX_DOUBLE jerk = ACC * 10;
 
 	CAxisPln Spln;
+	Spln.OnSetFreq(Freq);
 	FX_BOOL result = Spln.OnMovL(RobotSerial, refJ, start_pos, end_pos, Vel, ACC, jerk, ret_pset);
 
 
@@ -3780,7 +3781,7 @@ FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End
 	return FX_FALSE;
 }
 
-FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel,FX_DOUBLE acc,FX_CHAR* OutPutPath)
+FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc, FX_INT32L Freq, FX_CHAR* OutPutPath)
 {
 	if (FX_LOG_TAG) FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL - KeepJ]\n");
 
@@ -3807,6 +3808,7 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
 	}
 
 	CAxisPln Spln;
+	Spln.OnSetFreq(Freq);
 	FX_BOOL result = Spln.OnMovL_KeepJ_Cut(RobotSerial, start_pos, end_pos, vel, acc, OutPutPath);
 
 	if (result != FX_FALSE)
@@ -3820,7 +3822,7 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
 	}
 }
 
-FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc, CPointSet* ret_pset)
+FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc, FX_INT32L Freq, CPointSet* ret_pset)
 {
 	if (FX_LOG_TAG) FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL - KeepJ]\n");
 
@@ -3835,6 +3837,7 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect
 	}
 
 	CAxisPln Spln;
+	Spln.OnSetFreq(Freq);
 	FX_BOOL result = Spln.OnMovL_KeepJ_CutA(RobotSerial, start_pos, end_pos, vel, acc, ret_pset);
 
 	if (result != FX_FALSE)
