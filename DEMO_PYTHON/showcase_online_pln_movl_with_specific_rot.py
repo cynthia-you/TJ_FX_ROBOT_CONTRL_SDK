@@ -79,7 +79,7 @@ robot.local_log_switch('1')  # 主要日志
 
 '''设置阻抗参数'''
 robot.clear_set()
-robot.set_cart_kd_params(arm='A', K=[4000, 6000, 6000, 200, 200, 200, 20], D=[0.5, 0.5, 0.5, 0.3, 0.3, 0.3, 1],
+robot.set_cart_kd_params(arm='A', K=[8000,8000,8000, 600, 600, 600, 20], D=[0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 1],
                          type=2)
 robot.send_cmd()
 time.sleep(0.5)
@@ -211,14 +211,15 @@ end_xyzabc=kk.calculate_end_xyzabc(start_xyzabc=pose_6d_1,pose_offset=[-100,0,0]
     运行在线规划,规划点位为500HZ， 下采样为50HZ执行
 '''
 # ONLINE
-points = kk.movLA(start_xyzabc=pose_6d_1, end_xyzabc=end_xyzabc,
-                  ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68], vel=200, acc=200)
+points,pset = kk.movLA(start_xyzabc=pose_6d_1, end_xyzabc=end_xyzabc,
+                  ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68], vel=200, acc=200,freq_hz=100)
 print(f"Got {len(points)} planning points")
 # 走小动作用大速度
 robot.clear_set()
 robot.set_vel_acc(arm='A', velRatio=50, AccRatio=50)
 robot.send_cmd()
-time.sleep(0.5)
+time.sleep(0.2)
+
 if points:
     # 500hz-->200hz
     for i in range(0, len(points), 1):
@@ -233,8 +234,8 @@ if points:
 robot.clear_set()
 robot.set_vel_acc(arm='A', velRatio=20, AccRatio=20)
 robot.send_cmd()
+time.sleep(0.2)
 
-time.sleep(0.5)
 '''运行到起始点位'''
 robot.clear_set()
 joint_cmd_1 = [21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68]
@@ -251,14 +252,15 @@ end_xyzabc=kk.calculate_end_xyzabc(start_xyzabc=pose_6d_1,pose_offset=[-100,0,0]
     运行在线规划,规划点位为500HZ， 下采样为50HZ执行
 '''
 # ONLINE
-points = kk.movLA(start_xyzabc=pose_6d_1, end_xyzabc=end_xyzabc,
-                  ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68], vel=200, acc=200)
+points,pset = kk.movLA(start_xyzabc=pose_6d_1, end_xyzabc=end_xyzabc,
+                  ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68], vel=200, acc=200,freq_hz=100)
 print(f"Got {len(points)} planning points")
 
 # 走小动作用大速度
 robot.clear_set()
 robot.set_vel_acc(arm='A', velRatio=50, AccRatio=50)
 robot.send_cmd()
+time.sleep(0.2)
 
 if points:
     # 500hz-->200hz
@@ -292,14 +294,15 @@ end_xyzabc=kk.calculate_end_xyzabc(start_xyzabc=pose_6d_1,pose_offset=[-100,0,0]
     运行在线规划,规划点位为500HZ， 下采样为50HZ执行
 '''
 # ONLINE
-points = kk.movLA(start_xyzabc=pose_6d_1, end_xyzabc=end_xyzabc,
-                  ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68], vel=200, acc=200)
+points,pset = kk.movLA(start_xyzabc=pose_6d_1, end_xyzabc=end_xyzabc,
+                  ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68], vel=200, acc=200,freq_hz=100)
 print(f"Got {len(points)} planning points")
 
 # 走小动作用大速度
 robot.clear_set()
 robot.set_vel_acc(arm='A', velRatio=50, AccRatio=50)
 robot.send_cmd()
+time.sleep(0.2)
 
 if points:
     # 500hz-->200hz
@@ -313,6 +316,7 @@ if points:
 robot.clear_set()
 robot.set_state(arm='A', state=0)
 robot.send_cmd()
+time.sleep(0.2)
 
 '''释放机器人内存'''
 robot.release_robot()

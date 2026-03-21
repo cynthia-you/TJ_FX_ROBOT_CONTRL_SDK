@@ -77,7 +77,7 @@ robot.local_log_switch('1')  # 主要日志
 
 '''设置阻抗参数'''
 robot.clear_set()
-robot.set_cart_kd_params(arm='A', K=[1000, 4000, 4000, 600, 600, 600, 20], D=[0.4, 0.4, 0.17, 0.23, 0.23, 0.2, 0.2],
+robot.set_cart_kd_params(arm='A', K=[8000,8000,8000, 600, 600, 600, 20], D=[0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 1],
                          type=2)
 robot.send_cmd()
 time.sleep(0.5)
@@ -86,7 +86,7 @@ time.sleep(0.5)
 robot.clear_set()
 robot.set_state(arm='A', state=3)  # state=3扭矩模式
 robot.set_impedance_type(arm='A', type=2)  # type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
-robot.set_vel_acc(arm='A', velRatio=100, AccRatio=100)
+robot.set_vel_acc(arm='A', velRatio=50, AccRatio=50)
 robot.send_cmd()
 time.sleep(0.5)
 
@@ -166,7 +166,7 @@ initial_kine_tag = kk.initial_kine(
 '''
 # ONLINE
 points = kk.movL_KeepJA(start_joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995],
-                        end_joints=[-26.908, -91.109, 74.502, -88.083, -93.599, 17.151, -13.602], vel=100, acc=100)
+                        end_joints=[-26.908, -91.109, 74.502, -88.083, -93.599, 17.151, -13.602], vel=100, acc=100,freq_hz=50)
 print(f"Got {len(points)} planning points")
 if points:
     # 500hz-->50hz
@@ -190,6 +190,7 @@ robot.save_collected_data_as_csv_to_path(path)
 robot.clear_set()
 robot.set_state(arm='A', state=0)
 robot.send_cmd()
+time.sleep(0.2)
 
 '''释放机器人内存'''
 robot.release_robot()

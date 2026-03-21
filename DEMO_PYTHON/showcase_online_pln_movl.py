@@ -79,7 +79,7 @@ robot.local_log_switch('1')  # 主要日志
 
 '''设置阻抗参数'''
 robot.clear_set()
-robot.set_cart_kd_params(arm='A', K= [1000, 4000, 4000, 600, 600, 600, 20], D=[0.4, 0.4, 0.17, 0.23, 0.23, 0.2, 0.2],
+robot.set_cart_kd_params(arm='A', K= [8000,8000,8000, 600, 600, 600, 20], D=[0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 1],
                          type=2)
 robot.send_cmd()
 time.sleep(0.5)
@@ -88,7 +88,7 @@ time.sleep(0.5)
 robot.clear_set()
 robot.set_state(arm='A', state=3)  # state=3扭矩模式
 robot.set_impedance_type(arm='A', type=2)  # type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
-robot.set_vel_acc(arm='A', velRatio=100, AccRatio=100)
+robot.set_vel_acc(arm='A', velRatio=50, AccRatio=50)
 robot.send_cmd()
 time.sleep(0.5)
 
@@ -173,8 +173,8 @@ print(f'6d_pose_2:{pose_6d_2}')
     运行在线规划,规划点位为500HZ， 下采样为50HZ执行
 '''
 # ONLINE
-points = kk.movLA(start_xyzabc=pose_6d_1, end_xyzabc=pose_6d_2,
-                  ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68], vel=100, acc=100)
+points,pset = kk.movLA(start_xyzabc=pose_6d_1, end_xyzabc=pose_6d_2,
+                  ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68], vel=100, acc=100,freq_hz=50)
 print(f"Got {len(points)} planning points")
 if points:
     # 500hz-->50hz
@@ -198,6 +198,7 @@ robot.save_collected_data_as_csv_to_path(path)
 robot.clear_set()
 robot.set_state(arm='A', state=0)
 robot.send_cmd()
+time.sleep(0.2)
 
 '''释放机器人内存'''
 robot.release_robot()

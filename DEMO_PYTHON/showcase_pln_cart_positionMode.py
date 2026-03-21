@@ -167,7 +167,7 @@ pose_6d_end = pose_6d_start.copy()
 pose_6d_end[2] += 200  # Z方向移动200mm
 '''直线规划（MOVLA）'''
 points,pset = kk.movLA(start_xyzabc=pose_6d_start, end_xyzabc=pose_6d_end,
-                  ref_joints=initial_pos, vel=1000, acc=1000)
+                  ref_joints=initial_pos, vel=1000, acc=1000,freq_hz=50)
 if pset:
     '''规划下发并执行'''
     robot.setPln_Cart(arm='A',pset=pset)
@@ -185,7 +185,7 @@ pose_6d_end = pose_6d_start.copy()
 pose_6d_end[1] -= 200  # Y方向移动200mm
 '''直线规划（MOVLA）'''
 points,pset = kk.movLA(start_xyzabc=pose_6d_start, end_xyzabc=pose_6d_end,
-                  ref_joints=initial_pos, vel=1000, acc=1000)
+                  ref_joints=initial_pos, vel=1000, acc=1000,freq_hz=50)
 if pset:
     '''规划下发并执行'''
     robot.setPln_Cart(arm='A',pset=pset)
@@ -203,7 +203,7 @@ pose_6d_end = pose_6d_start.copy()
 pose_6d_end[2] -= 200  # z方向移动200mm
 '''直线规划（MOVLA）'''
 points,pset = kk.movLA(start_xyzabc=pose_6d_start, end_xyzabc=pose_6d_end,
-                  ref_joints=initial_pos, vel=1000, acc=1000)
+                  ref_joints=initial_pos, vel=1000, acc=1000,freq_hz=50)
 if pset:
     '''规划下发并执行'''
     robot.setPln_Cart(arm='A',pset=pset)
@@ -221,7 +221,7 @@ pose_6d_end = pose_6d_start.copy()
 pose_6d_end[1] += 200  # Y方向移动200mm
 '''直线规划（MOVLA）'''
 points,pset = kk.movLA(start_xyzabc=pose_6d_start, end_xyzabc=pose_6d_end,
-                  ref_joints=initial_pos, vel=1000, acc=1000)
+                  ref_joints=initial_pos, vel=1000, acc=1000,freq_hz=50)
 if pset:
     '''规划下发并执行'''
     robot.setPln_Cart(arm='A',pset=pset)
