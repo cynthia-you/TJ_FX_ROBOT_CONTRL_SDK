@@ -45,17 +45,16 @@
   - mat4x4_to_mat1x16(pose_mat)
 
     直线插值规划
-  - movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, save_path)
+  - movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, freq_hz:int, save_path)
     
     直线插值规划，约束起始结束关节构型
-  - movL_KeepJ(start_joints:list, end_joints:list,vel:float,acc: float,save_path)
+  - movL_KeepJ(start_joints:list, end_joints:list,vel:float,acc: float,freq_hz:int, save_path)
 
     在线直线插值规划
-  - movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float)
+  - movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float,freq_hz:int )
 
-        
     在线直线插值规划，约束起始结束关节构型
-  - movL_KeepJA(start_joints:list, end_joints:list,vel:float,acc: float)
+  - movL_KeepJA(start_joints:list, end_joints:list,vel:float,acc: float,freq_hz:int)
 
     移除工具设置
   - remove_tool_kine()
@@ -278,7 +277,7 @@ joints2JacobMatrix(joints: list)
             '''
 
 ###    2.9 直线规划（MOVL）
-movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, save_path)
+movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, freq_hz:int, save_path)
 
     • 输出点位频率为500Hz，即每20ms执行一行
 
@@ -288,16 +287,18 @@ movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: fl
         :param ref_joints:参考关节构型，也是规划文件的起始点位。
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        :param freq_hz:设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)            
         :param save_path:保存的规划文件的路径
         :return: bool
         特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
                 2 输出规划文件的频率为500Hz
                 3 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
+                4 一段规划轨迹会分为加速段，匀速段和减速段， 当起点到终点的距离过短时，匀速段的速度和加速度可能达不到设置值，请知悉。
         '''
 
             
 ###    2.10 直线插值规划，约束起始结束关节构型（movL_KeepJ）
-movL_KeepJ(start_joints:list, end_joints:list,vel:float,save_path)
+movL_KeepJ(start_joints:list, end_joints:list,vel:float,freq_hz:int,save_path)
 
     • 输出点位频率为50Hz，即每2ms执行一行
         '''直线规划保持关节构型, 规划文件的点位频率50Hz，即每20ms执行一行
@@ -305,17 +306,19 @@ movL_KeepJ(start_joints:list, end_joints:list,vel:float,save_path)
         :param end_joints:终点各个关节位置（单位：角度）
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        :param freq_hz:设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
         :param save_path:规划文件的保存路径
         :return: bool
         特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
                 2 输出点位频率为500Hz
                 3 该接口是不同于MOVL的规划接口，movL_KeepJ根据起始关节和结束关节规划一条直线路径。
+                4 一段规划轨迹会分为加速段，匀速段和减速段， 当起点到终点的距离过短时，匀速段的速度和加速度可能达不到设置值，请知悉。
         '''
 
 
 
 ###    2.11 在线直线规划（MOVL）
-movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float)
+movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float,freq_hz:int)
 
     • 输出点位频率为500Hz，即每20ms执行一行
 
@@ -325,15 +328,17 @@ movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: f
         :param ref_joints:参考关节构型，也是规划文件的起始点位。
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        :param freq_hz:设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
         :return: 规划得到的点集列表
         特别提示:1 需要读函数返回值,如果关节超限,返回为false.
                 2 输出规划文件的频率为500Hz
                 3 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
+                4 一段规划轨迹会分为加速段，匀速段和减速段， 当起点到终点的距离过短时，匀速段的速度和加速度可能达不到设置值，请知悉。
         '''
 
             
 ###    2.12 在线直线插值规划，约束起始结束关节构型（movL_KeepJ）
-movL_KeepJA(start_joints:list, end_joints:list,vel:float,save_path)
+movL_KeepJA(start_joints:list, end_joints:list,vel:float,freq_hz:int,save_path)
 
     • 输出点位频率为50Hz，即每2ms执行一行
         '''直线规划，执行movL_KeepJA规划并返回点集数据(频率500Hz)
@@ -342,10 +347,12 @@ movL_KeepJA(start_joints:list, end_joints:list,vel:float,save_path)
        :param end_joints:终点各个关节位置（单位：角度）
        :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+       :param freq_hz:设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
        :return: 规划得到的点集列表
        特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的点集.
                2 输出点位频率为500Hz
                3 该接口是不同于MOVLA的规划接口，movL_KeepJA根据起始关节和结束关节规划一条直线路径。
+               4 一段规划轨迹会分为加速段，匀速段和减速段， 当起点到终点的距离过短时，匀速段的速度和加速度可能达不到设置值，请知悉。
        '''
 
 
