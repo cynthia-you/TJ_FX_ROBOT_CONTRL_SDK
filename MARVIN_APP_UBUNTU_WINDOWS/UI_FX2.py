@@ -36,28 +36,28 @@ initial_kine_tag2 = kk2.initial_kine(robot_type=ini_result2['TYPE'][1],
 
 button_w = 10
 
-# 定义常量
+# Define constants
 DBL_EPSILON = sys.float_info.epsilon
 
-# 创建队列
+# Create queue
 data_queue = queue.Queue()
 def read_data(robot_id,com):
-    '''接收CAN的HEX数据'''
+    '''Receive HEX data from CAN/485'''
     while True:
         try:
             tag, receive_hex_data = robot.get_485_data(robot_id, com)
             if tag >= 1:
-                print(f"接收的HEX数据：{receive_hex_data}")
+                print(f"Received HEX data: {receive_hex_data}")
                 data_queue.put(receive_hex_data)
             else:
                 time.sleep(0.001)
         except Exception as e:
-            # print(f"读取数据错误: {e}")
+            # print(f"Read data error: {e}")
             time.sleep(0.001)
 
 
 def get_received_data():
-    '''获取接收到的数据并计数'''
+    '''Get received data and count'''
     received_count = 0
     received_data_list = []
 
@@ -74,7 +74,7 @@ def get_received_data():
 
 
 def Matrix2ABC(m, abc):
-    """将3x3矩阵转换为ABC角度"""
+    """Convert a 3x3 rotation matrix to ABC Euler angles"""
     r = math.sqrt(m[0][0] * m[0][0] + m[1][0] * m[1][0])
     abc[1] = math.atan2(-m[2][0], r) * 57.295779513082320876798154814105
 
@@ -92,7 +92,7 @@ def Matrix2ABC(m, abc):
 
 
 def FX_VectCross(a, b):
-    """向量叉积"""
+    """Vector cross product"""
     result = [0.0] * 3
     result[0] = a[1] * b[2] - a[2] * b[1]
     result[1] = a[2] * b[0] - a[0] * b[2]
@@ -101,12 +101,12 @@ def FX_VectCross(a, b):
 
 
 def NormVect(a):
-    """向量模长"""
+    """Vector magnitude (norm)"""
     return math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
 
 
 def main_function(vx, vy):
-    """主函数 - vx和vy是列向量"""
+    """Main function - vx and vy are column vectors"""
     m_S = ""
 
     if NormVect(vx) < 0.01 or NormVect(vy) < 0.01:
@@ -118,43 +118,43 @@ def main_function(vx, vy):
     if vz_norm < 0.99 or vz_norm > 1.01:
         return m_S, [0, 0, 0]
 
-    # 构建3x3矩阵 - vx, vy, vz 作为列向量
+    # Build 3x3 matrix - vx, vy, vz as column vectors
     m_mat = [
-        [vx[0], vy[0], vz[0]],  # 第一列: vx, 第二列: vy, 第三列: vz
+        [vx[0], vy[0], vz[0]],  # Col 1: vx, Col 2: vy, Col 3: vz
         [vx[1], vy[1], vz[1]],
         [vx[2], vy[2], vz[2]]
     ]
 
-    # 矩阵形式显示
-    m_S += "矩阵形式（列向量为坐标方向向量）：\n"
+    # Display matrix form
+    m_S += "Matrix form (column vectors are coordinate direction vectors):\n"
     m_S += f"{m_mat[0][0]:.2f}\t{m_mat[0][1]:.2f}\t{m_mat[0][2]:.2f}\n"
     m_S += f"{m_mat[1][0]:.2f}\t{m_mat[1][1]:.2f}\t{m_mat[1][2]:.2f}\n"
     m_S += f"{m_mat[2][0]:.2f}\t{m_mat[2][1]:.2f}\t{m_mat[2][2]:.2f}\n\n"
 
-    # 计算ABC角度
+    # Calculate ABC angles
     m_abc = [0.0] * 3
     Matrix2ABC(m_mat, m_abc)
 
-    m_S += f"ABC角度：[{m_abc[0]:.5f}, {m_abc[1]:.5f}, {m_abc[2]:.5f}]\n"
+    m_S += f"ABC angles: [{m_abc[0]:.5f}, {m_abc[1]:.5f}, {m_abc[2]:.5f}]\n"
 
     return m_S
 
 
-# 格式化数据
+# Format data
 def format_vector(vector):
     return ", ".join([f"{v:.2f}" for v in vector])
 
 
 def preview_text_file():
-    """在新窗口中预览文本文件"""
+    """Preview a text file in a new window"""
     file_path = os.path.join(crr_pth, "config/python_doc_contrl.md")
 
-    # 创建新窗口
+    # Create new window
     preview_window = tk.Toplevel(root)
-    preview_window.title(f"预览文档: {file_path.split('/')[-1]}")
+    preview_window.title(f"Document Preview: {file_path.split('/')[-1]}")
     preview_window.geometry("600x400")
 
-    # 创建带滚动条的文本框
+    # Create scrollable text area
     scroll_frame = tk.Frame(preview_window)
     scroll_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
@@ -169,56 +169,56 @@ def preview_text_file():
     text_area.pack(fill=tk.BOTH, expand=True)
     scrollbar.config(command=text_area.yview)
 
-    # 添加关闭按钮
+    # Add close button
     close_btn = tk.Button(
         preview_window,
-        text="关闭预览",
+        text="Close Preview",
         command=preview_window.destroy
     )
     close_btn.pack(pady=10)
 
-    # 读取并显示文件内容
+    # Read and display file content
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
             text_area.insert(tk.INSERT, content)
-            text_area.config(state=tk.DISABLED)  # 设置为只读
+            text_area.config(state=tk.DISABLED)  # Set read-only
     except Exception as e:
-        messagebox.showerror("错误", f"无法读取文件:\n{str(e)}")
+        messagebox.showerror("Error", f"Cannot read file:\n{str(e)}")
 
 
 def preview_text_file_1():
-    """在新窗口中预览文本文件"""
-    messagebox.showinfo("采集idx说明", f"采集数据ID序号:\n"
-                                       "左臂\n"
-                                       "0-6:左臂关节位置\n"
-                                       "10-16:左臂关节速度\n"
-                                       "20-26:左臂外编位置\n"
-                                       "30-36:左臂关节指令位置\n"
-                                       "40-46:左臂关节电流（千分比）\n"
-                                       "50-56:左臂关节传感器扭矩NM\n"
-                                       "60-66:左臂摩擦力估计值\n"
-                                       "70-76:左臂摩檫力速度估计值\n"
-                                       "80-85:左臂关节外力估计值\n"
-                                       "90-95:左臂末端点外力估计值\n\n"
-                                       "特别注意 76 为左臂动力学辨识标记列\n"
-                                       "\n右臂\n"
-                                       "100-106:右臂关节位置\n"
-                                       "110-116:右臂关节速度\n"
-                                       "120-126:右臂外编位置\n"
-                                       "130-136:右臂关节指令位置\n"
-                                       "140-146:右臂关节电流（千分比）\n"
-                                       "150-156:右臂关节传感器扭矩NM\n"
-                                       "160-166:右臂摩擦力估计值\n"
-                                       "170-176:右臂摩檫力速度估计值\n"
-                                       "180-185:右臂关节外力估计值\n"
-                                       "190-195:右臂末端点外力估计值\n\n"
-                                       "特别注意 176 为右臂动力学辨识标记列\n"
+    """Show data collection index description"""
+    messagebox.showinfo("Data Collection Index Guide", f"Data collection ID numbers:\n"
+                                       "Left Arm\n"
+                                       "0-6: Left arm joint position\n"
+                                       "10-16: Left arm joint velocity\n"
+                                       "20-26: Left arm external encoder position\n"
+                                       "30-36: Left arm joint command position\n"
+                                       "40-46: Left arm joint current (per mille)\n"
+                                       "50-56: Left arm joint sensor torque (Nm)\n"
+                                       "60-66: Left arm friction estimate\n"
+                                       "70-76: Left arm friction velocity estimate\n"
+                                       "80-85: Left arm joint external force estimate\n"
+                                       "90-95: Left arm end-point external force estimate\n\n"
+                                       "Note: index 76 is the left arm dynamics identification marker column\n"
+                                       "\nRight Arm\n"
+                                       "100-106: Right arm joint position\n"
+                                       "110-116: Right arm joint velocity\n"
+                                       "120-126: Right arm external encoder position\n"
+                                       "130-136: Right arm joint command position\n"
+                                       "140-146: Right arm joint current (per mille)\n"
+                                       "150-156: Right arm joint sensor torque (Nm)\n"
+                                       "160-166: Right arm friction estimate\n"
+                                       "170-176: Right arm friction velocity estimate\n"
+                                       "180-185: Right arm joint external force estimate\n"
+                                       "190-195: Right arm end-point external force estimate\n\n"
+                                       "Note: index 176 is the right arm dynamics identification marker column\n"
                         )
 
 
 class DataSubscriber:
-    """数据订阅器，定期更新数据"""
+    """Data subscriber that periodically updates data"""
 
     def __init__(self, callback):
         self.callback = callback
@@ -227,12 +227,12 @@ class DataSubscriber:
         self.thread.start()
 
     def generate_data(self):
-        """订阅数据"""
+        """Subscribe to robot data"""
         while self.running:
             result = robot.subscribe(dcss)
-            # 回调更新UI
+            # Callback to update UI
             self.callback(result)
-            time.sleep(0.5)  # 每0.5秒更新一次
+            time.sleep(0.5)  # Update every 0.5 seconds
 
     def stop(self):
         self.running = False
@@ -252,7 +252,7 @@ class App:
 
         self.save_tool_data_path = None
 
-        # 初始化数据
+        # Initialize data
         self.result = {
             'states': [
                 {'cur_state': 0, 'cmd_state': 0, 'err_code': 0}, {'cur_state': 0, 'cmd_state': 0, 'err_code': 0},
@@ -263,16 +263,16 @@ class App:
                     {'frame_serial': 0,
                      'tip_di': b'\x00',
                      'low_speed_flag': b'\x00',
-                     'fb_joint_pos': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 反馈关节位置
-                     'fb_joint_vel': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 反馈关节速度
-                     'fb_joint_posE': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 反馈关节位置(外编)
-                     'fb_joint_cmd': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 位置关节指令
-                     'fb_joint_cToq': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 反馈关节电流
-                     'fb_joint_sToq': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 传感器
-                     'fb_joint_them': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 反馈关节温度
+                     'fb_joint_pos': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Feedback joint position
+                     'fb_joint_vel': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Feedback joint velocity
+                     'fb_joint_posE': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Feedback joint position (ext. encoder)
+                     'fb_joint_cmd': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Joint position command
+                     'fb_joint_cToq': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Feedback joint current
+                     'fb_joint_sToq': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Sensor torque
+                     'fb_joint_them': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Feedback joint temperature
                      'est_joint_firc': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                      'est_joint_firc_dot': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                     'est_joint_force': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 轴外力
+                     'est_joint_force': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Axis external force
                      'est_cart_fn': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
 
                     {'frame_serial': 0,
@@ -292,14 +292,14 @@ class App:
                 ]
         }
 
-        # 初始化两个点的列表
+        # Initialize two point lists
         self.points1 = []
         self.points2 = []
 
         self.command1=[]
         self.command2=[]
 
-        # 初始化参数列表
+        # Initialize parameter list
         self.params = []
 
         self.period_file_path_1 = tk.StringVar()
@@ -314,43 +314,43 @@ class App:
         self.m_sq_offset_1 = 0.0
         self.m_sq_offset_2 = 0.0
 
-        # 当前显示模式: 0=位置, 1=传感器, 2=电流
+        # Current display mode: 0=position, 1=sensor, 2=current
         self.display_mode = 0
-        self.mode_names = ["位置数据", "速度数据", "传感器数据", "电流数据", "温度数据", "外编位置数据", "指令位置数据",
-                           "轴外力数据"]
+        self.mode_names = ["Position Data", "Velocity Data", "Sensor Data", "Current Data", "Temperature Data",
+                           "Ext. Encoder Position", "Command Position", "Joint Ext. Force"]
         self.data_keys = [('fb_joint_pos'), ('fb_joint_vel'), ('fb_joint_sToq'), ('fb_joint_cToq'), ('fb_joint_them'),
                           ('fb_joint_posE'), ('fb_joint_cmd'), ('est_joint_force')]
 
-        # 存储主界面组件的引用
+        # Store references to main UI components
         self.main_interface_widgets = []
-        # 创建顶部控制面板
+        # Create top control panel
         self.create_control_panel()
 
-        # 创建主内容区域
+        # Create main content area
         self.create_main_content()
 
-        # 创建底部状态栏
+        # Create bottom status bar
         self.create_status_bar()
 
-        # 初始未连接
+        # Initially not connected
         self.connected = False
         self.data_subscriber = None
 
-        # 绑定窗口关闭事件
+        # Bind window close event
         root.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        # 密码设置
+        # Password setting
         self.correct_password = "1"
 
     def create_control_panel(self):
-        """创建顶部控制面板"""
+        """Create top control panel"""
         self.control_frame = tk.Frame(self.root, bg="#e0e0e0", padx=10, pady=10)
         self.control_frame.pack(fill="x")
 
-        # 连接按钮
+        # Connect button
         self.connect_btn = tk.Button(
             self.control_frame,
-            text="连接机器人",
+            text="Connect Robot",
             width=15,
             command=self.toggle_connection,
             bg="#4CAF50",
@@ -362,10 +362,10 @@ class App:
         self.arm_ip_entry.insert(0, "192.168.1.190")
         self.arm_ip_entry.pack(side="left", padx=10)
 
-        # 更多功能菜单按钮
+        # More features menu button
         self.more_features_btn = tk.Button(
             self.control_frame,
-            text="更多功能",
+            text="More Features",
             width=15,
             command=self.show_more_features,
             bg="#9C27B0",
@@ -374,21 +374,21 @@ class App:
         )
         self.more_features_btn.pack(side="right", padx=5)
 
-        # # 查看文档
-        # self.readme_button = tk.Button(self.control_frame, text="查看文档", width=15, command=preview_text_file,
+        # # View documentation
+        # self.readme_button = tk.Button(self.control_frame, text="View Docs", width=15, command=preview_text_file,
         #                                font=("Arial", 10, "bold"))
         # self.readme_button.pack(side="right", padx=10)
 
         '''###########################mor more more############################'''
-        # 隐藏功能按钮
-        self.hidden_features_btn = tk.Button(self.control_frame, text="系统升级", width=15, bg="#F5FC34",
+        # Hidden features button
+        self.hidden_features_btn = tk.Button(self.control_frame, text="System Upgrade", width=15, bg="#F5FC34",
                                              command=self.authenticate_and_show_hidden, font=("Arial", 10, "bold"))
         self.hidden_features_btn.pack(side="right", padx=5, pady=10)
 
-        # 模式切换按钮
+        # Display mode toggle button
         self.mode_btn = tk.Button(
             self.control_frame,
-            text="位置数据",
+            text="Position Data",
             width=15,
             command=self.toggle_display_mode,
             state="disabled",
@@ -397,10 +397,10 @@ class App:
             font=("Arial", 10, "bold"))
         self.mode_btn.pack(side="right", padx=10)
 
-        # 急停
+        # Emergency stop
         self.stop_btn = tk.Button(
             self.control_frame,
-            text="急停",
+            text="E-STOP",
             width=15,
             command=self.stop_command,
             bg="#ef4136",
@@ -408,35 +408,35 @@ class App:
             font=("Arial", 10, "bold"))
         self.stop_btn.pack(side="right", padx=10)
 
-        # 状态指示灯
+        # Connection status indicator
         status_frame = tk.Frame(self.control_frame, bg="#e0e0e0")
         status_frame.pack(side="right", padx=10)
 
-        tk.Label(status_frame, text="连接状态:", bg="#e0e0e0", font=("Arial", 9)).pack(side="left")
+        tk.Label(status_frame, text="Connection:", bg="#e0e0e0", font=("Arial", 9)).pack(side="left")
         self.status_light = tk.Label(status_frame, text="●", font=("Arial", 16), fg="red")
         self.status_light.pack(side="left", padx=5)
-        self.status_label = tk.Label(status_frame, text="未连接", bg="#e0e0e0", font=("Arial", 9))
+        self.status_label = tk.Label(status_frame, text="Disconnected", bg="#e0e0e0", font=("Arial", 9))
         self.status_label.pack(side="left")
 
     '''###############################################################################################################'''
 
     def show_more_features(self):
-        """显示更多功能菜单"""
-        # 创建菜单
+        """Show more features menu"""
+        # Create menu
         menu = tk.Menu(self.root, tearoff=0)
 
-        # 添加菜单项
-        menu.add_command(label="附加功能", command=self.additional_settings)
-        # menu.add_command(label="数据管理", command=self.open_data_management)
-        # menu.add_command(label="日志查看", command=self.open_log_viewer)
+        # Add menu items
+        menu.add_command(label="Additional Settings", command=self.additional_settings)
+        # menu.add_command(label="Data Management", command=self.open_data_management)
+        # menu.add_command(label="Log Viewer", command=self.open_log_viewer)
         # menu.add_separator()
-        # menu.add_command(label="校准工具", command=self.open_calibration_tool)
-        # menu.add_command(label="诊断工具", command=self.open_diagnostic_tool)
+        # menu.add_command(label="Calibration Tool", command=self.open_calibration_tool)
+        # menu.add_command(label="Diagnostic Tool", command=self.open_diagnostic_tool)
         menu.add_separator()
-        menu.add_command(label="查看文档", command=self.open_doc)
-        # menu.add_command(label="关于软件", command=self.open_about)
+        menu.add_command(label="View Documentation", command=self.open_doc)
+        # menu.add_command(label="About", command=self.open_about)
 
-        # 显示菜单
+        # Show menu
         try:
             menu.tk_popup(
                 self.more_features_btn.winfo_rootx(),
@@ -449,105 +449,105 @@ class App:
         return preview_text_file()
 
     def additional_settings(self):
-        """打开系统设置窗口"""
+        """Open system settings window"""
         settings_window = tk.Toplevel(self.root)
-        settings_window.title("附加功能")
+        settings_window.title("Additional Features")
         settings_window.geometry("800x600")
         settings_window.configure(bg="#f0f0f0")
         settings_window.transient(self.root)
         settings_window.grab_set()
 
-        # 创建选项卡
+        # Create tabs
         notebook = ttk.Notebook(settings_window)
         notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # 浮动基座设置选项卡
+        # Floating base settings tab
         floating_base_frame = ttk.Frame(notebook, padding="10")
-        notebook.add(floating_base_frame, text="浮动基座参数计算")
+        notebook.add(floating_base_frame, text="Floating Base Parameter Calculation")
 
-        # 网络设置选项卡
+        # Network settings tab
         network_frame = ttk.Frame(notebook, padding="10")
-        notebook.add(network_frame, text="网络设置")
+        notebook.add(network_frame, text="Network Settings")
 
-        # # 界面设置选项卡
+        # # Interface settings tab
         # interface_frame = ttk.Frame(notebook, padding="10")
-        # notebook.add(interface_frame, text="界面设置")
+        # notebook.add(interface_frame, text="Interface Settings")
 
-        # 填充浮动基座设置选项卡
+        # Populate floating base settings tab
         self.create_floating_base_tab(floating_base_frame)
 
-        # 填充网络设置选项卡
+        # Populate network settings tab
         self.create_network_settings_tab(network_frame)
 
-        # # 填充界面设置选项卡
+        # # Populate interface settings tab
         # self.create_interface_settings_tab(interface_frame)
 
-        # 按钮
+        # Buttons
         button_frame = ttk.Frame(settings_window)
         button_frame.pack(pady=10)
 
-        ttk.Button(button_frame, text="保存设置",
+        ttk.Button(button_frame, text="Save Settings",
                    command=lambda: self.save_all_settings(notebook)).pack(side=tk.LEFT, padx=5)
-        ttk.Button(button_frame, text="关闭",
+        ttk.Button(button_frame, text="Close",
                    command=settings_window.destroy).pack(side=tk.LEFT, padx=5)
 
     def create_network_settings_tab(self, parent):
-        """创建网络设置选项卡内容"""
-        ttk.Label(parent, text="网络设置", font=("Arial", 14, "bold")).pack(pady=10)
+        """Create network settings tab content"""
+        ttk.Label(parent, text="Network Settings", font=("Arial", 14, "bold")).pack(pady=10)
 
-        network_frame = ttk.LabelFrame(parent, text="网络配置", padding="15")
+        network_frame = ttk.LabelFrame(parent, text="Network Configuration", padding="15")
         network_frame.pack(fill=tk.X, pady=10)
 
-        ttk.Label(network_frame, text="默认IP地址:").grid(row=0, column=0, sticky="w", pady=5)
+        ttk.Label(network_frame, text="Default IP Address:").grid(row=0, column=0, sticky="w", pady=5)
         self.default_ip_entry = ttk.Entry(network_frame, width=20)
         self.default_ip_entry.insert(0, "192.168.1.190")
         self.default_ip_entry.grid(row=0, column=1, pady=5, padx=10)
 
-        ttk.Label(network_frame, text="端口号:").grid(row=1, column=0, sticky="w", pady=5)
+        ttk.Label(network_frame, text="Port:").grid(row=1, column=0, sticky="w", pady=5)
         self.port_entry = ttk.Entry(network_frame, width=20)
         self.port_entry.insert(0, "502")
         self.port_entry.grid(row=1, column=1, pady=5, padx=10)
 
-        ttk.Label(network_frame, text="超时时间(秒):").grid(row=2, column=0, sticky="w", pady=5)
+        ttk.Label(network_frame, text="Timeout (seconds):").grid(row=2, column=0, sticky="w", pady=5)
         self.timeout_entry = ttk.Entry(network_frame, width=20)
         self.timeout_entry.insert(0, "10")
         self.timeout_entry.grid(row=2, column=1, pady=5, padx=10)
 
     def create_floating_base_tab(self, parent):
-        """创建浮动基座参数设置选项卡"""
-        # 存储选择结果的列表
-        self.row2_selection = [0, 0, 0]  # 对应X,Y,Z
-        self.row3_selection = [0, 0, 0]  # 对应X,Y,Z
+        """Create floating base parameter settings tab"""
+        # Store selection results
+        self.row2_selection = [0, 0, 0]  # Corresponds to X,Y,Z
+        self.row3_selection = [0, 0, 0]  # Corresponds to X,Y,Z
 
-        # 存储单选按钮变量
+        # Store radio button variables
         self.row2_var = tk.StringVar()
         self.row3_var = tk.StringVar()
 
-        # 添加变量追踪，确保选择变化时及时更新
+        # Add variable tracing to update on selection change
         self.row2_var.trace('w', lambda *args: self.on_selection_change(2))
         self.row3_var.trace('w', lambda *args: self.on_selection_change(3))
 
-        ttk.Label(parent, text="浮动基座参数计算", font=("Arial", 14, "bold")).pack(pady=10)
+        ttk.Label(parent, text="Floating Base Parameter Calculation", font=("Arial", 14, "bold")).pack(pady=10)
 
-        # 第一行
+        # First row
         row1_frame = ttk.Frame(parent)
         row1_frame.pack(fill="x", pady=5)
 
-        ttk.Label(row1_frame, text="基座的坐标方向(x轴和y轴)").pack(side="left", padx=5)
-        ttk.Label(row1_frame, text="UMI的坐标方向(基座与UMI坐标方向重合选项)").pack(side="right", padx=5)
+        ttk.Label(row1_frame, text="Base coordinate direction (X-axis and Y-axis)").pack(side="left", padx=5)
+        ttk.Label(row1_frame, text="IMU coordinate direction (base-IMU alignment option)").pack(side="right", padx=5)
 
-        # 第二行和第三行容器
+        # Second and third row container
         axis_frame = ttk.Frame(parent)
         axis_frame.pack(fill="x", pady=10)
 
-        # 左侧标签
-        ttk.Label(axis_frame, text="X轴").grid(row=0, column=0, padx=10, pady=10, sticky="w")
-        ttk.Label(axis_frame, text="Y轴").grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        # Left labels
+        ttk.Label(axis_frame, text="X-axis").grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        ttk.Label(axis_frame, text="Y-axis").grid(row=1, column=0, padx=10, pady=10, sticky="w")
 
-        # 第二行和第三行的选项
+        # Options for second and third rows
         options = ["x", "-x", "y", "-y", "z", "-z"]
 
-        # 第二行的单选按钮
+        # Second row radio buttons
         self.row2_buttons = []
         for i, option in enumerate(options):
             btn = ttk.Radiobutton(axis_frame, text=option, value=option,
@@ -556,7 +556,7 @@ class App:
             btn.grid(row=0, column=i + 1, padx=5, pady=5)
             self.row2_buttons.append(btn)
 
-        # 第三行的单选按钮
+        # Third row radio buttons
         self.row3_buttons = []
         for i, option in enumerate(options):
             btn = ttk.Radiobutton(axis_frame, text=option, value=option,
@@ -565,8 +565,8 @@ class App:
             btn.grid(row=1, column=i + 1, padx=5, pady=5)
             self.row3_buttons.append(btn)
 
-        # 结果显示区域
-        self.result_frame = ttk.LabelFrame(parent, text="计算结果")
+        # Result display area
+        self.result_frame = ttk.LabelFrame(parent, text="Calculation Result")
         self.result_frame.pack(fill="both", expand=True, pady=10)
 
         self.result_text = tk.Text(self.result_frame, height=8, wrap=tk.WORD)
@@ -577,51 +577,51 @@ class App:
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y, pady=5)
 
     def create_interface_settings_tab(self, parent):
-        """创建界面设置选项卡内容"""
-        ttk.Label(parent, text="界面设置", font=("Arial", 14, "bold")).pack(pady=10)
+        """Create interface settings tab content"""
+        ttk.Label(parent, text="Interface Settings", font=("Arial", 14, "bold")).pack(pady=10)
 
-        interface_frame = ttk.LabelFrame(parent, text="界面配置", padding="15")
+        interface_frame = ttk.LabelFrame(parent, text="Interface Configuration", padding="15")
         interface_frame.pack(fill=tk.X, pady=10)
 
-        self.theme_var = tk.StringVar(value="浅色")
-        ttk.Label(interface_frame, text="主题:").grid(row=0, column=0, sticky="w", pady=5)
+        self.theme_var = tk.StringVar(value="Light")
+        ttk.Label(interface_frame, text="Theme:").grid(row=0, column=0, sticky="w", pady=5)
         ttk.Combobox(interface_frame, textvariable=self.theme_var,
-                     values=["浅色", "深色", "自动"], state="readonly", width=15).grid(row=0, column=1, pady=5, padx=10)
+                     values=["Light", "Dark", "Auto"], state="readonly", width=15).grid(row=0, column=1, pady=5, padx=10)
 
-        self.language_var = tk.StringVar(value="中文")
-        ttk.Label(interface_frame, text="语言:").grid(row=1, column=0, sticky="w", pady=5)
+        self.language_var = tk.StringVar(value="Chinese")
+        ttk.Label(interface_frame, text="Language:").grid(row=1, column=0, sticky="w", pady=5)
         ttk.Combobox(interface_frame, textvariable=self.language_var,
-                     values=["中文", "英文", "日文"], state="readonly", width=15).grid(row=1, column=1, pady=5, padx=10)
+                     values=["Chinese", "English", "Japanese"], state="readonly", width=15).grid(row=1, column=1, pady=5, padx=10)
 
         self.auto_connect_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(interface_frame, text="启动时自动连接",
+        ttk.Checkbutton(interface_frame, text="Auto-connect on startup",
                         variable=self.auto_connect_var).grid(row=2, column=0, columnspan=2, sticky="w", pady=5)
 
         self.auto_save_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(interface_frame, text="自动保存设置",
+        ttk.Checkbutton(interface_frame, text="Auto-save settings",
                         variable=self.auto_save_var).grid(row=3, column=0, columnspan=2, sticky="w", pady=5)
 
     def on_selection_change(self, changed_row):
-        """当选择改变时调用，处理互锁逻辑并更新结果"""
-        # 更新选择列表
+        """Called when selection changes, handles interlock logic and updates result"""
+        # Update selection lists
         self.update_selection_lists()
-        # 应用互锁逻辑
+        # Apply mutual exclusion logic
         self.apply_mutual_exclusion(changed_row)
-        # 如果两行都有选择，则计算并显示结果
+        # If both rows have selections, calculate and display result
         if any(self.row2_selection) and any(self.row3_selection):
             result = self.get_abc_calculation()
             self.display_result(result)
         else:
             self.result_text.delete(1.0, tk.END)
-            self.result_text.insert(tk.END, "请完成两行的选择以查看计算结果")
+            self.result_text.insert(tk.END, "Please complete both row selections to view calculation result")
 
     def update_selection_lists(self):
-        """根据当前选择更新选择列表"""
-        # 重置选择列表
+        """Update selection lists based on current selection"""
+        # Reset selection lists
         self.row2_selection = [0, 0, 0]
         self.row3_selection = [0, 0, 0]
 
-        # 更新第二行选择
+        # Update second row selection
         row2_val = self.row2_var.get()
         if row2_val=="x":
             self.row2_selection[0] = 1
@@ -637,7 +637,7 @@ class App:
             self.row2_selection[2] = -1
 
 
-        # 更新第三行选择
+        # Update third row selection
         row3_val = self.row3_var.get()
         if row3_val =="x":
             self.row3_selection[0] = 1
@@ -653,15 +653,15 @@ class App:
             self.row3_selection[2] = -1
 
     def apply_mutual_exclusion(self, changed_row):
-        """应用互锁逻辑，禁用冲突的选项"""
+        """Apply interlock logic, disable conflicting options"""
         row2_val = self.row2_var.get()
         row3_val = self.row3_var.get()
 
-        # 重置所有按钮状态
+        # Reset all button states
         for btn in self.row2_buttons + self.row3_buttons:
             btn.state(["!disabled"])
 
-        # 如果第二行有选择，禁用第三行对应的轴
+        # If second row has selection, disable corresponding axis in third row
         if row2_val:
             if row2_val in ["x", "-x"]:
                 self.disable_axis_options(self.row3_buttons, ["x", "-x"])
@@ -670,7 +670,7 @@ class App:
             elif row2_val in ["z", "-z"]:
                 self.disable_axis_options(self.row3_buttons, ["z", "-z"])
 
-        # 如果第三行有选择，禁用第二行对应的轴
+        # If third row has selection, disable corresponding axis in second row
         if row3_val:
             if row3_val in ["x", "-x"]:
                 self.disable_axis_options(self.row2_buttons, ["x", "-x"])
@@ -680,103 +680,102 @@ class App:
                 self.disable_axis_options(self.row2_buttons, ["z", "-z"])
 
     def disable_axis_options(self, buttons, options_to_disable):
-        """禁用指定的选项"""
+        """Disable specified options"""
         for btn in buttons:
             if btn['value'] in options_to_disable:
                 btn.state(["disabled"])
 
     def get_abc_calculation(self):
-        """计算函数，返回多行结果"""
-        result = f"基座坐标方向在陀螺仪imu的旋转为\n"
+        """Calculation function, returns multi-line result"""
+        result = f"Base coordinate rotation in gyroscope IMU:\n"
         result += "=" * 20 + "\n"
 
         try:
-            # 这里调用您的计算函数
-            # print(f'*********{self.row2_selection},{self.row2_selection}')
+            # Call the calculation function
             abc = main_function(self.row2_selection, self.row3_selection)
             result += abc
             result += "\n"
         except Exception as e:
-            result += f"计算错误: {str(e)}\n"
+            result += f"Calculation error: {str(e)}\n"
 
         result += "=" * 20 + "\n\n"
-        result += ("请将ABC三个角度分别更新到robot.ini [R.A0.BASIC]组下的:\n"
-                   "              GYROSETA、GYROSETB、GYROSETC\n"
-                   "请注意左右臂请依次计算，[R.A0.BASIC]为左臂，[R.A1.BASIC]为右臂。")
+        result += ("Please update the ABC angles to robot.ini [R.A0.BASIC] section:\n"
+                   "              GYROSETA, GYROSETB, GYROSETC\n"
+                   "Note: calculate left and right arms separately. [R.A0.BASIC] is left arm, [R.A1.BASIC] is right arm.")
         return result
 
     def main_function(self, selection1, selection2):
-        """模拟计算函数，您需要替换为实际的 umi2abc 函数"""
-        # 这里应该是您从 umi2abc 导入的 main_function
-        # 暂时返回模拟结果
+        """Simulated calculation function, replace with actual umi2abc function"""
+        # This should be the main_function imported from umi2abc
+        # Returning simulated result for now
         return f"A: 45.0°, B: 30.0°, C: 15.0°"
 
     def display_result(self, result):
-        """在文本框中显示结果"""
+        """Display result in text box"""
         self.result_text.delete(1.0, tk.END)
         self.result_text.insert(tk.END, result)
 
     def save_all_settings(self, notebook):
-        """保存所有设置"""
+        """Save all settings"""
         try:
-            # 获取网络设置
+            # Get network settings
             ip = self.default_ip_entry.get()
             port = self.port_entry.get()
             timeout = self.timeout_entry.get()
 
-            # 获取界面设置
+            # Get interface settings
             theme = self.theme_var.get()
             language = self.language_var.get()
             auto_connect = self.auto_connect_var.get()
             auto_save = self.auto_save_var.get()
 
-            messagebox.showinfo("保存成功",
-                                f"设置已保存:\n"
+            messagebox.showinfo("Save Successful",
+                                f"Settings saved:\n"
                                 f"IP: {ip}\n"
-                                f"端口: {port}\n"
-                                f"主题: {theme}\n"
-                                f"语言: {language}")
+                                f"Port: {port}\n"
+                                f"Theme: {theme}\n"
+                                f"Language: {language}")
         except Exception as e:
-            messagebox.showerror("保存错误", f"保存设置时出错: {str(e)}")
+            messagebox.showerror("Save Error", f"Error saving settings: {str(e)}")
 
     def create_hidden_features_interface(self):
 
         self.hidden_features_frame = tk.Frame(self.root, bg="#f0f0f0")
 
-        # 隐藏功能标题
-        hidden_title = tk.Label(self.hidden_features_frame, text="系统更新升级",
+        # Hidden features title
+        hidden_title = tk.Label(self.hidden_features_frame, text="System Update & Upgrade",
                                 font=("Arial", 16, "bold"), bg="#f0f0f0")
         hidden_title.pack(pady=20)
 
     def authenticate_and_show_hidden(self):
-        """验证密码并显示隐藏功能选择窗口"""
+        """Verify password and show hidden features selection window"""
         self.show_update_system_menu()
-        # password = simpledialog.askstring("密码验证", "请输入密码:", show='*')
+        # password = simpledialog.askstring("Password Verification", "Enter password:", show='*')
         # if password == self.correct_password:
         #     self.show_update_system_menu()
         # elif password is not None:
-        #     messagebox.showerror("错误", "密码错误!")
+        #     messagebox.showerror("Error", "Incorrect password!")
 
     def show_update_system_menu(self):
-        """显示隐藏功能选择窗口"""
+        """Show hidden features selection window"""
         hidden_window = tk.Toplevel(self.root)
-        hidden_window.title("系统升级")
+        hidden_window.title("System Upgrade")
         hidden_window.geometry("600x400")
         hidden_window.configure(bg="#f0f0f0")
-        hidden_window.transient(self.root)  # 设置为主窗口的子窗口
-        hidden_window.grab_set()  # 模态窗口
+        hidden_window.transient(self.root)  # Set as child of main window
+        hidden_window.grab_set()  # Modal window
 
-        # 标题
-        title_label = tk.Label(hidden_window, text="系统升级",
+        # Title
+        title_label = tk.Label(hidden_window, text="System Upgrade",
                                font=("Arial", 16, "bold"), bg="#f0f0f0")
         title_label.pack(pady=20)
 
-        # 功能按钮框架
+        # Feature button frame
         button_frame111 = tk.Frame(hidden_window, bg="white")
         button_frame111.pack(fill="x", pady=5)
 
-        # 版本
-        vervion_btn = tk.Button(button_frame111, text="当前版本", width=15, command=self.get_verion,
+        # Version
+        vervion_btn = tk.Button(button_frame111, text="Current Version", width=15, command=self.get_verion,
                                 bg="#2196F3",
                                 fg="#fffef9",
                                 font=("Arial", 10, "bold"))
@@ -786,24 +785,24 @@ class App:
         self.vv_entry = tk.Entry(button_frame111, textvariable=self.entry_var1, width=10)
         self.vv_entry.pack(side="right", padx=5, pady=5)
 
-        '''第二行'''
+        '''Second row'''
         state_a_frame = tk.Frame(hidden_window, bg="white")
         state_a_frame.pack(fill="x", pady=5)
 
-        # 复位
-        reset_a_button = tk.Button(state_a_frame, text="获取机器人参数文件", width=button_w + 10,
+        # Reset
+        reset_a_button = tk.Button(state_a_frame, text="Get Robot Config File", width=button_w + 10,
                                    command=self.get_ini)
         reset_a_button.pack(side="left", padx=5, pady=5)
 
         # PVT
-        pvt_a_button = tk.Button(state_a_frame, text="更新机器人参数文件", width=button_w + 10,
+        pvt_a_button = tk.Button(state_a_frame, text="Update Robot Config File", width=button_w + 10,
                                  command=self.update_ini)
         pvt_a_button.pack(side="right", padx=5, pady=5)
 
         state_a_frame1 = tk.Frame(hidden_window, bg="white")
         state_a_frame1.pack(fill="x", pady=5)
 
-        reset_a_button = tk.Button(state_a_frame1, text="更新系统", width=button_w + 30,
+        reset_a_button = tk.Button(state_a_frame1, text="Update System", width=button_w + 30,
                                    command=self.update_sys, bg="#F6FC39",
                                    fg="#151513",
                                    font=("Arial", 10, "bold"))
@@ -812,14 +811,14 @@ class App:
         state_a_frame2 = tk.Frame(hidden_window, bg="white")
         state_a_frame2.pack(fill="x", pady=5)
         label = tk.Label(state_a_frame2,
-                         text='首次用软件更新系统后，方可查看到小版本，否则仅显示大版本1003;\n 后续在该机器上再用软件，可直接查看小版本，再更新需要的版本。\n\n '
-                              '参数配置文件robot.ini如果有更新，先获取参数文件，\n在存到本地的文件上面对比修改，再更新机器人参数文件.\n\n '
-                              '更新系统选择更新包*.MV_SYS_UPDATE')
+                         text='After first system update via software, minor version becomes visible;\n otherwise only major version 1003 is shown.\n Subsequent updates on this machine can directly view minor version.\n\n '
+                              'If robot.ini config file needs updating, first download the config file,\n compare and modify on the local copy, then upload the updated config.\n\n '
+                              'For system update, select the update package *.MV_SYS_UPDATE')
         label.pack(padx=5, pady=10)
 
-        '''第二行'''
-        # 关闭按钮
-        close_btn = tk.Button(hidden_window, text="关闭",
+        '''Second row'''
+        # Close button
+        close_btn = tk.Button(hidden_window, text="Close",
                               command=hidden_window.destroy,
                               bg="orange", width=15)
         close_btn.pack(pady=5)
@@ -835,11 +834,11 @@ class App:
             self.vv_entry.delete(0, tk.END)
             self.vv_entry.insert(0, version)
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def on_close(self):
-        """关闭窗口时清理资源"""
-        if messagebox.askokcancel("退出", "确定要退出应用程序吗?"):
+        """Clean up resources when closing window"""
+        if messagebox.askokcancel("Exit", "Are you sure you want to exit the application?"):
             '''save tools txt'''
             robot.send_file(self.tools_txt, os.path.join('/home/fusion/', self.tools_txt))
             time.sleep(0.2)
@@ -857,7 +856,7 @@ class App:
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".ini",
                 filetypes=[("ini files", "*.ini"), ("All files", "*.*")],
-                title="保存机器人配置参数文件"
+                title="Save Robot Configuration File"
             )
 
             if file_path:
@@ -865,54 +864,54 @@ class App:
                 # tag = robot.receive_file(file_path, "/home/fusion/1.txt")
                 time.sleep(1)
                 if tag:
-                    messagebox.showinfo('success', '参数已保存')
+                    messagebox.showinfo('success', 'Parameters saved')
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def update_ini(self):
         if self.connected:
             file_path = filedialog.askopenfilename(
                 defaultextension=".ini",
                 filetypes=[("ini files", "*.ini"), ("All files", "*.*")],
-                title="选择机器人参数文件"
+                title="Select Robot Config File"
             )
             if file_path:
                 tag = robot.send_file(file_path, "/home/FUSION/Config/cfg/robot.ini")
                 # tag = robot.send_file(file_path, "/home/fusion/1.txt")
                 time.sleep(1)
                 if tag:
-                    messagebox.showinfo('success', '参数已保存')
+                    messagebox.showinfo('success', 'Parameters saved')
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def update_sys(self):
         if self.connected:
             file_path = filedialog.askopenfilename(
                 filetypes=[("All files", "*.*")],
-                title="选择系统更新文件"
+                title="Select System Update File"
             )
             if file_path:
                 # tag1 = robot.update_SDK(file_path)
                 tag1 = robot.send_file(file_path, "/home/FUSION/Tmp/ctrl_package.tar")  #
                 if tag1:
-                    messagebox.showinfo('success', '系统文件已上传，请重启控制器自动更新。')
+                    messagebox.showinfo('success', 'System file uploaded. Please restart the controller for auto-update.')
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def create_main_content(self):
-        """创建主内容区域 - 居中布局"""
-        # 创建容器框架，用于居中内容
+        """Create main content area - centered layout"""
+        # Create container frame for centering content
         center_container = tk.Frame(self.root, bg="#f0f0f0")
         center_container.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # 创建带滚动区域的画布
+        # Create canvas with scrollable area
         self.canvas = tk.Canvas(center_container, bg="white", highlightthickness=0)
         self.scrollbar = ttk.Scrollbar(center_container, orient="vertical", command=self.canvas.yview)
 
-        # 可滚动的框架
+        # Scrollable frame
         self.scrollable_frame = tk.Frame(self.canvas, bg="white")
 
-        # 绑定滚动区域
+        # Bind scroll region
         self.scrollable_frame.bind(
             "<Configure>",
             lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
@@ -921,34 +920,34 @@ class App:
         self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
 
-        # 布局 - 居中
+        # Layout - centered
         self.canvas.pack(side="left", fill="both", expand=True)
         self.scrollbar.pack(side="right", fill="y")
 
-        # 鼠标滚轮支持
+        # Mouse wheel support
         self.canvas.bind_all("<MouseWheel>", self.on_mousewheel)
 
-        # 创建容器框架用于居中内容
+        # Create container frame for centering content
         content_container = tk.Frame(self.scrollable_frame, bg="white")
         content_container.pack(expand=True, fill="both", padx=20)
 
         state_a_frame = tk.Frame(content_container, bg="white")
         state_a_frame.pack(fill="x", pady=10)
 
-        # # 添加列权重使组件扩展
+        # # Add column weights for widget expansion
         # for i in range(7):
         #     state_a_frame.columnconfigure(i, weight=1)
-        '''###### 基础功能 ######'''
-        # 0复位 1PVT 2关节跟随 3关节阻抗 4笛卡尔阻抗 5力控阻抗
-        # 0拖动  1关节拖动 2X拖动 3Y拖动 4Z拖动 5旋转拖动 6退出拖动 7 保存拖动数据
-        # 0状态 1  2错误码 3  4 错误码说明 5清错 6
+        '''###### Basic Functions ######'''
+        # 0=Reset 1=PVT 2=Joint Follow 3=Joint Impedance 4=Cartesian Impedance 5=Force Control
+        # 0=Drag 1=Joint Drag 2=X Drag 3=Y Drag 4=Z Drag 5=Rotation Drag 6=Exit Drag 7 Save Drag Data
+        # 0=Status 1 2=Error Code 3 4=Error Code Desc 5=Clear Error 6
 
         a_label = tk.Label(state_a_frame, text="#1", width=10, bg="#2196F3",
                            fg="white", font=("Arial", 10, "bold"))
         a_label.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
-        # 复位
-        reset_a_button = tk.Button(state_a_frame, text="复位", width=button_w,
+        # Reset
+        reset_a_button = tk.Button(state_a_frame, text="Reset", width=button_w,
                                    command=lambda: self.reset_robot('A'))
         reset_a_button.grid(row=0, column=1, padx=5, pady=5)
 
@@ -957,114 +956,114 @@ class App:
                                  command=lambda: self.pvt_mode('A'))
         pvt_a_button.grid(row=0, column=2, padx=5, pady=5)
 
-        # 关节跟随
-        pos_a_button = tk.Button(state_a_frame, text="关节跟随", width=button_w,
+        # Joint Follow
+        pos_a_button = tk.Button(state_a_frame, text="Joint Follow", width=button_w,
                                  command=lambda: self.position_mode('A'))
         pos_a_button.grid(row=0, column=3, padx=5, pady=5)
 
-        # 关节阻抗
-        imped_j_a_button = tk.Button(state_a_frame, text="关节阻抗", width=button_w,
+        # Joint Impedance
+        imped_j_a_button = tk.Button(state_a_frame, text="Joint Impedance", width=button_w,
                                      command=lambda: self.imded_j_mode('A'))
         imped_j_a_button.grid(row=0, column=4, padx=5, pady=5)
 
-        # 笛卡尔阻抗
-        imped_c_a_button = tk.Button(state_a_frame, text="笛卡尔阻抗", width=button_w,
+        # Cartesian Impedance
+        imped_c_a_button = tk.Button(state_a_frame, text="Cartesian Impedance", width=button_w,
                                      command=lambda: self.imded_c_mode('A'))
         imped_c_a_button.grid(row=0, column=5, padx=5, pady=5)
 
         b_label_ = tk.Label(state_a_frame, text="", width=3, bg="white")
         b_label_.grid(row=0, column=6, padx=5, pady=5, sticky="ew")
 
-        # 力控
-        f_a_button = tk.Button(state_a_frame, text="力控", width=button_w,
+        # Force Control
+        f_a_button = tk.Button(state_a_frame, text="Force Control", width=button_w,
                                command=lambda: self.imded_f_mode('A'))
         f_a_button.grid(row=0, column=7, padx=5, pady=5)
 
-        f_label = tk.Label(state_a_frame, text="力N", width=3, bg="white")
+        f_label = tk.Label(state_a_frame, text="Force N", width=3, bg="white")
         f_label.grid(row=0, column=8, padx=3, pady=5)
 
         self.f_a_entry = tk.Entry(state_a_frame, width=3)
         self.f_a_entry.insert(0, "0")
         self.f_a_entry.grid(row=0, column=9, padx=3, pady=5)
 
-        f_adj_label = tk.Label(state_a_frame, text="调节量mm", width=8, bg="white")
+        f_adj_label = tk.Label(state_a_frame, text="Adj. mm", width=8, bg="white")
         f_adj_label.grid(row=0, column=10, padx=3, pady=5)
 
         self.f_a_adj_entry = tk.Entry(state_a_frame, width=3)
         self.f_a_adj_entry.insert(0, "0")
         self.f_a_adj_entry.grid(row=0, column=11, padx=3, pady=5)
 
-        # 下拉框（XYZ）
-        self.direction_label = tk.Label(state_a_frame, text="方向", bg="white")
+        # Dropdown (XYZ)
+        self.direction_label = tk.Label(state_a_frame, text="Direction", bg="white")
         self.direction_label.grid(row=0, column=12, padx=3, pady=5)
         self.axis_combobox_a = ttk.Combobox(
             state_a_frame,
             values=["X", "Y", "Z"],
             width=3,
-            state="readonly"  # 禁止直接输入
+            state="readonly"  # Disable direct input
         )
-        self.axis_combobox_a.current(0)  # 默认选中第一个选项（X）
+        self.axis_combobox_a.current(0)  # Default to first option (X)
         self.axis_combobox_a.grid(row=0, column=13, padx=3, pady=5)
 
-        # 0拖动  1关节拖动 2X拖动 3Y拖动 4Z拖动 5旋转拖动 6退出拖动
+        # 0=Drag 1=Joint Drag 2=X Drag 3=Y Drag 4=Z Drag 5=Rotation Drag 6=Exit Drag
         row1_label = tk.Label(state_a_frame, text=" ", width=10, bg='white')
         row1_label.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
 
-        # 关节拖动
-        drag_j_a_button = tk.Button(state_a_frame, text="关节拖动", width=button_w,
+        # Joint Drag
+        drag_j_a_button = tk.Button(state_a_frame, text="Joint Drag", width=button_w,
                                     command=lambda: self.drag_j('A'))
         drag_j_a_button.grid(row=1, column=1, padx=5, pady=5)
 
-        # X拖动
-        drag_x_a_button = tk.Button(state_a_frame, text="X拖动", width=button_w,
+        # X Drag
+        drag_x_a_button = tk.Button(state_a_frame, text="X Drag", width=button_w,
                                     command=lambda: self.drag_x('A'))
         drag_x_a_button.grid(row=1, column=2, padx=5, pady=5)
 
-        # Y拖动
-        drag_y_a_button = tk.Button(state_a_frame, text="Y拖动", width=button_w,
+        # Y Drag
+        drag_y_a_button = tk.Button(state_a_frame, text="Y Drag", width=button_w,
                                     command=lambda: self.drag_y('A'))
         drag_y_a_button.grid(row=1, column=3, padx=5, pady=5)
 
-        # Z拖动
-        drag_z_a_button = tk.Button(state_a_frame, text="Z拖动", width=button_w,
+        # Z Drag
+        drag_z_a_button = tk.Button(state_a_frame, text="Z Drag", width=button_w,
                                     command=lambda: self.drag_z('A'))
         drag_z_a_button.grid(row=1, column=4, padx=5, pady=5)
 
-        # R拖动
-        drag_r_a_button = tk.Button(state_a_frame, text="R拖动", width=button_w,
+        # R Drag
+        drag_r_a_button = tk.Button(state_a_frame, text="R Drag", width=button_w,
                                     command=lambda: self.drag_r('A'))
         drag_r_a_button.grid(row=1, column=5, padx=5, pady=5)
 
-        # 退出拖动
-        drag_exit_a_button = tk.Button(state_a_frame, text="退出拖动", width=button_w,
+        # Exit Drag
+        drag_exit_a_button = tk.Button(state_a_frame, text="Exit Drag", width=button_w,
                                        command=lambda: self.drag_exit('A'))
         drag_exit_a_button.grid(row=1, column=6, padx=5, pady=5)
 
-        # 拖动保存数据
-        drag_save_a_button = tk.Button(state_a_frame, text="拖动数据保存", width=button_w,
+        # Save Drag Data
+        drag_save_a_button = tk.Button(state_a_frame, text="Save Drag Data", width=button_w,
                                        command=lambda: self.thread_drag_save('A'))
         drag_save_a_button.grid(row=1, column=7, padx=5, pady=5)
 
-        # 0blank  1pvt运行 2选择PVT号 3PVT id 4上传PVT 5运行PVT
+        # 0=blank 1=PVT Run 2=Select PVT# 3=PVT ID 4=Upload PVT 5=Run PVT
         row2_label = tk.Label(state_a_frame, text=" ", width=10, bg='white')
         row2_label.grid(row=2, column=0, padx=5, sticky="ew")
-        # 1pvt运行
-        row2_text_label = tk.Label(state_a_frame, text="PVT运行", width=10, bg='#d9d6c3')
+        # 1=PVT Run
+        row2_text_label = tk.Label(state_a_frame, text="PVT Run", width=10, bg='#d9d6c3')
         row2_text_label.grid(row=2, column=1, padx=5, sticky="ew")
-        # 2选择PVT号
-        pvt_a_text_label = tk.Label(state_a_frame, text="选择PVT号1~99", width=10, bg='white')
+        # 2=Select PVT#
+        pvt_a_text_label = tk.Label(state_a_frame, text="Select PVT# 1~99", width=10, bg='white')
         pvt_a_text_label.grid(row=2, column=2, padx=5, sticky="ew")
         # 3PVT id
         self.pvt_a_entry = tk.Entry(state_a_frame, width=10)
         self.pvt_a_entry.insert(0, "1")
         self.pvt_a_entry.grid(row=2, column=3, padx=5)
-        # 4上传PVT
-        send_pvt_a_button = tk.Button(state_a_frame, text="上传PVT", width=button_w,
+        # 4Upload PVT
+        send_pvt_a_button = tk.Button(state_a_frame, text="Upload PVT", width=button_w,
                                       command=lambda: self.send_pvt('A'))
         send_pvt_a_button.grid(row=2, column=4, padx=5)
 
-        # 5运行PVT
-        run_pvt_a_button = tk.Button(state_a_frame, text="运行PVT", width=button_w,
+        # 5Run PVT
+        run_pvt_a_button = tk.Button(state_a_frame, text="Run PVT", width=button_w,
                                      command=lambda: self.run_pvt('A'))
         run_pvt_a_button.grid(row=2, column=5, padx=5)
 
@@ -1072,31 +1071,31 @@ class App:
         row3_label = tk.Label(state_a_frame, text=" ", width=10, bg='white')
         row3_label.grid(row=2, column=6, padx=5, )
 
-        # 0状态 1  2错误码 3  4 错误码说明 5清错 6
-        # 获取错误码
-        error_a_button = tk.Button(state_a_frame, text="获取错误码", width=button_w,
+        # 0=Status 1 2=Error Code 3 4=Error Code Desc 5=Clear Error 6
+        # Get Error Code
+        error_a_button = tk.Button(state_a_frame, text="Get Error Code", width=button_w,
                                    command=lambda: self.error_get('A'))
         error_a_button.grid(row=2, column=7, padx=5, pady=5)
 
-        # 清错
-        clear_error_a_button = tk.Button(state_a_frame, text="清错", width=button_w,
+        # Clear Error
+        clear_error_a_button = tk.Button(state_a_frame, text="Clear Error", width=button_w,
                                          command=lambda: self.error_clear('A'))
         clear_error_a_button.grid(row=2, column=8, padx=5, pady=5)
 
-        brak_a_button = tk.Button(state_a_frame, text="强制抱闸", width=button_w,
+        brak_a_button = tk.Button(state_a_frame, text="Force Brake", width=button_w,
                                   command=lambda: self.brake('A'))
         brak_a_button.grid(row=2, column=9, padx=5, pady=5)
 
-        release_brak_a_button = tk.Button(state_a_frame, text="强制松闸", width=button_w,
+        release_brak_a_button = tk.Button(state_a_frame, text="Release Brake", width=button_w,
                                           command=lambda: self.release_brake('A'))
         release_brak_a_button.grid(row=2, column=10, padx=5, pady=5)
 
-        # 协作释放
-        cr_a_button = tk.Button(state_a_frame, text="协作释放", width=button_w,
+        # Cooperative Release
+        cr_a_button = tk.Button(state_a_frame, text="Cooperative Release", width=button_w,
                                 command=lambda: self.cr_state('A'))
         cr_a_button.grid(row=2, column=11, padx=5, pady=5)
 
-        # 添加更多内容区域
+        # Add more content areas
         self.add_more_content(content_container)
 
         # add parameters settings
@@ -1121,12 +1120,12 @@ class App:
         self.eef_content(content_container)
 
     def add_more_content(self, parent):
-        """添加更多内容到主区域"""
-        # 添加第二个设备控制区域
+        """Add more content to main area"""
+        # Add second device control area
         state_b_frame = tk.Frame(parent, bg="white")
         state_b_frame.pack(fill="x", pady=5)
 
-        # # 添加列权重
+        # # Add column weights
         # for i in range(7):
         #     state_b_frame.columnconfigure(i, weight=1)
 
@@ -1134,8 +1133,8 @@ class App:
                            fg="white", font=("Arial", 10, "bold"))
         b_label.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
-        # 复位
-        reset_b_button = tk.Button(state_b_frame, text="复位", width=10,
+        # Reset
+        reset_b_button = tk.Button(state_b_frame, text="Reset", width=10,
                                    command=lambda: self.reset_robot('B'))
         reset_b_button.grid(row=0, column=1, padx=5, pady=5)
 
@@ -1144,146 +1143,146 @@ class App:
                                  command=lambda: self.pvt_mode('B'))
         pvt_b_button.grid(row=0, column=2, padx=5, pady=5)
 
-        # 关节跟随
-        pos_b_button = tk.Button(state_b_frame, text="关节跟随", width=10,
+        # Joint Follow
+        pos_b_button = tk.Button(state_b_frame, text="Joint Follow", width=10,
                                  command=lambda: self.position_mode('B'))
         pos_b_button.grid(row=0, column=3, padx=5, pady=5)
 
-        # 关节阻抗
-        imped_j_b_button = tk.Button(state_b_frame, text="关节阻抗", width=10,
+        # Joint Impedance
+        imped_j_b_button = tk.Button(state_b_frame, text="Joint Impedance", width=10,
                                      command=lambda: self.imded_j_mode('B'))
         imped_j_b_button.grid(row=0, column=4, padx=5, pady=5)
 
-        # 笛卡尔阻抗
-        imped_c_b_button = tk.Button(state_b_frame, text="笛卡尔阻抗", width=10,
+        # Cartesian Impedance
+        imped_c_b_button = tk.Button(state_b_frame, text="Cartesian Impedance", width=10,
                                      command=lambda: self.imded_c_mode('B'))
         imped_c_b_button.grid(row=0, column=5, padx=5, pady=5)
 
         b_label_ = tk.Label(state_b_frame, text="", width=3, bg="white")
         b_label_.grid(row=0, column=6, padx=5, pady=5, sticky="ew")
 
-        # 力控
-        f_b_button = tk.Button(state_b_frame, text="力控", width=10,
+        # Force Control
+        f_b_button = tk.Button(state_b_frame, text="Force Control", width=10,
                                command=lambda: self.imded_f_mode('B'))
         f_b_button.grid(row=0, column=7, padx=5, pady=5)
 
-        f_label = tk.Label(state_b_frame, text="力N", width=3, bg="white")
+        f_label = tk.Label(state_b_frame, text="Force N", width=3, bg="white")
         f_label.grid(row=0, column=8, padx=3, pady=5)
 
         self.f_b_entry = tk.Entry(state_b_frame, width=3)
         self.f_b_entry.insert(0, "0")
         self.f_b_entry.grid(row=0, column=9, padx=3, pady=5)
 
-        f_adj_b_label = tk.Label(state_b_frame, text="调节量mm", width=8, bg="white")
+        f_adj_b_label = tk.Label(state_b_frame, text="Adj. mm", width=8, bg="white")
         f_adj_b_label.grid(row=0, column=10, padx=3, pady=5)
 
         self.f_b_adj_entry = tk.Entry(state_b_frame, width=3)
         self.f_b_adj_entry.insert(0, "0")
         self.f_b_adj_entry.grid(row=0, column=11, padx=3, pady=5)
 
-        # 下拉框（XYZ）
-        self.direction_label = tk.Label(state_b_frame, text="方向", bg="white")
+        # Dropdown (XYZ)
+        self.direction_label = tk.Label(state_b_frame, text="Direction", bg="white")
         self.direction_label.grid(row=0, column=12, padx=3, pady=5)
         self.axis_combobox_b = ttk.Combobox(
             state_b_frame,
             values=["X", "Y", "Z"],
             width=3,
-            state="readonly"  # 禁止直接输入
+            state="readonly"  # Disable direct input
         )
-        self.axis_combobox_b.current(0)  # 默认选中第一个选项（X）
+        self.axis_combobox_b.current(0)  # Default to first option (X)
         self.axis_combobox_b.grid(row=0, column=14, padx=3, pady=5)
 
-        # 0拖动  1关节拖动 2X拖动 3Y拖动 4Z拖动 5旋转拖动 6退出拖动
+        # 0=Drag 1=Joint Drag 2=X Drag 3=Y Drag 4=Z Drag 5=Rotation Drag 6=Exit Drag
         row1_label_b = tk.Label(state_b_frame, text=" ", width=10, bg='white')
         row1_label_b.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
 
-        # 关节拖动
-        drag_j_b_button = tk.Button(state_b_frame, text="关节拖动", width=button_w,
+        # Joint Drag
+        drag_j_b_button = tk.Button(state_b_frame, text="Joint Drag", width=button_w,
                                     command=lambda: self.drag_j('B'))
         drag_j_b_button.grid(row=1, column=1, padx=5, pady=5)
 
-        # X拖动
-        drag_x_b_button = tk.Button(state_b_frame, text="X拖动", width=button_w,
+        # X Drag
+        drag_x_b_button = tk.Button(state_b_frame, text="X Drag", width=button_w,
                                     command=lambda: self.drag_x('B'))
         drag_x_b_button.grid(row=1, column=2, padx=5, pady=5)
 
-        # Y拖动
-        drag_y_b_button = tk.Button(state_b_frame, text="Y拖动", width=button_w,
+        # Y Drag
+        drag_y_b_button = tk.Button(state_b_frame, text="Y Drag", width=button_w,
                                     command=lambda: self.drag_y('B'))
         drag_y_b_button.grid(row=1, column=3, padx=5, pady=5)
 
-        # Z拖动
-        drag_z_b_button = tk.Button(state_b_frame, text="Z拖动", width=button_w,
+        # Z Drag
+        drag_z_b_button = tk.Button(state_b_frame, text="Z Drag", width=button_w,
                                     command=lambda: self.drag_z('B'))
         drag_z_b_button.grid(row=1, column=4, padx=5, pady=5)
 
-        # R拖动
-        drag_r_b_button = tk.Button(state_b_frame, text="R拖动", width=button_w,
+        # R Drag
+        drag_r_b_button = tk.Button(state_b_frame, text="R Drag", width=button_w,
                                     command=lambda: self.drag_r('B'))
         drag_r_b_button.grid(row=1, column=5, padx=5, pady=5)
 
-        # 退出拖动
-        drag_exit_b_button = tk.Button(state_b_frame, text="退出拖动", width=button_w,
+        # Exit Drag
+        drag_exit_b_button = tk.Button(state_b_frame, text="Exit Drag", width=button_w,
                                        command=lambda: self.drag_exit('B'))
         drag_exit_b_button.grid(row=1, column=6, padx=5, pady=5)
 
-        # 拖动保存数据
-        drag_save_b_button = tk.Button(state_b_frame, text="拖动数据保存", width=button_w,
+        # Save Drag Data
+        drag_save_b_button = tk.Button(state_b_frame, text="Save Drag Data", width=button_w,
                                        command=lambda: self.thread_drag_save('B'))
         drag_save_b_button.grid(row=1, column=7, padx=5, pady=5)
 
-        # 0blank  1pvt运行 2选择PVT号 3PVT id 4上传PVT 5运行PVT
+        # 0=blank 1=PVT Run 2=Select PVT# 3=PVT ID 4=Upload PVT 5=Run PVT
         row2_label_ = tk.Label(state_b_frame, text=" ", width=10, bg='white')
         row2_label_.grid(row=2, column=0, padx=5, sticky="ew")
-        # 1pvt运行
-        row2_text_label_ = tk.Label(state_b_frame, text="PVT运行", width=10, bg='#d9d6c3')
+        # 1=PVT Run
+        row2_text_label_ = tk.Label(state_b_frame, text="PVT Run", width=10, bg='#d9d6c3')
         row2_text_label_.grid(row=2, column=1, padx=5, sticky="ew")
-        # 2选择PVT号
-        pvt_b_text_label = tk.Label(state_b_frame, text="选择PVT号1~99", width=10, bg='white')
+        # 2=Select PVT#
+        pvt_b_text_label = tk.Label(state_b_frame, text="Select PVT# 1~99", width=10, bg='white')
         pvt_b_text_label.grid(row=2, column=2, padx=5, sticky="ew")
         # 3PVT id
         self.pvt_b_entry = tk.Entry(state_b_frame, width=10)
         self.pvt_b_entry.insert(0, "1")
         self.pvt_b_entry.grid(row=2, column=3, padx=5)
-        # 4上传PVT
-        send_pvt_b_button = tk.Button(state_b_frame, text="上传PVT", width=button_w,
+        # 4Upload PVT
+        send_pvt_b_button = tk.Button(state_b_frame, text="Upload PVT", width=button_w,
                                       command=lambda: self.send_pvt('B'))
         send_pvt_b_button.grid(row=2, column=4, padx=5)
 
-        # 5运行PVT
-        run_pvt_b_button = tk.Button(state_b_frame, text="运行PVT", width=button_w,
+        # 5Run PVT
+        run_pvt_b_button = tk.Button(state_b_frame, text="Run PVT", width=button_w,
                                      command=lambda: self.run_pvt('B'))
         run_pvt_b_button.grid(row=2, column=5, padx=5)
 
         # row 4
         row3_label_ = tk.Label(state_b_frame, text=" ", width=10, bg='white')
         row3_label_.grid(row=2, column=6, padx=5, )
-        # 获取错误码
-        error_b_button = tk.Button(state_b_frame, text="获取错误码", width=button_w,
+        # Get Error Code
+        error_b_button = tk.Button(state_b_frame, text="Get Error Code", width=button_w,
                                    command=lambda: self.error_get('B'))
         error_b_button.grid(row=2, column=7, padx=5, pady=5)
-        # 清错
-        clear_error_b_button = tk.Button(state_b_frame, text="清错", width=button_w,
+        # Clear Error
+        clear_error_b_button = tk.Button(state_b_frame, text="Clear Error", width=button_w,
                                          command=lambda: self.error_clear('B'))
         clear_error_b_button.grid(row=2, column=8, padx=5, pady=5)
 
-        brak_b_button = tk.Button(state_b_frame, text="强制抱闸", width=button_w,
+        brak_b_button = tk.Button(state_b_frame, text="Force Brake", width=button_w,
                                   command=lambda: self.brake('B'))
         brak_b_button.grid(row=2, column=9, padx=5, pady=5)
 
-        release_brak_b_button = tk.Button(state_b_frame, text="强制松闸", width=button_w,
+        release_brak_b_button = tk.Button(state_b_frame, text="Release Brake", width=button_w,
                                           command=lambda: self.release_brake('B'))
         release_brak_b_button.grid(row=2, column=10, padx=5, pady=5)
-        # 协作释放
-        cr_b_button = tk.Button(state_b_frame, text="协作释放", width=button_w,
+        # Cooperative Release
+        cr_b_button = tk.Button(state_b_frame, text="Cooperative Release", width=button_w,
                                 command=lambda: self.cr_state('B'))
         cr_b_button.grid(row=2, column=11, padx=5, pady=5)
 
-        # 添加横线
+        # Add horizontal line
         horizontal_line1 = tk.Frame(parent, height=2, bg="#%02x%02x%02x" % (50, 150, 200))
         horizontal_line1.pack(fill="x", expand=True)
 
-        # 添加状态显示区域
+        # Add status display area
         status_display_frame0 = tk.Frame(parent, bg="white", padx=10, pady=5)
         status_display_frame0.pack(fill="x", pady=5)
 
@@ -1293,16 +1292,16 @@ class App:
         setting_frame_1 = tk.Frame(parent, bg="white")
         setting_frame_1.pack(fill="x")
 
-        # 0#1/2  1设置工具参数M~I_zz   2 entry  3 设置速度和加速度 4speed entry  5acc entry
+        # 0=#1/2 1=Set Tool Params M~I_zz 2=entry 3=Set Vel & Accel 4=speed entry 5=acc entry
         a_label = tk.Label(setting_frame, text="#1", width=10, bg="#2196F3",
                            fg="white", font=("Arial", 10, "bold"))
         a_label.grid(row=0, column=0, padx=5, pady=3)
 
-        # 1设置工具参数
-        tool_a_button = tk.Button(setting_frame, text="设置工具参数", width=10, command=lambda: self.tool_set('A'))
+        # 1Set Tool Params
+        tool_a_button = tk.Button(setting_frame, text="Set Tool Params", width=10, command=lambda: self.tool_set('A'))
         tool_a_button.grid(row=0, column=1, padx=5)
 
-        tool_a_label_1 = tk.Label(setting_frame, text="设置工具动力学参数(M~I_zz)", width=25, bg='white')
+        tool_a_label_1 = tk.Label(setting_frame, text="Set Tool Dynamics (M~I_zz)", width=25, bg='white')
         tool_a_label_1.grid(row=0, column=2, padx=5)
 
         # 2tool entry
@@ -1310,8 +1309,8 @@ class App:
         self.tool_a_entry.insert(0, "[0,0,0,0,0,0,0,0,0,0]")
         self.tool_a_entry.grid(row=0, column=3, padx=5, sticky="ew")
 
-        # 1设置工具运动学参数
-        tool_a_label_2 = tk.Label(setting_frame, text="设置工具运动学参数", width=20, bg='white')
+        # 1Set Tool Kinematics
+        tool_a_label_2 = tk.Label(setting_frame, text="Set Tool Kinematics", width=20, bg='white')
         tool_a_label_2.grid(row=0, column=4)
 
         # 2tool entry
@@ -1319,13 +1318,13 @@ class App:
         self.tool_a1_entry.insert(0, "[0,0,0,0,0,0]")
         self.tool_a1_entry.grid(row=0, column=5, padx=5)
 
-        # row 1 0保存参数   1设置关节阻抗参数   2 K  3 K entry  4 D  5 D entry
+        # row 1: 0=Save Params 1=Set Joint Impedance Params 2=K 3=K entry 4=D 5=D entry
         # SAVE PARA
-        save_param_a_button = tk.Button(setting_frame_1, text="保存参数", width=6, command=lambda: self.save_param('A'))
+        save_param_a_button = tk.Button(setting_frame_1, text="Save Params", width=6, command=lambda: self.save_param('A'))
         save_param_a_button.grid(row=0, column=0, padx=5, pady=3)
 
         # set joint kd
-        joint_kd_a_button = tk.Button(setting_frame_1, text="设置关节阻抗参数", width=20,
+        joint_kd_a_button = tk.Button(setting_frame_1, text="Set Joint Impedance Params", width=20,
                                       command=lambda: self.joint_kd_set('A'))
         joint_kd_a_button.grid(row=0, column=1, padx=5)
 
@@ -1348,7 +1347,7 @@ class App:
         self.d_a_entry.grid(row=0, column=5, )
 
         # 3 spped
-        vel_a_button = tk.Button(setting_frame_1, text="设置速度和加速度(百分比)", width=20,
+        vel_a_button = tk.Button(setting_frame_1, text="Set Vel. & Accel. (%)", width=20,
                                  command=lambda: self.vel_acc_set('A'))
         vel_a_button.grid(row=0, column=6)
 
@@ -1362,13 +1361,13 @@ class App:
         self.acc_a_entry.insert(0, "10")
         self.acc_a_entry.grid(row=0, column=8)
 
-        # row 2  0导入参数   1设置笛卡尔阻抗参数   2 K  3 K entry  4 D  5 D entry
+        # row 2: 0=Load Params 1=Set Cartesian Impedance Params 2=K 3=K entry 4=D 5=D entry
         # SAVE PARA
-        load_param_a_button = tk.Button(setting_frame_1, text="导入参数", width=6, command=lambda: self.load_param('A'))
+        load_param_a_button = tk.Button(setting_frame_1, text="Load Params", width=6, command=lambda: self.load_param('A'))
         load_param_a_button.grid(row=1, column=0, padx=5, pady=3)
 
         # set joint kd
-        cart_kd_a_button = tk.Button(setting_frame_1, text="设置笛卡尔阻抗参数", width=20,
+        cart_kd_a_button = tk.Button(setting_frame_1, text="Set Cartesian Impedance Params", width=20,
                                      command=lambda: self.cart_kd_set('A'))
         cart_kd_a_button.grid(row=1, column=1, padx=5)
 
@@ -1390,8 +1389,8 @@ class App:
         self.cart_d_a_entry.insert(0, "[0.4,0.4,0.4,0.4,0.4,0.4,0.4]")
         self.cart_d_a_entry.grid(row=1, column=5)
 
-        # 阻抗类型
-        type_a_label = tk.Label(setting_frame_1, text='阻抗类型:1关节 2笛卡尔 3力控', width=30, bg="white")
+        # Impedance Type
+        type_a_label = tk.Label(setting_frame_1, text='Impedance Type: 1=Joint 2=Cartesian 3=Force', width=30, bg="white")
         type_a_label.grid(row=1, column=6)
 
         # impedance entry
@@ -1407,16 +1406,16 @@ class App:
         setting_frame_.pack(fill="x")
         setting_frame_11 = tk.Frame(parent, bg="white")
         setting_frame_11.pack(fill="x")
-        # 0#1/2  1设置工具参数M~I_zz   2 entry  3 设置速度和加速度 4speed entry  5acc entry
+        # 0=#1/2 1=Set Tool Params M~I_zz 2=entry 3=Set Vel & Accel 4=speed entry 5=acc entry
         b_label = tk.Label(setting_frame_, text="#2", width=10, bg="#2196F3",
                            fg="white", font=("Arial", 10, "bold"))
         b_label.grid(row=0, column=0, padx=5, pady=3)
 
-        # 1设置工具参数
-        tool_b_button = tk.Button(setting_frame_, text="设置工具参数", width=10, command=lambda: self.tool_set('B'))
+        # 1Set Tool Params
+        tool_b_button = tk.Button(setting_frame_, text="Set Tool Params", width=10, command=lambda: self.tool_set('B'))
         tool_b_button.grid(row=0, column=1, padx=5)
 
-        tool_b_label_1 = tk.Label(setting_frame_, text="设置工具动力学参数(M~I_zz)", width=25, bg='white')
+        tool_b_label_1 = tk.Label(setting_frame_, text="Set Tool Dynamics (M~I_zz)", width=25, bg='white')
         tool_b_label_1.grid(row=0, column=2, padx=5)
 
         # 2tool entry
@@ -1424,8 +1423,8 @@ class App:
         self.tool_b_entry.insert(0, "[0,0,0,0,0,0,0,0,0,0]")
         self.tool_b_entry.grid(row=0, column=3, padx=5, sticky="ew")
 
-        # 1设置工具运动学参数
-        tool_b_label_2 = tk.Label(setting_frame_, text="设置工具运动学参数", width=20, bg='white')
+        # 1Set Tool Kinematics
+        tool_b_label_2 = tk.Label(setting_frame_, text="Set Tool Kinematics", width=20, bg='white')
         tool_b_label_2.grid(row=0, column=4)
 
         # 2tool entry
@@ -1433,14 +1432,14 @@ class App:
         self.tool_b1_entry.insert(0, "[0,0,0,0,0,0]")
         self.tool_b1_entry.grid(row=0, column=5, padx=5)
 
-        # row 1 0保存参数   1设置关节阻抗参数   2 K  3 K entry  4 D  5 D entry
+        # row 1: 0=Save Params 1=Set Joint Impedance Params 2=K 3=K entry 4=D 5=D entry
         # SAVE PARA
-        save_param_b_button = tk.Button(setting_frame_11, text="保存参数", width=6,
+        save_param_b_button = tk.Button(setting_frame_11, text="Save Params", width=6,
                                         command=lambda: self.save_param('B'))  # todo, command=self.save_param
         save_param_b_button.grid(row=0, column=0, padx=5, pady=3)
 
         # set joint kd
-        joint_kd_b_button = tk.Button(setting_frame_11, text="设置关节阻抗参数", width=20,
+        joint_kd_b_button = tk.Button(setting_frame_11, text="Set Joint Impedance Params", width=20,
                                       command=lambda: self.joint_kd_set('B'))
         joint_kd_b_button.grid(row=0, column=1, padx=5)
 
@@ -1463,7 +1462,7 @@ class App:
         self.d_b_entry.grid(row=0, column=5, )
 
         # 3 spped
-        vel_b_button = tk.Button(setting_frame_11, text="设置速度和加速度(百分比)", width=20,
+        vel_b_button = tk.Button(setting_frame_11, text="Set Vel. & Accel. (%)", width=20,
                                  command=lambda: self.vel_acc_set('B'))
         vel_b_button.grid(row=0, column=6)
 
@@ -1477,14 +1476,14 @@ class App:
         self.acc_b_entry.insert(0, "10")
         self.acc_b_entry.grid(row=0, column=8)
 
-        # row 2  0导入参数   1设置笛卡尔阻抗参数   2 K  3 K entry  4 D  5 D entry
+        # row 2: 0=Load Params 1=Set Cartesian Impedance Params 2=K 3=K entry 4=D 5=D entry
         # SAVE PARA
-        load_param_b_button = tk.Button(setting_frame_11, text="导入参数", width=6,
+        load_param_b_button = tk.Button(setting_frame_11, text="Load Params", width=6,
                                         command=lambda: self.load_param('B'))
         load_param_b_button.grid(row=1, column=0, padx=5, pady=3)
 
         # set joint kd
-        cart_kd_b_button = tk.Button(setting_frame_11, text="设置笛卡尔阻抗参数", width=20,
+        cart_kd_b_button = tk.Button(setting_frame_11, text="Set Cartesian Impedance Params", width=20,
                                      command=lambda: self.cart_kd_set('B'))
         cart_kd_b_button.grid(row=1, column=1, padx=5)
 
@@ -1506,8 +1505,8 @@ class App:
         self.cart_d_b_entry.insert(0, "[0.4,0.4,0.4,0.4,0.4,0.4,0.4]")
         self.cart_d_b_entry.grid(row=1, column=5)
 
-        # 阻抗类型
-        type_b_label = tk.Label(setting_frame_11, text='阻抗类型:1关节 2笛卡尔 3力控', width=30, bg="white")
+        # Impedance Type
+        type_b_label = tk.Label(setting_frame_11, text='Impedance Type: 1=Joint 2=Cartesian 3=Force', width=30, bg="white")
         type_b_label.grid(row=1, column=6)
 
         # impedance entry
@@ -1515,123 +1514,123 @@ class App:
         self.imped_b_entry.insert(0, "2")
         self.imped_b_entry.grid(row=1, column=7)
 
-        # 添加横线
+        # Add horizontal line
         horizontal_line2 = tk.Frame(parent, height=2, bg="#%02x%02x%02x" % (50, 150, 200))
         horizontal_line2.pack(fill="x", expand=True)
 
-        # 添加状态显示区域
+        # Add status display area
         status_display_frame_1 = tk.Frame(parent, bg="white", padx=10, pady=5)
         status_display_frame_1.pack(fill="x", pady=5)
 
     def joints_cmd_settings(self, parent):
         self.frame1 = tk.Frame(parent, bg="white")
         self.frame1.pack(fill="x")
-        # 第一列：1#加点按钮
-        self.btn_add1 = tk.Button(self.frame1, text="1#加点", command=self.add_point1)
+        # Column 1: 1# Add Point button
+        self.btn_add1 = tk.Button(self.frame1, text="1# Add Point", command=self.add_point1)
         self.btn_add1.grid(row=0, column=0, padx=5)
 
-        # 第二列：输入文本框
+        # Column 2: Input text field
         self.entry_var = tk.StringVar(value="[0,0,0,0,0,0,0]")
         self.entry = tk.Entry(self.frame1, textvariable=self.entry_var, width=60)
         self.entry.grid(row=0, column=1, padx=5, sticky="ew")
 
-        # 第三列：2#加点按钮
-        self.btn_add2 = tk.Button(self.frame1, text="2#加点", command=self.add_point2)
+        # Column 3: 2# Add Point button
+        self.btn_add2 = tk.Button(self.frame1, text="2# Add Point", command=self.add_point2)
         self.btn_add2.grid(row=0, column=2, padx=5)
 
-        # 第四列：1#
-        self.btn_add3 = tk.Button(self.frame1, text="1#获取当前关节数据", command=lambda: self.add_current_joints('A'))
+        # Column 4: 1#
+        self.btn_add3 = tk.Button(self.frame1, text="1# Get Current Joint Data", command=lambda: self.add_current_joints('A'))
         self.btn_add3.grid(row=0, column=3, padx=5)
 
-        # 第五列：2#
-        self.btn_add4 = tk.Button(self.frame1, text="2#获取当前关节数据", command=lambda: self.add_current_joints('B'))
+        # Column 5: 2#
+        self.btn_add4 = tk.Button(self.frame1, text="2# Get Current Joint Data", command=lambda: self.add_current_joints('B'))
         self.btn_add4.grid(row=0, column=4, padx=5)
 
         self.frame2 = tk.Frame(parent, bg="white")
         self.frame2.pack(fill="x")
 
-        # 第一列：1#删除点按钮
-        self.btn_del1 = tk.Button(self.frame2, text="1#删除点", command=self.delete_point1)
+        # Column 1: 1# Delete Point button
+        self.btn_del1 = tk.Button(self.frame2, text="1# Delete Point", command=self.delete_point1)
         self.btn_del1.grid(row=0, column=1, padx=5)
 
-        # 第二列：1#下拉文本框
+        # Column 2: 1#Dropdown text field
         self.combo1 = ttk.Combobox(self.frame2, state="readonly", width=50)
         self.combo1.grid(row=0, column=2, padx=5)
 
-        # 第三列：1#运行按钮
-        self.btn_run1 = tk.Button(self.frame2, text="1#运行", command=self.run1)
+        # Column 3: 1# Run button
+        self.btn_run1 = tk.Button(self.frame2, text="1# Run", command=self.run1)
         self.btn_run1.grid(row=0, column=3, padx=5)
 
-        # 第四列：1#保存按钮
-        self.btn_save1 = tk.Button(self.frame2, text="1#保存", command=self.save_points1)
+        # Column 4: 1# Save button
+        self.btn_save1 = tk.Button(self.frame2, text="1# Save", command=self.save_points1)
         self.btn_save1.grid(row=0, column=4, padx=5)
 
-        # 第五列：1#导入按钮
-        self.btn_load1 = tk.Button(self.frame2, text="1#导入", command=self.load_points1)
+        # Column 5: 1# Import button
+        self.btn_load1 = tk.Button(self.frame2, text="1# Import", command=self.load_points1)
         self.btn_load1.grid(row=0, column=5, padx=5)
 
         text_blank = tk.Label(self.frame2, text='', width=2, bg='white')
         text_blank.grid(row=0, column=6, padx=5)
 
-        self.text_1_load_file = tk.Label(self.frame2, text='周期运行', bg='#afdfe4')
+        self.text_1_load_file = tk.Label(self.frame2, text='Periodic Run', bg='#afdfe4')
         self.text_1_load_file.grid(row=0, column=7, padx=3)
 
-        self.btn_load_file1 = tk.Button(self.frame2, text="1#选择文件", command=lambda: self.select_period_file('A'))
+        self.btn_load_file1 = tk.Button(self.frame2, text="1#Select File", command=lambda: self.select_period_file('A'))
         self.btn_load_file1.grid(row=0, column=8, padx=5)
 
         self.period_path_entry_1 = tk.Entry(self.frame2, textvariable=self.period_file_path_1, width=45,
                                             font=("Arial", 7), state="readonly")
         self.period_path_entry_1.grid(row=0, column=9, padx=5, sticky="ew")
 
-        self.run_period_1 = tk.Button(self.frame2, text="1#运行", command=lambda: self.run_period_file('A'))
+        self.run_period_1 = tk.Button(self.frame2, text="1# Run", command=lambda: self.run_period_file('A'))
         self.run_period_1.grid(row=0, column=10, padx=5)
 
         self.frame3 = tk.Frame(parent, bg="white")
         self.frame3.pack(fill="x")
 
-        # 第四列：2#删除点按钮
-        self.btn_del2 = tk.Button(self.frame3, text="2#删除点", command=self.delete_point2)
+        # Column 4: 2# Delete Point button
+        self.btn_del2 = tk.Button(self.frame3, text="2# Delete Point", command=self.delete_point2)
         self.btn_del2.grid(row=0, column=0, padx=5, pady=3)
 
-        # 第五列：2#下拉文本框
+        # Column 5: 2#Dropdown text field
         self.combo2 = ttk.Combobox(self.frame3, state="readonly", width=50)
         self.combo2.grid(row=0, column=1, padx=5)
 
-        # 第六列：2#运行按钮
-        self.btn_run2 = tk.Button(self.frame3, text="2#运行", command=self.run2)
+        # Column 6: 2# Run button
+        self.btn_run2 = tk.Button(self.frame3, text="2# Run", command=self.run2)
         self.btn_run2.grid(row=0, column=2, padx=5)
 
-        self.btn_save2 = tk.Button(self.frame3, text="2#保存", command=self.save_points2)
+        self.btn_save2 = tk.Button(self.frame3, text="2# Save", command=self.save_points2)
         self.btn_save2.grid(row=0, column=3, padx=5)
 
-        # 第五列：2#导入按钮
-        self.btn_load2 = tk.Button(self.frame3, text="2#导入", command=self.load_points2)
+        # Column 5: 2# Import button
+        self.btn_load2 = tk.Button(self.frame3, text="2# Import", command=self.load_points2)
         self.btn_load2.grid(row=0, column=4, padx=5)
 
         text_blank_ = tk.Label(self.frame3, text='', width=2, bg='white')
         text_blank_.grid(row=0, column=6, padx=5)
 
-        self.text_2_load_file = tk.Label(self.frame3, text='周期运行', bg='#afdfe4')
+        self.text_2_load_file = tk.Label(self.frame3, text='Periodic Run', bg='#afdfe4')
         self.text_2_load_file.grid(row=0, column=7, padx=3)
 
-        self.btn_load_file2 = tk.Button(self.frame3, text="2#选择文件", command=lambda: self.select_period_file('B'))
+        self.btn_load_file2 = tk.Button(self.frame3, text="2#Select File", command=lambda: self.select_period_file('B'))
         self.btn_load_file2.grid(row=0, column=8, padx=5)
 
         self.period_path_entry_2 = tk.Entry(self.frame3, textvariable=self.period_file_path_2, width=45,
                                             font=("Arial", 7), state="readonly")
         self.period_path_entry_2.grid(row=0, column=9, padx=5, sticky="ew")
 
-        self.run_period_2 = tk.Button(self.frame3, text="2#运行", command=lambda: self.run_period_file('B'))
+        self.run_period_2 = tk.Button(self.frame3, text="2# Run", command=lambda: self.run_period_file('B'))
         self.run_period_2.grid(row=0, column=10, padx=5)
 
-        # 初始化下拉框
+        # Initialize dropdowns
         self.update_comboboxes()
 
-        # 添加横线
+        # Add horizontal line
         horizontal_line3 = tk.Frame(parent, height=2, bg="#%02x%02x%02x" % (50, 150, 200))
         horizontal_line3.pack(fill="x", expand=True)
 
-        # 添加状态显示区域
+        # Add status display area
         status_display_frame_2 = tk.Frame(parent, bg="white", padx=10, pady=5)
         status_display_frame_2.pack(fill="x", pady=5)
 
@@ -1639,11 +1638,11 @@ class App:
         self.identy_tool_frame = tk.Frame(parent, bg="white")
         self.identy_tool_frame.pack(fill="x")
 
-        self.robot_type_choose = tk.Label(self.identy_tool_frame, text="工具动力学辨识", width=15, bg="#9b95c9",
+        self.robot_type_choose = tk.Label(self.identy_tool_frame, text="Tool Dynamics Identification", width=15, bg="#9b95c9",
                                           fg="white", font=("Arial", 10, "bold"))
         self.robot_type_choose.grid(row=0, column=0, padx=5)
 
-        self.robot_type_choose = tk.Label(self.identy_tool_frame, text="选择机型", bg='white', width=8)
+        self.robot_type_choose = tk.Label(self.identy_tool_frame, text="Select Model", bg='white', width=8)
         self.robot_type_choose.grid(row=0, column=1, padx=5)
 
         # robot select
@@ -1651,13 +1650,13 @@ class App:
             self.identy_tool_frame,
             values=["CCS", "SRS"],
             width=5,
-            state="readonly"  # 禁止直接输入
+            state="readonly"  # Disable direct input
         )
-        self.type_select_combobox_1.current(0)  # 默认选中第一个选项
+        self.type_select_combobox_1.current(0)  # Default to first option
         self.type_select_combobox_1.grid(row=0, column=2, padx=5)
 
         # choose file
-        self.tool_trajectory_file = tk.Button(self.identy_tool_frame, text="选择轨迹文件",
+        self.tool_trajectory_file = tk.Button(self.identy_tool_frame, text="Select Trajectory File",
                                               command=self.tool_trajectory)
         self.tool_trajectory_file.grid(row=0, column=3, padx=5)
 
@@ -1672,30 +1671,30 @@ class App:
         self.tool_blank = tk.Label(self.identy_tool_frame2, text=" ", width=15, bg="white")
         self.tool_blank.grid(row=0, column=0, padx=5)
         # left
-        self.collect_tool_btn = tk.Button(self.identy_tool_frame2, text="左臂空载数据采集",
+        self.collect_tool_btn = tk.Button(self.identy_tool_frame2, text="Left Arm No-Load Data Collection",
                                           command=lambda: self.thread_collect_tool_data_no_load('A'))
         self.collect_tool_btn.grid(row=0, column=1, padx=5)
 
-        self.collect_tool_btn2 = tk.Button(self.identy_tool_frame2, text="左臂带载数据采集",
+        self.collect_tool_btn2 = tk.Button(self.identy_tool_frame2, text="Left Arm Loaded Data Collection",
                                            command=lambda: self.thread_collect_tool_data_with_load('A'))
         self.collect_tool_btn2.grid(row=0, column=2, padx=5)
 
         self.tool_blank1 = tk.Label(self.identy_tool_frame2, text=" ", width=5, bg="white")
         self.tool_blank1.grid(row=0, column=3, padx=5)
 
-        # 工具辨识
-        self.tool_dyn_identy_btn = tk.Button(self.identy_tool_frame2, text="工具动力学辨识", bg='#afb4db',
+        # Tool Identification
+        self.tool_dyn_identy_btn = tk.Button(self.identy_tool_frame2, text="Tool Dynamics Identification", bg='#afb4db',
                                              command=self.tool_dyn_identy)
         self.tool_dyn_identy_btn.grid(row=0, column=4, padx=5)
 
         self.tool_blank3 = tk.Label(self.identy_tool_frame2, text=" ", width=5, bg="white")
         self.tool_blank3.grid(row=0, column=5, padx=5)
         # right
-        self.collect_tool_btn1 = tk.Button(self.identy_tool_frame2, text="右臂空载数据采集",
+        self.collect_tool_btn1 = tk.Button(self.identy_tool_frame2, text="Right Arm No-Load Data Collection",
                                            command=lambda: self.thread_collect_tool_data_no_load('B'))
         self.collect_tool_btn1.grid(row=0, column=6, padx=5)
 
-        self.collect_tool_btn22 = tk.Button(self.identy_tool_frame2, text="右臂带载数据采集",
+        self.collect_tool_btn22 = tk.Button(self.identy_tool_frame2, text="Right Arm Loaded Data Collection",
                                             command=lambda: self.thread_collect_tool_data_with_load('B'))
         self.collect_tool_btn22.grid(row=0, column=7, padx=5)
 
@@ -1706,7 +1705,7 @@ class App:
         self.tool_blank1.grid(row=0, column=0, padx=5)
 
         self.robot_type_choose1 = tk.Label(self.identy_tool_frame1,
-                                           text="工具动力学参数[m,mx,my,mz,ixx,ixy,ixz,iyy,iyz,izz]", bg='white',
+                                           text="Tool Dynamics [m,mx,my,mz,ixx,ixy,ixz,iyy,iyz,izz]", bg='white',
                                            width=40)
         self.robot_type_choose1.grid(row=0, column=1, padx=5, pady=5)
 
@@ -1715,334 +1714,334 @@ class App:
         self.tool_dyn_entry = tk.Entry(self.identy_tool_frame1, textvariable=self.entry_tool_dyn, width=100)
         self.tool_dyn_entry.grid(row=0, column=2, padx=5, sticky="ew")
 
-        # 添加横线
+        # Add horizontal line
         horizontal_line_4 = tk.Frame(parent, height=2, bg="#%02x%02x%02x" % (50, 150, 200))
         horizontal_line_4.pack(fill="x", expand=True)
 
-        # 添加状态显示区域
+        # Add status display area
         status_display_frame_3 = tk.Frame(parent, bg="white", padx=10, pady=5)
         status_display_frame_3.pack(fill="x", pady=5)
 
     def data_collect_content(self, parent):
         self.frame_data_1 = tk.Frame(parent, bg="white")
         self.frame_data_1.pack(fill="x")
-        # 第一列：collect 2 arms' data
-        self.collect_both_btn = tk.Button(self.frame_data_1, text="位置同步采集", command=self.collect_data_both)
+        # Column 1: collect 2 arms' data
+        self.collect_both_btn = tk.Button(self.frame_data_1, text="Position Sync Collection", command=self.collect_data_both)
         self.collect_both_btn.grid(row=0, column=0, padx=5)
 
-        # 第2列：stop collect
-        self.stop_collect_both_btn = tk.Button(self.frame_data_1, text="停止", command=self.stop_collect_data_both)
+        # Column 2: stop collect
+        self.stop_collect_both_btn = tk.Button(self.frame_data_1, text="Stop", command=self.stop_collect_data_both)
         self.stop_collect_both_btn.grid(row=0, column=1, padx=5)
 
-        # 第3列：save collect
-        self.save_collect_both_btn = tk.Button(self.frame_data_1, text="保存", command=self.save_collect_data_both)
+        # Column 3: save collect
+        self.save_collect_both_btn = tk.Button(self.frame_data_1, text="Save", command=self.save_collect_data_both)
         self.save_collect_both_btn.grid(row=0, column=2, padx=5)
 
-        # # 第4列：BLANK
+        # # Column 4: BLANK
         self.blankkkkkk = tk.Label(self.frame_data_1, text=" ", bg='white', width=5)
         self.blankkkkkk.grid(row=0, column=3, padx=5)
 
-        self.text_50_load_file = tk.Label(self.frame_data_1, text='数据下采样50HZ', bg='#cde6c7')
+        self.text_50_load_file = tk.Label(self.frame_data_1, text='Data Downsample 50Hz', bg='#cde6c7')
         self.text_50_load_file.grid(row=0, column=4, padx=3)
 
-        self.btn_load_file_50 = tk.Button(self.frame_data_1, text="选择文件", command=self.select_50_file)
+        self.btn_load_file_50 = tk.Button(self.frame_data_1, text="Select File", command=self.select_50_file)
         self.btn_load_file_50.grid(row=0, column=5, padx=5)
 
         self.path_50 = tk.Entry(self.frame_data_1, textvariable=self.file_path_50, width=75,
                                 font=("Arial", 7), state="readonly")
         self.path_50.grid(row=0, column=6, padx=5, sticky="ew")
 
-        self.run_generate_50 = tk.Button(self.frame_data_1, text="生成50点位", command=self.generate_50_file)
+        self.run_generate_50 = tk.Button(self.frame_data_1, text="Generate 50Hz Points", command=self.generate_50_file)
         self.run_generate_50.grid(row=0, column=7, padx=5)
-        # 查看文档
-        self.read_file_button = tk.Button(self.frame_data_1, text="采集ID说明", width=15, command=preview_text_file_1,
+        # View Documentation
+        self.read_file_button = tk.Button(self.frame_data_1, text="Collection ID Guide", width=15, command=preview_text_file_1,
                                           font=("Arial", 10, "bold"))
         self.read_file_button.grid(row=0, column=8, padx=5)
 
         self.frame_data_2 = tk.Frame(parent, bg="white")
         self.frame_data_2.pack(fill="x")
-        # 第一列：collect 1 arm' data
-        self.collect_btn_1 = tk.Button(self.frame_data_2, text="1# 数采", command=lambda: self.collect_data('A'))
+        # Column 1: collect 1 arm' data
+        self.collect_btn_1 = tk.Button(self.frame_data_2, text="1# Collect", command=lambda: self.collect_data('A'))
         self.collect_btn_1.grid(row=0, column=0, padx=5)
 
-        # 第2列：特征个数
-        self.feature_1 = tk.Label(self.frame_data_2, text="特征个数", bg='white')
+        # Column 2: Feature Count
+        self.feature_1 = tk.Label(self.frame_data_2, text="Feature Count", bg='white')
         self.feature_1.grid(row=0, column=1, padx=5)
 
-        # 第3列：特征个数
+        # Column 3: Feature Count
         self.features_entry_1 = tk.Entry(self.frame_data_2, width=3)
         self.features_entry_1.insert(0, '7')
         self.features_entry_1.grid(row=0, column=2, padx=5)
 
-        # 第4列：特征
-        self.feature_idx_1 = tk.Label(self.frame_data_2, text="特征IDX", bg='white')
+        # Column 4: Feature
+        self.feature_idx_1 = tk.Label(self.frame_data_2, text="Feature IDX", bg='white')
         self.feature_idx_1.grid(row=0, column=3, padx=5)
 
-        # 第5列：特征
+        # Column 5: Feature
         self.entry_var_raw_1 = tk.StringVar(
             value="[0,1,2,3,4,5,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]")
         self.feature_idx_entry_1 = tk.Entry(self.frame_data_2, textvariable=self.entry_var_raw_1, width=100)
         self.feature_idx_entry_1.grid(row=0, column=4, padx=5, sticky="ew")
 
-        # 第6列：行数文本
-        self.lines_1 = tk.Label(self.frame_data_2, text="行数", bg='white')
+        # Column 6: RowsText
+        self.lines_1 = tk.Label(self.frame_data_2, text="Rows", bg='white')
         self.lines_1.grid(row=0, column=6, padx=5)
 
-        # 第7列：行数
+        # Column 7: Rows
         self.lines_entry_1 = tk.Entry(self.frame_data_2, width=5)
         self.lines_entry_1.insert(0, '1000')
         self.lines_entry_1.grid(row=0, column=7, padx=5)
 
-        # 第8列：stop collect
-        self.stop_collect_btn_1 = tk.Button(self.frame_data_2, text="停止", command=self.stop_collect_data_both)
+        # Column 8: stop collect
+        self.stop_collect_btn_1 = tk.Button(self.frame_data_2, text="Stop", command=self.stop_collect_data_both)
         self.stop_collect_btn_1.grid(row=0, column=8, padx=5)
 
-        # 第3列：save collect
-        self.save_collect_btn_1 = tk.Button(self.frame_data_2, text="保存", command=self.save_collect_data_both)
+        # Column 3: save collect
+        self.save_collect_btn_1 = tk.Button(self.frame_data_2, text="Save", command=self.save_collect_data_both)
         self.save_collect_btn_1.grid(row=0, column=9, padx=5)
 
         self.frame_data_3 = tk.Frame(parent, bg="white")
         self.frame_data_3.pack(fill="x")
-        # 第一列：collect 1 arm' data
-        self.collect_btn_2 = tk.Button(self.frame_data_3, text="2# 数采", command=lambda: self.collect_data('B'))
+        # Column 1: collect 1 arm' data
+        self.collect_btn_2 = tk.Button(self.frame_data_3, text="2# Collect", command=lambda: self.collect_data('B'))
         self.collect_btn_2.grid(row=0, column=0, padx=5)
 
-        # 第2列：特征个数
-        self.feature_2 = tk.Label(self.frame_data_3, text="特征个数", bg='white')
+        # Column 2: Feature Count
+        self.feature_2 = tk.Label(self.frame_data_3, text="Feature Count", bg='white')
         self.feature_2.grid(row=0, column=1, padx=5)
 
-        # 第3列：特征个数
+        # Column 3: Feature Count
         self.features_entry_2 = tk.Entry(self.frame_data_3, width=3)
         self.features_entry_2.insert(0, '7')
         self.features_entry_2.grid(row=0, column=2, padx=5)
 
-        # 第4列：特征
-        self.feature_idx_2 = tk.Label(self.frame_data_3, text="特征IDX", bg='white')
+        # Column 4: Feature
+        self.feature_idx_2 = tk.Label(self.frame_data_3, text="Feature IDX", bg='white')
         self.feature_idx_2.grid(row=0, column=3, padx=5)
 
-        # 第5列：特征
+        # Column 5: Feature
         self.entry_var_raw_2 = tk.StringVar(
             value="[100,101,102,103,104,105,106,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]")
         self.feature_idx_entry_2 = tk.Entry(self.frame_data_3, textvariable=self.entry_var_raw_2, width=100)
         self.feature_idx_entry_2.grid(row=0, column=4, padx=5, sticky="ew")
 
-        # 第6列：行数文本
-        self.lines_2 = tk.Label(self.frame_data_3, text="行数", bg='white')
+        # Column 6: RowsText
+        self.lines_2 = tk.Label(self.frame_data_3, text="Rows", bg='white')
         self.lines_2.grid(row=0, column=6, padx=5)
 
-        # 第7列：行数
+        # Column 7: Rows
         self.lines_entry_2 = tk.Entry(self.frame_data_3, width=5)
         self.lines_entry_2.insert(0, '1000')
         self.lines_entry_2.grid(row=0, column=7, padx=5)
 
-        # 第8列：stop collect
-        self.stop_collect_btn_2 = tk.Button(self.frame_data_3, text="停止", command=self.stop_collect_data_both)
+        # Column 8: stop collect
+        self.stop_collect_btn_2 = tk.Button(self.frame_data_3, text="Stop", command=self.stop_collect_data_both)
         self.stop_collect_btn_2.grid(row=0, column=8, padx=5)
 
-        # 第3列：save collect
-        self.save_collect_btn_2 = tk.Button(self.frame_data_3, text="保存", command=self.save_collect_data_both)
+        # Column 3: save collect
+        self.save_collect_btn_2 = tk.Button(self.frame_data_3, text="Save", command=self.save_collect_data_both)
         self.save_collect_btn_2.grid(row=0, column=9, padx=5, pady=5)
 
-        # 添加横线
+        # Add horizontal line
         horizontal_line_5 = tk.Frame(parent, height=2, bg="#%02x%02x%02x" % (50, 150, 200))
         horizontal_line_5.pack(fill="x", expand=True)
 
-        # 添加状态显示区域
+        # Add status display area
         status_display_frame_4 = tk.Frame(parent, bg="white", padx=10, pady=5)
         status_display_frame_4.pack(fill="x", pady=5)
 
     def sensor_rectify_content(self, parent):
         self.sensor_frame_1 = tk.Frame(parent, bg="white")
         self.sensor_frame_1.pack(fill="x")
-        # 第1 :text
-        self.sensor_text_1 = tk.Label(self.sensor_frame_1, text="1#传感器偏置", bg="#2196F3",
+        # Column 1: text
+        self.sensor_text_1 = tk.Label(self.sensor_frame_1, text="1#Sensor Offset", bg="#2196F3",
                                       fg="white", font=("Arial", 10, "bold"))
         self.sensor_text_1.grid(row=0, column=0, padx=5, pady=5)
 
-        # 第2列：sensor select
-        self.axis_text_1 = tk.Label(self.sensor_frame_1, text="轴", bg="white")
+        # Column 2: sensor select
+        self.axis_text_1 = tk.Label(self.sensor_frame_1, text="Axis", bg="white")
         self.axis_text_1.grid(row=0, column=1, padx=5)
 
-        # 第3列：axis select
+        # Column 3: axis select
         self.axis_select_combobox_1 = ttk.Combobox(
             self.sensor_frame_1,
             values=["0", "1", "2", "3", "4", "5", "6"],
             width=3,
-            state="readonly"  # 禁止直接输入
+            state="readonly"  # Disable direct input
         )
-        self.axis_select_combobox_1.current(0)  # 默认选中第一个选项
+        self.axis_select_combobox_1.current(0)  # Default to first option
         self.axis_select_combobox_1.grid(row=0, column=2, padx=5)
 
-        # 第4列：get offset
-        self.get_offset_btn_1 = tk.Button(self.sensor_frame_1, text="获取偏置",
+        # Column 4: get offset
+        self.get_offset_btn_1 = tk.Button(self.sensor_frame_1, text="Get Offset",
                                           command=lambda: self.get_sensor_offset('A'))
         self.get_offset_btn_1.grid(row=0, column=3, padx=5)
 
-        # 第5列：get offset value
+        # Column 5: get offset value
 
         self.get_offset_entry_1 = tk.Entry(self.sensor_frame_1, width=5)
         self.get_offset_entry_1.insert(0, '0.0')
         self.get_offset_entry_1.grid(row=0, column=4, padx=5)
 
-        # 第6列：set offset
-        self.set_offset_btn_1 = tk.Button(self.sensor_frame_1, text="设置偏置",
+        # Column 6: set offset
+        self.set_offset_btn_1 = tk.Button(self.sensor_frame_1, text="Set Offset",
                                           command=lambda: self.set_sensor_offset('A'))
         self.set_offset_btn_1.grid(row=0, column=5, padx=5)
 
-        # # 第4列：BLANK
+        # # Column 4: BLANK
         self.blankkkkkk1 = tk.Label(self.sensor_frame_1, text=" ", bg='white', width=5)
         self.blankkkkkk1.grid(row=0, column=6, padx=5)
 
-        # 第1 :text
-        self.sensor_text_2 = tk.Label(self.sensor_frame_1, text="2#传感器偏置", bg="#2196F3",
+        # Column 1: text
+        self.sensor_text_2 = tk.Label(self.sensor_frame_1, text="2#Sensor Offset", bg="#2196F3",
                                       fg="white", font=("Arial", 10, "bold"))
         self.sensor_text_2.grid(row=0, column=7, padx=5)
 
-        # 第2列：sensor select
-        self.axis_text_2 = tk.Label(self.sensor_frame_1, text="轴", bg="white")
+        # Column 2: sensor select
+        self.axis_text_2 = tk.Label(self.sensor_frame_1, text="Axis", bg="white")
         self.axis_text_2.grid(row=0, column=8, padx=5)
 
-        # 第3列：axis select
+        # Column 3: axis select
         self.axis_select_combobox_2 = ttk.Combobox(
             self.sensor_frame_1,
             values=["0", "1", "2", "3", "4", "5", "6"],
             width=3,
-            state="readonly"  # 禁止直接输入
+            state="readonly"  # Disable direct input
         )
-        self.axis_select_combobox_2.current(0)  # 默认选中第一个选项
+        self.axis_select_combobox_2.current(0)  # Default to first option
         self.axis_select_combobox_2.grid(row=0, column=9, padx=5)
 
-        # 第4列：get offset
-        self.get_offset_btn_2 = tk.Button(self.sensor_frame_1, text="获取偏置",
+        # Column 4: get offset
+        self.get_offset_btn_2 = tk.Button(self.sensor_frame_1, text="Get Offset",
                                           command=lambda: self.get_sensor_offset('B'))
         self.get_offset_btn_2.grid(row=0, column=10, padx=5)
 
-        # 第5列：get offset value
+        # Column 5: get offset value
         self.get_offset_entry_2 = tk.Entry(self.sensor_frame_1, width=5)
         self.get_offset_entry_2.insert(0, '0.0')
         self.get_offset_entry_2.grid(row=0, column=11, padx=5)
 
-        # 第6列：set offset
-        self.set_offset_btn_2 = tk.Button(self.sensor_frame_1, text="设置偏置",
+        # Column 6: set offset
+        self.set_offset_btn_2 = tk.Button(self.sensor_frame_1, text="Set Offset",
                                           command=lambda: self.set_sensor_offset('B'))
         self.set_offset_btn_2.grid(row=0, column=12, padx=5, pady=5)
 
-        # 添加横线
+        # Add horizontal line
         horizontal_line_6 = tk.Frame(parent, height=2, bg="#%02x%02x%02x" % (50, 150, 200))
         horizontal_line_6.pack(fill="x", expand=True)
 
-        # 添加状态显示区域
+        # Add status display area
         status_display_frame_5 = tk.Frame(parent, bg="white", padx=10, pady=5)
         status_display_frame_5.pack(fill="x", pady=5)
 
     def motor_content(self, parent):
         self.motor_frame_1 = tk.Frame(parent, bg="white")
         self.motor_frame_1.pack(fill="x")
-        # 第1 :text
-        self.motor_text_1 = tk.Label(self.motor_frame_1, text="1#电机编码器清零", bg="#036073",
+        # Column 1: text
+        self.motor_text_1 = tk.Label(self.motor_frame_1, text="1#Motor Encoder Zero", bg="#036073",
                                      fg="white", font=("Arial", 10, "bold"))
         self.motor_text_1.grid(row=0, column=0, padx=5, pady=5)
 
-        # 第2列：axis select
-        self.motor_axis_text_1 = tk.Label(self.motor_frame_1, text="轴", bg="white")
+        # Column 2: axis select
+        self.motor_axis_text_1 = tk.Label(self.motor_frame_1, text="Axis", bg="white")
         self.motor_axis_text_1.grid(row=0, column=1, padx=5)
 
-        # 第3列：axis select
+        # Column 3: axis select
         self.motor_axis_select_combobox_1 = ttk.Combobox(
             self.motor_frame_1,
             values=["0", "1", "2", "3", "4", "5", "6"],
             width=3,
-            state="readonly"  # 禁止直接输入
+            state="readonly"  # Disable direct input
         )
-        self.motor_axis_select_combobox_1.current(0)  # 默认选中第一个选项
+        self.motor_axis_select_combobox_1.current(0)  # Default to first option
         self.motor_axis_select_combobox_1.grid(row=0, column=2, padx=5)
 
-        # 第4列：电机内编
-        self.motor_btn_1 = tk.Button(self.motor_frame_1, text="电机内编",
+        # Column 4: Motor Int. Enc.
+        self.motor_btn_1 = tk.Button(self.motor_frame_1, text="Motor Int. Enc.",
                                      command=lambda: self.clear_motor_as_zero('A'))
         self.motor_btn_1.grid(row=0, column=3, padx=5, pady=5)
 
-        # 第5列：电机外编
-        self.motor_btn_2 = tk.Button(self.motor_frame_1, text="电机外编",
+        # Column 5: Motor Ext. Enc.
+        self.motor_btn_2 = tk.Button(self.motor_frame_1, text="Motor Ext. Enc.",
                                      command=lambda: self.clear_motorE_as_zero('A'))
         self.motor_btn_2.grid(row=0, column=4, padx=5)
-        # # 第6列：空列
+        # # Column 6: Blank column
         # self.moter_blank_1 = tk.Label(self.motor_frame_1, text=" ", bg='white', width=1)
         # self.moter_blank_1.grid(row=0, column=5, padx=5)
 
-        # 第7列：编码器清错
-        self.motor_btn_3 = tk.Button(self.motor_frame_1, text="编码器清错", bg="#D0EBF0",
+        # Column 7: Encoder Clear Error
+        self.motor_btn_3 = tk.Button(self.motor_frame_1, text="Encoder Clear Error", bg="#D0EBF0",
                                      command=lambda: self.clear_motor_error('A'))
         self.motor_btn_3.grid(row=0, column=5, padx=5)
 
-        # 8：BLANK
+        # 8: BLANK
         self.blankkkkkk1 = tk.Label(self.motor_frame_1, text=" ", bg='white', width=5)
         self.blankkkkkk1.grid(row=0, column=7, padx=5)
 
         # 1 :text
-        self.motor_text_11 = tk.Label(self.motor_frame_1, text="2#电机编码器清零", bg="#036073",
+        self.motor_text_11 = tk.Label(self.motor_frame_1, text="2#Motor Encoder Zero", bg="#036073",
                                       fg="white", font=("Arial", 10, "bold"))
         self.motor_text_11.grid(row=0, column=8, padx=5, pady=5)
 
-        # 第2列：axis select
-        self.motor_axis_text_11 = tk.Label(self.motor_frame_1, text="轴", bg="white")
+        # Column 2: axis select
+        self.motor_axis_text_11 = tk.Label(self.motor_frame_1, text="Axis", bg="white")
         self.motor_axis_text_11.grid(row=0, column=9, padx=5)
 
-        # 第3列：axis select
+        # Column 3: axis select
         self.motor_axis_select_combobox_11 = ttk.Combobox(
             self.motor_frame_1,
             values=["0", "1", "2", "3", "4", "5", "6"],
             width=3,
-            state="readonly"  # 禁止直接输入
+            state="readonly"  # Disable direct input
         )
-        self.motor_axis_select_combobox_11.current(0)  # 默认选中第一个选项
+        self.motor_axis_select_combobox_11.current(0)  # Default to first option
         self.motor_axis_select_combobox_11.grid(row=0, column=10, padx=5)
 
-        # 第4列：电机内编
-        self.motor_btn_11 = tk.Button(self.motor_frame_1, text="电机内编",
+        # Column 4: Motor Int. Enc.
+        self.motor_btn_11 = tk.Button(self.motor_frame_1, text="Motor Int. Enc.",
                                       command=lambda: self.clear_motor_as_zero('B'))
         self.motor_btn_11.grid(row=0, column=11, padx=5)
 
-        # 第5列：电机外编
-        self.motor_btn_21 = tk.Button(self.motor_frame_1, text="电机外编",
+        # Column 5: Motor Ext. Enc.
+        self.motor_btn_21 = tk.Button(self.motor_frame_1, text="Motor Ext. Enc.",
                                       command=lambda: self.clear_motorE_as_zero('B'))
         self.motor_btn_21.grid(row=0, column=12, padx=5)
-        # # 第6列：空列
+        # # Column 6: Blank column
         # self.moter_blank_11 = tk.Label(self.motor_frame_1, text=" ", bg='white', width=1)
         # self.moter_blank_11.grid(row=0, column=13, padx=5)
 
-        # 第7列：编码器清错
-        self.motor_btn_31 = tk.Button(self.motor_frame_1, text="编码器清错", bg="#D0EBF0",
+        # Column 7: Encoder Clear Error
+        self.motor_btn_31 = tk.Button(self.motor_frame_1, text="Encoder Clear Error", bg="#D0EBF0",
                                       command=lambda: self.clear_motor_error('B'))
         self.motor_btn_31.grid(row=0, column=14, padx=5)
 
-        # 添加横线
+        # Add horizontal line
         horizontal_line_7 = tk.Frame(parent, height=2, bg="#%02x%02x%02x" % (50, 150, 200))
         horizontal_line_7.pack(fill="x", expand=True)
 
-        # 添加状态显示区域
+        # Add status display area
         status_display_frame_6 = tk.Frame(parent, bg="white", padx=10, pady=5)
         status_display_frame_6.pack(fill="x", pady=5)
 
     def eef_content(self, parent):
         self.eef_frame_1 = tk.Frame(parent, bg="white")
         self.eef_frame_1.pack(fill="x")
-        # 第1 :text
-        self.eef_text_1 = tk.Button(self.eef_frame_1, text="1#末端发送", command=lambda: self.send_data_eef('A'))
+        # Column 1: text
+        self.eef_text_1 = tk.Button(self.eef_frame_1, text="1#End-Effector Send", command=lambda: self.send_data_eef('A'))
         self.eef_text_1.grid(row=0, column=0, padx=5, pady=5)
 
-        # 第2列：sensor select
-        self.com_text_1 = tk.Label(self.eef_frame_1, text="端口", bg="white", width=5)
+        # Column 2: sensor select
+        self.com_text_1 = tk.Label(self.eef_frame_1, text="Port", bg="white", width=5)
         self.com_text_1.grid(row=0, column=1, padx=5)
 
-        # 第3列：axis select
+        # Column 3: axis select
         self.com_select_combobox_1 = ttk.Combobox(
             self.eef_frame_1,
             values=["CAN", "COM1", "COM2"],
             width=5,
-            state="readonly"  # 禁止直接输入
+            state="readonly"  # Disable direct input
         )
-        self.com_select_combobox_1.current(0)  # 默认选中第一个选项
+        self.com_select_combobox_1.current(0)  # Default to first option
         self.com_select_combobox_1.grid(row=0, column=2, padx=5)
 
         # self.com_entry_1 = tk.Entry(self.eef_frame_1, width=120)
@@ -2050,14 +2049,14 @@ class App:
         # self.com_entry_1.grid(row=0, column=4, padx=5, sticky="ew")
 
 
-        self.eef_delet_1=tk.Button(self.eef_frame_1, text="删除选中", command=lambda: self.delete_eef_command('A'))
+        self.eef_delet_1=tk.Button(self.eef_frame_1, text="Delete Selected", command=lambda: self.delete_eef_command('A'))
         self.eef_delet_1.grid(row=0, column=3, padx=5, pady=5)
 
 
         self.eef_combo1 = ttk.Combobox(self.eef_frame_1, state="readonly",width=120)
         self.eef_combo1.grid(row=0, column=4, padx=5)
 
-        self.eef_bt_1 = tk.Button(self.eef_frame_1, text="1#末端接收", command=lambda: self.receive_data_eef('A'))
+        self.eef_bt_1 = tk.Button(self.eef_frame_1, text="1#End-Effector Receive", command=lambda: self.receive_data_eef('A'))
         self.eef_bt_1.grid(row=0, column=5, padx=5)
 
         self.eef_frame_1_2 = tk.Frame(parent, bg="white")
@@ -2072,115 +2071,115 @@ class App:
         self.eef1_2_b3= tk.Label(self.eef_frame_1_2, text="", bg="white", width=8)
         self.eef1_2_b3.grid(row=0, column=2, padx=5)
 
-        self.eef_add_1=tk.Button(self.eef_frame_1_2,text='1#加指令',command=lambda :self.add_eef_command('A'))
+        self.eef_add_1=tk.Button(self.eef_frame_1_2,text='1#Add Command',command=lambda :self.add_eef_command('A'))
         self.eef_add_1.grid(row=0, column=3, padx=5)
 
         self.eef_entry = tk.Entry(self.eef_frame_1_2, width=120)
         self.eef_entry.insert(0, "01 06 00 00 00 01 48 0A")
         self.eef_entry.grid(row=0, column=4, padx=5, sticky="ew")
 
-        self.eef_add_2=tk.Button(self.eef_frame_1_2,text='2#加指令',command=lambda :self.add_eef_command('B'))
+        self.eef_add_2=tk.Button(self.eef_frame_1_2,text='2#Add Command',command=lambda :self.add_eef_command('B'))
         self.eef_add_2.grid(row=0, column=5, padx=5)
 
 
         self.eef_frame_2 = tk.Frame(parent, bg="white")
         self.eef_frame_2.pack(fill="x")
-        # 第1 :text
-        self.eef_bt_2 = tk.Button(self.eef_frame_2, text="2#末端发送", command=lambda: self.send_data_eef('B'))
+        # Column 1: text
+        self.eef_bt_2 = tk.Button(self.eef_frame_2, text="2#End-Effector Send", command=lambda: self.send_data_eef('B'))
         self.eef_bt_2.grid(row=0, column=0, padx=5)
 
-        # 第2列：sensor select
-        self.com_text_2 = tk.Label(self.eef_frame_2, text="端口", bg="white", width=5)
+        # Column 2: sensor select
+        self.com_text_2 = tk.Label(self.eef_frame_2, text="Port", bg="white", width=5)
         self.com_text_2.grid(row=0, column=1, padx=5)
 
-        # 第3列：axis select
+        # Column 3: axis select
         self.com_select_combobox_2 = ttk.Combobox(
             self.eef_frame_2,
             values=["CAN", "COM1", "COM2"],
             width=5,
-            state="readonly"  # 禁止直接输入
+            state="readonly"  # Disable direct input
         )
-        self.com_select_combobox_2.current(0)  # 默认选中第一个选项
+        self.com_select_combobox_2.current(0)  # Default to first option
         self.com_select_combobox_2.grid(row=0, column=2, padx=5)
 
         # self.com_entry_2 = tk.Entry(self.eef_frame_2, width=120)
         # self.com_entry_2.insert(0, "01 06 00 00 00 01 48 0A")
         # self.com_entry_2.grid(row=0, column=4, padx=5, sticky="ew")
 
-        self.eef_delet_2=tk.Button(self.eef_frame_2, text="删除选中", command=lambda: self.delete_eef_command('B'))
+        self.eef_delet_2=tk.Button(self.eef_frame_2, text="Delete Selected", command=lambda: self.delete_eef_command('B'))
         self.eef_delet_2.grid(row=0, column=3, padx=5, pady=5)
 
 
         self.eef_combo2 = ttk.Combobox(self.eef_frame_2, state="readonly",width=120)
         self.eef_combo2.grid(row=0, column=4, padx=5)
 
-        self.eef_bt_4 = tk.Button(self.eef_frame_2, text="2#末端接收", command=lambda: self.receive_data_eef('B'))
+        self.eef_bt_4 = tk.Button(self.eef_frame_2, text="2#End-Effector Receive", command=lambda: self.receive_data_eef('B'))
         self.eef_bt_4.grid(row=0, column=5, padx=5, pady=5)
 
 
         self.eef_frame_3 = tk.Frame(parent, bg="white")
         self.eef_frame_3.pack(fill="x")
 
-        # 接收内容文本框
-        recv_label1 = tk.Label(self.eef_frame_3, text="1#接收内容:")
+        # Received content text box
+        recv_label1 = tk.Label(self.eef_frame_3, text="1#Received Content:")
         recv_label1.grid(row=0, column=0, padx=5)
 
 
-        # 间隔
+        # Spacer
         spacer = tk.Label(self.eef_frame_3, text="   ", bg='white')
         spacer.grid(row=0, column=1, padx=5)
 
         self.recv_text1 = scrolledtext.ScrolledText(self.eef_frame_3, width=70, height=8, wrap=tk.WORD)
         self.recv_text1.grid(row=1, column=0, padx=5)
-        self.recv_text1.insert(tk.END, '使用提示：\n请先选择端口：CAN/COM1/COM2, \n点击 1#末端接收 按钮， \n输入发送数据，点击 1#末端接收按钮, \n接收到的末端信息以1khz频率刷新显示')
+        self.recv_text1.insert(tk.END, 'Usage Tips:\nFirst select Port: CAN/COM1/COM2, \nClick 1# End-Effector Receive button, \nEnter send data, click 1# End-Effector Receive button, \nReceived end-effector data refreshes at 1kHz')
 
-        # 间隔
+        # Spacer
         spacer1 = tk.Label(self.eef_frame_3, text="   ", bg='white')
         spacer1.grid(row=1, column=1, padx=5)
 
-        # 接收内容文本框
-        recv_label2 = tk.Label(self.eef_frame_3, text="2#接收内容:")
+        # Received content text box
+        recv_label2 = tk.Label(self.eef_frame_3, text="2#Received Content:")
         recv_label2.grid(row=0, column=2, padx=5)
 
         self.recv_text2 = scrolledtext.ScrolledText(self.eef_frame_3, width=70, height=8, wrap=tk.WORD)
         self.recv_text2.grid(row=1, column=2, padx=5)
-        self.recv_text2.insert(tk.END, '使用提示：\n请先选择端口：CAN/COM1/COM2, \n点击 2#末端接收 按钮， \n输入发送数据，点击 2#末端接收按钮, \n接收到的末端信息以1khz频率刷新显示')
+        self.recv_text2.insert(tk.END, 'Usage Tips:\nFirst select Port: CAN/COM1/COM2, \nClick 2# End-Effector Receive button, \nEnter send data, click 2# End-Effector Receive button, \nReceived end-effector data refreshes at 1kHz')
 
-        # 添加状态显示区域
+        # Add status display area
         status_display_frame_7 = tk.Frame(parent, bg="white", padx=10, pady=5)
         status_display_frame_7.pack(fill="x", pady=5)
 
     def on_mousewheel(self, event):
-        """处理鼠标滚轮事件"""
+        """Handle mouse wheel event"""
         self.canvas.yview_scroll(int(-1 * (event.delta / 130)), "units")
 
     def create_status_bar(self):
-        """创建底部状态栏"""
+        """Create bottom status bar"""
 
         self.status_frame1 = tk.Frame(self.root, bd=1, relief=tk.SUNKEN, bg="#f0f0f0")
         self.status_frame1.pack(side=tk.BOTTOM, fill=tk.X)
 
-        # 右侧设备状态
+        # Right device status
         self.right_frame = tk.Frame(self.status_frame1, bg="#f0f0f0")
         self.right_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(20, 10), pady=5)
 
         self.status_frame = tk.Frame(self.root, bd=1, relief=tk.SUNKEN, bg="#f0f0f0")
         self.status_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
-        # 左侧设备状态
+        # Left device status
         self.left_frame = tk.Frame(self.status_frame, bg="#f0f0f0")
         self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(20, 10), pady=5)
 
-        # # 分隔线
+        # # Separator line
         # separator = ttk.Separator(self.status_frame, orient=tk.VERTICAL)
         # separator.pack(side=tk.LEFT, fill=tk.Y, padx=5)
 
-        # 初始化状态标签
+        # Initialize status labels
         self.init_status_labels()
 
     def init_status_labels(self):
-        """初始化状态标签"""
-        # 左侧设备状态标签
+        """Initialize status labels"""
+        # Left device status labels
         tk.Label(
             self.left_frame,
             text="#1",
@@ -2191,7 +2190,7 @@ class App:
 
         self.left_state_main = tk.Label(
             self.left_frame,
-            text="下始能",
+            text="Servo Off",
             bg="#fcf16e",
             fg="black",
             font=("Arial", 9),
@@ -2203,7 +2202,7 @@ class App:
 
         self.left_state_1 = tk.Label(
             self.left_frame,
-            text="拖动按钮: 0",
+            text="Drag Btn: 0",
             bg="#e0e0e0",
             font=("Arial", 9),
             padx=2,
@@ -2214,7 +2213,7 @@ class App:
 
         self.left_state_2 = tk.Label(
             self.left_frame,
-            text="低速标志:1",
+            text="Low Speed:1",
             bg="#e0e0e0",
             font=("Arial", 9),
             padx=2,
@@ -2225,7 +2224,7 @@ class App:
 
         self.left_state_3 = tk.Label(
             self.left_frame,
-            text="错误码:0",
+            text="Error Code:0",
             bg="#e0e0e0",
             font=("Arial", 9),
             padx=2,
@@ -2254,7 +2253,7 @@ class App:
         )
         self.left_data_6d.pack(side=tk.RIGHT, fill=tk.X, expand=True)
 
-        # 右侧设备状态标签
+        # Right device status labels
         tk.Label(
             self.right_frame,
             text="#2",
@@ -2265,7 +2264,7 @@ class App:
 
         self.right_state_main = tk.Label(
             self.right_frame,
-            text="下始能",
+            text="Servo Off",
             bg="#fcf16e",
             fg="black",
             font=("Arial", 9),
@@ -2277,7 +2276,7 @@ class App:
 
         self.right_state_1 = tk.Label(
             self.right_frame,
-            text="拖动按钮: 0",
+            text="Drag Btn: 0",
             bg="#e0e0e0",
             font=("Arial", 9),
             padx=2,
@@ -2288,7 +2287,7 @@ class App:
 
         self.right_state_2 = tk.Label(
             self.right_frame,
-            text="低速标志:1",
+            text="Low Speed:1",
             bg="#e0e0e0",
             font=("Arial", 9),
             padx=2,
@@ -2299,7 +2298,7 @@ class App:
 
         self.right_state_3 = tk.Label(
             self.right_frame,
-            text="错误码:0",
+            text="Error Code:0",
             bg="#e0e0e0",
             font=("Arial", 9),
             padx=2,
@@ -2334,16 +2333,16 @@ class App:
             init = robot.connect(global_robot_ip)
             print(f'\nrobot connect ({global_robot_ip}), return:{init}')
             # if init==0:
-            #     messagebox.showerror('failed','端口占用，连接失败')
+            #     messagebox.showerror('failed','Port occupied, connection failed')
             # else:
-            '''清错'''
+            '''Clear Error'''
             robot.clear_set()
             robot.clear_error('A')
             robot.clear_error('B')
             robot.send_cmd()
             time.sleep(0.1)
 
-            """切换设备连接状态"""
+            """Toggle device connection state"""
             self.connected = not self.connected
 
         if self.connected:
@@ -2360,14 +2359,14 @@ class App:
                     frame_update = sub_data['outputs'][0]['frame_serial']
                 time.sleep(0.01)
             if motion_tag > 0:
-                # 更新连接设备
-                self.connect_btn.config(text="断开连接", bg="#F44336")
-                self.status_label.config(text="已连接")
+                # Update connected device
+                self.connect_btn.config(text="Disconnect", bg="#F44336")
+                self.status_label.config(text="Connected")
                 self.status_light.config(fg="green")
                 self.mode_btn.config(state="normal")
-                '''启动读485数据'''
+                '''Start reading 485 data'''
 
-                # 启动数据订阅
+                # Start data subscription
                 self.data_subscriber = DataSubscriber(self.update_data)
 
                 '''tool '''
@@ -2376,13 +2375,13 @@ class App:
                 from python.fx_robot import read_csv_file_to_float_strict
                 self.tool_result = read_csv_file_to_float_strict(self.tools_txt, expected_columns=16)
                 if self.tool_result==0:
-                    messagebox.showinfo('success', '机器人连接成功. 机器人未设置工具信息，如果带工具，请设置工具信息')
+                    messagebox.showinfo('success', 'Robot connected. No tool info set. If using a tool, please configure tool parameters.')
                 else:
-                    messagebox.showinfo('success', '机器人连接成功.  机器人已设置工具信息.')
-                    # print(f"成功读取数据: {self.tool_result}")
+                    messagebox.showinfo('success', 'Robot connected. Tool info already configured.')
+                    # print(f"Successfully read data: {self.tool_result}")
                     if isinstance(self.tool_result[0], list):
-                        # print(f"第一行: {self.tool_result[0]}")
-                        # print(f"第二行: {self.tool_result[1]}")
+                        # print(f"First row: {self.tool_result[0]}")
+                        # print(f"Second row: {self.tool_result[1]}")
 
                         self.tool_a_entry.delete(0, tk.END)
                         self.tool_a_entry.insert(0, str(self.tool_result[0][:10]))
@@ -2402,22 +2401,22 @@ class App:
                         kk2.set_tool_kine(tool_mat=tool_mat1)
 
             if motion_tag == 0:
-                messagebox.showerror('failed!', "机器人连接不成功，请重连")
+                messagebox.showerror('failed!', "Robot connection failed, please reconnect")
 
         else:
-            # # 断开连接 夹在这就不能读到订阅了，加到关闭窗口里面
+            # # Disconnect - can't read subscription here, moved to window close
             # robot.release_robot()
-            self.connect_btn.config(text="连接机器人", bg="#4CAF50")
-            self.status_label.config(text="未连接")
+            self.connect_btn.config(text="Connect Robot", bg="#4CAF50")
+            self.status_label.config(text="Disconnected")
             self.status_light.config(fg="red")
             self.mode_btn.config(state="disabled")
 
-            # 停止数据订阅
+            # Stop data subscription
             if self.data_subscriber:
                 self.data_subscriber.stop()
                 self.data_subscriber = None
 
-            # 重置数据
+            # Reset data
             self.result = {
                 'states': [
                     {'cur_state': 0, 'cmd_state': 0, 'err_code': 0}, {'cur_state': 0, 'cmd_state': 0, 'err_code': 0},
@@ -2428,16 +2427,16 @@ class App:
                         {'frame_serial': 0,
                          'tip_di': b'\x00',
                          'low_speed_flag': b'\x00',
-                         'fb_joint_pos': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 反馈关节位置
-                         'fb_joint_vel': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 反馈关节速度
-                         'fb_joint_posE': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 反馈关节位置(外编)
-                         'fb_joint_cmd': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 位置关节指令
-                         'fb_joint_cToq': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 反馈关节电流
-                         'fb_joint_sToq': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 传感器
-                         'fb_joint_them': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 反馈关节温度
+                         'fb_joint_pos': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Feedback joint position
+                         'fb_joint_vel': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Feedback joint velocity
+                         'fb_joint_posE': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Feedback joint position (ext. encoder)
+                         'fb_joint_cmd': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Joint position command
+                         'fb_joint_cToq': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Feedback joint current
+                         'fb_joint_sToq': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Sensor
+                         'fb_joint_them': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Feedback joint temperature
                          'est_joint_firc': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                          'est_joint_firc_dot': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                         'est_joint_force': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # 轴外力
+                         'est_joint_force': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],  # Axis external force
                          'est_cart_fn': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
 
                         {'frame_serial': 0,
@@ -2459,19 +2458,19 @@ class App:
             self.update_ui()
 
     def toggle_display_mode(self):
-        """切换数据显示模式"""
+        """Toggle data display mode"""
         self.display_mode = (self.display_mode + 1) % 8
         self.mode_btn.config(text=self.mode_names[self.display_mode])
         self.update_ui()
 
     def update_data(self, result):
-        """更新订阅的数据"""
+        """Update subscribed data"""
         self.result = result
         self.root.after(0, self.update_ui)
         self.root.after(0, self.update_6d)
 
     def update_6d(self):
-        """更新UI显示"""
+        """Update UI display"""
         data11 = self.result['outputs'][0]['fb_joint_pos']
         data22 = self.result['outputs'][1]['fb_joint_pos']
         list_joints_a = []
@@ -2485,7 +2484,7 @@ class App:
         if list_joints_a[:] != 0.0:
             fk_mat_1 = kk1.fk(joints=list_joints_a)
             # print(f'-----joints a:{list_joints_a}, fk_mat:{type(fk_mat_1)}')
-            pose_6d_1 = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_1)  # 用关节正解的姿态转XYZABC
+            pose_6d_1 = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_1)  # Convert FK pose to XYZABC
         else:
             pose_6d_1 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
@@ -2493,36 +2492,36 @@ class App:
             fk_mat_2 = kk2.fk(joints=list_joints_b)
             time.sleep(0.1)
             # print(f'-----jointsb:{list_joints_b}, fk_mat:{type(fk_mat_2)}')
-            pose_6d_2 = kk2.mat4x4_to_xyzabc(pose_mat=fk_mat_2)  # 用关节正解的姿态转XYZABC
+            pose_6d_2 = kk2.mat4x4_to_xyzabc(pose_mat=fk_mat_2)  # Convert FK pose to XYZABC
         else:
             pose_6d_2 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-        # 更新数据显示
+        # Update data display
         self.left_data_6d.config(text=f"XYZABC: [{format_vector(pose_6d_1)}]")
         self.right_data_6d.config(text=f"XYZABC: [{format_vector(pose_6d_2)}]")
 
     def update_ui(self):
-        """更新UI显示"""
-        # 更新状态值
-        self.left_state_main.config(text=f"状态:{self.result['states'][0]['cur_state']}")
-        self.left_state_1.config(text=f"拖动按钮:{self.result['outputs'][0]['tip_di'][0]}")
-        self.left_state_2.config(text=f"低速标志:{self.result['outputs'][0]['low_speed_flag'][0]}")
-        self.left_state_3.config(text=f"错误码:{self.result['states'][0]['err_code']}")
-        self.right_state_main.config(text=f"状态:{self.result['states'][1]['cur_state']}")
-        self.right_state_1.config(text=f"拖动按钮:{self.result['outputs'][1]['tip_di'][0]}")
-        self.right_state_2.config(text=f"低速标志:{self.result['outputs'][1]['low_speed_flag'][0]}")
-        self.right_state_3.config(text=f"错误码:{self.result['states'][1]['err_code']}")
+        """Update UI display"""
+        # Update status values
+        self.left_state_main.config(text=f"Status:{self.result['states'][0]['cur_state']}")
+        self.left_state_1.config(text=f"Drag Btn:{self.result['outputs'][0]['tip_di'][0]}")
+        self.left_state_2.config(text=f"Low Speed:{self.result['outputs'][0]['low_speed_flag'][0]}")
+        self.left_state_3.config(text=f"Error Code:{self.result['states'][0]['err_code']}")
+        self.right_state_main.config(text=f"Status:{self.result['states'][1]['cur_state']}")
+        self.right_state_1.config(text=f"Drag Btn:{self.result['outputs'][1]['tip_di'][0]}")
+        self.right_state_2.config(text=f"Low Speed:{self.result['outputs'][1]['low_speed_flag'][0]}")
+        self.right_state_3.config(text=f"Error Code:{self.result['states'][1]['err_code']}")
 
-        # 根据当前模式获取数据
+        # Get data based on current mode
         key = self.data_keys[self.display_mode]
         data1 = self.result['outputs'][0][key][:]
         data2 = self.result['outputs'][1][key][:]
 
-        # 更新数据显示
+        # Update data display
         self.left_data.config(text=f"J1-J7: [{format_vector(data1)}]")
         self.right_data.config(text=f"J1-J7: [{format_vector(data2)}]")
 
-        # 根据状态值更新颜色
+        # Update colors based on status values
         pid_colors = ["gray", "green"]
         speed_colors = ["green", "gray"]
         pid_color_1 = pid_colors[self.result['outputs'][0]['tip_di'][0]]
@@ -2537,7 +2536,7 @@ class App:
         self.left_state_2.config(bg=speed_color_1, fg="white")
         self.right_state_2.config(bg=speed_color_2, fg="white")
 
-        # 数据背景色
+        # Data background color
         data_bg = "#f5f5f5" if self.connected else "#e0e0e0"
         self.left_data.config(bg=data_bg)
         self.right_data.config(bg=data_bg)
@@ -2547,15 +2546,15 @@ class App:
         file_path = filedialog.askopenfilename(
             defaultextension=".r50pth",
             filetypes=[("path files", "*.r50pth"), ("All files", "*.*")],
-            title="选择1#周期运行文件"
+            title="Select #1 Periodic Run File"
         )
         if file_path:
             if robot_id == 'A':
                 self.period_file_path_1.set(file_path)
-                # messagebox.showinfo("成功", f"1#周期运行文件已选择: {os.path.basename(file_path)}")
+                # messagebox.showinfo("Success", f"#1 Periodic Run file selected: {os.path.basename(file_path)}")
             elif robot_id == 'B':
                 self.period_file_path_2.set(file_path)
-                messagebox.showinfo("成功", f"2#周期运行文件已选择: {os.path.basename(file_path)}")
+                messagebox.showinfo("Success", f"#2 Periodic Run file selected: {os.path.basename(file_path)}")
 
     def run_period_file(self, robot_id):
         if self.connected:
@@ -2566,49 +2565,49 @@ class App:
                         lines = file.readlines()
 
                     for i, line in enumerate(lines):
-                        # 处理当前行
+                        # Process current line
                         processed_line = self.process_line(i, line)
                         # print(f'processed_line:{processed_line}')
                         robot.clear_set()
                         robot.set_joint_cmd_pose(arm='A', joints=processed_line)
                         robot.send_cmd()
-                        # 50Hz频率 = 每0.02秒一行
+                        # 50Hz rate = one line per 0.02 seconds
                         time.sleep(0.02)
                 elif robot_id == 'B':
                     with open(self.period_file_path_2.get(), 'r', encoding='utf-8') as file:
                         lines = file.readlines()
 
                     for i, line in enumerate(lines):
-                        # 处理当前行
+                        # Process current line
                         processed_line = self.process_line(i, line)
                         # print(f'processed_line:{processed_line}')
                         robot.clear_set()
                         robot.set_joint_cmd_pose(arm='B', joints=processed_line)
                         robot.send_cmd()
-                        # 50Hz频率 = 每0.02秒一行
+                        # 50Hz rate = one line per 0.02 seconds
                         time.sleep(0.02)
             except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("错误", f"读取文件时出错: {str(e)}"))
+                self.root.after(0, lambda: messagebox.showerror("Error", f"Error reading file: {str(e)}"))
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def process_line(self, line_num, line):
-        """处理单行数据，将其转换为浮点数列表"""
+        """Process a single row of data, convert to float list"""
         try:
-            # 去除行尾的换行符和多余空格
+            # Strip trailing newline and extra spaces
             cleaned_line = line.strip()
-            # 分割字符串（假设数据由空格或制表符分隔）
+            # Split string (assuming data separated by spaces or tabs)
             elements = cleaned_line.split()
-            # 确保每行有7个元素
+            # Ensure each row has 7 elements
             if len(elements) != 7:
-                return f"错误: 第 {line_num + 1} 行有 {len(elements)} 个元素，但需要7个"
-            # 尝试将每个元素转换为浮点数
+                return f"Error: Row {line_num + 1} has {len(elements)} elements, but 7 are required"
+            # Try converting each element to float
             float_list = [float(element) for element in elements]
             return float_list
         except ValueError as e:
-            return f"错误: 第 {line_num + 1} 行包含非数值数据 - {str(e)}"
+            return f"Error: Row {line_num + 1} contains non-numeric data - {str(e)}"
         except Exception as e:
-            return f"错误: 处理第 {line_num + 1} 行时发生未知错误 - {str(e)}"
+            return f"Error: Unknown error processing row {line_num + 1} - {str(e)}"
 
     def add_current_joints(self, robot_id):
         if self.connected:
@@ -2620,30 +2619,30 @@ class App:
                 self.entry.insert(0, str([0.0 if abs(round(x, 2)) < 1e-5 else round(x, 2) for x in
                                           self.result['outputs'][1]['fb_joint_pos']]))
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def validate_point(self, point_str):
-        """验证输入是否为长度为7的列表"""
+        """Validate input is a list of length 7"""
         try:
             point_list = ast.literal_eval(point_str)
-            # 检查是否为列表且长度为7
+            # Check if it is a list of length 7
             if not isinstance(point_list, list):
-                return False, "输入必须是一个列表"
+                return False, "Input must be a list"
             if len(point_list) != 7:
-                return False, "列表长度必须为7"
-            # 检查所有元素是否为数字
+                return False, "List length must be 7"
+            # Check all elements are numbers
             for item in point_list:
                 if not isinstance(item, (int, float)):
-                    return False, "列表中的所有元素必须是数字"
+                    return False, "All elements in the list must be numbers"
             return True, point_list
         except (ValueError, SyntaxError):
-            return False, "输入格式不正确，必须是有效的列表格式，如 [0,0,0,0,0,0,0]"
+            return False, "Invalid input format, must be a valid list like [0,0,0,0,0,0,0]"
 
     def is_duplicate(self, point_list, target_list):
-        """检查点是否已经在列表中存在（去重功能）"""
-        # 将点列表转换为元组以便比较（列表不可哈希）
+        """Check if point already exists in list (deduplication)"""
+        # Convert point list to tuple for comparison (lists are not hashable)
         point_tuple = tuple(point_list)
-        # 检查目标列表中是否已存在相同的点
+        # Check if same point already exists in target list
         for existing_point_str in target_list:
             try:
                 existing_point = ast.literal_eval(existing_point_str)
@@ -2656,223 +2655,223 @@ class App:
 
 
     def is_duplicate_command(self,point_list, target_list):
-        """检查点是否已经在列表中存在（去重功能）"""
+        """Check if point already exists in list (deduplication)"""
         for existing_point_str in target_list:
             if existing_point_str == point_list:
                 return True
         return False
 
     def add_point1(self):
-        """添加点到1#列表"""
+        """Add point to #1 list"""
         point_str = self.entry_var.get()
         is_valid, result = self.validate_point(point_str)
         if is_valid:
-            # 检查是否已存在相同的点
+            # Check if same point already exists
             if self.is_duplicate(result, self.points1):
-                messagebox.showwarning("重复点", "该点已存在于1#列表中")
+                messagebox.showwarning("Duplicate Point", "This point already exists in #1 list")
                 return
-            # 将列表转换为字符串并存储
+            # Convert list to string and store
             point_repr = str(result)
             self.points1.insert(0, point_repr)
             self.update_comboboxes()
-            # messagebox.showinfo("成功", "点已添加到1#列表")
+            # messagebox.showinfo("Success", "Point added to #1 list")
         else:
-            messagebox.showwarning("输入错误", result)
+            messagebox.showwarning("Input Error", result)
 
     def add_point2(self):
-        """添加点到2#列表"""
+        """Add point to #2 list"""
         point_str = self.entry_var.get()
         is_valid, result = self.validate_point(point_str)
         if is_valid:
-            # 检查是否已存在相同的点
+            # Check if same point already exists
             if self.is_duplicate(result, self.points2):
-                messagebox.showwarning("重复点", "该点已存在于2#列表中")
+                messagebox.showwarning("Duplicate Point", "This point already exists in #2 list")
                 return
-            # 将列表转换为字符串并存储
+            # Convert list to string and store
             point_repr = str(result)
             self.points2.insert(0, point_repr)
             self.update_comboboxes()
-            # messagebox.showinfo("成功", "点已添加到2#列表")
+            # messagebox.showinfo("Success", "Point added to #2 list")
         else:
-            messagebox.showwarning("输入错误", result)
+            messagebox.showwarning("Input Error", result)
 
     def delete_point1(self):
-        """从1#列表删除选中的点"""
+        """Delete selected point from #1 list"""
         selected_index = self.combo1.current()
         if selected_index != -1 and selected_index < len(self.points1):
             self.points1.pop(selected_index)
             self.update_comboboxes()
-            # messagebox.showinfo("成功", "点已从1#列表中删除")
+            # messagebox.showinfo("Success", "Point deleted from #1 list")
         else:
-            messagebox.showwarning("警告", "请选择要删除的点")
+            messagebox.showwarning("Warning", "Please select a point to delete")
 
     def delete_point2(self):
-        """从2#列表删除选中的点"""
+        """Delete selected point from #2 list"""
         selected_index = self.combo2.current()
         if selected_index != -1 and selected_index < len(self.points2):
             self.points2.pop(selected_index)
             self.update_comboboxes()
-            # messagebox.showinfo("成功", "点已从2#列表中删除")
+            # messagebox.showinfo("Success", "Point deleted from #2 list")
         else:
-            messagebox.showwarning("警告", "请选择要删除的点")
+            messagebox.showwarning("Warning", "Please select a point to delete")
 
     def save_points1(self):
-        """保存1#列表到TXT文件"""
+        """Save #1 list to TXT file"""
         if not self.points1:
-            messagebox.showwarning("警告", "1#列表为空，没有内容可保存")
+            messagebox.showwarning("Warning", "#1 list is empty, nothing to save")
             return
         file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
-            title="保存1#点列表"
+            title="Save #1 Point List"
         )
         if file_path:
             try:
                 with open(file_path, 'w') as f:
                     for point in self.points1:
                         f.write(point + '\n')
-                # messagebox.showinfo("成功", f"1#点列表已保存到: {os.path.basename(file_path)}")
+                # messagebox.showinfo("Success", f"#1 point list saved to: {os.path.basename(file_path)}")
             except Exception as e:
-                messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
+                messagebox.showerror("Error", f"Error saving file: {str(e)}")
     def save_points2(self):
-        """保存2#列表到TXT文件"""
+        """Save #2 list to TXT file"""
         if not self.points2:
-            messagebox.showwarning("警告", "2#列表为空，没有内容可保存")
+            messagebox.showwarning("Warning", "#2 list is empty, nothing to save")
             return
         file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
-            title="保存2#点列表"
+            title="Save #2 Point List"
         )
         if file_path:
             try:
                 with open(file_path, 'w') as f:
                     for point in self.points2:
                         f.write(point + '\n')
-                # messagebox.showinfo("成功", f"2#点列表已保存到: {os.path.basename(file_path)}")
+                # messagebox.showinfo("Success", f"#2 point list saved to: {os.path.basename(file_path)}")
             except Exception as e:
-                messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
+                messagebox.showerror("Error", f"Error saving file: {str(e)}")
 
     def load_points1(self):
-        """从TXT文件导入到1#列表"""
+        """Import from TXT file to #1 list"""
         file_path = filedialog.askopenfilename(
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
-            title="选择要导入到1#的文件"
+            title="Select file to import to #1"
         )
         if file_path:
             try:
                 with open(file_path, 'r') as f:
                     lines = f.readlines()
-                # 验证并导入点
+                # Validate and import points
                 valid_points = []
                 invalid_lines = []
                 for i, line in enumerate(lines, 1):
                     line = line.strip()
-                    if line:  # 跳过空行
+                    if line:  # Skip empty lines
                         is_valid, result = self.validate_point(line)
                         if is_valid:
-                            # 检查是否重复
+                            # Check for duplicates
                             if not self.is_duplicate(result, self.points1 + valid_points):
                                 valid_points.append(str(result))
                         else:
-                            invalid_lines.append(f"第{i}行: {line}")
-                # 添加有效点
+                            invalid_lines.append(f"Row {i}: {line}")
+                # Add valid points
                 if valid_points:
                     # self.points1.extend(valid_points)
                     self.points1 = valid_points
                     self.update_comboboxes()
-                    # messagebox.showinfo("成功", f"从文件导入了 {len(valid_points)} 个点到1#列表")
-                # 显示无效行
+                    # messagebox.showinfo("Success", f"Imported from file {len(valid_points)}  points to #1 list")
+                # Show invalid lines
                 if invalid_lines:
-                    messagebox.showwarning("警告",
-                                           f"以下行格式无效，已跳过:\n" +
+                    messagebox.showwarning("Warning",
+                                           f"The following lines have invalid format and were skipped:\n" +
                                            "\n".join(invalid_lines[:10]) +
                                            ("\n..." if len(invalid_lines) > 10 else ""))
             except Exception as e:
-                messagebox.showerror("错误", f"读取文件时出错: {str(e)}")
+                messagebox.showerror("Error", f"Error reading file: {str(e)}")
 
     def load_points2(self):
-        """从TXT文件导入到2#列表"""
+        """Import from TXT file to #2 list"""
         file_path = filedialog.askopenfilename(
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
-            title="选择要导入到2#的文件"
+            title="Select file to import to #2"
         )
         if file_path:
             try:
                 with open(file_path, 'r') as f:
                     lines = f.readlines()
-                # 验证并导入点
+                # Validate and import points
                 valid_points = []
                 invalid_lines = []
                 for i, line in enumerate(lines, 1):
                     line = line.strip()
-                    if line:  # 跳过空行
+                    if line:  # Skip empty lines
                         is_valid, result = self.validate_point(line)
                         if is_valid:
-                            # 检查是否重复
+                            # Check for duplicates
                             if not self.is_duplicate(result, self.points2 + valid_points):
                                 valid_points.append(str(result))
                         else:
-                            invalid_lines.append(f"第{i}行: {line}")
-                # 添加有效点
+                            invalid_lines.append(f"Row {i}: {line}")
+                # Add valid points
                 if valid_points:
                     self.points2 = valid_points
                     self.update_comboboxes()
-                    # messagebox.showinfo("成功", f"从文件导入了 {len(valid_points)} 个点到2#列表")
-                # 显示无效行
+                    # messagebox.showinfo("Success", f"Imported from file {len(valid_points)}  points to #2 list")
+                # Show invalid lines
                 if invalid_lines:
-                    messagebox.showwarning("警告",
-                                           f"以下行格式无效，已跳过:\n" +
+                    messagebox.showwarning("Warning",
+                                           f"The following lines have invalid format and were skipped:\n" +
                                            "\n".join(invalid_lines[:10]) +
                                            ("\n..." if len(invalid_lines) > 10 else ""))
             except Exception as e:
-                messagebox.showerror("错误", f"读取文件时出错: {str(e)}")
+                messagebox.showerror("Error", f"Error reading file: {str(e)}")
 
 
 
     def add_eef_command(self,robot_id):
-        """添加点到1#列表"""
+        """Add point to #1 list"""
         command_str = self.eef_entry.get()
         if robot_id=='A':
-            # 检查是否已存在相同的点
+            # Check if same point already exists
             if self.is_duplicate_command(command_str, self.command1):
-                messagebox.showwarning("重复指令", "该指令已存在于1#列表中")
+                messagebox.showwarning("Duplicate Command", "This command already exists in #1 list")
                 return
             else:
                 self.command1.insert(0, command_str)
         elif robot_id=='B':
-            # 检查是否已存在相同的点
+            # Check if same point already exists
             if self.is_duplicate_command(command_str, self.command2):
-                messagebox.showwarning("重复指令", "该指令已存在于1#列表中")
+                messagebox.showwarning("Duplicate Command", "This command already exists in #1 list")
                 return
             else:
                 self.command2.insert(0, command_str)
         self.update_combo_eef()
 
     def delete_eef_command(self,robot_id):
-        """从2#列表删除选中的点"""
+        """Delete selected point from #2 list"""
         if robot_id=='A':
             selected_index = self.eef_combo1.current()
             if selected_index != -1 and selected_index < len(self.command1):
                 self.command1.pop(selected_index)
                 self.update_combo_eef()
             else:
-                messagebox.showwarning("警告", "请选择要删除的通讯指令")
+                messagebox.showwarning("Warning", "Please select a communication command to delete")
         elif robot_id=='B':
             selected_index = self.eef_combo1.current()
             if selected_index != -1 and selected_index < len(self.command2):
                 self.command2.pop(selected_index)
                 self.update_combo_eef()
             else:
-                messagebox.showwarning("警告", "请选择要删除的通讯指令")
+                messagebox.showwarning("Warning", "Please select a communication command to delete")
 
 
     def update_comboboxes(self):
-        """更新两个下拉框的内容"""
+        """Update both dropdown contents"""
         self.combo1['values'] = self.points1
         self.combo2['values'] = self.points2
 
-        # 如果有选项，选择第一个
+        # If options exist, select the first one
         if self.points1:
             self.combo1.current(0)
         else:
@@ -2883,10 +2882,10 @@ class App:
             self.combo2.set('')
 
     def update_combo_eef(self):
-        # 更新eef commands列表
+        # Update end-effector commands list
         self.eef_combo1['values'] = self.command1
         self.eef_combo2['values'] = self.command2
-        # 如果有选项，选择第一个
+        # If options exist, select the first one
         if self.command1:
             self.eef_combo1.current(0)
         else:
@@ -2898,41 +2897,41 @@ class App:
 
     def run1(self):
         if self.connected:
-            """1#运行按钮的功能"""
+            """#1 Run button function"""
             selected = self.combo1.get()
             if selected:
-                # 验证选中的点是否为有效的7元素列表
+                # Validate selected point is a valid 7-element list
                 is_valid, point_list = self.validate_point(selected)
                 if is_valid:
-                    # messagebox.showinfo("1#运行", f"运行选中的点: {point_list}")
+                    # messagebox.showinfo("1# Run", f"Running selected point: {point_list}")
                     robot.clear_set()
                     robot.set_joint_cmd_pose(arm='A', joints=point_list)
                     robot.send_cmd()
                 else:
-                    messagebox.showerror("错误", f"选中的点格式无效: {selected}")
+                    messagebox.showerror("Error", f"Selected point format is invalid: {selected}")
             else:
-                messagebox.showwarning("警告", "没有可运行的点")
+                messagebox.showwarning("Warning", "No points available to run")
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def run2(self):
         if self.connected:
-            """2#运行按钮的功能"""
+            """#2 Run button function"""
             selected = self.combo2.get()
             if selected:
-                # 验证选中的点是否为有效的7元素列表
+                # Validate selected point is a valid 7-element list
                 is_valid, point_list = self.validate_point(selected)
                 if is_valid:
-                    # messagebox.showinfo("2#运行", f"运行选中的点: {point_list}")
+                    # messagebox.showinfo("2# Run", f"Running selected point: {point_list}")
                     robot.clear_set()
                     robot.set_joint_cmd_pose(arm='B', joints=point_list)
                     robot.send_cmd()
                 else:
-                    messagebox.showerror("错误", f"选中的点格式无效: {selected}")
+                    messagebox.showerror("Error", f"Selected point format is invalid: {selected}")
             else:
-                messagebox.showwarning("警告", "没有可运行的点")
+                messagebox.showwarning("Warning", "No points available to run")
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def save_param(self, robot_id):
         if robot_id == 'A':
@@ -2959,22 +2958,22 @@ class App:
         file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
-            title="保存设置的运动参数"
+            title="Save Motion Parameters"
         )
         if file_path:
             try:
                 with open(file_path, 'w') as f:
                     for point in self.params:
                         f.write(point + '\n')
-                # messagebox.showinfo("成功", f"运动参数已保存到: {os.path.basename(file_path)}")
+                # messagebox.showinfo("Success", f"Motion parameters saved to: {os.path.basename(file_path)}")
             except Exception as e:
-                messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
+                messagebox.showerror("Error", f"Error saving file: {str(e)}")
 
     def load_param(self, robot_id):
         if robot_id == 'A':
             file_path = filedialog.askopenfilename(
                 filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
-                title="选择要导入到1#的参数文件"
+                title="Select parameter file to import to #1"
             )
             if file_path:
                 try:
@@ -2983,11 +2982,11 @@ class App:
                     valid_points = []
                     for i, line in enumerate(lines, 1):
                         line = line.strip()
-                        if line:  # 跳过空行
+                        if line:  # Skip empty lines
                             valid_points.append(line)
                     print(f'valid_points:{valid_points}')
 
-                    # 添加有效点
+                    # Add valid points
                     if valid_points:
                         self.tool_a_entry.delete(0, tk.END)
                         self.tool_a_entry.insert(0, valid_points[0])
@@ -3005,15 +3004,15 @@ class App:
                         self.vel_a_entry.insert(0, valid_points[6])
                         self.acc_a_entry.delete(0, tk.END)
                         self.acc_a_entry.insert(0, valid_points[7])
-                        # messagebox.showinfo("成功", f"从文件导入了 {len(valid_points)} 参数到#1")
+                        # messagebox.showinfo("Success", f"Imported from file {len(valid_points)}  parameters to #1")
 
                 except Exception as e:
-                    messagebox.showerror("错误", f"读取文件时出错: {str(e)}")
+                    messagebox.showerror("Error", f"Error reading file: {str(e)}")
 
         elif robot_id == 'B':
             file_path = filedialog.askopenfilename(
                 filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
-                title="选择要导入到2#的参数文件"
+                title="Select parameter file to import to #2"
             )
 
             if file_path:
@@ -3023,11 +3022,11 @@ class App:
                     valid_points = []
                     for i, line in enumerate(lines, 1):
                         line = line.strip()
-                        if line:  # 跳过空行
+                        if line:  # Skip empty lines
                             valid_points.append(line)
                     print(f'valid_points:{valid_points}')
 
-                    # 添加有效点
+                    # Add valid points
                     if valid_points:
                         self.tool_b_entry.delete(0, tk.END)
                         self.tool_b_entry.insert(0, valid_points[0])
@@ -3045,24 +3044,24 @@ class App:
                         self.vel_b_entry.insert(0, valid_points[6])
                         self.acc_b_entry.delete(0, tk.END)
                         self.acc_b_entry.insert(0, valid_points[7])
-                        # messagebox.showinfo("成功", f"从文件导入了 {len(valid_points)} 参数到#2")
+                        # messagebox.showinfo("Success", f"Imported from file {len(valid_points)}  parameters to #2")
 
                 except Exception as e:
-                    messagebox.showerror("错误", f"读取文件时出错: {str(e)}")
+                    messagebox.showerror("Error", f"Error reading file: {str(e)}")
 
     def stop_command(self):
         if self.connected:
             robot.soft_stop('AB')
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def reset_robot(self, robot_id):
         if self.connected:
             robot.clear_set()
-            robot.set_state(arm=robot_id, state=0)  # state=0 下伺服
+            robot.set_state(arm=robot_id, state=0)  # state=0: servo off
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def pvt_mode(self, robot_id):
         if self.connected:
@@ -3070,7 +3069,7 @@ class App:
             robot.set_state(arm=robot_id, state=2)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def position_mode(self, robot_id):
         if self.connected:
@@ -3078,7 +3077,7 @@ class App:
             robot.set_state(arm=robot_id, state=1)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def cr_state(self, robot_id):
         if self.connected:
@@ -3086,7 +3085,7 @@ class App:
             robot.set_state(arm=robot_id, state=4)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def imded_j_mode(self, robot_id):
         if self.connected:
@@ -3095,7 +3094,7 @@ class App:
             robot.set_impedance_type(arm=robot_id, type=1)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def imded_c_mode(self, robot_id):
         if self.connected:
@@ -3104,7 +3103,7 @@ class App:
             robot.set_impedance_type(arm=robot_id, type=2)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def imded_f_mode(self, robot_id):
         if self.connected:
@@ -3153,7 +3152,7 @@ class App:
                 robot.set_impedance_type(arm=robot_id, type=3)
                 robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def drag_j(self, robot_id):
         idx=0
@@ -3166,7 +3165,7 @@ class App:
             robot.set_drag_space(arm=robot_id, dgType=1)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请设置为关节阻抗模式后再选择关节拖动')
+            messagebox.showerror('error', 'Please set to Joint Impedance mode before selecting Joint Drag')
 
     def drag_x(self, robot_id):
         idx = 0
@@ -3179,7 +3178,7 @@ class App:
             robot.set_drag_space(arm=robot_id, dgType=2)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请设置为笛卡尔阻抗模式后再选择笛卡尔X拖动')
+            messagebox.showerror('error', 'Please set to Cartesian Impedance mode before selecting Cartesian X Drag')
 
     def drag_y(self, robot_id):
         idx = 0
@@ -3192,7 +3191,7 @@ class App:
             robot.set_drag_space(arm=robot_id, dgType=3)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请设置为笛卡尔阻抗模式后再选择笛卡尔Y拖动')
+            messagebox.showerror('error', 'Please set to Cartesian Impedance mode before selecting Cartesian Y Drag')
 
     def drag_z(self, robot_id):
         idx = 0
@@ -3205,7 +3204,7 @@ class App:
             robot.set_drag_space(arm=robot_id, dgType=4)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请设置为笛卡尔阻抗模式后再选择笛卡尔Z拖动')
+            messagebox.showerror('error', 'Please set to Cartesian Impedance mode before selecting Cartesian Z Drag')
 
     def drag_r(self, robot_id):
         idx = 0
@@ -3218,7 +3217,7 @@ class App:
             robot.set_drag_space(arm=robot_id, dgType=5)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请设置为笛卡尔阻抗模式后再选择笛卡尔R拖动')
+            messagebox.showerror('error', 'Please set to Cartesian Impedance mode before selecting Cartesian R Drag')
 
     def drag_exit(self, robot_id):
         robot.clear_set()
@@ -3226,7 +3225,7 @@ class App:
         robot.send_cmd()
 
     def thread_drag_save(self, robot_id):
-        """在新线程中执行drag_save"""
+        """Execute drag_save in a new thread"""
         thread = threading.Thread(target=self.drag_save, args=(robot_id))
         thread.daemon = True
         thread.start()
@@ -3259,7 +3258,7 @@ class App:
                    0, 0, 0, 0, 0, 0, 0]
 
         while stage1 == 1:
-            # 检查是否需要停止（可选功能）
+            # Check if stop is needed (optional)
             if hasattr(self, '_stop_thread') and self._stop_thread:
                 return
 
@@ -3279,7 +3278,7 @@ class App:
             time.sleep(0.01)
 
         while stage2 == 1:
-            # 检查是否需要停止（可选功能）
+            # Check if stop is needed (optional)
             if hasattr(self, '_stop_thread') and self._stop_thread:
                 robot.clear_set()
                 robot.stop_collect_data()
@@ -3295,24 +3294,24 @@ class App:
                 break
             time.sleep(0.01)
 
-        # 使用after方法在GUI线程中执行文件对话框和消息框
+        # Use after() to execute file dialog and messagebox in GUI thread
         self.root.after(0, self._save_data_dialog, robot_id)
 
     def _save_data_dialog(self, robot_id):
-        """在GUI主线程中执行文件保存操作"""
+        """Execute file save operation in GUI main thread"""
         file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
             filetypes=[("Text files", "*.txt")],
-            title="保存拖动轨迹数据"
+            title="Save Drag Trajectory Data"
         )
 
         if file_path:
             try:
                 robot.save_collected_data_to_path(file_path)
                 time.sleep(2)
-                messagebox.showinfo("成功", f"拖动轨迹数据已保存到: {os.path.basename(file_path)}，\n请退出拖动。")
+                messagebox.showinfo("Success", f"Drag trajectory data saved to: {os.path.basename(file_path)}，\nPlease exit drag mode.")
             except Exception as e:
-                messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
+                messagebox.showerror("Error", f"Error saving file: {str(e)}")
 
     def error_get(self, robot_id):
         if self.connected:
@@ -3321,39 +3320,39 @@ class App:
             if errors:
                 messagebox.showinfo(f'{robot_id} arm error', errors)
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def error_clear(self, robot_id):
         if self.connected:
             robot.clear_error(robot_id)
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def brake(self, robot_id):
         if self.connected:
-            messagebox.showinfo('提示', '请确认伺服参数是否为166混合控制模式')
+            messagebox.showinfo('Notice', 'Please confirm servo parameter is set to 166 hybrid control mode')
             if robot_id == 'A':
                 robot.set_param('int', 'BRAK0', 1)
             elif robot_id == 'B':
                 robot.set_param('int', 'BRAK1', 1)
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def release_brake(self, robot_id):
         if self.connected:
-            messagebox.showinfo('提示', '请确认伺服参数是否为166混合控制模式')
+            messagebox.showinfo('Notice', 'Please confirm servo parameter is set to 166 hybrid control mode')
             if robot_id == 'A':
                 robot.set_param('int', 'BRAK0', 2)
             elif robot_id == 'B':
                 robot.set_param('int', 'BRAK1', 2)
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def send_pvt(self, robot_id):
         if self.connected:
             file_path = filedialog.askopenfilename(
-                title="选择数据文件",
-                filetypes=[("文本文件", "*.txt"), ("fmv文件", "*.fmv"), ("所有文件", "*.*")]
+                title="Select Data File",
+                filetypes=[("Text files", "*.txt"), ("fmv files", "*.fmv"), ("All files", "*.*")]
             )
             if file_path:
                 print(f'pvt file_path:{file_path}')
@@ -3364,7 +3363,7 @@ class App:
                     print(f'pvt id:{int(self.pvt_b_entry.get())}')
                     robot.send_pvt_file(arm=robot_id, pvt_path=file_path, id=int(self.pvt_b_entry.get()))
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def run_pvt(self, robot_id):
         if self.connected:
@@ -3379,7 +3378,7 @@ class App:
                 robot.set_pvt_id(arm=robot_id, id=int(self.pvt_b_entry.get()))
                 robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def tool_set(self, robot_id):
         if self.connected:
@@ -3394,22 +3393,22 @@ class App:
                 dyn_p = ast.literal_eval(self.tool_b_entry.get())
                 # print(f'b:  kine_p:{kine_p}, dyn_p:{dyn_p}')
             if not kine_p:
-                messagebox.showerror("错误", "工具运动学参数不能为空！")
+                messagebox.showerror("Error", "Tool kinematics parameters cannot be empty!")
             if len(kine_p) != 6:
-                messagebox.showerror("错误", f"工具运动学必须为6个，当前有{len(kine_p)}个数据！")
+                messagebox.showerror("Error", f"Tool kinematics must have 6 values, currently has {len(kine_p)}!")
             try:
                 kine_p = [float(item) for item in kine_p]
             except ValueError:
-                messagebox.showerror("错误", "工具运动学参数必须是有效的数值！")
+                messagebox.showerror("Error", "Tool kinematics parameters must be valid numbers!")
 
             if not dyn_p:
-                messagebox.showerror("错误", "工具动力学参数不能为空！")
+                messagebox.showerror("Error", "Tool dynamics parameters cannot be empty!")
             if len(dyn_p) != 10:
-                messagebox.showerror("错误", f"工具动力学参数必须为10个，当前有{len(dyn_p)}个数据！")
+                messagebox.showerror("Error", f"Tool dynamics must have 10 values, currently has {len(dyn_p)}!")
             try:
                 dyn_p = [float(item) for item in dyn_p]
             except ValueError:
-                messagebox.showerror("错误", "工具动力学参数必须是有效的数值！")
+                messagebox.showerror("Error", "Tool dynamics parameters must be valid numbers!")
             robot.clear_set()
             robot.set_tool(arm=robot_id, kineParams=kine_p, dynamicParams=dyn_p)
             robot.send_cmd()
@@ -3424,7 +3423,7 @@ class App:
             if not self.tool_result:
                 lines = ['0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n',
                          '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n']
-                # 写回文件
+                # Write back to file
                 with open(self.tools_txt, 'w', encoding='utf-8') as file:
                     file.writelines(lines)
                 file.close()
@@ -3435,7 +3434,7 @@ class App:
                 robot.send_file(self.tools_txt, os.path.join('/home/fusion/', self.tools_txt))
                 time.sleep(1)
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def vel_acc_set(self, robot_id):
         if self.connected:
@@ -3451,7 +3450,7 @@ class App:
             robot.set_vel_acc(arm=robot_id, velRatio=vel, AccRatio=acc)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def joint_kd_set(self, robot_id):
         if self.connected:
@@ -3464,27 +3463,27 @@ class App:
                 k = ast.literal_eval(self.k_b_entry.get())
                 d = ast.literal_eval(self.d_b_entry.get())
             if not k:
-                messagebox.showerror("错误", "关节K参数不能为空！")
+                messagebox.showerror("Error", "Joint K parameter cannot be empty!")
             if len(k) != 7:
-                messagebox.showerror("错误", f"关节K参数必须为7个，当前有{len(k)}个数据！")
+                messagebox.showerror("Error", f"Joint K must have 7 values, currently has {len(k)}!")
             try:
                 k = [float(item) for item in k]
             except ValueError:
-                messagebox.showerror("错误", "关节K参数必须是有效的数值！")
+                messagebox.showerror("Error", "Joint K parameter must be valid numbers!")
 
             if not d:
-                messagebox.showerror("错误", "关节D参数不能为空！")
+                messagebox.showerror("Error", "Joint D parameter cannot be empty!")
             if len(d) != 7:
-                messagebox.showerror("错误", f"关节D参数必须为7个，当前有{len(d)}个数据！")
+                messagebox.showerror("Error", f"Joint D must have 7 values, currently has {len(d)}!")
             try:
                 d = [float(item) for item in d]
             except ValueError:
-                messagebox.showerror("错误", "关节D参数必须是有效的数值！")
+                messagebox.showerror("Error", "Joint D parameter must be valid numbers!")
             robot.clear_set()
             robot.set_joint_kd_params(arm=robot_id, K=k, D=d)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def cart_kd_set(self, robot_id):
         if self.connected:
@@ -3501,30 +3500,30 @@ class App:
                 type = int(self.imped_b_entry.get())
 
             if not k:
-                messagebox.showerror("错误", "笛卡尔K参数不能为空！")
+                messagebox.showerror("Error", "Cartesian K parameter cannot be empty!")
             if len(k) != 7:
-                messagebox.showerror("错误", f"笛卡尔K参数必须为7个，当前有{len(k)}个数据！")
+                messagebox.showerror("Error", f"Cartesian K must have 7 values, currently has {len(k)}!")
             try:
                 k = [float(item) for item in k]
             except ValueError:
-                messagebox.showerror("错误", "笛卡尔K参数必须是有效的数值！")
+                messagebox.showerror("Error", "Cartesian K parameter must be valid numbers!")
 
             if not d:
-                messagebox.showerror("错误", "笛卡尔D参数不能为空！")
+                messagebox.showerror("Error", "Cartesian D parameter cannot be empty!")
             if len(d) != 7:
-                messagebox.showerror("错误", f"笛卡尔D参数必须为7个，当前有{len(d)}个数据！")
+                messagebox.showerror("Error", f"Cartesian D must have 7 values, currently has {len(d)}!")
             try:
                 d = [float(item) for item in d]
             except ValueError:
-                messagebox.showerror("错误", "笛卡尔D参数必须是有效的数值！")
+                messagebox.showerror("Error", "Cartesian D parameter must be valid numbers!")
             robot.clear_set()
             robot.set_cart_kd_params(arm=robot_id, K=k, D=d, type=type)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def thread_collect_tool_data_no_load(self, robot_id):
-        """在新线程中执行collect_tool_data_no_load"""
+        """Execute collect_tool_data_no_load in a new thread"""
         thread = threading.Thread(target=self.collect_tool_data_no_load, args=(robot_id))
         thread.daemon = True
         thread.start()
@@ -3532,7 +3531,7 @@ class App:
     def collect_tool_data_no_load(self, robot_id):
         if self.connected:
             folder_path = filedialog.askdirectory(
-                title="选择保存辨识数据的文件夹",
+                title="Select folder to save identification data",
                 mustexist=True
             )
 
@@ -3541,7 +3540,7 @@ class App:
                 robot.send_pvt_file(robot_id, pvt_file, 97)
                 time.sleep(0.5)
 
-                '''机器人运动前开始设置保存数据'''
+                '''Set up data saving before robot motion'''
                 cols = 15
                 if robot_id == 'A':
                     idx = [0, 1, 2, 3, 4, 5, 6,
@@ -3563,41 +3562,41 @@ class App:
                 robot.send_cmd()
                 time.sleep(0.5)
 
-                '''设置运行的PVT 号'''
+                '''Set PVT number to run'''
                 robot.clear_set()
                 robot.set_pvt_id(robot_id, 97)
                 robot.send_cmd()
 
-                time.sleep(60)  # 模拟跑轨迹时间
+                time.sleep(60)  # Simulated trajectory run time
 
-                '''停止采集'''
+                '''Stop data collection'''
                 robot.stop_collect_data()
                 time.sleep(0.5)
 
-                '''保存采集数据'''
+                '''Save collected data'''
                 save_pvt_path = os.path.join(folder_path, 'pvt.txt')
                 robot.save_collected_data_to_path(save_pvt_path)
 
                 time.sleep(1)
 
-                '''数据预处理'''
+                '''Data preprocessing'''
                 processed_data = []
                 with open(save_pvt_path, 'r') as file:
                     lines = file.readlines()
-                    # 删除首行
+                    # Remove header row
                 lines = lines[1:]
                 for i, line in enumerate(lines):
-                    # 移除行末的换行符并按'$'分割
+                    # Remove trailing newline and split by'$'
                     parts = line.strip().split('$')
-                    # 提取每个字段的数字部分（去掉非数字前缀）
+                    # Extract numeric part of each field (remove non-numeric prefix)
                     numbers = []
                     for part in parts:
-                        if part:  # 忽略空字符串
-                            # 找到最后一个空格后的数字部分
+                        if part:  # Ignore empty strings
+                            # Find numeric part after last space
                             num_str = part.split()[-1]
                             numbers.append(num_str)
 
-                    # 删除前两列（索引0和1），保留剩余列
+                    # Remove first two columns (index 0 and 1), keep remaining
                     if len(numbers) >= 2:
                         numbers = numbers[2:]
                     processed_data.append(numbers)
@@ -3609,12 +3608,12 @@ class App:
                     for row in processed_data:
                         out_file.write(','.join(row) + '\n')
                 out_file.close()
-                messagebox.showinfo('success', f'成功保存{robot_id}臂空载辨识数据')
+                messagebox.showinfo('success', f'Successfully saved {robot_id} arm no-load identification data')
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def thread_collect_tool_data_with_load(self, robot_id):
-        """在新线程中执行collect_tool_data_with_load"""
+        """Execute collect_tool_data_with_load in a new thread"""
         thread = threading.Thread(target=self.collect_tool_data_with_load, args=(robot_id))
         thread.daemon = True
         thread.start()
@@ -3622,7 +3621,7 @@ class App:
     def collect_tool_data_with_load(self, robot_id):
         if self.connected:
             folder_path = filedialog.askdirectory(
-                title="选择保存辨识数据的文件夹",
+                title="Select folder to save identification data",
                 mustexist=True
             )
 
@@ -3631,7 +3630,7 @@ class App:
                 robot.send_pvt_file(robot_id, pvt_file, 97)
                 time.sleep(0.5)
 
-                '''机器人运动前开始设置保存数据'''
+                '''Set up data saving before robot motion'''
                 cols = 15
                 if robot_id == 'A':
                     idx = [0, 1, 2, 3, 4, 5, 6,
@@ -3653,41 +3652,41 @@ class App:
                 robot.send_cmd()
                 time.sleep(0.5)
 
-                '''设置运行的PVT 号'''
+                '''Set PVT number to run'''
                 robot.clear_set()
                 robot.set_pvt_id(robot_id, 97)
                 robot.send_cmd()
 
-                time.sleep(60)  # 模拟跑轨迹时间
+                time.sleep(60)  # Simulated trajectory run time
 
-                '''停止采集'''
+                '''Stop data collection'''
                 robot.stop_collect_data()
                 time.sleep(0.5)
 
-                '''保存采集数据'''
+                '''Save collected data'''
                 save_pvt_path = os.path.join(folder_path, 'pvt.txt')
                 robot.save_collected_data_to_path(save_pvt_path)
 
                 time.sleep(1)
 
-                '''数据预处理'''
+                '''Data preprocessing'''
                 processed_data = []
                 with open(save_pvt_path, 'r') as file:
                     lines = file.readlines()
-                    # 删除首行
+                    # Remove header row
                 lines = lines[1:]
                 for i, line in enumerate(lines):
-                    # 移除行末的换行符并按'$'分割
+                    # Remove trailing newline and split by'$'
                     parts = line.strip().split('$')
-                    # 提取每个字段的数字部分（去掉非数字前缀）
+                    # Extract numeric part of each field (remove non-numeric prefix)
                     numbers = []
                     for part in parts:
-                        if part:  # 忽略空字符串
-                            # 找到最后一个空格后的数字部分
+                        if part:  # Ignore empty strings
+                            # Find numeric part after last space
                             num_str = part.split()[-1]
                             numbers.append(num_str)
 
-                    # 删除前两列（索引0和1），保留剩余列
+                    # Remove first two columns (index 0 and 1), keep remaining
                     if len(numbers) >= 2:
                         numbers = numbers[2:]
                     processed_data.append(numbers)
@@ -3699,12 +3698,12 @@ class App:
                     for row in processed_data:
                         out_file.write(','.join(row) + '\n')
                 out_file.close()
-                messagebox.showinfo('success', f'成功保存{robot_id}臂带载辨识数据')
+                messagebox.showinfo('success', f'Successfully saved {robot_id} arm loaded identification data')
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def tool_dyn_identy(self):
-        # 格式化数据
+        # Format data
         def format_vector6(vector):
             return ", ".join([f"{v:.6f}" for v in vector])
 
@@ -3714,38 +3713,38 @@ class App:
             tool_identy_tag, identy_results = kk1.identify_tool_dyn(robot_type=1, ipath=self.save_tool_data_path)
             print(f'tool_identy_tag:{tool_identy_tag}, identy_results:{identy_results}')
             if tool_identy_tag == False:
-                messagebox.showerror('wrong', f'工具动力学参数辨识错误提示:{identy_results}')
+                messagebox.showerror('wrong', f'Tool Dynamics IdentificationErrorNotice:{identy_results}')
             if tool_identy_tag:
                 self.entry_tool_dyn.set(format_vector6(identy_results))
-                messagebox.showinfo('success', '工具动力学参数辨识完成')
+                messagebox.showinfo('success', 'Tool dynamics identification complete')
 
         else:
             tool_identy_tag, identy_results = kk1.identify_tool_dyn(robot_type=2, ipath=self.save_tool_data_path)
             print(f'tool_identy_tag:{tool_identy_tag}, identy_results:{identy_results}')
             if tool_identy_tag == False:
-                messagebox.showerror('wrong', f'工具动力学参数辨识错误提示:{identy_results}')
+                messagebox.showerror('wrong', f'Tool Dynamics IdentificationErrorNotice:{identy_results}')
             else:
                 self.entry_tool_dyn.set(format_vector6(identy_results))
-                messagebox.showinfo('success', '工具动力学参数辨识完成')
+                messagebox.showinfo('success', 'Tool dynamics identification complete')
 
     def data_clear_preprocess(self, input, output):
         save_list = []
         with open(input, 'r') as file:
             lines = file.readlines()
-        # 删除首行
+        # Remove header row
         lines = lines[1:]
         for i, line in enumerate(lines):
-            # 移除行末的换行符并按'$'分割
+            # Remove trailing newline and split by'$'
             parts = line.strip().split('$')
-            # 提取每个字段的数字部分（去掉非数字前缀）
+            # Extract numeric part of each field (remove non-numeric prefix)
             numbers = []
             for part in parts:
-                if part:  # 忽略空字符串
-                    # 找到最后一个空格后的数字部分
+                if part:  # Ignore empty strings
+                    # Find numeric part after last space
                     num_str = part.split()[-1]
                     numbers.append(num_str)
 
-            # 删除前两列（索引0和1），保留剩余列
+            # Remove first two columns (index 0 and 1), keep remaining
             if len(numbers) >= 2:
                 numbers = numbers[2:]
             save_list.append(numbers)
@@ -3766,7 +3765,7 @@ class App:
             robot.collect_data(targetNum=cols, targetID=idx, recordNum=rows)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def stop_collect_data_both(self):
         if self.connected:
@@ -3774,23 +3773,23 @@ class App:
             robot.stop_collect_data()
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def save_collect_data_both(self):
         if self.connected:
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".txt",
                 filetypes=[("Text files", "*.txt")],
-                title="保存双臂运动数据"
+                title="Save Dual-Arm Motion Data"
             )
             if file_path:
                 try:
                     robot.save_collected_data_to_path(file_path)
-                    # messagebox.showinfo("成功", f"双臂运动数据已保存到: {os.path.basename(file_path)}")
+                    # messagebox.showinfo("Success", f"Dual-arm motion data saved to: {os.path.basename(file_path)}")
                 except Exception as e:
-                    messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
+                    messagebox.showerror("Error", f"Error saving file: {str(e)}")
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def collect_data(self, robot_id):
         if self.connected:
@@ -3807,26 +3806,26 @@ class App:
                 idx = ast.literal_eval(self.feature_idx_entry_2.get())
                 rows = int(self.lines_entry_2.get())
             if cols > 35:
-                messagebox.showerror("错误", f"采集特征参数不能超过35个！")
+                messagebox.showerror("Error", f"Collection feature count cannot exceed 35!")
             if len(idx) != 35:
-                messagebox.showerror("错误", f"采集特征参数必须为35个，当前有{idx}个！")
+                messagebox.showerror("Error", f"Collection features must be 35, currently has {idx}!")
             if 1000000 < rows:
                 rows = 1000000
-                messagebox.showerror("错误", f"数据最多采集一百万行，已设置为1000000")
+                messagebox.showerror("Error", f"Maximum data collection is 1 million rows, set to 1000000")
             if rows < 1000:
                 rows = 1000
-                messagebox.showerror("错误", f"数据至少采集一千行，已设置为1000")
+                messagebox.showerror("Error", f"Minimum data collection is 1000 rows, set to 1000")
             robot.clear_set()
             robot.collect_data(targetNum=cols, targetID=idx, recordNum=rows)
             robot.send_cmd()
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def tool_trajectory(self):
         file_path = filedialog.askopenfilename(
             defaultextension=".fmv",
             filetypes=[("fmv files", "*.fmv"), ("All files", "*.*")],
-            title="选择工具辨识的激励轨迹文件"
+            title="Select excitation trajectory file for tool identification"
         )
         if file_path:
             self.save_tool_data_path = file_path.split('IdenTraj')[0]
@@ -3836,58 +3835,58 @@ class App:
         file_path = filedialog.askopenfilename(
             defaultextension=".txt",
             filetypes=[("txt files", "*.txt"), ("All files", "*.*")],
-            title="选择下采样数据文件"
+            title="Select downsampled data file"
         )
         if file_path:
             self.file_path_50.set(file_path)
-            # messagebox.showinfo("成功", f"下采样数据文件已选择: {os.path.basename(file_path)}")
+            # messagebox.showinfo("Success", f"Downsampled data file selected: {os.path.basename(file_path)}")
 
             if len(self.processed_data) != 0:
                 self.processed_data = []
 
             with open(file_path, 'r') as file:
                 lines = file.readlines()
-            # 删除首行
+            # Remove header row
             lines = lines[1:]
             for i, line in enumerate(lines):
-                # 每隔20行采集一次数据 (1KHz -> 50Hz)
+                # Sample every 20 rows (1KHz -> 50Hz)
                 if i % 20 != 0:
                     continue
-                # 移除行末的换行符并按'$'分割
+                # Remove trailing newline and split by'$'
                 parts = line.strip().split('$')
-                # 提取每个字段的数字部分（去掉非数字前缀）
+                # Extract numeric part of each field (remove non-numeric prefix)
                 numbers = []
                 for part in parts:
-                    if part:  # 忽略空字符串
-                        # 找到最后一个空格后的数字部分
+                    if part:  # Ignore empty strings
+                        # Find numeric part after last space
                         num_str = part.split()[-1]
                         numbers.append(num_str)
 
-                # 删除前两列（索引0和1），保留剩余列
+                # Remove first two columns (index 0 and 1), keep remaining
                 if len(numbers) >= 2:
                     numbers = numbers[2:]
                 self.processed_data.append(numbers)
 
     def generate_50_file(self):
-        """保存2#列表到TXT文件"""
+        """Save #2 list to TXT file"""
         if len(self.processed_data) == 0:
-            messagebox.showerror("错误", "重采样数据为空，没有内容可保存")
+            messagebox.showerror("Error", "Resampled data is empty, nothing to save")
 
         file_path = filedialog.asksaveasfilename(
             defaultextension=".r50pth",
             filetypes=[("50pth files", "*.r50pth"), ("All files", "*.*")],
-            title="保存下采样数据"
+            title="Save Downsampled Data"
         )
 
         if file_path:
             try:
-                # 将处理后的数据写入新文件或进行其他操作
+                # Write processed data to new file
                 with open(file_path, 'w') as out_file:
                     for row in self.processed_data:
                         out_file.write(' '.join(row) + '\n')
-                # messagebox.showinfo("成功", f"下采样已保存到: {os.path.basename(file_path)}")
+                # messagebox.showinfo("Success", f"Downsampled data saved to: {os.path.basename(file_path)}")
             except Exception as e:
-                messagebox.showerror("错误", f"保存文件时出错: {str(e)}")
+                messagebox.showerror("Error", f"Error saving file: {str(e)}")
 
     def get_sensor_offset(self, robot_id):
         if self.connected:
@@ -3908,7 +3907,7 @@ class App:
                 #     self.get_offset_entry_1.delete(0, tk.END)
                 #     self.get_offset_entry_1.insert(0, temp)
                 # else:
-                #     messagebox.showerror("error","获取参数错误")
+                #     messagebox.showerror("error","Error getting parameters")
 
             if robot_id == 'B':
                 axis = int(self.axis_select_combobox_2.get())
@@ -3927,9 +3926,9 @@ class App:
                 #     self.get_offset_entry_2.delete(0, tk.END)
                 #     self.get_offset_entry_2.insert(0, temp)
                 # else:
-                #     messagebox.showerror("error","获取参数错误")
+                #     messagebox.showerror("error","Error getting parameters")
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def set_sensor_offset(self, robot_id):  # todo
         if self.connected:
@@ -3945,7 +3944,7 @@ class App:
                     robot.set_param(type='int', paraName=name_i, value=m_soft)
                     re_flag__=robot.save_para_file()
                     if re_flag__!=0:
-                        messagebox.showerror("error","保存参数失败")
+                        messagebox.showerror("error","Failed to save parameters")
 
             elif robot_id == 'B':
                 axis = int(self.axis_select_combobox_2.get())
@@ -3959,61 +3958,61 @@ class App:
                     robot.set_param(type='int', paraName=name_i, value=m_soft)
                     re_flag__ = robot.save_para_file()
                     if re_flag__ != 0:
-                        messagebox.showerror("error", "保存参数失败")
+                        messagebox.showerror("error", "Failed to save parameters")
 
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def clear_motor_as_zero(self, robot_id):
         if self.connected:
             if robot_id == 'A':
                 if self.result['states'][0]["cur_state"] != 0:
-                    messagebox.showerror('error', '左臂必须在复位状态才可电机编码器清零')
+                    messagebox.showerror('error', 'Left arm must be in Reset state for motor encoder zeroing')
                 else:
                     axis = int(self.motor_axis_select_combobox_1.get())
                     robot.set_param(type='int', paraName="RESETMOTENC0", value=axis)
             elif robot_id == 'B':
                 if self.result['states'][1]["cur_state"] != 0:
-                    messagebox.showerror('error', '右臂必须在复位状态才可电机编码器清零')
+                    messagebox.showerror('error', 'Right arm must be in Reset state for motor encoder zeroing')
                 else:
                     axis = int(self.motor_axis_select_combobox_11.get())
                     robot.set_param(type='int', paraName="RESETMOTENC1", value=axis)
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def clear_motorE_as_zero(self, robot_id):
         if self.connected:
             if robot_id == 'A':
                 if self.result['states'][0]["cur_state"] != 0:
-                    messagebox.showerror('error', '左臂必须在复位状态才可电机外编码器清零')
+                    messagebox.showerror('error', 'Left arm must be in Reset state for external encoder zeroing')
                 else:
                     axis = int(self.motor_axis_select_combobox_1.get())
                     robot.set_param(type='int', paraName="RESETEXTENC0", value=axis)
             elif robot_id == 'B':
                 if self.result['states'][1]["cur_state"] != 0:
-                    messagebox.showerror('error', '右臂必须在复位状态才可电机外编码器清零')
+                    messagebox.showerror('error', 'Right arm must be in Reset state for external encoder zeroing')
                 else:
                     axis = int(self.motor_axis_select_combobox_11.get())
                     robot.set_param(type='int', paraName="RESETEXTENC1", value=axis)
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def clear_motor_error(self, robot_id):
         if self.connected:
             if robot_id == 'A':
                 if self.result['states'][0]["cur_state"] != 0:
-                    messagebox.showerror('error', '左臂必须在复位状态才可电机编码器清错')
+                    messagebox.showerror('error', 'Left arm must be in Reset state for encoder error clearing')
                 else:
                     axis = int(self.motor_axis_select_combobox_1.get())
                     robot.set_param(type='int', paraName="CLEARMOTENC0", value=axis)
             elif robot_id == 'B':
                 if self.result['states'][1]["cur_state"] != 0:
-                    messagebox.showerror('error', '右臂必须在复位状态才可电机编码器清错')
+                    messagebox.showerror('error', 'Right arm must be in Reset state for encoder error clearing')
                 else:
                     axis = int(self.motor_axis_select_combobox_11.get())
                     robot.set_param(type='int', paraName="CLEARMOTENC1", value=axis)
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def send_data_eef(self, robot_id):
         if self.connected:
@@ -4031,7 +4030,7 @@ class App:
                     sample_data = self.eef_combo2.get()
                     com_ = self.com_select_combobox_2.get()
 
-                # 1：‘C’端; 2：com1; 3:com2
+                # 1: CAN port; 2: com1; 3:com2
                 if com_ == 'CAN':
                     com = 1
                 elif com_ == 'COM1':
@@ -4055,7 +4054,7 @@ class App:
             except Exception as e:
                 messagebox.showerror('error', e)
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
     def receive_data_eef(self, robot_id):
         if self.connected:
@@ -4068,7 +4067,7 @@ class App:
                 elif robot_id == 'B':
                     com_ = self.com_select_combobox_2.get()
 
-                # 1：‘C’端; 2：com1; 3:com2
+                # 1: CAN port; 2: com1; 3:com2
                 if com_ == 'CAN':
                     com = 1
                 elif com_ == 'COM1':
@@ -4091,10 +4090,10 @@ class App:
             except Exception as e:
                 messagebox.showerror('error', e)
         else:
-            messagebox.showerror('error', '请先连接机器人')
+            messagebox.showerror('error', 'Please connect the robot first')
 
 
-# 启动应用
+# Launch application
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)

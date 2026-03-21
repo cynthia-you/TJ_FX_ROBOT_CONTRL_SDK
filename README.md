@@ -1,82 +1,94 @@
-## 最新APP版本1202
-    底部增加机械臂错误码查询
-    增加浮动基座参数计算功能
-    稳定动力学参数和运动学参数设置保存到控制器功能,再次启动APP可显示上次保存数据
-    末端CAN/485 可加多条协议指令
-    支持电机内外编清零,电机编码器请错
-    
-    
-
-## 你好使用MARVIN_APP软件前，需要温馨提示您：
-
-    软件同级config/文件夹内请放入独一无二的机型配置文件:
-    ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
-    ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg； 
-    srs机型为srs.MvKDCfg. 多个*.MvKDCfg会解析出错
+## Latest APP Version 1202
+- Added robot arm error code lookup at the bottom
+- Added floating base parameter calculation feature
+- Stabilized dynamics and kinematics parameter settings — saved to the controller, so data from the last save is displayed on next APP launch
+- End-effector CAN/485 now supports adding multiple protocol commands
+- Support for clearing internal/external motor encoder offsets and fixing motor encoder errors
 
 
+## Important Notice Before Using MARVIN_APP
 
-## 安装APP:
-    1. 我们测试并提供在WINDOWS 和UBUNTU24.04_X86下可执行的软件,如果与您的环境不一致,请下载源码后编译库,直接运行或者生成可执行APP运行
-    2. MARVIN_APP基础环境:python3, pyinstaller
-    3. 运行前请确认:
-            3.1. MARVIN_APP基础环境:python3(无特定版本要求), pyinstaller
-            3.2. 确保在 ./contrlSDK  和 ./kinematicsSDK 下的动态库SO: libMarvinSDK.so 和 libKine.so 是当前上位机环境下重新编译生成的(最好是重新编译),SDK源码地址：[https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/master/](https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/tree/master)
-            3.3. 将3.2生成的 libMarvinSDK.so 和 libKine.so 替换到./MARVIN_APP_UBUNTU_WINDOWS/python/ 下
-    4. 运行APP:
-            4.1. 源码运行 UI_FX.py（或者是UI_FX*.py）
-            4.2. 生成可执行文件后运行,以便于分发到其他无PY环境的电脑上: python  setup.py
+Please place a **unique** robot model configuration file in the `config/` folder located in the same directory as the software:
 
+- **CCS 6 kg model** has two versions:
+  - Version **3.1** — calculation config file: `ccs_m6_31.MvKDCfg`
+  - Version **4.0** — calculation config file: `ccs_m6_40.MvKDCfg`
+  
+  > The parameters differ between versions — please confirm your version before selecting parameters.
 
+- **CCS 3 kg model** — calculation config file: `ccs_m3.MvKDCfg`
+- **SRS model** — config file: `srs.MvKDCfg`
 
-## MARVIN APP使用说明文档
-### 目录
-        一 基础操作	2
-        1.1 软件与界面说明	2
-        1.2 急停	2
-        1.3 连接机器人	3
-        1.4 切换查看	4
-        1.5 修改传感器偏置	5
-        1.6 获取错误与清错	6
-        1.6.1 伺服的错误	6
-        1.6.2 机械臂错误	7
-        1.7 工具设置	7
-        1.8 检查机器人关节正方向	9
-        1.9 检查电流和传感器方向	10
-        1.9.1 检测左臂电流和传感器方向	11
-        1.9.2 检测右臂电流和传感器方向	16
-        二 位置模式运动控制	21
-        三 阻抗控制模式	22
-        3.1 关节阻抗	22
-        3.2 笛卡尔阻抗	23
-        3.3 笛卡尔阻抗-力控	24
-        3.4 阻抗参数保存与导入	26
-        3.5 关节阻抗——拖动	27
-        3.5.1 关节拖动数据保存	27
-        3.6 笛卡尔阻抗——拖动	28
-        3.6.1 笛卡尔拖动数据保存	29
-        四 其他功能	30
-        4.1 周期运行	30
-        4.2 末端485串口通信	32
-        4.3 PVT运行模式	33
-        4.4 工具动力学参数辨识	34
-        4.5 撞机机械臂抱死调整	36
-        4.5.1 协作释放模式	36
-        4.5.2 松抱闸模式	37
-        4.6 电机内外编码器清零和编码器清错	38
-        4.7 浮动基座参数设置	38
-        4.7.1 IMU两种默认安装方式	39
-        4.7.2 安装和对应的配置方法	45
+> ⚠️ Having multiple `*.MvKDCfg` files present will cause a parsing error.
 
 
+## Installing the APP
+
+1. We have tested and provide executables for **Windows** and **Ubuntu 24.04 x86**. If your environment differs, please download the source code, compile the libraries, and either run directly or build an executable APP.
+
+2. **MARVIN_APP base requirements:** Python 3, PyInstaller
+
+3. **Before running, please confirm:**
+
+   3.1. Base environment: Python 3 (no specific version requirement), PyInstaller
+
+   3.2. Ensure the shared libraries `libMarvinSDK.so` and `libKine.so` under `./contrlSDK` and `./kinematicsSDK` have been **recompiled** for your host machine environment (recompilation is strongly recommended).
+   SDK source code: [https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/tree/master](https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/tree/master)
+
+   3.3. Replace the `libMarvinSDK.so` and `libKine.so` generated in step 3.2 into `./MARVIN_APP_UBUNTU_WINDOWS/python/`
+
+4. **Running the APP:**
+
+   4.1. Run from source: `UI_FX.py` (or `UI_FX*.py`)
+
+   4.2. Build an executable for distribution to machines without a Python environment:
+   ```
+   python setup.py
+   ```
 
 
+## MARVIN APP User Manual
 
+### Table of Contents
 
+```
+1. Basic Operations                                          2
+   1.1  Software and Interface Overview                      2
+   1.2  Emergency Stop                                       2
+   1.3  Connecting to the Robot                              3
+   1.4  Switching Views                                      4
+   1.5  Modifying Sensor Bias                                5
+   1.6  Getting Errors and Clearing Errors                   6
+        1.6.1  Servo Errors                                  6
+        1.6.2  Robot Arm Errors                              7
+   1.7  Tool Settings                                        7
+   1.8  Checking Robot Joint Positive Direction              9
+   1.9  Checking Current and Sensor Direction               10
+        1.9.1  Detecting Left Arm Current and Sensor Direction  11
+        1.9.2  Detecting Right Arm Current and Sensor Direction 16
 
+2. Position Mode Motion Control                             21
 
+3. Impedance Control Mode                                   22
+   3.1  Joint Impedance                                     22
+   3.2  Cartesian Impedance                                 23
+   3.3  Cartesian Impedance – Force Control                 24
+   3.4  Saving and Importing Impedance Parameters           26
+   3.5  Joint Impedance – Drag Teaching                     27
+        3.5.1  Saving Joint Drag Data                       27
+   3.6  Cartesian Impedance – Drag Teaching                 28
+        3.6.1  Saving Cartesian Drag Data                   29
 
-
-
-    
-
+4. Other Features                                          30
+   4.1  Cyclic Execution                                    30
+   4.2  End-Effector 485 Serial Communication              32
+   4.3  PVT Run Mode                                        33
+   4.4  Tool Dynamics Parameter Identification              34
+   4.5  Collision Recovery / Arm Lock Adjustment           36
+        4.5.1  Collaborative Release Mode                   36
+        4.5.2  Brake Release Mode                           37
+   4.6  Motor Internal/External Encoder Zero Reset and Error Clear  38
+   4.7  Floating Base Parameter Settings                    38
+        4.7.1  Two Default IMU Mounting Orientations        39
+        4.7.2  Mounting and Corresponding Configuration Methods  45
+```
