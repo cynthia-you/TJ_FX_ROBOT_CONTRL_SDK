@@ -815,20 +815,25 @@ class Marvin_Kine:
             return pose_6d
 
 
-    def movL(self,start_xyzabc:list, end_xyzabc:list,ref_joints:list,vel:float,acc:float,save_path):
+    def movL(self,start_xyzabc:list, end_xyzabc:list,ref_joints:list,vel:float,acc:float,freq_hz:int,save_path):
         '''直线规划，规划文件的频率500Hz，即每2ms执行一行
         :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
         :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
         :param ref_joints:参考关节构型，也是规划文件的起始点位。
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        :param freq_hz:设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
         :param save_path:保存的规划文件的路径
         :return: bool
-        特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
+        特别提示:
+                1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
                 2 输出规划文件的频率为500Hz
                 3 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
+                4 一段规划轨迹会分为加速段，匀速段和减速段， 当起点到终点的距离过短时，匀速段的速度和加速度可能达不到设置值，请知悉。
         '''
         Serial = ctypes.c_long(self.robot_tag)
+
+        freq=ctypes.c_long(freq_hz)
 
         path = save_path.encode('utf-8')
         path_char = ctypes.c_char_p(path)
@@ -845,9 +850,9 @@ class Marvin_Kine:
         j0, j1, j2, j3, j4, j5, j6 = ref_joints
         joints_vel_value = (c_double * 7)(j0, j1, j2, j3, j4, j5, j6)
 
-        self.kine.FX_Robot_PLN_MOVL.argtypes=[c_long,c_double*6,c_double*6,c_double*7,c_double,c_double,c_char_p]
+        self.kine.FX_Robot_PLN_MOVL.argtypes=[c_long,c_double*6,c_double*6,c_double*7,c_double,c_double,c_long,c_char_p]
         self.kine.FX_Robot_PLN_MOVL.restype=c_bool
-        success1=self.kine.FX_Robot_PLN_MOVL(Serial,start,end,joints_vel_value,vel_value,acc_value,path_char)
+        success1=self.kine.FX_Robot_PLN_MOVL(Serial,start,end,joints_vel_value,vel_value,acc_value,freq,path_char)
         if success1:
             if os.path.exists(save_path):
                 logger.info(f'Plan MOVL successful, PATH saved as :{save_path}')
@@ -857,7 +862,7 @@ class Marvin_Kine:
             return False
 
     def movLA(self, start_xyzabc: List[float], end_xyzabc: List[float],
-              ref_joints: List[float], vel: float, acc: float,
+              ref_joints: List[float], vel: float, acc: float,freq_hz:int,
               dimension: int = 7) -> tuple[List[List[float]], ctypes.c_void_p]:
    
         '''直线规划，执行MOVLA规划并返回点集数据(频率500Hz)
@@ -866,12 +871,15 @@ class Marvin_Kine:
         :param ref_joints:参考关节构型，也是规划文件的起始点位。
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        :param freq_hz:设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
         :return: 规划得到的点集列表
           特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
                 2 输出规划文件的频率为500Hz
                 3 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
+                4 一段规划轨迹会分为加速段，匀速段和减速段， 当起点到终点的距离过短时，匀速段的速度和加速度可能达不到设置值，请知悉。
         '''
         Serial = ctypes.c_long(self.robot_tag)
+        freq = ctypes.c_long(freq_hz)
         if len(start_xyzabc) != 6:
             raise ValueError("start_xyzabc must have 6 elements")
         start_array = (ctypes.c_double * 6)(*start_xyzabc)
@@ -888,6 +896,17 @@ class Marvin_Kine:
         pset = self.create_point_set(dimension)
         if not pset:
             raise RuntimeError("Failed to create CPointSet object")
+        self.kine.FX_Robot_PLN_MOVLA_C.argtypes = [
+            ctypes.c_int,  # RobotSerial
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.c_double,
+            ctypes.c_double,
+            ctypes.c_int,
+            ctypes.c_void_p
+        ]
+        self.kine.FX_Robot_PLN_MOVLA_C.restype = ctypes.c_bool
         try:
             success = self.kine.FX_Robot_PLN_MOVLA_C(
                 Serial,
@@ -896,6 +915,7 @@ class Marvin_Kine:
                 ctypes.cast(joints_array, ctypes.POINTER(ctypes.c_double)),
                 vel_value,
                 acc_value,
+                freq,
                 pset
             )
             if not success:
@@ -909,22 +929,24 @@ class Marvin_Kine:
             raise e
 
 
-    def movL_KeepJ(self,start_joints:list, end_joints:list,vel:float,acc:float,save_path):
+    def movL_KeepJ(self,start_joints:list, end_joints:list,vel:float,acc:float,freq_hz:int,save_path):
         '''直线规划保持关节构型, 规划文件的点位频率50Hz，即每20ms执行一行
 
         :param start_joints:起始点各个关节位置（单位：角度）
         :param end_joints:终点各个关节位置（单位：角度）
         :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        :param freq_hz:设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
         :param save_path:规划文件的保存路径
         :return: bool
         特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的PVT文件.
                 2 输出点位频率为500Hz
                 3 该接口是不同于MOVL的规划接口，movL_KeepJ根据起始关节和结束关节规划一条直线路径。
+                4 一段规划轨迹会分为加速段，匀速段和减速段， 当起点到终点的距离过短时，匀速段的速度和加速度可能达不到设置值，请知悉。
         '''
 
         Serial = ctypes.c_long(self.robot_tag)
-
+        freq = ctypes.c_long(freq_hz)
         path = save_path.encode('utf-8')
         path_char = ctypes.c_char_p(path)
 
@@ -937,9 +959,9 @@ class Marvin_Kine:
         vel_value=c_double(vel)
         acc_value = c_double(acc)
 
-        self.kine.FX_Robot_PLN_MOVL_KeepJ.argtypes=[c_long,c_double*7,c_double*7,c_double,c_double,c_char_p]
+        self.kine.FX_Robot_PLN_MOVL_KeepJ.argtypes=[c_long,c_double*7,c_double*7,c_double,c_double,c_long,c_char_p]
         self.kine.FX_Robot_PLN_MOVL_KeepJ.restype=c_bool
-        success1=self.kine.FX_Robot_PLN_MOVL_KeepJ(Serial,start,end,vel_value,acc_value,path_char)
+        success1=self.kine.FX_Robot_PLN_MOVL_KeepJ(Serial,start,end,vel_value,acc_value,freq,path_char)
         if success1:
             if os.path.exists(save_path):
                 logger.info(f'Plan MOVL KeepJ successful, PATH saved as :{save_path}')
@@ -949,7 +971,7 @@ class Marvin_Kine:
             return False
 
     def movL_KeepJA(self, start_joints: List[float], end_joints: List[float],
-              vel: float, acc: float,
+              vel: float, acc: float,freq_hz:int,
               dimension: int = 7) -> List[List[float]]:
         '''直线规划，执行movL_KeepJA规划并返回点集数据(频率500Hz)
 
@@ -957,13 +979,16 @@ class Marvin_Kine:
                :param end_joints:终点各个关节位置（单位：角度）
                :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
                :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+               :param freq_hz:设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
                :return: 规划得到的点集列表
                特别提示:1 需要读函数返回值,如果关节超限,返回为false,并且不会保存规划的点集.
                        2 输出点位频率为500Hz
                        3 该接口是不同于MOVLA的规划接口，movL_KeepJA根据起始关节和结束关节规划一条直线路径。
+                       4 一段规划轨迹会分为加速段，匀速段和减速段， 当起点到终点的距离过短时，匀速段的速度和加速度可能达不到设置值，请知悉。
                '''
 
         Serial = ctypes.c_long(self.robot_tag)
+        freq = ctypes.c_long(freq_hz)
         s0, s1, s2, s3, s4, s5, s6 = start_joints
         start = (ctypes.c_double * 7)(s0, s1, s2, s3, s4, s5, s6)
         e0, e1, e2, e3, e4, e5, e6 = end_joints
@@ -974,7 +999,16 @@ class Marvin_Kine:
         pset = self.create_point_set(dimension)
         if not pset:
             raise RuntimeError("Failed to create CPointSet object")
-
+        self.kine.FX_Robot_PLN_MOVL_KeepJA_C.argtypes = [
+            ctypes.c_int,
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.POINTER(ctypes.c_double),
+            ctypes.c_double,
+            ctypes.c_double,
+            ctypes.c_int,
+            ctypes.c_void_p
+        ]
+        self.kine.FX_Robot_PLN_MOVL_KeepJA_C.restype = ctypes.c_bool
         try:
             # 调用规划函数
             success = self.kine.FX_Robot_PLN_MOVL_KeepJA_C(
@@ -983,6 +1017,7 @@ class Marvin_Kine:
                 ctypes.cast(end, ctypes.POINTER(ctypes.c_double)),
                 vel_value,
                 acc_value,
+                freq,
                 pset
             )
 
