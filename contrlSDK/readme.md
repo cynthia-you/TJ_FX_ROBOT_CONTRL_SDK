@@ -23,113 +23,37 @@
         c++_doc_kine.md
         python_doc_kine.md
 
-# 二、 DEMO_C++/下必要文件
-    
-    请检查以下文件是否为为本机编译：
-        libKine.dll
-        libMarvinSDK.dll
+# 二、 SDK库文件编译
+    控制SDK头文件：MarvinSDK.h
 
-        libKine.so
-        libMarvinSDK.so
+## 2.1使用自动化编译脚本：
+        mster下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
+        mster下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
 
-    请检查以下头文件是否存在：
-        FXDG.h
-        FxRobot.h
-        MarvinSDK.h
-        PointSet.h
+## 2.2.1 编译so动态库:
+    linux设备编译:
+        控制SDK(contrlSDK)，以下方法均可编译: 
+			1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
+			2./contrlSDK/makefile 生成libMarvinSDK.so
+        运动学SDK(kinematicsSDK)，以下方法均可编译: 
+			1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
+			2./kinematicsSDK/makefile 生成libKine.so
+	编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
 
-# 三、 案列使用编译
-## 3.1 linux示例
-    g++ showcase_kinematics_all_functions.cpp -o kine -L. -lKine -Wl,-rpath=.
-    ./kine
-## 3.2 windows示例
-    g++ showcase_kinematics_all_functions.cpp -o kine.exe -L. -lKine
-    kine.exe
+## 2.2.2 编译c++调用的dll动态库:
+    1)windows下使用MinGW编译dll动态库:
+			控制SDK(contrlSDK): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
+            运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll
+    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
 
-# 四. 计算showcases
+			
+## 2.2.3 编译python调用的dll动态库
+    1)linux下编译dll动态库:
+        控制SDK(contrlSDK):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
+        运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll 
 
-## 1. 计算SDK 功能模块完整演示
-            showcase_kinematics_all_functions.cpp
-
-## 2. 计算逆解失败总结
-            showcase_ik_failed_conclusion.cpp
-
-## 3. 两条手臂同时计算
-            showcase_kine_two_arms.cpp
-
-## 5. 逆解参考基准
-            showcase_ik_nsp_two_arms.cpp
-            
-## 6. 演示左臂离线和在线规划功能接口：
-            showcase_online_and_offline_pln_all_function.cpp
-
-
-## 7. 左臂关节阻抗50HZ执行离线直线规划文件：
-            showcase_offline_movl_execution.cpp
-
-## 8.左臂关节阻抗50HZ执行在线直线规划点：
-            showcase_online_movla_execution.cpp
-
-## 9.左臂关节阻抗50HZ执行约束构型的离线直线规划文件：
-            showcase_offline_movl_keepj_execution.cpp
-
-## 10. 左臂关节阻抗50HZ执行约束构型的在线直线规划点位：
-            showcase_online_movl_keepja_execution.cpp
-
-
-# 二. 控制showcases
-
-## 1. 强制抱闸和强制松闸案例
-            showcase_apply_brake_release_brake.cpp
-
-## 2. 机器人进入协作释放案列
-            showcase_collaborative_release.cpp
-
-## 3. 在迪卡尔阻抗模式下,进去迪卡尔Y方向拖动,拖动并保存数据的控制案列
-            showcase_drag_CartImpedance_save_data.cpp
-
-## 4. 拖动控制案例
-            showcase_drag_joint.cpp
-
-## 5. 在关节阻抗模式下,进去关节拖动,拖动并保存数据的控制案列
-            showcase_drag_JointImpedance_save_data.cpp
-
-## 6. 获取和设置参数案列
-           showcase_get_set_param_demo.cpp
-
-## 7. 连接检查案列
-            showcase_link_check.cpp
-
-## 8. 关节位置跟随控制案列
-            showcase_position_two_arms.cpp
-
-## 9. 跑PVT轨迹并保存数据的案列
-            showcase_pvt.cpp
-
-## 10. 为笛卡尔阻抗控制案列
-            torque_cart_impedance_demo.cpp
-
-## 11. 为力控案列
-            torque_force_impedance_demo.cpp
-
-## 12. 关节阻抗控制案列
-            torque_joint_impedance_demo.cpp
-
-## 13. 在关节阻抗模式下,进去关节拖动,拖动并保存数据的控制案列
-            showcase_drag_JointImpedance_save_data.cpp
-
-## 14. 检查指令下发的延迟时间
-            showcase_cmd_delay.cpp
-
-## 15. 关节空间以规划方式下发指令，消除抖动
-            showcase_pln_jointSpace_PositionMode.cpp
-
-## 16. 笛卡尔空间以规划方式下发指令，实现直线约束
-            showcase_pln_cartSpace_PositionMode.cpp
-            
-## 17. 关节空间以规划方式下发指令，中断规划运行
-            showcase_pln_jointSpace_PositionMode_with_break.cpp
-
-## 18. 笛卡尔空间以规划方式下发指令，中断规划运行
-            showcase_pln_cartSpace_PositionMode_with_break.cpp
+	2）windows下使用MinGW编译dll动态库：
+			控制SDK（contrlSDK）：g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+			运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -w -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
     
