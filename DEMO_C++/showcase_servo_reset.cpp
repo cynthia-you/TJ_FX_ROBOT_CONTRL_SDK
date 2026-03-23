@@ -1,9 +1,7 @@
 #include "MarvinSDK.h" 
-#include "stdio.h"
-#include "stdlib.h"
-#include "unistd.h"
 #include <iostream>
-#include <cstdlib>
+#include <cstring>
+
 #ifdef _WIN32
     #include <windows.h>
     #define SLEEP(ms) Sleep(ms)
@@ -11,22 +9,20 @@
     #include <unistd.h>
     #define SLEEP(ms) usleep((ms) * 1000)
 #endif
+
 // '''#################################################################
-// 该DEMO 为获取和设置参数案列
+// 该DEMO 为指定手臂的指定轴伺服软复位
 
 // 使用逻辑
-//    初始化订阅数据的结构体
-//    查验连接是否成功,失败程序直接退出
-//    为了防止伺服有错，先清错
-//    获取整形参数&浮点形参数
-//    设置整形参数&浮点形参数 
-//    保存参数
-//    任务完成,释放内存使别的程序或者用户可以连接机器人
+//      初始化订阅数据的结构体
+//      查验连接是否成功,失败程序直接退出
+//      demo仅对左臂第二关节复位执行PVT轨迹
+//      任务完成,释放内存使别的程序或者用户可以连接机器人
 // '''#################################################################
 
 int main()
 {
-   // 初始化订阅数据的结构体
+    // 初始化订阅数据的结构体
     DCSS dcss;
 
     // 查验连接是否成功
@@ -126,33 +122,14 @@ int main()
         return -1;
     }
 
-  //获取整型参数
-  char paraName[30]="R.A0.L0.BASIC.TorqueMax";
-  long retValue=0;
-  OnGetIntPara(paraName,&retValue);
-  printf("int param: %ld\n", retValue);
+    //控制日志开
+    OnLogOn();
+	OnLocalLogOn();
 
-  //获取浮点型参数
-  char paraName1[30]="R.A1.L0.BASIC.SensorK";
-  double retValue1=0.0;
-  OnGetFloatPara(paraName1,&retValue1);
-  printf("float param: %lf\n", retValue1);
-  SLEEP(1000);
-
-  //设置整型参数
-  OnSetIntPara(paraName,retValue);
-  SLEEP(1000);
-
-  //设置浮点型参数
-  OnSetFloatPara(paraName1, retValue1);
-  SLEEP(1000);
-
-  //保存参数
-  OnSavePara();
-  SLEEP(1000);
-
-
-  //任务完成,释放内存使别的程序或者用户可以连接机器人
-  OnRelease();
-  return 1;
+    int axis = 1;
+    OnServoReset_A(axis);// 所有关节都可软复位，demo仅对第二关节复位
+    SLEEP(200);
+    // 任务完成,释放内存使别的程序或者用户可以连接机器人
+    OnRelease();
+    return 0;
 }
