@@ -17,14 +17,14 @@ bool OnDownloadLog(char* local_path)
 
 void OnEMG_A()
 {
-	for (long i = 0; i < 10; i++)
+	for (long i = 0; i < 3; i++)
 	{
 		CRobot::OnSetIntPara((char*)"EMCY0", 0);
 		#ifdef CMPL_WIN
-			Sleep(50);
+			Sleep(5);
 		#endif
 		#ifdef CMPL_LIN
-			usleep(50000);
+			usleep(5000);
 		#endif
 	}
 
@@ -39,14 +39,14 @@ void OnEMG_A()
 
 void OnEMG_B()
 {
-	for (long i = 0; i < 10; i++)
+	for (long i = 0; i < 3; i++)
 	{
 		CRobot::OnSetIntPara((char*)"EMCY1", 0);
 		#ifdef CMPL_WIN
-			Sleep(50);
+			Sleep(5);
 		#endif
 		#ifdef CMPL_LIN
-			usleep(50000);
+			usleep(5000);
 		#endif
 	}
 
@@ -61,15 +61,15 @@ void OnEMG_B()
 
 void OnEMG_AB()
 {
-	for (long i = 0; i < 10; i++)
+	for (long i = 0; i < 3; i++)
 	{
 		CRobot::OnSetIntPara((char*)"EMCY0", 0);
 		CRobot::OnSetIntPara((char*)"EMCY1", 0);
 		#ifdef CMPL_WIN
-			Sleep(50);
+			Sleep(5);
 		#endif
 		#ifdef CMPL_LIN
-			usleep(50000);
+			usleep(5000);
 		#endif
 	}
 
@@ -90,14 +90,14 @@ void OnServoReset_A(int axis)
     {
         printf("OnServoReset_A ERROR : Invalid axis number %d (valid range: 0~6)\n", axis);
     }
-	for (long i = 0; i < 10; i++)
+	for (long i = 0; i < 3; i++)
 	{
 		CRobot::OnSetIntPara((char*)"RESETS0", axis);
 		#ifdef CMPL_WIN
-			Sleep(50);
+			Sleep(5);
 		#endif
 		#ifdef CMPL_LIN
-			usleep(50000);
+			usleep(5000);
 		#endif
 	}
 }
@@ -108,14 +108,14 @@ void OnServoReset_B(int axis)
     {
         printf("OnServoReset_B ERROR : Invalid axis number %d (valid range: 0~6)\n", axis);
     }
-	for (long i = 0; i < 10; i++)
+	for (long i = 0; i < 3; i++)
 	{
 		CRobot::OnSetIntPara((char*)"RESETS1", axis);
 		#ifdef CMPL_WIN
-			Sleep(50);
+			Sleep(5);
 		#endif
 		#ifdef CMPL_LIN
-			usleep(50000);
+			usleep(5000);
 		#endif
 	}
 }
@@ -158,14 +158,14 @@ void OnClearErr_A()
 	char name[30];
 	memset(name, 0, 30);
 	sprintf(name, "RESET0");
-	for (long i = 0; i < 10; i++)
+	for (long i = 0; i < 3; i++)
 	{
 		CRobot::OnSetIntPara(name, 0);
 		#ifdef CMPL_WIN
-			Sleep(50);
+			Sleep(5);
 		#endif
 		#ifdef CMPL_LIN
-			usleep(50000);
+			usleep(5000);
 		#endif
 	}
 
@@ -181,14 +181,14 @@ void OnClearErr_B()
 	char name[30];
 	memset(name, 0, 30);
 	sprintf(name, "RESET1");
-	for (long i = 0; i < 10; i++)
+	for (long i = 0; i < 3; i++)
 	{
 		CRobot::OnSetIntPara(name, 0);
 		#ifdef CMPL_WIN
-			Sleep(50);
+			Sleep(5);
 		#endif
 		#ifdef CMPL_LIN
-			usleep(50000);
+			usleep(5000);
 		#endif
 	}
 
