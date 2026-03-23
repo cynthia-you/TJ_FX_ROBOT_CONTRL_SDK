@@ -14,11 +14,6 @@ def collect_identy_data(robot_id, pvt_file, pvt_id, save_path):
     idx=0
     if robot_id=='A':
         idx=1
-    '''清错'''
-    robot.clear_set()
-    robot.clear_error(robot_id)
-    robot.send_cmd()
-    time.sleep(1)
 
     '''设置位置模式和速度'''
     robot.clear_set()
@@ -111,40 +106,35 @@ def collect_identy_data(robot_id, pvt_file, pvt_id, save_path):
     logger.info(f'data saved as {save_path} ')
 
 def run_online():
-
-
     '''查验连接是否成功'''
     init = robot.connect('192.168.1.190')
-    if init == 0:
-        logger.error('failed:端口占用，连接失败!')
+    if init==0:
+        logger.error('failed to connect to the robot, port is occupied')
         exit(0)
+
+    '''检查机械臂和伺服当前是否存错误，有错误清错'''
+    robot.check_error_and_clear(dcss)
+
+    '''通过确认freame数据的刷新，确认UDP数据通道连接成功（防火墙等可能不能正常收到数据）'''
+    motion_tag = 0
+    frame_update = None
+    for i in range(5):
+        sub_data = robot.subscribe(dcss)
+        print(f"connect frames :{sub_data['outputs'][0]['frame_serial']}")
+        if sub_data['outputs'][0]['frame_serial'] != 0 and frame_update != sub_data['outputs'][0]['frame_serial']:
+            motion_tag += 1
+            frame_update = sub_data['outputs'][0]['frame_serial']
+        time.sleep(0.01)
+    if motion_tag > 0:
+        logger.info('success:robot connected')
     else:
-        '''防总线通信异常,先清错'''
-        time.sleep(0.5)
-        robot.clear_set()
-        robot.clear_error('A')
-        robot.clear_error('B')
-        robot.send_cmd()
-        time.sleep(0.5)
+        logger.error('failed:robot connection failed')
+        exit(0)
 
-        motion_tag = 0
-        frame_update = None
-        for i in range(5):
-            sub_data = robot.subscribe(dcss)
-            print(f"connect frames :{sub_data['outputs'][0]['frame_serial']}")
-            if sub_data['outputs'][0]['frame_serial'] != 0 and frame_update != sub_data['outputs'][0]['frame_serial']:
-                motion_tag += 1
-                frame_update = sub_data['outputs'][0]['frame_serial']
-            time.sleep(0.1)
-        if motion_tag > 0:
-            logger.info('success:机器人连接成功!')
-        else:
-            logger.error('failed:机器人连接失败!')
-            exit(0)
+    '''开启日志以便检查'''
+    robot.log_switch('1') #全局日志开："1", 关："0"
+    robot.local_log_switch('1') # 主要日志开："1", 关："0"
 
-    robot.log_switch('1')  # 全局日志开关
-    robot.local_log_switch('1')  # 主要日志
-    time.sleep(0.5)
 
     '''
     attention:!!!!!!

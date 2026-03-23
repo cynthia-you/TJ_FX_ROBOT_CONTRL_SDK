@@ -12,7 +12,17 @@ current_file_path = os.path.abspath(__file__)
 current_path = os.path.dirname(current_file_path)
 from SDK_PYTHON.fx_kine import Marvin_Kine, FX_InvKineSolvePara
 from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS
+'''#################################################################
+该DEMO 为发送指令延迟获取的案例
 
+使用逻辑
+    初始化订阅数据的结构体
+    初始化机器人接口
+    查验连接是否成功,失败程序直接退出
+    开启日志以便检查
+    发送指令时设置等待时间，获取该时间内指令发送的延迟时间
+    任务完成,下使能,释放内存使别的程序或者用户可以连接机器人
+'''#################################################################
 # 配置日志系统
 logging.basicConfig(format='%(message)s')
 logger = logging.getLogger('debug_printer')
@@ -20,23 +30,22 @@ logger.setLevel(logging.INFO)  # 一键关闭所有调试打印
 logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
 
 
-# ========== 连接机器人 ==========
-robot = Marvin_Robot()
+'''初始化订阅数据的结构体'''
+dcss=DCSS()
 
-result = robot.connect('192.168.1.190')
-if result == 0:
-    print('failed:端口占用，连接失败!')
-    sys.exit(1)
+'''初始化机器人接口'''
+robot=Marvin_Robot()
 
-# 防总线通信异常,先清错
-time.sleep(0.5)
-robot.clear_set()
-robot.clear_error('A')
-robot.send_cmd()
-time.sleep(0.5)
+'''查验连接是否成功'''
+init = robot.connect('192.168.1.190')
+if init==0:
+    logger.error('failed to connect to the robot, port is occupied')
+    exit(0)
 
-# 验证连接
-dcss = DCSS()
+'''检查机械臂和伺服当前是否存错误，有错误清错'''
+robot.check_error_and_clear(dcss)
+
+'''通过确认freame数据的刷新，确认UDP数据通道连接成功（防火墙等可能不能正常收到数据）'''
 motion_tag = 0
 frame_update = None
 for i in range(5):
@@ -45,12 +54,16 @@ for i in range(5):
     if sub_data['outputs'][0]['frame_serial'] != 0 and frame_update != sub_data['outputs'][0]['frame_serial']:
         motion_tag += 1
         frame_update = sub_data['outputs'][0]['frame_serial']
-    time.sleep(0.1)
+    time.sleep(0.01)
 if motion_tag > 0:
-    print('success:机器人连接成功!')
+    logger.info('success:robot connected')
 else:
-    print('failed:机器人连接失败!')
-    sys.exit(0)
+    logger.error('failed:robot connection failed')
+    exit(0)
+
+'''开启日志以便检查'''
+robot.log_switch('1') #全局日志开："1", 关："0"
+robot.local_log_switch('1') # 主要日志开："1", 关："0"
 
 
 robot.clear_set()
