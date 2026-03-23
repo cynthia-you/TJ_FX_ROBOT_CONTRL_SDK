@@ -1,4 +1,4 @@
-# 天机-孚晞 MARVIN机器人计算SDK
+# 天机-孚晞 MARVIN机器人工具包SDK_PYTHON
 ## 机器人型号： MARVIN人形双臂, 单臂
 ## 版本： 1004
 ## 支持平台： LINUX 及 WINDOWS
@@ -6,66 +6,62 @@
 ## 更新日期：2025-12
 
 
-### 工具包主要提供运动学相关功能。
+# 一 、SDK_PYTHON简要介绍
+    为天机双臂机器人和人形机器人基于python开发的SDK，其分为控制SDK：SDK_PYTHON/fx_robot.py 和运动学计算的SDK:SDK_PYTHON/fx_kine.py
 
-## 一、接口介绍 [SDK_PYTHON/fx_kine.py]
-## 接口快速全览： 
+## 1.1 SDK文档
+    SDK的主文档为master分支下的主文档：readme.md
 
+    机器人控制SDK文档：
+        c++_doc_contrl.md
+        python_doc_contrl.md
 
-    可用方法:
-
-    机器人关节角度正解到末端位置和姿态4*4矩阵
-  - fk(joints: list)
-  - 
-    机器人关节角度正解到末端位置和姿态4*4矩阵，并得出零空间平面参数矩阵
-  - - fk_nsp(joints: list)
+    机器人计算SDK文档：
+        c++_doc_kine.md
+        python_doc_kine.md
     
-    工具动力学辨识
-  - identify_tool_dyn(robot_type: int, ipath: str)
+## 1.2 SDK库文件夹下文件说明
+    SDK_PYTHON文件下文件为：
+    TJ_FX_ROBOT_CONTRL_SDK-master
+    |————DEMO_PYTHON  #SDK在python下的使用案例
+    |————SDK_PYTHON
+            |————fx_kine.py #计算接口
+            |————fx_robot.py #控制接口
+            |————libKine.dll #windows下计算库动态库
+            |————libKine.so #linux下计算库动态库
+            |————libMarvinSDK.dll #windows下控制库动态库
+            |————libMarvinSDK.so #linux下控制库动态库
 
-    机器人末端位姿矩阵逆解到7个关节的角度
-  - ik(structure_data)
+    注意：请检查SDK_PYTHON下动态库是否为最新编译
 
-    逆解零空间
-  - ik_nsp( structure_data)
+## 1.3 SDK库文件编译
 
-    初始化动力学参数
-  - initial_kine( robot_type: int, dh: list, pnva: list, j67: list)
+    使用自动化编译脚本：
+        mster下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
+        mster下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
 
-    关节角度转雅可比矩阵
-  - joints2JacobMatrix(joints: list)
-
-    加载配置文件
-  - load_config(arm_type:int, config_path: str)
-
-    末端位姿矩阵转XYZABC表示
-  - mat4x4_to_xyzabc(pose_mat: list)
-
-    位姿矩阵展开表示
-  - mat4x4_to_mat1x16(pose_mat)
-
-    直线插值规划
-  - movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, freq_hz:int, save_path)
     
-    直线插值规划，约束起始结束关节构型
-  - movL_KeepJ(start_joints:list, end_joints:list,vel:float,acc: float,freq_hz:int, save_path)
-
-    在线直线插值规划
-  - movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float,freq_hz:int )
-
-    在线直线插值规划，约束起始结束关节构型
-  - movL_KeepJA(start_joints:list, end_joints:list,vel:float,acc: float,freq_hz:int)
-
-    移除工具设置
-  - remove_tool_kine()
-
-    设置末端工具参数
-  - set_tool_kine(tool_mat: list)
-
-    末端XYZABC转位姿矩阵表示
-  - xyzabc_to_mat4x4(xyzabc: list)
+    手动编译指令：
+    
+    windows下使用MinGW编译dll动态库：
+            控制SDK（contrlSDK）：g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+            运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -w -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
+    
+    linux设备编译:
+    控制SDK(contrlSDK)，以下方法均可编译: 
+        1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
+        2./contrlSDK/makefile 生成libMarvinSDK.so
+    运动学SDK(kinematicsSDK)，以下方法均可编译: 
+        1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
+        2./kinematicsSDK/makefile 生成libKine.so
+    编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
 
 ## 二、 接口详解 
+    SDK_PYTHON/fx_kine.py 是基于机器人（双臂系统）C++开发的SDK的的二次开发工具包
+    
+    将类实例化后可以使用其具体功能函数：
+    kk = Marvin_Kine()  # 实例化
 
     一定要确认robot_serial是左臂0 还是右臂1
     在DEMO中仅示例了单臂（左臂）的计算
@@ -409,12 +405,9 @@ mat4x4_to_mat1x16(self,pose_mat):
         return matrix_data
 
 
-# 三、案例脚本
-请注意：案例仅为参考使用，实地生产和业务逻辑需要您加油写~~~
 
-   见DEMO_PYTHON/readme.md
-
-
+## 三、案例脚本
+ 见 DEMO_PYTHON/readme.md
 
 
 

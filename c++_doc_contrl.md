@@ -23,9 +23,7 @@
 (1) 1KHz 通信
     下发指令和订阅机器人数据是1KHz 通信， 采用UDP通信。
 
-
 (2) 控制状态切换
-
     ① 下使能
     ② 位置跟随模式
     ③ 位置PVT模式
@@ -36,7 +34,6 @@
     ⑤ 协作释放
 
 (3) 控制状态参数（1KHz）
-
     ① 参数
         1) 目标跟随速度加速度设定，（百分比，值范围0-100）
         2) 关节阻抗参数设定
@@ -66,8 +63,58 @@
 
 
 # 二、接口介绍
-## 接口快速全览见: [contrlSDK/MarvinSDK.h]
-## 所有左右臂相关接口都是后缀_A或_B表示， _A 为左臂 _B 为右臂
+
+## 2.1 SDK文档
+    SDK的主文档为master分支下的主文档：readme.md
+
+    机器人控制SDK文档：
+        c++_doc_contrl.md
+        python_doc_contrl.md
+
+    机器人计算SDK文档：
+        c++_doc_kine.md
+        python_doc_kine.md
+
+## 2.2 SDK库文件编译
+
+    使用自动化编译脚本：
+        mster下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
+        mster下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+
+    手动编译指令 ：   
+    编译c++调用的dll动态库:
+        1)windows下使用MinGW编译dll动态库:
+                控制SDK(contrlSDK): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
+                运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll
+        编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
+    
+    编译so动态库:
+        linux设备编译:
+            控制SDK(contrlSDK)，以下方法均可编译: 
+                1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
+                2./contrlSDK/makefile 生成libMarvinSDK.so
+            运动学SDK(kinematicsSDK)，以下方法均可编译: 
+                1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
+                2./kinematicsSDK/makefile 生成libKine.so
+        编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
+    
+
+## 2.3 控制机器人的主要逻辑
+
+    机器人控制的主逻辑为:
+        UDP连接机器人,通过接收数的更新据确认为有效连接
+        |
+        设置预期控制状态下对应的参数（速度，加速度，刚度，阻尼等），再设置控制状态
+        |
+        下发关节指令/力指令
+        |
+        ...
+        |
+        任务完成,释放机器人以便别的程序或者用户连接机器人
+
+## 2.4  接口详解
+    接口快速全览见:contrlSDK/MarvinSDK.h
+    注意：所有左右臂相关接口都是后缀_A或_B表示， _A 为左臂 _B 为右臂
 
 ### (1) 连接和释放运行内存
 bool OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4);
@@ -504,7 +551,7 @@ bool OnSendPVT_B(char* local_file, long serial);
 
     
 
-### (10) 运动相关指令发送  可以以1000HZ频率进行发送
+### (10) 指令发送  可以以1000HZ频率进行发送
 //清空待发送数据缓冲区
 bool OnClearSet();
     
@@ -749,6 +796,10 @@ bool OnSetDragSpace_B(int dgType);
     3,       //笛卡尔空间Y方向拖动
     4,       //笛卡尔空间Z方向拖动
     5,       //笛卡尔空间旋转方向拖动
+    注意： 
+        1.关节拖动需要在关节阻抗状态下使用
+        2.笛卡尔拖动需要在笛卡尔阻抗下使用
+        3.切换不同拖动模式前需要退出拖动模式再切换，否则控制效果是叠加混乱的。
 
 ### (21) 设置末端笛卡尔方向的旋转
 //自定义设置末端笛卡尔方向的旋转
@@ -780,8 +831,11 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
  bool OnSetPlnCart_B(CPointSet* pset);
     
     CPointSet：使用计算库kinematicsSDK 的规划接口FX_Robot_PLN_MOVLA 得到的点集作为输入
-    
-
+   
+ 
+ //中断规划运行
+ bool OnStopPlnJoint_A();
+ bool OnStopPlnJoint_B();
 
 
 
@@ -808,8 +862,7 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
 
 ## 四、案例脚本
-### 4.1 C++开发的使用编译见：demo_linux_win/c++_linux 下的 API_USAGE_MarvinSDK.txt(win下同样适用，源码编译为linMarvinSDK.dll)
-请注意：案例仅为参考使用，实地生产和业务逻辑需要您加油写~~~
+ 见 DEMO_C++/readme.md
 
 
 

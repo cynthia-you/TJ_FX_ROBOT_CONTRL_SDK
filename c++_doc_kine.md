@@ -8,9 +8,46 @@
 
 
 ## 一、接口介绍
-### 接口快速全览见[kinematicsSDK/FxRobot.h]
 
-### 注意
+## 1.1 SDK文档
+    SDK的主文档为master分支下的主文档：readme.md
+
+    机器人控制SDK文档：
+        c++_doc_contrl.md
+        python_doc_contrl.md
+
+    机器人计算SDK文档：
+        c++_doc_kine.md
+        python_doc_kine.md
+
+## 1.2 SDK库文件编译
+
+    使用自动化编译脚本：
+        mster下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
+        mster下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+
+    手动编译指令 ：   
+    编译c++调用的dll动态库:
+        1)windows下使用MinGW编译dll动态库:
+                控制SDK(contrlSDK): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
+                运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll
+        编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
+    
+    编译so动态库:
+        linux设备编译:
+            控制SDK(contrlSDK)，以下方法均可编译: 
+                1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
+                2./contrlSDK/makefile 生成libMarvinSDK.so
+            运动学SDK(kinematicsSDK)，以下方法均可编译: 
+                1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
+                2./kinematicsSDK/makefile 生成libKine.so
+        编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
+
+## 1.3 接口详解
+
+    接口快速全览见[kinematicsSDK/FxRobot.h]
+
+    注意
     一定要确认RobotSerial是左臂0 还是右臂1
     在DEMO中仅示例了单臂（左臂）的计算
     如果人形，则左右臂都要计算，两个手臂需要独立初始化导入运动学参数，初始化运动学参数。
