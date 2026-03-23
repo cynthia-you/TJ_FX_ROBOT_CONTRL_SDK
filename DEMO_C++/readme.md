@@ -40,11 +40,22 @@
 
 # 三、 案列使用编译
 ## 3.1 linux示例
+    只用到运动学库
     g++ showcase_kinematics_all_functions.cpp -o kine -L. -lKine -Wl,-rpath=.
     ./kine
+
+    控制库和运动学库同时使用
+    g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj -L. -lKine -lMarvinSDK -Wl,-rpath=.
+    ./offline_movl_keepj
+
 ## 3.2 windows示例
+    只用到运动学库
     g++ showcase_kinematics_all_functions.cpp -o kine.exe -L. -lKine
     kine.exe
+
+    控制库和运动学库同时使用
+    g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj.exe -L. -lKine -lMarvinSDK -Wl,-rpath=.
+    offline_movl_keepj.exe 
 
 # 四. 计算showcases
 
