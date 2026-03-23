@@ -368,6 +368,41 @@ class Marvin_Robot:
         result=structure2dict(dcss)
         return result
 
+    def check_error_and_clear(self,dcss):
+        '''检查机械臂是否存在手臂或者伺服错误和状态切换错误'''
+        sub_data=self.subscribe(dcss)
+        a_state=sub_data["states"][0]["cur_state"]
+        b_state=sub_data["states"][1]["cur_state"]
+        a_arm_err=sub_data["states"][0]["err_code"]
+        b_arm_err=sub_data["states"][1]["err_code"]
+
+        err_code_value_a = (ctypes.c_long * 7)()
+        self.robot.OnGetServoErr_A.argtypes = [ctypes.POINTER(ctypes.c_long * 7)]
+        self.robot.OnGetServoErr_A(ctypes.byref(err_code_value_a))
+        a_servo_err = [0] * 7
+        err_code_value_b = (ctypes.c_long * 7)()
+        self.robot.OnGetServoErr_B.argtypes = [ctypes.POINTER(ctypes.c_long * 7)]
+        self.robot.OnGetServoErr_B(ctypes.byref(err_code_value_b))
+        b_servo_err = [0] * 7
+        for i in range(7):
+            a_servo_err[i] = err_code_value_a[i]
+            b_servo_err[i] = err_code_value_b[i]
+
+        if a_state==100 or a_arm_err!=0 :
+            self.clear_error('A')
+            print(f"Arm A exits error, clear error")
+        elif b_state==100 or b_arm_err!=0:
+            self.clear_error('B')
+            print(f"Arm B exits error, clear error")
+        elif set(a_servo_err) != {0}:
+            self.clear_error('A')
+            print(f"Arm A exits servo error, clear error")
+        elif set(b_servo_err) != {0}:
+            self.clear_error('B')
+            print(f"Arm B exits servo error, clear error")
+        else:
+            print(f'Arms A&B exist no error')
+
     def release_robot(self):
         ''' 断开机器人连接
         :return:
@@ -641,7 +676,7 @@ class Marvin_Robot:
 
     def servo_reset(self,arm:str,axis:int):
         '''指定轴伺服软复位
-        :param arm: ‘A’, 'B'
+        :param arm: 机械手臂ID “A” OR “B”
         :param axis: 指定关节：0-6
         :return:
         '''
@@ -657,7 +692,7 @@ class Marvin_Robot:
     def get_servo_error_code(self, arm:str,lang='CN'):
        '''获取机械臂伺服错误码
        :param self:
-       :param arm:
+       :param arm: 机械手臂ID “A” OR “B”
        :param lang: 'CN' or 'EN'
        :return: (7,1)错误列表， 16进制
        '''
@@ -686,7 +721,8 @@ class Marvin_Robot:
 
     def clear_error(self,arm:str):
         '''清错
-        :return:无
+        :param arm: 机械手臂ID “A” OR “B”
+        :return:
         '''
         try:
             if arm=='A':
@@ -698,6 +734,7 @@ class Marvin_Robot:
 
     def set_state(self,arm:str,state:int):
         '''设置状态
+        :param arm: 机械手臂ID “A” OR “B”
         :param state:
                    ARM_STATE_IDLE = 0,            //////// 下伺服
                    ARM_STATE_POSITION = 1,		//////// 位置跟随
@@ -718,6 +755,7 @@ class Marvin_Robot:
 
     def set_impedance_type(self, arm:str,type: int):
         '''设置阻抗类型
+        :param arm: 机械手臂ID “A” OR “B”
         :param type:
             Type = 1 关节阻抗
             Type = 2 坐标阻抗
@@ -737,8 +775,9 @@ class Marvin_Robot:
 
     def set_vel_acc(self, arm:str, velRatio: int, AccRatio: int):
         '''设置速度和加速度百分比
-        :param velRatio: 速度百分比
-        :param AccRatio: 加速度百分比
+        :param arm: 机械手臂ID “A” OR “B”
+        :param velRatio: 速度百分比, 值范围： 0~100
+        :param AccRatio: 加速度百分比， 值范围：0~100
         :return:
             int： 1: True; 0:Flase
         '''
@@ -754,6 +793,7 @@ class Marvin_Robot:
 
     def set_tool(self,arm:str, kineParams: list, dynamicParams: list):
         '''设置工具信息
+        :param arm: 机械手臂ID “A” OR “B”
         :param kineParams: list(6,1). 运动学参数 XYZABC 单位毫米和度
         :param dynamicParams: list(10,1). 动力学参数分别为 质量M  质心[3]:mx,my,mz 惯量I[6]:XX,XY,XZ,YY,YZ,ZZ
         :return:
@@ -777,8 +817,8 @@ class Marvin_Robot:
         '''设置关节阻抗参数
 
         #关节阻抗时，需更低刚度避免震动，且希望机械臂有顺从性，因此采用低刚度配低阻尼。
-        1-7关节刚度不超过2
         1-7关节阻尼0-1之间
+        :param arm: 机械手臂ID “A” OR “B”
         :param K: list(7,1). 刚度 牛米 / 度 。 设置每个轴的的力为刚度系数。 如K=[2，2,2,1,1,1,1]，第1到3轴有2N作为刚度系数参与控制计算，第4到7轴有1N作为刚度系数参与控制计算。
         :param D: list(7,1). 阻尼 牛米 / (度 / 秒)。 设置每个轴的的阻尼系数。
         :return:
@@ -805,9 +845,9 @@ class Marvin_Robot:
             刚度系数： 1-3平移方向刚度系数不超过3000, 4-6旋转方向不超过100。 零空间刚度系数不超过20
             阻尼系数： 平移和旋转阻尼系数0-1之间。 零空间阻尼系数不超过1
             零空间控制是保持末端固定不动，手臂角度运动的控制方式。接口未开放
-
+        :param arm: 机械手臂ID “A” OR “B”
         :param K: list(7,1). K[0]-k[2] N*m，x,y,z 平移方向每米的控制力; K[3]-k[5] N*m/rad, rx,ry,rz旋转弧度的控制力;K[6]N*m/rad,零空间总和刚度系数
-        :param D: list(7,1). D[0]-D[5]  阻尼比例系数, D[6] 零空间总和阻尼比例系数
+        :param D: list(7,1). D[0]-D[5]  阻尼比例系数, D[6] 零空间总和阻尼比例系数,范围0-1
         :param type:int. set_A_arm_impedance_type设置的阻抗类型
         :return:
             int : 1: True,  2: False
@@ -829,6 +869,7 @@ class Marvin_Robot:
 
     def set_force_control_params(self,arm:str, fcType: int, fxDirection: list, fcCtrlpara: list, fcAdjLmt: float):
         '''设置力控参数
+        :param arm: 机械手臂ID “A” OR “B”
         :param fcType: 力控类型 0:坐标空间力控;1:工具空间力控(暂未实现)
         :param fxDirection: list(6,1). 力控方向 需要控制方向设1，目前只支持 X,Y,Z控制方向.如力控方向为z,fxDirection=[0,0,1,0,0,0]
         :param fcCtrlpara: list(7,1). 控制参数 目前全0
@@ -860,7 +901,10 @@ class Marvin_Robot:
 
     def set_EefCart_control_params(self,arm:str, fcType: int, CartCtrlPara: list):
         '''设置末端笛卡尔阻抗参数
-        :param fcType: 1:用户自定义末端旋转； 2：系统实时计算并响应
+        :param arm: 机械手臂ID “A” OR “B”
+        :param fcType:
+              fcType=1，为自定义末端旋转方向。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+              fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
         :param CartCtrlPara: list(7,1). 控制参数前三个为旋转信息，基于基座的XYZ旋转。
         :return:
             int : 1: True,  2: False
@@ -884,6 +928,7 @@ class Marvin_Robot:
 
     def set_joint_cmd_pose(self,arm:str, joints:list):
         '''设置关节跟踪指令值
+        :param arm: 机械手臂ID “A” OR “B”
         :param joints: list(7,1). 角度，非弧度，在位置跟随和扭矩模式下均有效
         :return:
             int : 1: True,  2: False
@@ -900,7 +945,8 @@ class Marvin_Robot:
             print(f'ERROR:{e}')
 
     def set_force_cmd(self,arm:str, f:float):
-        '''设置力控参数
+        '''设置力控指令
+        :param arm: 机械手臂ID “A” OR “B”
         :param f: 目标力 单位牛或者牛米
         :return:
             int : 1: True,  2: False
@@ -916,6 +962,7 @@ class Marvin_Robot:
 
     def set_pvt_id(self,arm:str,id:int):
         '''设置指定id号的pvt路径并运行
+        :param arm: 机械手臂ID “A” OR “B”
         :param id: 范围1-99. 需要在 ARM_STATE_PVT 状态，即： set_arm_state(arm='A',state=2)
         :return:
             int : 1: True,  2: False
@@ -932,8 +979,9 @@ class Marvin_Robot:
 
     def send_pvt_file(self,arm:str, pvt_path: str, id: int):
         '''上传PVT文件给指定ID
+        :param arm: 机械手臂ID “A” OR “B”
         :param pvt_path: 本地pvt文件的绝对/相对路径
-        :param id:
+        :param id: 范围1-99. 需要在 ARM_STATE_PVT 状态，即： set_arm_state(arm='A',state=2)
         :return:
 
 
@@ -1021,8 +1069,8 @@ class Marvin_Robot:
             print(f'ERROR:{e}')
 
     def pln_init(self,config_path):
-        ''' 使用前，请一定确认机型，导入正确的配置文件。导入机械臂配置信息
-        :param config_path: 本地机械臂配置文件a.MvKDCfg, 可相对路径.
+        '''关节空间规划初始化
+        :param config_path: 本地机械臂配置文件*.MvKDCfg, 可相对路径.
         :return:
             ture or false
         '''
@@ -1035,8 +1083,8 @@ class Marvin_Robot:
         return self.robot.OnInitPlnLmt(config_path.encode('utf-8'))
 
     def stopRunPln_joint(self, arm: str):
-        '''
-        停止之前的规划运动
+        '''停止之前的规划运动，关节空间和笛卡尔空间都适用t
+        :param arm: 机械手臂ID “A” OR “B”
         '''
         try:
             if arm not in ['A', 'B']:
@@ -1091,8 +1139,13 @@ class Marvin_Robot:
             print(f'ERROR:{e}')
 
     def setPln_Cart(self,arm:str, pset: ctypes.c_void_p) -> bool:
-        """
-        对已规划的 pset 执行 OnSetPlnCart_A 操作
+        """位置模式下使用该接口传输目标笛卡尔坐标，防止通信抖动
+        :param arm: 机械手臂ID “A” OR “B”
+        :param pset: 由计算接口movLA(start_xyzabc: List[float], end_xyzabc: List[float],
+              ref_joints: List[float], vel: float, acc: float,freq_hz:int,
+              dimension: int = 7) -> tuple[List[List[float]], ctypes.c_void_p]计算得出
+        :return:
+            ture or false
         """
         if arm not in ['A', 'B']:
             raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
@@ -1846,9 +1899,9 @@ if __name__ == "__main__":
 
     tj_robot = Marvin_Robot()
     tj_robot.help()
-    tj_robot.help('collect_data')
-
-    dcss=DCSS()
-    sub_data=tj_robot.subscribe(dcss)
-    print(sub_data['states'][0]['cur_state'])
-
+    # tj_robot.help('collect_data')
+    #
+    # dcss=DCSS()
+    # sub_data=tj_robot.subscribe(dcss)
+    # print(sub_data['states'][0]['cur_state'])
+    #
