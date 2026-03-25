@@ -814,22 +814,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 				sp.m_Input_IK_TargetTCP[dof][j] = TCP[dof][j];
 			}
 		}
-
-		if(i==0)
-		{
-		    for (j = 0; j < 7; j++)
-			{
-				sp.m_Input_IK_RefJoint[j] = ref_joints[j];
-			}
-		}
-		else
-		{
-		    for (j = 0; j < 7; j++)
-			{
-				sp.m_Input_IK_RefJoint[j] = ret_joints[j];
-			}
-		}
-
+		
 		if(FX_Robot_Kine_IK(RobotSetial, &sp)==false)
 		{
 			return FX_FALSE;
@@ -1158,21 +1143,6 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 			for (j = 0; j < 4; j++)
 			{
 				sp.m_Input_IK_TargetTCP[dof][j] = TCP[dof][j];
-			}
-		}
-
-        if(i==0)
-		{
-		    for (j = 0; j < 7; j++)
-			{
-				sp.m_Input_IK_RefJoint[j] = ref_joints[j];
-			}
-		}
-		else
-		{
-		    for (j = 0; j < 7; j++)
-			{
-				sp.m_Input_IK_RefJoint[j] = ret_joints[j];
 			}
 		}
 
