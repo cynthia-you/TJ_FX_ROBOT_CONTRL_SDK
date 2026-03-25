@@ -8,8 +8,6 @@
                 c.设置目标关节后，测试里小睡几秒等机械臂运行到位，而在生产时可以通过循环订阅机械臂当前位置判断是否走到指定点位或者通过订阅低速标志来判断。
                 d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
 
-
-
 # 一、SDK文档
     请阅读SDK文档，了解接口的功能和输入参数类型数值含义。
 
@@ -38,12 +36,45 @@
         MarvinSDK.h
         PointSet.h
 
+## 2.1 编译控制库和运动计算库方法
+## 2.1.1使用自动化编译脚本：
+        mster下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
+        mster下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+
+### 2.1.2 编译so动态库:
+    linux设备编译:
+        控制SDK(contrlSDK)，以下方法均可编译: 
+            1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
+            2./contrlSDK/makefile 生成libMarvinSDK.so
+        运动学SDK(kinematicsSDK)，以下方法均可编译: 
+            1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
+            2./kinematicsSDK/makefile 生成libKine.so
+    编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
+
+### 2.1.3 编译c++调用的dll动态库:
+    1)windows下使用MinGW编译dll动态库:
+            控制SDK(contrlSDK): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
+            运动学SDK(kinematicsSDK): g++ *.cpp -Wall -w -O2 -fPIC -shared -o libKine.dll
+    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
+
+            
+### 2.1.4 编译python调用的dll动态库
+    1)linux下编译dll动态库:
+        控制SDK(contrlSDK):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
+        运动学SDK(kinematicsSDK): g++ *.cpp -Wall -w -O2 -fPIC -shared -o libKine.dll 
+
+    2）windows下使用MinGW编译dll动态库：
+            控制SDK（contrlSDK）：g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+            运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -w -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
+    
+
 # 三、 案列使用编译
 ## 3.1 linux示例
     只用到运动学库
     g++ showcase_kinematics_all_functions.cpp -o kine -L. -lKine -Wl,-rpath=.
     ./kine
-
+    
     控制库和运动学库同时使用
     g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj -L. -lKine -lMarvinSDK -Wl,-rpath=.
     ./offline_movl_keepj
@@ -52,7 +83,7 @@
     只用到运动学库
     g++ showcase_kinematics_all_functions.cpp -o kine.exe -L. -lKine
     kine.exe
-
+    
     控制库和运动学库同时使用
     g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj.exe -L. -lKine -lMarvinSDK -Wl,-rpath=.
     offline_movl_keepj.exe 
