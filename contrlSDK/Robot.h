@@ -6,19 +6,31 @@
 #include "ShMem.h"
 #include "TCPFileClient.h"
 #include "CAxisSpPln.h"
-#ifdef CMPL_WIN
-    #include <Windows.h>
+#include <stdio.h>
+#include <ctype.h>
+#include "string.h"
+#include "stdlib.h"
+#include <iostream>
+#include <cstdlib>
+#include <cassert>
+#include <math.h> 
+#ifdef _WIN32
+ 	#include <Windows.h>
     #pragma comment(lib,"winmm.lib")
     #include <winsock.h>
     #include <stdio.h>
     #include <stdint.h>
     #pragma comment(lib,"ws2_32.lib")
-#else
+    #define SLEEP(ms) Sleep(ms)
+#elif defined(__linux__)
     #include <sys/mman.h>
     #include <sys/stat.h>
     #include <fcntl.h>
     #include <unistd.h>
     #include <errno.h>
+    #define SLEEP(ms) usleep((ms) * 1000)  
+#else
+    #error "Unsupported platform"
 #endif
 #include "PointSet.h"
 #define    SDK_VERSION   1003
@@ -148,15 +160,14 @@ protected:
 	FX_BOOL old_serial_tag;
 
 
-#ifdef CMPL_WIN
+#ifdef _WIN32
 	MMRESULT m_TimeEventID;
 #endif
 	FX_BOOL m_LastGatherTag;
-#ifdef CMPL_LIN
+#ifdef __linux__
 	timer_t robot_timer;
 #endif	
 	DCSS    m_DCSS;
-	DCSS    m_temp_dcss;//win
 
 	DCSS    m_DCSS_Send;
 	FX_UCHAR m_RunState;

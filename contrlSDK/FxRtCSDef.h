@@ -174,6 +174,35 @@ typedef enum
 	DCSS_CFG_OP_SAVE = 105,
 }DCSSCfgOperationType;
 
+
+typedef enum
+{
+	SLEEP_TIME=10, //sleep time after sendCmd
+	TIME_OUT=20, ///internal time_out, for api:OnSetSendWaitResponse
+	ARM_IMP_JOINT=1,
+	ARM_IMP_CART=2,
+	ARM_IMP_FORCE=3,
+}InterCMD;
+
+
+typedef enum
+{
+	 ARM_ERR_BusPhysicAbnoraml = 1, //"总线拓扑异常"
+	ARM_ERR_ServoError = 2,//"伺服故障"
+	ARM_ERR_InvalidPVT = 3,//"PVT异常"
+	ARM_ERR_RequestPositionMode = 4,//"请求进位置失败"
+	ARM_ERR_PositionModeOK = 5,//"进位置失败"
+	ARM_ERR_RequestSensorMode = 6,//"请求进扭矩失败"
+	ARM_ERR_SensorModeOK = 7,//"进扭矩失败"
+	ARM_ERR_RequestEnableServo = 8,//"请求上伺服失败"
+	ARM_ERR_EnableServoOK = 9,//"上伺服失败"
+	ARM_ERR_RequestDisableServo = 10, //"请求下伺服失败
+	ARM_ERR_DisableServoOK = 11, //"下伺服失败"
+	ARM_ERR_InvalidSubState = 12, //"内部错"
+	ARM_ERR_Emcy = 13, //"急停"
+	ARM_DYNA_FLOAT_NO_GYRO = 14,//"配置文件选择了浮动基座选项，但是UMI设置在配置文件未开"
+}ArmError;
+
 #endif
 
 

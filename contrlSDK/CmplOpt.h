@@ -1,17 +1,13 @@
 #ifndef FX_CMPLOPT_H_
 #define FX_CMPLOPT_H_
-
-// 让编译器命令行定义，例如 -DCMPL_WIN 或者 -DCMPL_LIN
-#ifdef CMPL_WIN
-    #include <windows.h>
+#ifdef _WIN32
     #include <winsock2.h>
+    #include <windows.h>
     #include <stdio.h>
     #include <stdlib.h>
     #define LOOPHANDLE HANDLE
     #define socklen_t int
-#endif
-
-#ifdef CMPL_LIN
+#else
     #include <stdio.h>
     #include <stdlib.h>
     #include <stdint.h>

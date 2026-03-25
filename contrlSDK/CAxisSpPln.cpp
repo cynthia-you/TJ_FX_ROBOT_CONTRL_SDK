@@ -222,7 +222,7 @@ bool CAxisSpPln::OnCut(double retp[8])
 				double len = 0.5 * m_Pln_P1[i][2] * cut_t * cut_t;
 				double r = len / m_Pln_Len[i];
 				retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
-				printf("r1 %lf ",r);
+				// printf("r1 %lf ",r);
 			}
 			else
 			{
@@ -232,7 +232,7 @@ bool CAxisSpPln::OnCut(double retp[8])
 					double len = m_Pln_P2[i][0] + m_Pln_P2[i][1] * cut_t;
 					double r = len / m_Pln_Len[i];
 					retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i]; 
-					printf("r2 %lf ", r);
+					// printf("r2 %lf ", r);
 				}
 				else
 				{
@@ -240,7 +240,7 @@ bool CAxisSpPln::OnCut(double retp[8])
 					double len = m_Pln_P3[i][0] + m_Pln_P3[i][1] * cut_t + 0.5 * m_Pln_P3[i][2] * cut_t * cut_t;
 					double r = len / m_Pln_Len[i];
 					retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
-					printf("r3 %lf ", r);
+					// printf("r3 %lf ", r);
 				}
 				
 			}
