@@ -84,7 +84,7 @@
     编译c++调用的dll动态库:
         1)windows下使用MinGW编译dll动态库:
                 控制SDK(contrlSDK): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
-                运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll
+                运动学SDK(kinematicsSDK): g++ *.cpp -Wall -w -O2 -fPIC -shared -o libKine.dll
         编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
     
     编译so动态库:
