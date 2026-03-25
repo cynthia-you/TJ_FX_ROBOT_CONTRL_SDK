@@ -119,7 +119,7 @@
             showcase_online_movl_keepja_execution.cpp
 
 
-# 二. 控制showcases
+# 五. 控制showcases
 
 ## 1. 强制抱闸和强制松闸案例
             showcase_apply_brake_release_brake.cpp
@@ -175,3 +175,5 @@
 ## 18. 笛卡尔空间以规划方式下发指令，中断规划运行
             showcase_pln_cartSpace_PositionMode_with_break.cpp
     
+# 六、 控制SDK简明式接口案例
+            showcase_new_control_sdk_usage.cpp
