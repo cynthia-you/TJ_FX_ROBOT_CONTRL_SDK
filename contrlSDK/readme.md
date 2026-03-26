@@ -27,8 +27,8 @@
     控制SDK头文件：MarvinSDK.h
 
 ## 2.1使用自动化编译脚本：
-        mster下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
-        mster下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+        master分支下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
+        master分支下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
 
 ## 2.2.1 编译so动态库:
     linux设备编译:
