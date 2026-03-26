@@ -1393,47 +1393,47 @@ class Concise_Marvin_Robot:
             print("ERROR:",e)
 
     def start_collect_data(self, target_num: int, target_id: list, record_num: int) -> bool:
-        """设置保存参数并开始采集数据
+        """设置保存参数并开始采集数据，频率：1K hz
 
-        :param target_num: 要采集的轴数量（0-35）
-        :param target_id: 轴 ID 列表，长度必须等于 target_num，每个值在 0-34 之间
-        :param record_num: 采集的数据点数（正整数）
-        :return: bool 成功返回 True，失败返回 False
+       :param target_num: 要采集的轴数量（0-35）
+       :param target_id: 采集数据ID序号，
+       :param record_num: 采集的数据点数最少1000行(1秒数据)，最大100万行（100秒数据）
+       :return: bool 成功返回 True，失败返回 False
 
-        采集数据ID序号
-                    左臂
-                        0-6  	左臂关节位置
-                        10-16 	左臂关节速度
-                        20-26   左臂外编位置
-                        30-36   左臂关节指令位置
-                        40-46	左臂关节电流（千分比）
-                        50-56   左臂关节传感器扭矩NM
-                        60-66	左臂摩擦力估计值
-                        70-76	左臂摩檫力速度估计值
-                        80-85   左臂关节外力估计值
-                        90-95	左臂末端点外力估计值
-                    右臂对应 + 100
+       采集数据ID序号
+                   左臂
+                       0-6  	左臂关节位置
+                       10-16 	左臂关节速度
+                       20-26   左臂外编位置
+                       30-36   左臂关节指令位置
+                       40-46	左臂关节电流（千分比）
+                       50-56   左臂关节传感器扭矩NM
+                       60-66	左臂摩擦力估计值
+                       70-76	左臂摩檫力速度估计值
+                       80-85   左臂关节外力估计值
+                       90-95	左臂末端点外力估计值
+                   右臂对应 + 100
 
-                    eg1: 采集左臂和右臂的关节位置，一共14列， 采集1000行：
-                        cols=14
-                        idx=[0,1,2,3,4,5,6,
-                             100,101,102,103,104,105,106,
-                             0,0,0,0,0,0,0,
-                             0,0,0,0,0,0,0,
-                             0,0,0,0,0,0,0]
-                        rows=1000
-                        robot.start_collect_data(targetNum=cols,targetID=idx,recordNum=rows)
+                   eg1: 采集左臂和右臂的关节位置，一共14列， 采集1000行：
+                       cols=14
+                       idx=[0,1,2,3,4,5,6,
+                            100,101,102,103,104,105,106,
+                            0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0]
+                       rows=1000
+                       robot.start_collect_data(target_num=cols,target_id=idx,record_num=rows)
 
-                    eg2: 采集左臂第二关节的速度和电流一共2列， 采集500行：
-                        cols=2
-                        idx=[11,31,0,0,0,0,0,
-                             0,0,0,0,0,0,0,
-                             0,0,0,0,0,0,0,
-                             0,0,0,0,0,0,0,
-                             0,0,0,0,0,0,0]
-                        rows=500
-                        robot.start_collect_data(targetNum=cols,targetID=idx,recordNum=rows)
-        """
+                   eg2: 采集左臂第二关节的速度和电流一共2列， 采集500行：
+                       cols=2
+                       idx=[11,31,0,0,0,0,0,
+                            0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0,
+                            0,0,0,0,0,0,0]
+                       rows=500
+                       robot.start_collect_data(target_num=cols,target_id=idx,record_num=rows)
+       """
         if target_num<0:
             target_num=1
         if target_num>35:
@@ -1573,19 +1573,6 @@ class Concise_Marvin_Robot:
        except Exception as e:
            print("ERROR:", e)
 
-    def clear_error(self,arm:str):
-        '''清错
-        :param arm: 机械手臂ID “A” OR “B”
-        :return:
-        '''
-        try:
-            if arm=='A':
-                return self.robot.OnClearErr_A()
-            elif arm=='B':
-                return self.robot.OnClearErr_B()
-        except Exception as e:
-            print(f'ERROR:{e}')
-
     def set_position_state(self, arm: str, velRatio: int, AccRatio: int) -> bool:
         """设置关节模式的速度和加速度百分比
 
@@ -1688,7 +1675,7 @@ class Concise_Marvin_Robot:
 
         :param arm: 机械手臂ID "A" 或 "B"（单字符）
         :param fc_type: 旋转模式，1 自定义方向，2 系统自动计算
-        :param cart_ctrl_para: 笛卡尔参数列表/元组，长度必须为 7（fcType=1 时有效，fcType=2 时应全0）
+        :param cart_ctrl_para: 笛卡尔参数列表/元组，长度必须为 7（fcType=1 时前三个值为末端的旋转方向，fcType=2 时应全0）
         :return: bool 成功返回 True，失败返回 False
         """
         if len(arm) != 1 or arm not in ('A', 'B'):
@@ -1787,7 +1774,7 @@ class Concise_Marvin_Robot:
         :param arm: 机械手臂ID "A" 或 "B"（单字符）
         :param start_joints: 起始关节角度（7个，单位度）
         :param stop_joints: 目标关节角度（7个，单位度）
-        :param vel_ratio: 速度比例（0~1 或百分比？根据实际情况调整）
+        :param vel_ratio: 速度比例（0~1 或百分比）
         :param acc_ratio: 加速度比例（0~1 或百分比）
         :return: bool 成功返回 True，失败返回 False
         """
@@ -1992,7 +1979,7 @@ class Concise_Marvin_Robot:
         :param arm: 机械手臂ID "A" 或 "B"（单字符）
         :param channel: 通道号（1: CAN/CANFD, 2: COM1, 3: COM2）
         :return: (实际读取数据长度, 数据字节数组)
-                 若失败返回 (0, b'', -1)
+                 若失败返回 (0, b'')
         """
         if len(arm) != 1 or arm not in ('A', 'B'):
             raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
