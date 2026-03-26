@@ -11,317 +11,7 @@ from typing import Union
 current_file_path = os.path.abspath(__file__)
 current_path = os.path.dirname(current_file_path)
 
-def update_text_file_simple(mode, data_list, filename):
-    """
-    简化版的文件更新函数
-    """
-    if mode not in ['A', 'B'] or len(data_list) != 16:
-        return False
-    try:
-        # 如果文件存在，读取内容；否则创建默认内容
-        if os.path.exists(filename):
-            with open(filename, 'r', encoding='utf-8') as file:
-                lines = file.readlines()
-        # 更新对应行
-        line_index = 0 if mode == 'A' else 1
-        lines[line_index] = ','.join(str(x) for x in data_list) + '\n'
-
-        # 写回文件
-        with open(filename, 'w', encoding='utf-8') as file:
-            file.writelines(lines)
-        return True
-    except Exception as e:
-        print(f"更新文件时出错: {e}")
-        return False
-
-def read_csv_file_to_float_strict(filename, expected_columns=16):
-    """
-    读取CSV格式的文件内容并转换为float，严格验证每列数量
-    参数:
-        filename: 文件名
-        expected_columns: 期望的列数（默认16）
-
-    返回:
-        如果文件为空: 返回0
-        如果文件有一行: 返回0
-        如果文件有两行且其中一行全为0:
-            - 返回 ('line1', [第一行数据])  # 如果第二行全为0
-            - 返回 ('line2', [第二行数据])  # 如果第一行全为0
-        如果文件有两行且都不为0: 返回 [[第一行数据], [第二行数据]]
-        如果文件有两行且都全为0: 返回0
-        如果文件不存在或转换失败: 返回-1
-    """
-    if not os.path.exists(filename):
-        print(f"文件不存在: {filename}")
-        return -1
-
-    if os.path.getsize(filename) == 0:
-        return 0
-    try:
-        with open(filename, 'r', encoding='utf-8') as file:
-            lines = file.readlines()
-
-        non_empty_lines = [line.strip() for line in lines if line.strip()]
-
-        if len(non_empty_lines) == 0:
-            return 0
-
-        all_float_data = []
-        for line_num, line in enumerate(non_empty_lines, 1):
-            values = line.split(',')
-            # 过滤空值并去除空格
-            cleaned_values = [v.strip() for v in values if v.strip()]
-
-            # 验证列数
-            if len(cleaned_values) != expected_columns:
-                print(f"第{line_num}行: 期望{expected_columns}列，实际找到{len(cleaned_values)}列")
-                return -1
-
-            float_values = []
-            for value in cleaned_values:
-                try:
-                    float_value = float(value)
-                    float_values.append(float_value)
-                except ValueError:
-                    print(f"第{line_num}行: 无法将内容 '{value}' 转换为float")
-                    return -1
-
-            all_float_data.append(float_values)
-
-        # 根据行数处理
-        if len(all_float_data) == 1:
-            # 文件只有一行，返回0
-            return 0
-
-        elif len(all_float_data) == 2:
-            # 检查两行是否全为0
-            line1_all_zero = all(x == 0.0 for x in all_float_data[0])
-            line2_all_zero = all(x == 0.0 for x in all_float_data[1])
-
-            if line1_all_zero and line2_all_zero:
-                # 两行都全为0
-                return 0
-            elif line1_all_zero and not line2_all_zero:
-                # 第一行全为0，第二行不为0
-                return ('line2', all_float_data[1])
-            elif not line1_all_zero and line2_all_zero:
-                # 第一行不为0，第二行全为0
-                return ('line1', all_float_data[0])
-            else:
-                # 两行都不为0
-                return all_float_data
-        else:
-            print(f"文件包含{len(all_float_data)}行，只支持1-2行")
-            return -1
-    except Exception as e:
-        print(f"读取文件时出错: {e}")
-        return -1
-
-def decimal_to_hex(number, prefix=False, upper=True, float_precision=8):
-    """
-    将十进制数转换为十六进制表示
-
-    参数:
-        number: 要转换的十进制数，可以是整数或浮点数
-        prefix: 是否添加"0x"前缀，默认为False
-        upper: 是否使用大写字母，默认为True
-        float_precision: 浮点数转换时的精度（小数位数），默认为8
-
-    返回:
-        str: 十六进制表示的字符串
-
-    异常:
-        TypeError: 当输入不是数字时抛出
-    """
-    # 检查输入是否为数字
-    if not isinstance(number, (int, float)):
-        raise TypeError("输入必须是整数或浮点数")
-
-    # 处理整数
-    if isinstance(number, int):
-        hex_str = hex(number)
-    # 处理浮点数
-    else:
-        # 使用float.hex()方法获取浮点数的十六进制表示
-        hex_str = float(number).hex()
-
-        # 如果需要，可以限制小数部分的精度
-        if float_precision is not None:
-            parts = hex_str.split('.')
-            if len(parts) > 1:
-                exponent_part = parts[1].split('p')
-                if len(exponent_part) > 1:
-                    hex_str = f"{parts[0]}.{exponent_part[0][:float_precision]}p{exponent_part[1]}"
-
-    # 移除或保留前缀
-    if not prefix and hex_str.startswith('0x'):
-        hex_str = hex_str[2:]
-    elif prefix and not hex_str.startswith('0x'):
-        hex_str = '0x' + hex_str
-
-    # 处理大小写
-    if upper:
-        hex_str = hex_str.upper()
-    else:
-        hex_str = hex_str.lower()
-
-    return hex_str
-
-def identify_and_calculate_length(input_data: Union[str, bytes]) -> dict:
-    result = {
-        "input": input_data,
-        "type": None,
-        "length_bytes": None,
-        "bytes_representation": None
-    }
-
-    # 处理字节串输入
-    if isinstance(input_data, bytes):
-        result["type"] = "bytes"
-        result["length_bytes"] = len(input_data)
-        result["bytes_representation"] = input_data
-        return result
-
-    # 处理字符串输入
-    if isinstance(input_data, str):
-        # 检查是否是十六进制字符串（可能包含空格和0x前缀）
-        # 移除所有空格和0x前缀
-        clean_input = re.sub(r'\s+', '', input_data.lower())
-
-        if clean_input.startswith('0x'):
-            clean_input = clean_input[2:]
-
-        # 检查是否为有效的十六进制字符串
-        hex_pattern = re.compile(r'^[0-9a-f]+$')
-        if hex_pattern.match(clean_input):
-            # 确保长度为偶数
-            if len(clean_input) % 2 != 0:
-                clean_input = '0' + clean_input
-
-            try:
-                bytes_rep = bytes.fromhex(clean_input)
-                result["type"] = "hex string"
-                result["length_bytes"] = len(bytes_rep)
-                result["bytes_representation"] = bytes_rep
-                return result
-            except ValueError:
-                pass  # 如果不是有效的十六进制，继续尝试其他解释
-
-        # 检查是否已经是字节串表示形式（如b"\x06\x01\xe3\x08"）
-        if input_data.startswith('b"') and input_data.endswith('"'):
-            try:
-                # 使用eval安全地转换（注意：在实际应用中可能需要更安全的方法）
-                bytes_rep = eval(input_data)
-                if isinstance(bytes_rep, bytes):
-                    result["type"] = "bytes representation string"
-                    result["length_bytes"] = len(bytes_rep)
-                    result["bytes_representation"] = bytes_rep
-                    return result
-            except:
-                pass
-
-        # 如果不是上述任何类型，将其视为普通字符串
-        try:
-            bytes_rep = input_data.encode('utf-8')
-            result["type"] = "regular string"
-            result["length_bytes"] = len(bytes_rep)
-            result["bytes_representation"] = bytes_rep
-            return result
-        except UnicodeEncodeError:
-            raise ValueError("输入不是有效的十六进制字符串，也无法编码为UTF-8字节串")
-
-    # 如果既不是字符串也不是字节串，抛出异常
-    raise TypeError("输入必须是字符串或字节串")
-
-def structure2dict(dcss):
-    result = {
-        "para_name": ['Marvin_sub_data'],
-        "states": [
-            {
-                "cur_state": dcss.m_State[0].m_CurState,
-                "cmd_state": dcss.m_State[0].m_CmdState,
-                "err_code": dcss.m_State[0].m_ERRCode
-            },
-            {
-                "cur_state": dcss.m_State[1].m_CurState,
-                "cmd_state": dcss.m_State[1].m_CmdState,
-                "err_code": dcss.m_State[1].m_ERRCode
-            }
-        ]
-    }
-
-    # 3. 处理实时输出数组
-    result["outputs"] = [
-        {
-            "frame_serial": rt_out.m_OutFrameSerial,
-            "pad": rt_out.m_pad,
-            "traj_state":rt_out.m_TrajState,
-            "tip_di": rt_out.m_TipDI,
-            "low_speed_flag": rt_out.m_LowSpdFlag,
-            "fb_joint_pos": [round(rt_out.m_FB_Joint_Pos[j], 4) for j in range(7)],
-            "fb_joint_vel": [round(rt_out.m_FB_Joint_Vel[j], 4) for j in range(7)],
-            "fb_joint_posE": [round(rt_out.m_FB_Joint_PosE[j], 4) for j in range(7)],
-            "fb_joint_cmd": [round(rt_out.m_FB_Joint_Cmd[j], 4) for j in range(7)],
-            "fb_joint_cToq": [round(rt_out.m_FB_Joint_CToq[j], 4) for j in range(7)],
-            "fb_joint_sToq": [round(rt_out.m_FB_Joint_SToq[j], 4) for j in range(7)],
-            "fb_joint_them": [round(rt_out.m_FB_Joint_Them[j], 4) for j in range(7)],
-            "est_joint_firc": [round(rt_out.m_EST_Joint_Firc[j], 4) for j in range(7)],
-            "est_joint_firc_dot": [round(rt_out.m_EST_Joint_Firc_Dot[j], 4) for j in range(7)],
-            "est_joint_force": [round(rt_out.m_EST_Joint_Force[j], 4) for j in range(7)],
-            "est_cart_fn": [round(rt_out.m_EST_Cart_FN[j], 4) for j in range(6)]
-        } for rt_out in dcss.m_Out
-    ]
-
-    # 4. 处理实时输入数组 (RT_IN)
-    result["inputs"] = [
-        {
-            "rt_in_switch": rt_in.m_RtInSwitch,
-            "imp_type": rt_in.m_ImpType,
-            "in_frame_serial": rt_in.m_InFrameSerial,
-            "frame_miss_cnt": rt_in.m_FrameMissCnt,
-            "max_frame_miss_cnt": rt_in.m_MaxFrameMissCnt,
-            "sys_cyc": rt_in.m_SysCyc,
-            "sys_cyc_miss_cnt": rt_in.m_SysCycMissCnt,
-            "max_sys_cyc_miss_cnt": rt_in.m_MaxSysCycMissCnt,
-            "tool_kine": [round(rt_in.m_ToolKine[j], 4) for j in range(6)],
-            "tool_dyn": [round(rt_in.m_ToolDyn[j], 4) for j in range(10)],
-            "joint_cmd_pos": [round(rt_in.m_Joint_CMD_Pos[j], 4) for j in range(7)],
-            "joint_vel_ratio": rt_in.m_Joint_Vel_Ratio,
-            "joint_acc_ratio": rt_in.m_Joint_Acc_Ratio,
-            "joint_k": [round(rt_in.m_Joint_K[j], 4) for j in range(7)],
-            "joint_d": [round(rt_in.m_Joint_D[j], 4) for j in range(7)],
-            "drag_sp_type": rt_in.m_DragSpType,
-            "drag_sp_para": [round(rt_in.m_DragSpPara[j], 4) for j in range(6)],
-            "cart_kd_type": rt_in.m_Cart_KD_Type,
-            "cart_k": [round(rt_in.m_Cart_K[j], 4) for j in range(6)],
-            "cart_d": [round(rt_in.m_Cart_D[j], 4) for j in range(6)],
-            "cart_kn": round(rt_in.m_Cart_KN, 4),
-            "cart_dn": round(rt_in.m_Cart_DN, 4),
-            "force_fb_type": rt_in.m_Force_FB_Type,
-            "force_type": rt_in.m_Force_Type,
-            "force_dir": [round(rt_in.m_Force_Dir[j], 4) for j in range(6)],
-            "force_pidul": [round(rt_in.m_Force_PIDUL[j], 4) for j in range(7)],
-            "force_adj_lmt": round(rt_in.m_Force_AdjLmt, 4),
-            "force_cmd": round(rt_in.m_Force_Cmd, 4),
-            "set_tags": list(rt_in.m_SET_Tags),
-            "update_tags": list(rt_in.m_Update_Tags),
-            "pvt_id": rt_in.m_PvtID,
-            "pvt_id_update": rt_in.m_PvtID_Update,
-            "pvt_run_id": rt_in.m_Pvt_RunID,
-            "pvt_run_state": rt_in.m_Pvt_RunState
-        } for rt_in in dcss.m_In
-    ]
-
-    result["ParaName"]=[list(dcss.m_ParaName)]
-    result["ParaType"]=[dcss.m_ParaType]
-    result["ParaIns"]=[dcss.m_ParaIns]
-    result["ParaValueI"]=[dcss.m_ParaValueI]
-    result["ParaValueF"]=[dcss.m_ParaValueF]
-    result["ParaCmdSerial"]=[dcss.m_ParaCmdSerial]
-    result["ParaRetSerial"]=[dcss.m_ParaRetSerial]
-
-    return result
-
+'''######################################## Original SDK ########################################################'''
 class Marvin_Robot:
     def __init__(self):
         """初始化机器人控制类"""
@@ -350,13 +40,11 @@ class Marvin_Robot:
         :param robot_ip: 器人IP地址,确保网线连接可以ping通。
         :return:
             int: 连接状态码 1: True; 0: Flase
-
         eg:
             connect(robot_ip='192.168.1.190')
         '''
         ip1, ip2, ip3, ip4 = self._convert_ip(robot_ip)
         return self.robot.OnLinkTo(ip1, ip2, ip3, ip4)
-
 
     def subscribe(self,dcss):
         '''订阅机器人状态数据
@@ -433,7 +121,6 @@ class Marvin_Robot:
         log_char = ctypes.c_char_p(log_path.encode('utf-8'))
         return self.robot.OnDownloadLog(log_char)
 
-
     def get_param(self,type:str,paraName:str):
         '''获取参数信息
         :param type: float or int .参数类型
@@ -486,7 +173,6 @@ class Marvin_Robot:
         '''
         self.robot.OnSavePara.restype = ctypes.c_long
         return self.robot.OnSavePara()
-
 
     def set_param(self,type:str,paraName:str,value:float):
         '''设置参数信息
@@ -925,7 +611,6 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
-
     def set_joint_cmd_pose(self,arm:str, joints:list):
         '''设置关节跟踪指令值
         :param arm: 机械手臂ID “A” OR “B”
@@ -1227,7 +912,6 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
-
     def get_485_data(self, arm: str,com:int):
         '''收指定来源的485数据
         :param arm: 机械手臂ID “A” OR “B”
@@ -1240,7 +924,6 @@ class Marvin_Robot:
             ret_ch = ctypes.c_long(com)
             if arm == 'A':
                 result = self.robot.OnGetChDataA(data_buffer, ctypes.byref(ret_ch))
-                # 提取字节数据
                 byte_data = bytes(data_buffer)  # 或 bytearray(data_buffer)
                 hex_list = []
                 for byte in byte_data:
@@ -1266,67 +949,1093 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
-    def identify_tool_dyn(self, robot_type: int, ipath: str):
-        '''工具动力学参数辨识
-        FX_BOOL  FX_Robot_Iden_LoadDyn(FX_INT32L Type,FX_CHAR* path,FX_DOUBLE mass, Vect3 mr, Vect6 I);
-        :param robot_type: int ,机型，从CONFIG导入
-        :param ipath: sting, 相对路径导入工具辨识轨迹数据。
+    def get_tool_info(self,):
+        '''检查控制器是否已经保存工具信息
         :return:
-            m,mcp,i
+           m,mcp,i
         '''
-        if type(robot_type) != int:
-            raise ValueError("robot_type must be int type")
 
-        if not os.path.exists(ipath):
-            raise ValueError(f"no {ipath}, pls check!")
+        '''tool '''
+        local_path='tool_dyn_kine.txt'
+        remote_path='/home/fusion/tool_dyn_kine.txt'
+        self.local_file_path = local_path.encode('utf-8')
+        local_char = ctypes.c_char_p(self.local_file_path)
+        self.remote_file_path = remote_path.encode('utf-8')
+        remote_char = ctypes.c_char_p(self.remote_file_path)
+        self.robot.OnRecvFile(local_char, remote_char)
+        time.sleep(1)
+        tool_result = read_csv_file_to_float_strict(local_path, expected_columns=16)
+        return tool_result
 
-        robot_type_ = ctypes.c_int(robot_type)
-        iden_path = ipath.encode('utf-8')
-        path_char = ctypes.c_char_p(iden_path)
+    def help(self, method_name: str = None) -> None:
+        """
+        显示帮助信息
 
-        # 创建指针变量而不是数组
-        mm_ptr = ctypes.pointer(ctypes.c_double(0))
-        mcp_ptr = (ctypes.c_double * 3)()
-        ii_ptr = (ctypes.c_double * 6)()
-
-        # 设置函数原型
-        self.robot.FX_Robot_Iden_LoadDyn.argtypes = [
-            ctypes.c_long,
-            ctypes.c_char_p,
-            ctypes.POINTER(ctypes.c_double),
-            ctypes.POINTER(ctypes.c_double * 3),
-            ctypes.POINTER(ctypes.c_double * 6)
+        参数:
+            method_name (str): 可选的方法名，显示特定方法的帮助信息
+        """
+        print(f"\n{' API 帮助 ':=^50}\n")
+        methods = [
+            (name, func)
+            for name, func in inspect.getmembers(self, inspect.ismethod)
+            if not name.startswith('_') and name != 'help'
         ]
-        self.robot.FX_Robot_Iden_LoadDyn.restype = ctypes.c_bool
-
-        # 调用函数
-        success1 = self.robot.FX_Robot_Iden_LoadDyn(
-            robot_type_,
-            path_char,
-            mm_ptr,
-            mcp_ptr,
-            ii_ptr
-        )
-
-        if success1:
-            print('Identify tool dynamics successful')
-            # 提取结果
-            dyn_para = []
-            m_val = mm_ptr.contents.value
-            mcp_list = [mcp_ptr[i] for i in range(3)]
-            ii_list = [ii_ptr[i] for i in range(6)]
-
-            dyn_para.append(m_val)
-            for i in mcp_list:
-                dyn_para.append(i)
-            for j in ii_list:
-                dyn_para.append(j)
-
-            print(f'tool dynamics: {dyn_para}')
-            return dyn_para
+        if method_name is None:
+            print("可用方法:")
+            for name, func in methods:
+                signature = inspect.signature(func)
+                params = []
+                for param in signature.parameters.values():
+                    param_str = param.name
+                    if param.default is not param.empty:
+                        param_str += f"={param.default!r}"
+                    if param.annotation is not param.empty:
+                        param_str += f": {param.annotation.__name__}"
+                    if param.kind == param.VAR_POSITIONAL:
+                        param_str = "*" + param_str
+                    elif param.kind == param.VAR_KEYWORD:
+                        param_str = "**" + param_str
+                    elif param.kind == param.KEYWORD_ONLY:
+                        param_str = "[kw] " + param_str
+                    params.append(param_str)
+                param_list = ", ".join(params)
+                print(f"  - {name}({param_list})")
+            print("\n使用 help('方法名') 获取详细帮助信息")
+            print(f"{'=' * 50}")
+            return
+        method_dict = dict(methods)
+        if method_name in method_dict:
+            func = method_dict[method_name]
+            doc = inspect.getdoc(func) or "没有文档说明"
+            signature = inspect.signature(func)
+            print(f"方法: {method_name}{signature}")
+            print("\n" + dedent(doc))
+            print("\n参数详情:")
+            for param in signature.parameters.values():
+                param_info = f"  {param.name}: "
+                if param.annotation is not param.empty:
+                    param_info += f"类型: {param.annotation.__name__}, "
+                if param.default is not param.empty:
+                    param_info += f"默认值: {param.default!r}"
+                print(param_info)
         else:
-            print('****error: Identify tool dynamics failed!')
+            print(f"错误: 没有找到方法 '{method_name}'")
+
+        print(f"{'=' * 50}")
+
+'''######################################## Concise SDK ########################################################'''
+class Concise_Marvin_Robot:
+    def __init__(self):
+        """初始化机器人控制类"""
+        import sys
+        print(f'user platform: {sys.platform}')
+        if sys.platform=='win32':
+            self.robot = ctypes.WinDLL(os.path.join(current_path,'libMarvinSDK.dll'))
+        else:
+            self.robot = ctypes.CDLL(os.path.join(current_path,'libMarvinSDK.so'))
+        self.ErrorCode = None
+        self.a_pvt_path=None
+        self.b_pvt_path = None
+        self.local_file_path=None
+        self.remote_file_path=None
+        self.save_csv_path=None
+        self.save_data_path=None
+
+        # ConnectAndCkeck
+        self.robot.ConnectAndCkeck.argtypes = [
+            ctypes.c_ubyte,  # ip1
+            ctypes.c_ubyte,  # ip2
+            ctypes.c_ubyte,  # ip3
+            ctypes.c_ubyte,  # ip4
+            ctypes.c_int  # log_switch
+        ]
+        self.robot.ConnectAndCkeck.restype = ctypes.c_bool
+
+        # OnGetBuf
+        self.robot.OnGetBuf.argtypes = [ctypes.POINTER(DCSS)]
+        self.robot.OnGetBuf.restype = ctypes.c_bool
+
+        # ServoReset
+        self.robot.ServoReset.argtypes = [ctypes.c_char, ctypes.c_int]
+        self.robot.ServoReset.restype = None
+
+        # EStop
+        self.robot.EStop.argtypes = [ctypes.c_char_p]
+        self.robot.EStop.restype = None
+
+        # StartCollectData
+        self.robot.StartCollectData.argtypes = [
+            ctypes.c_long,  # targetNum
+            ctypes.POINTER(ctypes.c_long),  # targetID (数组)
+            ctypes.c_long  # recordNum
+        ]
+        self.robot.StartCollectData.restype = ctypes.c_bool
+
+        # StopCollectData
+        self.robot.StopCollectData.argtypes = []  # 无参数
+        self.robot.StopCollectData.restype = ctypes.c_bool
+
+        # OnSaveGatherData
+        self.robot.OnSaveGatherData.argtypes = [ctypes.c_char_p]  # path
+        self.robot.OnSaveGatherData.restype = ctypes.c_bool
+
+        # SetJointMode
+        self.robot.SetJointMode.argtypes = [ctypes.c_char, ctypes.c_int, ctypes.c_int]
+        self.robot.SetJointMode.restype = ctypes.c_bool
+
+        # SetImpJointMode
+        self.robot.SetImpJointMode.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.c_int,  # velRatio
+            ctypes.c_int,  # AccRatio
+            ctypes.POINTER(ctypes.c_double),  # K[7]
+            ctypes.POINTER(ctypes.c_double)  # D[7]
+        ]
+        self.robot.SetImpJointMode.restype = ctypes.c_bool
+
+        # SetImpCartMode
+        self.robot.SetImpCartMode.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.c_int,  # velRatio
+            ctypes.c_int,  # AccRatio
+            ctypes.POINTER(ctypes.c_double),  # K[7]
+            ctypes.POINTER(ctypes.c_double)  # D[7]
+        ]
+        self.robot.SetImpCartMode.restype = ctypes.c_bool
+
+        # SetEefRot
+        self.robot.SetEefRot.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.c_int,  # fcType
+            ctypes.POINTER(ctypes.c_double)  # CartCtrlPara[7]
+        ]
+        self.robot.SetEefRot.restype = ctypes.c_bool
+
+        # SetImpForceMode
+        self.robot.SetImpForceMode.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.POINTER(ctypes.c_double),  # fxDir[6]
+            ctypes.c_double  # fcAdjLmt
+        ]
+        self.robot.SetImpForceMode.restype = ctypes.c_bool
+
+        # SetForceCmd
+        self.robot.SetForceCmd.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.c_double  # force
+        ]
+        self.robot.SetForceCmd.restype = ctypes.c_bool
+
+        # SetJointPostionCmd
+        self.robot.SetJointPostionCmd.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.POINTER(ctypes.c_double)  # joint[7]
+        ]
+        self.robot.SetJointPostionCmd.restype = ctypes.c_bool
+
+        # PlnInit
+        self.robot.PlnInit.argtypes = [ctypes.c_char_p]  # path
+        self.robot.PlnInit.restype = ctypes.c_bool
+
+        # RunPlnJoint
+        self.robot.RunPlnJoint.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.POINTER(ctypes.c_double),  # start_joints[7]
+            ctypes.POINTER(ctypes.c_double),  # stop_joints[7]
+            ctypes.c_double,  # vel_ratio
+            ctypes.c_double  # acc_ratio
+        ]
+        self.robot.RunPlnJoint.restype = ctypes.c_bool
+
+        # RunPlnCart
+        self.robot.RunPlnCart.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.c_void_p  # pset (void*)
+        ]
+        self.robot.RunPlnCart.restype = ctypes.c_bool
+
+        # StopPln
+        self.robot.StopPln.argtypes = [ctypes.c_char]
+        self.robot.StopPln.restype = ctypes.c_bool
+
+        # SendPVT
+        self.robot.SendPVT.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.c_char_p,  # local_file
+            ctypes.c_long  # serial
+        ]
+        self.robot.SendPVT.restype = ctypes.c_bool
+
+        # RunPVT
+        self.robot.RunPVT.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.c_int  # id
+        ]
+        self.robot.RunPVT.restype = ctypes.c_bool
+
+        # SetJointDrag
+        self.robot.SetJointDrag.argtypes = [ctypes.c_char]
+        self.robot.SetJointDrag.restype = ctypes.c_bool
+
+        # SetCartDrag
+        self.robot.SetCartDrag.argtypes = [ctypes.c_char, ctypes.c_char]
+        self.robot.SetCartDrag.restype = ctypes.c_bool
+
+        # ExitDrag
+        self.robot.ExitDrag.argtypes = [ctypes.c_char]
+        self.robot.ExitDrag.restype = ctypes.c_bool
+
+        # ClearChData
+        self.robot.ClearChData.argtypes = [ctypes.c_char]
+        self.robot.ClearChData.restype = ctypes.c_bool
+
+        # GetChData
+        self.robot.GetChData.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.POINTER(ctypes.c_ubyte),  # data_ptr[256]
+            ctypes.POINTER(ctypes.c_long)  # ret_ch (用于返回通道)
+        ]
+        self.robot.GetChData.restype = ctypes.c_long  # 返回实际接收数据长度
+
+        # SetChData
+        self.robot.SetChData.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.POINTER(ctypes.c_ubyte),  # data_ptr[256]
+            ctypes.c_long,  # size_int
+            ctypes.c_long  # set_ch
+        ]
+        self.robot.SetChData.restype = ctypes.c_long  # 返回发送数据长度
+
+        # SetTool
+        self.robot.SetTool.argtypes = [
+            ctypes.c_char,  # arm
+            ctypes.POINTER(ctypes.c_double),  # kinePara[6]
+            ctypes.POINTER(ctypes.c_double)  # dynPara[10]
+        ]
+        self.robot.SetTool.restype = ctypes.c_bool
+
+        # Disable
+        self.robot.Disable.argtypes = [ctypes.c_char]  # arm
+        self.robot.Disable.restype = ctypes.c_bool
+
+    def _convert_ip(self, ip_str: str):
+        """将IP字符串转换为四个整数的元组"""
+        parts = ip_str.split('.')
+        if len(parts) != 4:
+            raise ValueError("IP address must have four octets")
+        return tuple(int(p) for p in parts)
+
+    def connect(self, robot_ip: str, log_switch: int = 0) -> bool:
+        '''连接机器人
+        :param robot_ip: 机器人IP地址，确保网线连接可以 ping 通。
+        :param log_switch: 日志开关，0 关闭，1 开启（默认 0）
+        :return: bool 连接成功返回 True，失败返回 False
+        '''
+        try:
+            ip1, ip2, ip3, ip4 = self._convert_ip(robot_ip)
+            result = self.robot.ConnectAndCkeck(ip1, ip2, ip3, ip4, log_switch)
+            return bool(result)
+        except Exception as e:
+            print(f"ConnectAndCkeck failed: {e}")
             return False
+
+    def subscribe(self, dcss) -> dict | None:
+        '''订阅机器人状态数据
+        :param dcss: 结构体实例（由外部传入，会被填充）
+        :return: 成功返回转换后的嵌套字典，失败返回 None
+        '''
+        if dcss is None:
+            print("[ERROR] subscribe: dcss is None")
+            return None
+        try:
+            success = self.robot.OnGetBuf(ctypes.byref(dcss))
+            if not success:
+                print("[ERROR] subscribe: OnGetBuf returned False")
+                return None
+            result = structure2dict(dcss)
+            return result
+        except Exception as e:
+            print(f"[ERROR] subscribe failed: {e}")
+            return None
+
+    def check_error_and_clear(self):
+        '''检查是否有机械臂错误和伺服错，有错则清错 ，一般用于连接机器人时检查使用，以及切换状态不成功时使用'''
+        if not self.robot.CheckArmError() and not self.robot.CheckServoError():
+            return False
+        else:
+            return False
+
+    def release_robot(self):
+        ''' 断开机器人连接
+        :return:
+            int: 断开状态码 1: True; 0: Flase
+        '''
+        return self.robot.OnRelease()
+
+    def SDK_version(self):
+        '''查看SDK版本
+        :return:
+            long: SDK version
+        '''
+        return self.robot.OnGetSDKVersion()
+
+    def update_SDK(self, sdk_path: str):
+        '''更新系统SDK版本
+        :param sdk_path: 本机存放SDK的绝对路径的SDK文件更新到控制柜上
+        :return:
+        '''
+        sdk_char = ctypes.c_char_p(sdk_path.encode('utf-8'))
+        return self.robot.OnUpdateSystem(sdk_char)
+
+    def download_sdk_log(self, log_path:str):
+        '''下载SDK日志到本机
+        :param log_path: 日志下载到本机的绝对路
+        :return:
+        '''
+        log_char = ctypes.c_char_p(log_path.encode('utf-8'))
+        return self.robot.OnDownloadLog(log_char)
+
+    def get_param(self,type:str,paraName:str):
+        '''获取参数信息
+        :param type: float or int .参数类型
+        :param paraName:  参数名见robot.ini
+        :return:参数值
+        eg:
+         robot,ini:
+            [R.A0.BASIC]
+            BDRange=1.5
+            BDToqR=1
+            Dof=7
+            GravityX=0
+            GravityY=9.81
+            GravityZ=0
+            LoadOffsetSwitch=0
+            TerminalPolar=1
+            TerminalType=1
+            Type=1007
+            [R.A0.CTRL]
+            CartJNTDampJ1=0.6
+            ....
+            #浮点类型参数获取：
+            我想获取[R.A0.CTRL]这个参数组里CartJNTDampJ1的值:
+            para=get_float_params('float','R.A0.CTRL.CartJNTDampJ1')
+
+            #整数类型参数获取：
+            我想获取[R.A0.BASIC]这个参数组里Type的值
+            para=get_int_params('int','R.A0.BASIC.Type')
+        '''
+        try:
+            param_buf = (ctypes.c_char * 30)(*paraName.encode('ascii'), 0)  # 显式添加终止符
+            if type=='float':
+                result = ctypes.c_double(0)
+                self.robot.OnGetFloatPara.restype = ctypes.c_long
+                re_flag=self.robot.OnGetFloatPara(param_buf, ctypes.byref(result))
+                # print(f"parameter:{paraName}, float parameters={result.value}")
+                return re_flag,result.value
+            elif type=='int':
+                result = ctypes.c_int(0)
+                self.robot.OnGetIntPara.restype = ctypes.c_long
+                re_flag=self.robot.OnGetIntPara(param_buf, ctypes.byref(result))
+                # print(f"parameter:{paraName}, int parameters={result.value}")
+                return re_flag, result.value
+        except Exception as e:
+            print("ERROR:",e)
+
+    def save_para_file(self):
+        '''保存配置文件
+        :return:
+        '''
+        self.robot.OnSavePara.restype = ctypes.c_long
+        return self.robot.OnSavePara()
+
+    def set_param(self,type:str,paraName:str,value:float):
+        '''设置参数信息
+        :param type: float or int .参数类型
+        :param paraName:  参数名见robot.ini
+        :param value:
+        :return:
+        eg:
+         robot,ini:
+            [R.A0.BASIC]
+            BDRange=1.5
+            BDToqR=1
+            Dof=7
+            GravityX=0
+            GravityY=9.81
+            GravityZ=0
+            LoadOffsetSwitch=0
+            TerminalPolar=1
+            TerminalType=1
+            Type=1007
+            [R.A0.CTRL]
+            CartJNTDampJ1=0.6
+            ....
+            #设置浮点类型参数获取：
+            我想设置[R.A0.CTRL]这个参数组里CartJNTDampJ1的值为0.0
+            set_params('float','R.A0.CTRL.CartJNTDampJ1,0.0)
+
+            #设置整数类型参数获取：
+            我想设置[R.A0.BASIC]这个参数组里Type的值为0
+            set_params('int','R.A0.BASIC.Type',0)
+        '''
+
+        try:
+            param_buf = (ctypes.c_char * 30)(*paraName.encode('ascii'), 0)  # 显式添加终止符
+            if type=='float':
+                result = ctypes.c_double(value)
+                self.robot.OnSetFloatPara.restype = ctypes.c_long
+                return self.robot.OnSetFloatPara(param_buf, result)
+            elif type=='int':
+                result = ctypes.c_int(int(value))
+                self.robot.OnSetIntPara.restype = ctypes.c_long
+                return self.robot.OnSetIntPara(param_buf, result)
+        except Exception as e:
+            print("ERROR:",e)
+
+    def start_collect_data(self, target_num: int, target_id: list, record_num: int) -> bool:
+        """设置保存参数并开始采集数据
+
+        :param target_num: 要采集的轴数量（0-35）
+        :param target_id: 轴 ID 列表，长度必须等于 target_num，每个值在 0-34 之间
+        :param record_num: 采集的数据点数（正整数）
+        :return: bool 成功返回 True，失败返回 False
+
+        采集数据ID序号
+                    左臂
+                        0-6  	左臂关节位置
+                        10-16 	左臂关节速度
+                        20-26   左臂外编位置
+                        30-36   左臂关节指令位置
+                        40-46	左臂关节电流（千分比）
+                        50-56   左臂关节传感器扭矩NM
+                        60-66	左臂摩擦力估计值
+                        70-76	左臂摩檫力速度估计值
+                        80-85   左臂关节外力估计值
+                        90-95	左臂末端点外力估计值
+                    右臂对应 + 100
+
+                    eg1: 采集左臂和右臂的关节位置，一共14列， 采集1000行：
+                        cols=14
+                        idx=[0,1,2,3,4,5,6,
+                             100,101,102,103,104,105,106,
+                             0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0]
+                        rows=1000
+                        robot.start_collect_data(targetNum=cols,targetID=idx,recordNum=rows)
+
+                    eg2: 采集左臂第二关节的速度和电流一共2列， 采集500行：
+                        cols=2
+                        idx=[11,31,0,0,0,0,0,
+                             0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0]
+                        rows=500
+                        robot.start_collect_data(targetNum=cols,targetID=idx,recordNum=rows)
+        """
+        if target_num<0:
+            target_num=1
+        if target_num>35:
+            target_num=35
+        if record_num<1000:
+            record_num=1000
+        if record_num>1000000:
+            record_num=1000000
+        id_array = (ctypes.c_long * 35)(*target_id)
+        try:
+            result = self.robot.StartCollectData(target_num, id_array, record_num)
+            return bool(result)
+        except Exception as e:
+            print(f"StartCollectData failed: {e}")
+            return False
+
+    def stop_collect_data(self) -> bool:
+        """停止数据采集
+        :return: bool 成功返回 True，失败返回 False
+        """
+        try:
+            result = self.robot.StopCollectData()
+            return bool(result)
+        except Exception as e:
+            print(f"StopCollectData failed: {e}")
+            return False
+
+    def save_gather_data(self, path: str) -> bool:
+        """保存采集的数据
+        :param path: 保存文件的路径（字符串）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if not path:
+            raise ValueError("path cannot be empty")
+        try:
+            path_bytes = path.encode('utf-8')
+            result = self.robot.OnSaveGatherData(path_bytes)
+            return bool(result)
+        except Exception as e:
+            print(f"OnSaveGatherData failed: {e}")
+            return False
+
+    def save_gather_data_as_csv_to_path(self,path:str) -> bool:
+        '''以csv格式将采集的数据保存到指定的绝对路径
+        :param path:本机绝对路径
+        :return:
+        '''
+        path1='tmp.txt'
+        self.save_data_path = path1.encode('utf-8')
+        path_char = ctypes.c_char_p(self.save_data_path)
+        self.robot.OnSaveGatherData(path_char)
+
+        time.sleep(0.2)
+        with open(path1, 'r') as file:
+            lines = file.readlines()
+        processed_data=[]
+        lines = lines[1:]
+        for i, line in enumerate(lines):
+            parts = line.strip().split('$')
+            numbers = []
+            for part in parts:
+                if part:
+                    num_str = part.split()[-1]
+                    numbers.append(num_str)
+            if len(numbers) >= 2:
+                numbers = numbers[2:]
+            processed_data.append(numbers)
+
+        try:
+            with open(path, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(processed_data)
+            print(f"数据已成功保存到: {path}")
+            if os.path.exists(path1):
+                os.remove(path1)
+            return True
+        except Exception as e:
+            print(f"保存失败: {e}")
+            if os.path.exists(path1):
+                os.remove(path1)
+            return False
+
+    def soft_stop(self, arm: str):
+        '''机械臂急停
+        :param arm: ‘A’, 'B', 'AB', 可以让一条臂软急停，或者两条臂都软急停。
+        :return: None
+        '''
+        try:
+            arm_bytes = arm.encode('utf-8')
+            self.robot.EStop(arm_bytes)
+        except Exception as e:
+            print("ERROR:", e)
+
+    def servo_reset(self, arm: str, axis: int):
+        """指定轴伺服软复位
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param axis: 指定关节 0-6
+        :return: None
+        """
+        if len(arm) != 1:
+            raise ValueError("arm must be a single character, got '{}'".format(arm))
+        if not isinstance(axis, int) or axis < 0 or axis > 6:
+            raise ValueError("axis must be an integer between 0 and 6")
+        arm_byte = arm.encode('ascii')
+        try:
+            self.robot.ServoReset(arm_byte, axis)
+        except Exception as e:
+            print("ServoReset failed:", e)
+
+    def get_servo_error_code(self, arm:str,lang='CN'):
+       '''获取机械臂伺服错误码
+       :param self:
+       :param arm: 机械手臂ID “A” OR “B”
+       :param lang: 'CN' or 'EN'
+       :return: (7,1)错误列表， 16进制
+       '''
+       try:
+           err_code_value = (ctypes.c_long * 7)()
+           if arm=='A':
+               self.robot.OnGetServoErr_A.argtypes = [ctypes.POINTER(ctypes.c_long * 7)]
+               self.robot.OnGetServoErr_A(ctypes.byref(err_code_value))
+               # print('err_code_value',err_code_value[-1])
+               err_code = [0] * 7
+               for i in range(7):
+                   err_code[i] = decimal_to_hex(err_code_value[i], prefix=True)
+               err_code=get_fault_descriptions(err_code,lang)
+               return err_code
+           elif arm=='B':
+               self.robot.OnGetServoErr_B.argtypes = [ctypes.POINTER(ctypes.c_long * 7)]
+               self.robot.OnGetServoErr_B(ctypes.byref(err_code_value))
+               err_code = [0] * 7
+               for i in range(7):
+                   err_code[i] = decimal_to_hex(err_code_value[i], prefix=True)
+               err_code = get_fault_descriptions(err_code,lang)
+               return err_code
+
+       except Exception as e:
+           print("ERROR:", e)
+
+    def clear_error(self,arm:str):
+        '''清错
+        :param arm: 机械手臂ID “A” OR “B”
+        :return:
+        '''
+        try:
+            if arm=='A':
+                return self.robot.OnClearErr_A()
+            elif arm=='B':
+                return self.robot.OnClearErr_B()
+        except Exception as e:
+            print(f'ERROR:{e}')
+
+    def set_position_state(self, arm: str, velRatio: int, AccRatio: int) -> bool:
+        """设置关节模式的速度和加速度百分比
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param velRatio: 速度百分比, 范围 0~100
+        :param AccRatio: 加速度百分比, 范围 0~100
+        :return: bool 设置成功返回 True，失败返回 False
+        """
+        # 参数校验
+        if len(arm) != 1:
+            raise ValueError(f"arm must be a single character, got '{arm}'")
+        if velRatio < 0:
+            velRatio = 10
+        elif velRatio > 100:
+            velRatio = 100
+        if AccRatio < 0:
+            AccRatio = 10
+        elif AccRatio > 100:
+            AccRatio = 100
+        arm_byte = arm.encode('ascii')
+        try:
+            result = self.robot.SetJointMode(arm_byte, velRatio, AccRatio)
+            return bool(result)
+        except Exception as e:
+            print(f"SetJointMode failed: {e}")
+            return False
+
+    def set_imp_joint_state(self, arm: str, velRatio: int, AccRatio: int, K, D) -> bool:
+        """设置阻抗关节模式参数
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param velRatio: 速度百分比, 范围 0~100（超出会自动钳位）
+        :param AccRatio: 加速度百分比, 范围 0~100（超出会自动钳位）
+        :param K: 刚度系数列表/元组，长度必须为 7，值不能为负（负数会设为0）
+        :param D: 阻尼系数列表/元组，长度必须为 7，值范围 0~1（超出会自动钳位）
+        :return: bool 设置成功返回 True，失败返回 False
+        """
+        if velRatio < 0:
+            velRatio = 10
+        elif velRatio > 100:
+            velRatio = 100
+        if AccRatio < 0:
+            AccRatio = 10
+        elif AccRatio > 100:
+            AccRatio = 100
+        if len(K) != 7 or len(D) != 7:
+            raise ValueError("K and D must have exactly 7 elements")
+        K_clamped = []
+        for val in K:
+            if val < 0:
+                val = 0.0
+            K_clamped.append(float(val))
+        D_clamped = []
+        for val in D:
+            if val < 0:
+                val = 0.0
+            elif val > 1:
+                val = 1.0
+            D_clamped.append(float(val))
+        arm_byte = arm.encode('ascii')
+        k_array = (ctypes.c_double * 7)(*K_clamped)
+        d_array = (ctypes.c_double * 7)(*D_clamped)
+        try:
+            result = self.robot.SetImpJointMode(arm_byte, velRatio, AccRatio, k_array, d_array)
+            return bool(result)
+        except Exception as e:
+            print(f"SetImpJointMode failed: {e}")
+            return False
+
+    def set_imp_cart_state(self, arm: str, velRatio: int, AccRatio: int, K, D) -> bool:
+        """设置指定手臂的速度、加速度和笛卡尔阻抗模式
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param velRatio: 速度百分比, 范围 0~100（超出自动钳位）
+        :param AccRatio: 加速度百分比, 范围 0~100（超出自动钳位）
+        :param K: 刚度系数列表/元组，长度必须为 7，值不能为负（负数设为0）
+        :param D: 阻尼系数列表/元组，长度必须为 7，值范围 0~1（超出自动钳位）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        velRatio = max(0, min(velRatio, 100))
+        AccRatio = max(0, min(AccRatio, 100))
+        if len(K) != 7 or len(D) != 7:
+            raise ValueError("K and D must have exactly 7 elements")
+        K_clamped = [max(0.0, float(v)) for v in K]
+        D_clamped = [max(0.0, min(1.0, float(v))) for v in D]
+        arm_byte = arm.encode('ascii')
+        k_array = (ctypes.c_double * 7)(*K_clamped)
+        d_array = (ctypes.c_double * 7)(*D_clamped)
+        try:
+            result = self.robot.SetImpCartMode(arm_byte, velRatio, AccRatio, k_array, d_array)
+            return bool(result)
+        except Exception as e:
+            print(f"SetImpCartMode failed: {e}")
+            return False
+
+    def set_eef_rot(self, arm: str, fc_type: int, cart_ctrl_para) -> bool:
+        """设置末端笛卡尔方向的旋转
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param fc_type: 旋转模式，1 自定义方向，2 系统自动计算
+        :param cart_ctrl_para: 笛卡尔参数列表/元组，长度必须为 7（fcType=1 时有效，fcType=2 时应全0）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        if fc_type not in (1, 2):
+            raise ValueError(f"fc_type must be 1 or 2, got {fc_type}")
+        if len(cart_ctrl_para) != 7:
+            raise ValueError("cart_ctrl_para must have exactly 7 elements")
+        arm_byte = arm.encode('ascii')
+        para_array = (ctypes.c_double * 7)(*cart_ctrl_para)
+        try:
+            result = self.robot.SetEefRot(arm_byte, fc_type, para_array)
+            return bool(result)
+        except Exception as e:
+            print(f"SetEefRot failed: {e}")
+            return False
+
+    def set_imp_force_state(self, arm: str, fx_dir, fc_adj_lmt: float) -> bool:
+        """设置指定手臂的力控参数和力阻抗模式
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param fx_dir: 力方向向量，列表/元组，长度必须为 6
+        :param fc_adj_lmt: 力的调节范围，单位毫米（应 >= 0）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        if len(fx_dir) != 6:
+            raise ValueError("fx_dir must have exactly 6 elements")
+        if fc_adj_lmt < 0:
+            raise ValueError(f"fc_adj_lmt must be >= 0, got {fc_adj_lmt}")
+        arm_byte = arm.encode('ascii')
+        fx_array = (ctypes.c_double * 6)(*fx_dir)
+        try:
+            result = self.robot.SetImpForceMode(arm_byte, fx_array, ctypes.c_double(fc_adj_lmt))
+            return bool(result)
+        except Exception as e:
+            print(f"SetImpForceMode failed: {e}")
+            return False
+
+    def set_force_cmd(self, arm: str, force: float) -> bool:
+        """设置指定手臂的力值
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param force: 力，单位：牛（可以是任意实数）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        arm_byte = arm.encode('ascii')
+        try:
+            result = self.robot.SetForceCmd(arm_byte, ctypes.c_double(force))
+            return bool(result)
+        except Exception as e:
+            print(f"SetForceCmd failed: {e}")
+            return False
+
+    def set_joint_position_cmd(self, arm: str, joint) -> bool:
+        """设置指定手臂的关节空间位置指令（位置模式扭矩模式下的关节指令）
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param joint: 七个关节的目标角度列表/元组，单位：度，长度必须为 7
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        if len(joint) != 7:
+            raise ValueError("joint must have exactly 7 elements")
+        arm_byte = arm.encode('ascii')
+        joint_array = (ctypes.c_double * 7)(*joint)
+        try:
+            result = self.robot.SetJointPostionCmd(arm_byte, joint_array)
+            return bool(result)
+        except Exception as e:
+            print(f"SetJointPostionCmd failed: {e}")
+            return False
+
+    def pln_init(self, path: str) -> bool:
+        """关节空间规划初始化（只需初始化一次）
+
+        :param path: 规划文件路径（相对或绝对）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if not path:
+            raise ValueError("path cannot be empty")
+        try:
+            result = self.robot.PlnInit(path.encode('utf-8'))
+            return bool(result)
+        except Exception as e:
+            print(f"PlnInit failed: {e}")
+            return False
+
+    def run_pln_joint(self, arm: str, start_joints, stop_joints, vel_ratio: float, acc_ratio: float) -> bool:
+        """关节空间下从当前点规划方式运行到目标点
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param start_joints: 起始关节角度（7个，单位度）
+        :param stop_joints: 目标关节角度（7个，单位度）
+        :param vel_ratio: 速度比例（0~1 或百分比？根据实际情况调整）
+        :param acc_ratio: 加速度比例（0~1 或百分比）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        if len(start_joints) != 7 or len(stop_joints) != 7:
+            raise ValueError("start_joints and stop_joints must have exactly 7 elements")
+        vel_ratio = max(0.0, min(1.0, vel_ratio))
+        acc_ratio = max(0.0, min(1.0, acc_ratio))
+        arm_byte = arm.encode('ascii')
+        start_array = (ctypes.c_double * 7)(*start_joints)
+        stop_array = (ctypes.c_double * 7)(*stop_joints)
+
+        try:
+            result = self.robot.RunPlnJoint(arm_byte, start_array, stop_array, vel_ratio, acc_ratio)
+            return bool(result)
+        except Exception as e:
+            print(f"RunPlnJoint failed: {e}")
+            return False
+
+    def run_pln_cart(self, arm: str, pset) -> bool:
+        """笛卡尔空间下从当前点规划方式运行到目标点（规划点位 pset 由 KinematicsSDK 计算得出）
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param pset: 规划点位数据（不透明指针，例如由结构体指针传入）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        arm_byte = arm.encode('ascii')
+        try:
+            if hasattr(pset, '_address_'):
+                pset_ptr = ctypes.c_void_p(ctypes.addressof(pset))
+            else:
+                pset_ptr = ctypes.c_void_p(pset)
+            result = self.robot.RunPlnCart(arm_byte, pset_ptr)
+            return bool(result)
+        except Exception as e:
+            print(f"RunPlnCart failed: {e}")
+            return False
+
+    def stop_pln(self, arm: str) -> bool:
+        """中断规划运行（笛卡尔空间和关节空间都适用）
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        try:
+            result = self.robot.StopPln(arm.encode('ascii'))
+            return bool(result)
+        except Exception as e:
+            print(f"StopPln failed: {e}")
+            return False
+
+    def send_pvt(self, arm: str, local_file: str, serial: int) -> bool:
+        """上传本地 PVT 轨迹文件存为指定 ID
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param local_file: 轨迹文件路径（相对或绝对）
+        :param serial: 轨迹 ID（0~99）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        if not (0 <= serial <= 99):
+            raise ValueError(f"serial must be between 0 and 99, got {serial}")
+        if not local_file:
+            raise ValueError("local_file cannot be empty")
+
+        try:
+            result = self.robot.SendPVT(arm.encode('ascii'), local_file.encode('utf-8'), serial)
+            return bool(result)
+        except Exception as e:
+            print(f"SendPVT failed: {e}")
+            return False
+
+    def run_pvt(self, arm: str, id_: int) -> bool:
+        """设置指定手臂的 PVT 号并立即运行该轨迹
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param id_: 轨迹 ID（0~99），与 SendPVT 的 serial 对应
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        if not (0 <= id_ <= 99):
+            raise ValueError(f"id must be between 0 and 99, got {id_}")
+        try:
+            result = self.robot.RunPVT(arm.encode('ascii'), id_)
+            return bool(result)
+        except Exception as e:
+            print(f"RunPVT failed: {e}")
+            return False
+
+    def set_joint_drag(self, arm: str) -> bool:
+        """设置指定手臂为关节拖动
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        try:
+            result = self.robot.SetJointDrag(arm.encode('ascii'))
+            return bool(result)
+        except Exception as e:
+            print(f"SetJointDrag failed: {e}")
+            return False
+
+    def set_cart_drag(self, arm: str, type_: str) -> bool:
+        """设置指定手臂为笛卡尔拖动
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param type_: 拖动方向："X" "Y" "Z" "R" 之一
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        if type_ not in ('X', 'Y', 'Z', 'R'):
+            raise ValueError(f"type must be 'X', 'Y', 'Z' or 'R', got '{type_}'")
+        try:
+            result = self.robot.SetCartDrag(arm.encode('ascii'), type_.encode('ascii'))
+            return bool(result)
+        except Exception as e:
+            print(f"SetCartDrag failed: {e}")
+            return False
+
+    def exit_drag(self, arm: str) -> bool:
+        """设置指定手臂退出拖动
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        try:
+            result = self.robot.ExitDrag(arm.encode('ascii'))
+            return bool(result)
+        except Exception as e:
+            print(f"ExitDrag failed: {e}")
+            return False
+
+    def set_tool(self, arm: str, kine_para, dyn_para) -> bool:
+        """设置指定手臂的工具参数（运动学和动力学）
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param kine_para: 工具相对于末端法兰的位置偏移（毫米）和姿态旋转（角度，XYZ顺序），长度必须为 6
+        :param dyn_para: 工具动力学参数，长度必须为 10（由上位机软件计算）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        if len(kine_para) != 6:
+            raise ValueError("kine_para must have exactly 6 elements")
+        if len(dyn_para) != 10:
+            raise ValueError("dyn_para must have exactly 10 elements")
+        arm_byte = arm.encode('ascii')
+        kine_array = (ctypes.c_double * 6)(*kine_para)
+        dyn_array = (ctypes.c_double * 10)(*dyn_para)
+        try:
+            result = self.robot.SetTool(arm_byte, kine_array, dyn_array)
+            return bool(result)
+        except Exception as e:
+            print(f"SetTool failed: {e}")
+            return False
+
+    def disable(self, arm: str) -> bool:
+        """设置指定手臂下使能/复位
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        try:
+            result = self.robot.Disable(arm.encode('ascii'))
+            return bool(result)
+        except Exception as e:
+            print(f"Disable failed: {e}")
+            return False
+
+    def clear_ch_data(self, arm: str) -> bool:
+        """清缓存数据（手臂末端安装工具的通讯）
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        try:
+            result = self.robot.ClearChData(arm.encode('ascii'))
+            return bool(result)
+        except Exception as e:
+            print(f"ClearChData failed: {e}")
+            return False
+
+    def get_ch_data(self, arm: str, channel:int) -> tuple[int, bytes, int]:
+        """获取指定手臂指定通道的数据
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param channel: 通道号（1: CAN/CANFD, 2: COM1, 3: COM2）
+        :return: (实际读取数据长度, 数据字节数组)
+                 若失败返回 (0, b'', -1)
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        data_buffer = (ctypes.c_ubyte * 256)()
+        ret_ch = ctypes.c_long(channel)
+        try:
+            read_len = self.robot.GetChData(arm.encode('ascii'), data_buffer, ctypes.byref(ret_ch))
+            if read_len <= 0:
+                return 0, b''
+            byte_data = bytes(data_buffer)[:read_len]
+            hex_list = []
+            for byte in byte_data:
+                hex_value = hex(byte)[2:].upper().zfill(2)
+                hex_list.append(hex_value)
+            return read_len, ' '.join(hex_list)
+        except Exception as e:
+            print(f"GetChData failed: {e}")
+            return 0, b''
+
+    def set_ch_data(self, arm: str, data: bytes, size_int: int, set_ch: int) -> int:
+        """给指定手臂指定通道发送数据
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param data: 要发送的数据字节串
+        :param size_int: 数据长度（不应超过 256）
+        :param set_ch: 通道号（1: CAN/CANFD, 2: COM1, 3: COM2）
+        :return: 实际发送的数据长度（失败返回 -1）
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        if size_int > 256 or size_int < 0:
+            raise ValueError(f"size_int must be between 0 and 256, got {size_int}")
+        if set_ch not in (1, 2, 3):
+            raise ValueError(f"set_ch must be 1, 2 or 3, got {set_ch}")
+        data_buffer = (ctypes.c_ubyte * 256)()
+        for i in range(min(size_int, len(data))):
+            data_buffer[i] = data[i]
+        try:
+            sent_len = self.robot.SetChData(arm.encode('ascii'), data_buffer, size_int, set_ch)
+            return sent_len
+        except Exception as e:
+            print(f"SetChData failed: {e}")
+            return -1
 
     def get_tool_info(self,):
         '''检查控制器是否已经保存工具信息
@@ -1346,7 +2055,6 @@ class Marvin_Robot:
         tool_result = read_csv_file_to_float_strict(local_path, expected_columns=16)
         return tool_result
 
-
     def help(self, method_name: str = None) -> None:
         """
         显示帮助信息
@@ -1355,21 +2063,15 @@ class Marvin_Robot:
             method_name (str): 可选的方法名，显示特定方法的帮助信息
         """
         print(f"\n{' API 帮助 ':=^50}\n")
-
-        # 获取所有公共方法
         methods = [
             (name, func)
             for name, func in inspect.getmembers(self, inspect.ismethod)
             if not name.startswith('_') and name != 'help'
         ]
-
-        # 如果没有指定方法名，显示所有方法列表
         if method_name is None:
             print("可用方法:")
             for name, func in methods:
-                # 获取函数签名
                 signature = inspect.signature(func)
-                # 获取参数列表
                 params = []
                 for param in signature.parameters.values():
                     param_str = param.name
@@ -1384,27 +2086,18 @@ class Marvin_Robot:
                     elif param.kind == param.KEYWORD_ONLY:
                         param_str = "[kw] " + param_str
                     params.append(param_str)
-
                 param_list = ", ".join(params)
                 print(f"  - {name}({param_list})")
-
             print("\n使用 help('方法名') 获取详细帮助信息")
             print(f"{'=' * 50}")
             return
-
-        # 显示特定方法的帮助
         method_dict = dict(methods)
         if method_name in method_dict:
             func = method_dict[method_name]
             doc = inspect.getdoc(func) or "没有文档说明"
-
-            # 获取函数签名
             signature = inspect.signature(func)
-
             print(f"方法: {method_name}{signature}")
             print("\n" + dedent(doc))
-
-            # 显示参数详细信息
             print("\n参数详情:")
             for param in signature.parameters.values():
                 param_info = f"  {param.name}: "
@@ -1412,26 +2105,12 @@ class Marvin_Robot:
                     param_info += f"类型: {param.annotation.__name__}, "
                 if param.default is not param.empty:
                     param_info += f"默认值: {param.default!r}"
-                # param_info += f"类型: {_param_kind_to_str(param.kind)}"
                 print(param_info)
         else:
             print(f"错误: 没有找到方法 '{method_name}'")
-
         print(f"{'=' * 50}")
 
-
-def _param_kind_to_str(kind):
-    """将参数类型转换为可读字符串"""
-    mapping = {
-        inspect.Parameter.POSITIONAL_ONLY: "位置参数",
-        inspect.Parameter.POSITIONAL_OR_KEYWORD: "位置或关键字参数",
-        inspect.Parameter.VAR_POSITIONAL: "可变位置参数(*args)",
-        inspect.Parameter.KEYWORD_ONLY: "仅关键字参数",
-        inspect.Parameter.VAR_KEYWORD: "可变关键字参数(**kwargs)"
-    }
-    return mapping.get(kind, "未知参数类型")
-
-# 定义StateCtr结构体
+'''######################################## Assistive Funcs ####################################################'''
 class StateCtr(Structure):
     _fields_ = [
         ("m_CurState", c_int),  # * 当前状态 */ ArmState
@@ -1439,8 +2118,6 @@ class StateCtr(Structure):
         ("m_ERRCode", c_int)    # * 机械臂错误码*/
     ]
 
-
-# 定义RT_IN结构体
 class RT_IN(Structure):
     _fields_ = [
         ("m_RtInSwitch", c_int),  # * 实时输入开关 用户实时数据 进行开关设置 0 -  close rt_in ;1- open rt_in*
@@ -1490,8 +2167,6 @@ class RT_IN(Structure):
 
     ]
 
-
-# 定义RT_OUT结构体
 class RT_OUT(Structure):
     _fields_ = [
         ("m_OutFrameSerial", c_int),  # 输出帧序号   0 -  1000000 取模
@@ -1512,8 +2187,6 @@ class RT_OUT(Structure):
         ("m_TrajState", c_char) #规划状态： 0: no traj; 1: receving; 2: recevied; >=3: running traj
     ]
 
-
-# 定义DCSS结构体
 class DCSS(Structure):
     _fields_ = [
         ("m_State", StateCtr * 2),  # 状态控制器数组
@@ -1529,6 +2202,330 @@ class DCSS(Structure):
         ("m_ParaRetSerial", c_short),  # short working: 0; finish: cmd serial; error cmd_serial + 100
     ]
 
+def _param_kind_to_str(kind):
+    """将参数类型转换为可读字符串"""
+    mapping = {
+        inspect.Parameter.POSITIONAL_ONLY: "位置参数",
+        inspect.Parameter.POSITIONAL_OR_KEYWORD: "位置或关键字参数",
+        inspect.Parameter.VAR_POSITIONAL: "可变位置参数(*args)",
+        inspect.Parameter.KEYWORD_ONLY: "仅关键字参数",
+        inspect.Parameter.VAR_KEYWORD: "可变关键字参数(**kwargs)"
+    }
+    return mapping.get(kind, "未知参数类型")
+
+def get_fault_descriptions(fault_codes_list,lang='CN'):
+    """
+    根据故障代码列表和故障字典，返回故障描述的字符串
+    支持多个关节的错误信息显示
+    Args:
+        fault_codes_list: 各关节故障代码列表
+        fault_dict: 故障代码与名称的字典
+
+    Returns:
+        包含所有关节故障描述的字符串
+    """
+    fault_dict=fault_code_dict_CN
+    if lang=='EN':
+        fault_dict=fault_code_dict_EN
+    if not fault_codes_list:
+        return "None fault codes list"
+    all_descriptions = []
+    for joint_idx, code in enumerate(fault_codes_list, 1):
+        code_str = str(code)
+        if isinstance(code, int):
+            code_str = hex(code)
+        code_str_lower = code_str.lower()
+        if code_str in ["0x0000", "0000", "0", "0x0", "0X0", ""]:
+            continue
+        fault_name = None
+        if code_str in fault_dict:
+            fault_name = fault_dict[code_str]
+        elif code_str_lower in fault_dict:
+            fault_name = fault_dict[code_str_lower]
+        else:
+            fault_name = f"unknown error({code_str})"
+        if fault_name:
+            all_descriptions.append(f"joint {joint_idx}: {code_str} - {fault_name}")
+
+    if not all_descriptions:
+        return "None"
+    elif len(all_descriptions) == 1:
+        return all_descriptions[0]
+    else:
+        result = "Fault information for each joint:\n"
+        for i, desc in enumerate(all_descriptions, 1):
+            result += f"{i}. {desc}\n"
+        return result.strip()
+
+def update_text_file_simple(mode, data_list, filename):
+    """
+    简化版的文件更新函数
+    """
+    if mode not in ['A', 'B'] or len(data_list) != 16:
+        return False
+    try:
+        if os.path.exists(filename):
+            with open(filename, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+        line_index = 0 if mode == 'A' else 1
+        lines[line_index] = ','.join(str(x) for x in data_list) + '\n'
+        with open(filename, 'w', encoding='utf-8') as file:
+            file.writelines(lines)
+        return True
+    except Exception as e:
+        print(f"更新文件时出错: {e}")
+        return False
+
+def read_csv_file_to_float_strict(filename, expected_columns=16):
+    """
+    读取CSV格式的文件内容并转换为float，严格验证每列数量
+    参数:
+        filename: 文件名
+        expected_columns: 期望的列数（默认16）
+
+    返回:
+        如果文件为空: 返回0
+        如果文件有一行: 返回0
+        如果文件有两行且其中一行全为0:
+            - 返回 ('line1', [第一行数据])  # 如果第二行全为0
+            - 返回 ('line2', [第二行数据])  # 如果第一行全为0
+        如果文件有两行且都不为0: 返回 [[第一行数据], [第二行数据]]
+        如果文件有两行且都全为0: 返回0
+        如果文件不存在或转换失败: 返回-1
+    """
+    if not os.path.exists(filename):
+        print(f"文件不存在: {filename}")
+        return -1
+    if os.path.getsize(filename) == 0:
+        return 0
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+        non_empty_lines = [line.strip() for line in lines if line.strip()]
+
+        if len(non_empty_lines) == 0:
+            return 0
+        all_float_data = []
+        for line_num, line in enumerate(non_empty_lines, 1):
+            values = line.split(',')
+            cleaned_values = [v.strip() for v in values if v.strip()]
+            if len(cleaned_values) != expected_columns:
+                print(f"第{line_num}行: 期望{expected_columns}列，实际找到{len(cleaned_values)}列")
+                return -1
+
+            float_values = []
+            for value in cleaned_values:
+                try:
+                    float_value = float(value)
+                    float_values.append(float_value)
+                except ValueError:
+                    print(f"第{line_num}行: 无法将内容 '{value}' 转换为float")
+                    return -1
+
+            all_float_data.append(float_values)
+
+        if len(all_float_data) == 1:
+            return 0
+
+        elif len(all_float_data) == 2:
+            line1_all_zero = all(x == 0.0 for x in all_float_data[0])
+            line2_all_zero = all(x == 0.0 for x in all_float_data[1])
+            if line1_all_zero and line2_all_zero:
+                return 0
+            elif line1_all_zero and not line2_all_zero:
+                return ('line2', all_float_data[1])
+            elif not line1_all_zero and line2_all_zero:
+                return ('line1', all_float_data[0])
+            else:
+                return all_float_data
+        else:
+            print(f"文件包含{len(all_float_data)}行，只支持1-2行")
+            return -1
+    except Exception as e:
+        print(f"读取文件时出错: {e}")
+        return -1
+
+def decimal_to_hex(number, prefix=False, upper=True, float_precision=8):
+    """
+    将十进制数转换为十六进制表示
+
+    参数:
+        number: 要转换的十进制数，可以是整数或浮点数
+        prefix: 是否添加"0x"前缀，默认为False
+        upper: 是否使用大写字母，默认为True
+        float_precision: 浮点数转换时的精度（小数位数），默认为8
+
+    返回:
+        str: 十六进制表示的字符串
+
+    异常:
+        TypeError: 当输入不是数字时抛出
+    """
+    if not isinstance(number, (int, float)):
+        raise TypeError("输入必须是整数或浮点数")
+    if isinstance(number, int):
+        hex_str = hex(number)
+    else:
+        hex_str = float(number).hex()
+        if float_precision is not None:
+            parts = hex_str.split('.')
+            if len(parts) > 1:
+                exponent_part = parts[1].split('p')
+                if len(exponent_part) > 1:
+                    hex_str = f"{parts[0]}.{exponent_part[0][:float_precision]}p{exponent_part[1]}"
+    if not prefix and hex_str.startswith('0x'):
+        hex_str = hex_str[2:]
+    elif prefix and not hex_str.startswith('0x'):
+        hex_str = '0x' + hex_str
+    if upper:
+        hex_str = hex_str.upper()
+    else:
+        hex_str = hex_str.lower()
+
+    return hex_str
+
+def identify_and_calculate_length(input_data: Union[str, bytes]) -> dict:
+    result = {
+        "input": input_data,
+        "type": None,
+        "length_bytes": None,
+        "bytes_representation": None
+    }
+
+    if isinstance(input_data, bytes):
+        result["type"] = "bytes"
+        result["length_bytes"] = len(input_data)
+        result["bytes_representation"] = input_data
+        return result
+
+    if isinstance(input_data, str):
+        clean_input = re.sub(r'\s+', '', input_data.lower())
+
+        if clean_input.startswith('0x'):
+            clean_input = clean_input[2:]
+
+        hex_pattern = re.compile(r'^[0-9a-f]+$')
+        if hex_pattern.match(clean_input):
+            # 确保长度为偶数
+            if len(clean_input) % 2 != 0:
+                clean_input = '0' + clean_input
+            try:
+                bytes_rep = bytes.fromhex(clean_input)
+                result["type"] = "hex string"
+                result["length_bytes"] = len(bytes_rep)
+                result["bytes_representation"] = bytes_rep
+                return result
+            except ValueError:
+                pass
+
+        if input_data.startswith('b"') and input_data.endswith('"'):
+            try:
+                bytes_rep = eval(input_data)
+                if isinstance(bytes_rep, bytes):
+                    result["type"] = "bytes representation string"
+                    result["length_bytes"] = len(bytes_rep)
+                    result["bytes_representation"] = bytes_rep
+                    return result
+            except:
+                pass
+        try:
+            bytes_rep = input_data.encode('utf-8')
+            result["type"] = "regular string"
+            result["length_bytes"] = len(bytes_rep)
+            result["bytes_representation"] = bytes_rep
+            return result
+        except UnicodeEncodeError:
+            raise ValueError("输入不是有效的十六进制字符串，也无法编码为UTF-8字节串")
+    raise TypeError("输入必须是字符串或字节串")
+
+def structure2dict(dcss):
+    result = {
+        "para_name": ['Marvin_sub_data'],
+        "states": [
+            {
+                "cur_state": dcss.m_State[0].m_CurState,
+                "cmd_state": dcss.m_State[0].m_CmdState,
+                "err_code": dcss.m_State[0].m_ERRCode
+            },
+            {
+                "cur_state": dcss.m_State[1].m_CurState,
+                "cmd_state": dcss.m_State[1].m_CmdState,
+                "err_code": dcss.m_State[1].m_ERRCode
+            }
+        ]
+    }
+
+    # 3. 处理实时输出数组
+    result["outputs"] = [
+        {
+            "frame_serial": rt_out.m_OutFrameSerial,
+            "pad": rt_out.m_pad,
+            "traj_state":rt_out.m_TrajState,
+            "tip_di": rt_out.m_TipDI,
+            "low_speed_flag": rt_out.m_LowSpdFlag,
+            "fb_joint_pos": [round(rt_out.m_FB_Joint_Pos[j], 4) for j in range(7)],
+            "fb_joint_vel": [round(rt_out.m_FB_Joint_Vel[j], 4) for j in range(7)],
+            "fb_joint_posE": [round(rt_out.m_FB_Joint_PosE[j], 4) for j in range(7)],
+            "fb_joint_cmd": [round(rt_out.m_FB_Joint_Cmd[j], 4) for j in range(7)],
+            "fb_joint_cToq": [round(rt_out.m_FB_Joint_CToq[j], 4) for j in range(7)],
+            "fb_joint_sToq": [round(rt_out.m_FB_Joint_SToq[j], 4) for j in range(7)],
+            "fb_joint_them": [round(rt_out.m_FB_Joint_Them[j], 4) for j in range(7)],
+            "est_joint_firc": [round(rt_out.m_EST_Joint_Firc[j], 4) for j in range(7)],
+            "est_joint_firc_dot": [round(rt_out.m_EST_Joint_Firc_Dot[j], 4) for j in range(7)],
+            "est_joint_force": [round(rt_out.m_EST_Joint_Force[j], 4) for j in range(7)],
+            "est_cart_fn": [round(rt_out.m_EST_Cart_FN[j], 4) for j in range(6)]
+        } for rt_out in dcss.m_Out
+    ]
+
+    # 4. 处理实时输入数组 (RT_IN)
+    result["inputs"] = [
+        {
+            "rt_in_switch": rt_in.m_RtInSwitch,
+            "imp_type": rt_in.m_ImpType,
+            "in_frame_serial": rt_in.m_InFrameSerial,
+            "frame_miss_cnt": rt_in.m_FrameMissCnt,
+            "max_frame_miss_cnt": rt_in.m_MaxFrameMissCnt,
+            "sys_cyc": rt_in.m_SysCyc,
+            "sys_cyc_miss_cnt": rt_in.m_SysCycMissCnt,
+            "max_sys_cyc_miss_cnt": rt_in.m_MaxSysCycMissCnt,
+            "tool_kine": [round(rt_in.m_ToolKine[j], 4) for j in range(6)],
+            "tool_dyn": [round(rt_in.m_ToolDyn[j], 4) for j in range(10)],
+            "joint_cmd_pos": [round(rt_in.m_Joint_CMD_Pos[j], 4) for j in range(7)],
+            "joint_vel_ratio": rt_in.m_Joint_Vel_Ratio,
+            "joint_acc_ratio": rt_in.m_Joint_Acc_Ratio,
+            "joint_k": [round(rt_in.m_Joint_K[j], 4) for j in range(7)],
+            "joint_d": [round(rt_in.m_Joint_D[j], 4) for j in range(7)],
+            "drag_sp_type": rt_in.m_DragSpType,
+            "drag_sp_para": [round(rt_in.m_DragSpPara[j], 4) for j in range(6)],
+            "cart_kd_type": rt_in.m_Cart_KD_Type,
+            "cart_k": [round(rt_in.m_Cart_K[j], 4) for j in range(6)],
+            "cart_d": [round(rt_in.m_Cart_D[j], 4) for j in range(6)],
+            "cart_kn": round(rt_in.m_Cart_KN, 4),
+            "cart_dn": round(rt_in.m_Cart_DN, 4),
+            "force_fb_type": rt_in.m_Force_FB_Type,
+            "force_type": rt_in.m_Force_Type,
+            "force_dir": [round(rt_in.m_Force_Dir[j], 4) for j in range(6)],
+            "force_pidul": [round(rt_in.m_Force_PIDUL[j], 4) for j in range(7)],
+            "force_adj_lmt": round(rt_in.m_Force_AdjLmt, 4),
+            "force_cmd": round(rt_in.m_Force_Cmd, 4),
+            "set_tags": list(rt_in.m_SET_Tags),
+            "update_tags": list(rt_in.m_Update_Tags),
+            "pvt_id": rt_in.m_PvtID,
+            "pvt_id_update": rt_in.m_PvtID_Update,
+            "pvt_run_id": rt_in.m_Pvt_RunID,
+            "pvt_run_state": rt_in.m_Pvt_RunState
+        } for rt_in in dcss.m_In
+    ]
+
+    result["ParaName"]=[list(dcss.m_ParaName)]
+    result["ParaType"]=[dcss.m_ParaType]
+    result["ParaIns"]=[dcss.m_ParaIns]
+    result["ParaValueI"]=[dcss.m_ParaValueI]
+    result["ParaValueF"]=[dcss.m_ParaValueF]
+    result["ParaCmdSerial"]=[dcss.m_ParaCmdSerial]
+    result["ParaRetSerial"]=[dcss.m_ParaRetSerial]
+
+    return result
 
 arm_err_code={
     '1':"总线拓扑异常",
@@ -1682,7 +2679,6 @@ fault_code_dict_CN = {
     "0xFF91": "驱动器内部异常2",
 }
 
-
 fault_code_dict_EN = {
     "0x2280": "Drive short circuit",
     "0x2310": "U-phase output overcurrent",
@@ -1801,50 +2797,6 @@ fault_code_dict_EN = {
     "0xFF91": "Drive internal error 2",
 }
 
-def get_fault_descriptions(fault_codes_list,lang='CN'):
-    """
-    根据故障代码列表和故障字典，返回故障描述的字符串
-    支持多个关节的错误信息显示
-    Args:
-        fault_codes_list: 各关节故障代码列表
-        fault_dict: 故障代码与名称的字典
-
-    Returns:
-        包含所有关节故障描述的字符串
-    """
-    fault_dict=fault_code_dict_CN
-    if lang=='EN':
-        fault_dict=fault_code_dict_EN
-    if not fault_codes_list:
-        return "None fault codes list"
-    all_descriptions = []
-    for joint_idx, code in enumerate(fault_codes_list, 1):
-        code_str = str(code)
-        if isinstance(code, int):
-            code_str = hex(code)
-        code_str_lower = code_str.lower()
-        if code_str in ["0x0000", "0000", "0", "0x0", "0X0", ""]:
-            continue
-        fault_name = None
-        if code_str in fault_dict:
-            fault_name = fault_dict[code_str]
-        elif code_str_lower in fault_dict:
-            fault_name = fault_dict[code_str_lower]
-        else:
-            fault_name = f"unknown error({code_str})"
-        if fault_name:
-            all_descriptions.append(f"joint {joint_idx}: {code_str} - {fault_name}")
-
-    if not all_descriptions:
-        return "None"
-    elif len(all_descriptions) == 1:
-        return all_descriptions[0]
-    else:
-        result = "Fault information for each joint:\n"
-        for i, desc in enumerate(all_descriptions, 1):
-            result += f"{i}. {desc}\n"
-        return result.strip()
-
 tools_cfg={
     "arm0": {
         "tool-1": {
@@ -1895,13 +2847,16 @@ tools_cfg={
         "arm1":None
     }
 }
+
 if __name__ == "__main__":
 
     tj_robot = Marvin_Robot()
     tj_robot.help()
-    # tj_robot.help('collect_data')
-    #
-    # dcss=DCSS()
-    # sub_data=tj_robot.subscribe(dcss)
-    # print(sub_data['states'][0]['cur_state'])
-    #
+    tj_robot.help('collect_data')
+
+    dcss=DCSS()
+    sub_data=tj_robot.subscribe(dcss)
+    print(sub_data['states'][0]['cur_state'])
+
+    robot_concise=Concise_Marvin_Robot()
+    robot_concise.help()
