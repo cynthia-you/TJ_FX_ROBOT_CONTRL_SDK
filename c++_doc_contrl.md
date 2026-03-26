@@ -77,8 +77,8 @@
 ## 2.2 SDK库文件编译
 
     使用自动化编译脚本：
-        mster下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
-        mster下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+        master分支下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
+        master分支下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
 
     手动编译指令 ：   
     编译c++调用的dll动态库:
@@ -115,7 +115,7 @@
     接口快速全览见:contrlSDK/MarvinSDK.h
     注意：所有左右臂相关接口都是后缀_A或_B表示， _A 为左臂 _B 为右臂
 
-### (1) 连接和释放运行内存
+### （1）连接和释放运行内存
 bool OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4);
 
     DEMO:  
@@ -165,7 +165,7 @@ bool OnRelease();
 
     释放内存后，要获取机器人的控制，需再次连接
 
-### (2) 系统及系统更新相关
+### （2）系统及系统更新相关
 long OnGetSDKVersion();
 
     获取SDK版本:为SDK大版本
@@ -187,7 +187,7 @@ bool OnDownloadLog(char* local_path);
     获取系统日志，下载到本机绝对路径
 
 
-### (3) 系统日志开关
+### （3）系统日志开关
 void OnLogOn();
 
     全局日志开， 日志信息将全部打印，包括1000HZ频率日志以及清空待发送数据缓冲区日志信息
@@ -201,7 +201,7 @@ void OnLocalLogOff();
 
     主要日志关
 
-### (4) 急停、获取错误码和清错
+### （4）急停、获取错误码和清错
 void OnEMG_A();
 
 void OnEMG_B();
@@ -227,7 +227,7 @@ void OnClearErr_B();
 
     清除指定手臂的错误/复位
 
-### (5) 实时订阅机器人数据
+### （5）实时订阅机器人数据
 bool OnGetBuf(DCSS * ret);
 
 
@@ -422,7 +422,7 @@ bool OnGetBuf(DCSS * ret);
     }ArmState;
     
 
-### (6) 配置机器人参数相关(参数名见robot.ini文件)
+### （6）配置机器人参数相关(参数名见robot.ini文件)
 #### 读取整形和浮点参数信息：
 long OnGetIntPara(char paraName[30],long * retValue);
 
@@ -465,7 +465,7 @@ long OnSavePara();
     return ParaRetSerial,       /////// 保存参数的序号
 
 
-### (7) 数据采集和保存相关
+### （7）数据采集和保存相关
 
 bool OnStartGather(long targetNum, long targetID[35], long recordNum);
 
@@ -509,7 +509,7 @@ bool OnSaveGatherDataCSV(char* path);
     以CSV格式保存采集数据，保存到本机绝对路径
     在停止采集并且存在采集数据的情况下，可以将数据保存到文件
 
-### (8) 末端通信模组指令收发相关
+### （8）末端通信模组指令收发相关
 ### 注意，无指令发送到末端模组，读取返回为0,使用逻辑为： 清缓存---发数据---读数据  或者： 读数据---清缓存---发数据---读数据
 #### 清除指定手臂的缓存数据
 bool OnClearChDataA();
@@ -535,7 +535,7 @@ bool OnSetChDataB(unsigned char data_ptr[256], long size_int, long set_ch);
     数据可发原始字节数据例如 b'0x00 0x101'  或者HEX数据"00 B1"
 
 
-### (9) 上传PVT文件 
+### （9）上传PVT文件 
 bool OnSendPVT_A(char* local_file, long serial);
 
 bool OnSendPVT_B(char* local_file, long serial);
@@ -550,7 +550,7 @@ bool OnSendPVT_B(char* local_file, long serial);
 
     
 
-### (10) 指令发送  可以以1000HZ频率进行发送
+### （10）指令发送  可以以1000HZ频率进行发送
 //清空待发送数据缓冲区
 bool OnClearSet();
     
@@ -651,7 +651,7 @@ long OnSetSendWaitResponse(long time_out);
     OnSetForceCmd_B(XXX)    // 设置右臂力控位置
     OnSetSend()
 
-### (11) 设置指定手臂的目标状态
+### （11）设置指定手臂的目标状态
 bool OnSetTargetState_A(int state);
 
 bool OnSetTargetState_B(int state);
@@ -664,7 +664,7 @@ bool OnSetTargetState_B(int state);
     4，        //协作释放，用于机器人撞机扭在一起，位置模式不能用情况下
 
 
-### (12) 设置指定手臂在扭矩模式下阻抗类型
+### （12）设置指定手臂在扭矩模式下阻抗类型
 bool OnSetImpType_A(int type);
 
 bool OnSetImpType_B(int type);
@@ -783,7 +783,7 @@ bool OnSetPVT_B(int id)
 
 
 
-### （20） 设置指定手臂的拖动空间
+### （20）设置指定手臂的拖动空间
 bool OnSetDragSpace_A(int dgType);
 
 bool OnSetDragSpace_B(int dgType);
@@ -800,7 +800,7 @@ bool OnSetDragSpace_B(int dgType);
         2.笛卡尔拖动需要在笛卡尔阻抗下使用
         3.切换不同拖动模式前需要退出拖动模式再切换，否则控制效果是叠加混乱的。
 
-### (21) 设置末端笛卡尔方向的旋转
+### （21）设置末端笛卡尔方向的旋转
 //自定义设置末端笛卡尔方向的旋转
 //自定义设置左臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
 bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
@@ -813,7 +813,7 @@ bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
 //设置右臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
 bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
-### （22） 规划功能
+### （22）规划功能
  //关节空间PLN方式发送指令
  bool OnInitPlnLmt(char * path);
  bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
