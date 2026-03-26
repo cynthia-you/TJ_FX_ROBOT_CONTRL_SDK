@@ -158,3 +158,6 @@
 
 ### 9.在线直线规划，约束构型并以笛卡尔阻抗模式以50HZ频率执行点位，定于旋转
             showcase_online_pln_movl_with_specific_rot.py
+
+## 六. 简明式控制SDK  内含12个showcases
+			showcases_new_control_sdk.py
