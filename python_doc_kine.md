@@ -37,9 +37,9 @@
 ## 1.3 SDK库文件编译
 
     使用自动化编译脚本：
-        mster下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
-        mster下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
-
+        master分支下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
+        master分支下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+        
     
     手动编译指令：
     
