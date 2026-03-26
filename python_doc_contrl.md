@@ -16,6 +16,8 @@
                 c.设置目标关节后，测试里小睡几秒等机械臂运行到位，而在生产时可以通过循环订阅机械臂当前位置判断是否走到指定点位或者通过订阅低速标志来判断。
                 d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
 
+# 为了更简明地使用控制SDK，我们特别提供了简明式接口，原SDK接口介绍见 二、接口介绍，  简明式SDK见 三、简明式接口介绍
+
 # 一 、SDK_PYTHON简要介绍
     为天机双臂机器人和人形机器人基于python开发的SDK，其分为控制SDK：SDK_PYTHON/fx_robot.py 和运动学计算的SDK:SDK_PYTHON/fx_kine.py
 
@@ -47,28 +49,27 @@
 ## 1.3 SDK库文件编译
 
     使用自动化编译脚本：
-        master分支下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
-        master分支下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+        master下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
+        master下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+
+    手动编译指令：
+
+        windows下使用MinGW编译dll动态库：
+                控制SDK（contrlSDK）：g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+                运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -w -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+        编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
+    
+        linux设备编译:
+        控制SDK(contrlSDK)，以下方法均可编译: 
+            1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
+            2./contrlSDK/makefile 生成libMarvinSDK.so
+        运动学SDK(kinematicsSDK)，以下方法均可编译: 
+            1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
+            2./kinematicsSDK/makefile 生成libKine.so
+        编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
 
 
-  手动编译指令：
-
-    windows下使用MinGW编译dll动态库：
-			控制SDK（contrlSDK）：g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
-			运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -w -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
-    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
-
-    linux设备编译:
-    控制SDK(contrlSDK)，以下方法均可编译: 
-        1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
-        2./contrlSDK/makefile 生成libMarvinSDK.so
-    运动学SDK(kinematicsSDK)，以下方法均可编译: 
-        1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
-        2./kinematicsSDK/makefile 生成libKine.so
-	编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
-
-
-## 二、 控制SDK功能接口介绍
+# 二、 控制SDK功能接口介绍
     SDK_PYTHON/fx_robot.py是基于机器人（双臂系统）C++开发的SDK的的二次开发工具包
 
 ## 2.1 提供功能大类有：
@@ -653,12 +654,398 @@
         :param arm: 机械手臂ID “A” OR “B”
         '''
 
+# 三、简明式接口介绍
+    简明式接口，省略了使用SDK的繁琐用法：必须放在clear_set() 和 send_cmd()之间； 用户连接、切换状态需要自己判断等
+    SDK_PYTHON/fx_robot.py 内有两个类： Marvin_Robot（原SDK） Concise_Marvin_Robot（简明式SDK）
+    实例化后使用：
+            robot_concise=Concise_Marvin_Robot()
+            robot_concise.help()
+    
+## （1） 连接机器人
+    connect(self, robot_ip: str, log_switch: int = 0) -> bool:
+        '''连接机器人
+        :param robot_ip: 机器人IP地址，确保网线连接可以 ping 通。
+        :param log_switch: 日志开关，0 关闭，1 开启（默认 0）
+        :return: bool 连接成功返回 True，失败返回 False
+        '''
+## （2）释放机器人连接
+    release_robot(self):
+        ''' 断开机器人连接
+        :return:
+            int: 断开状态码 1: True; 0: Flase
+        '''
+## （3）订阅机器人数据
+    subscribe(self, dcss) -> dict | None:
+        '''订阅机器人状态数据
+        :param dcss: 结构体实例（由外部传入，会被填充）
+        :return: 成功返回转换后的嵌套字典，失败返回 None
+        '''
+
+## （4）获取当前SDK版本
+    SDK_version(self):
+        '''查看SDK版本
+        :return:
+            long: SDK version
+        '''
+
+## （5）机器人配置参数相关
+
+### 获取机器人配置参数
+    get_param(self,type:str,paraName:str):
+        '''获取参数信息
+        :param type: float or int .参数类型
+        :param paraName:  参数名见robot.ini
+        :return:参数值
+        eg:
+         robot,ini:
+            [R.A0.BASIC]
+            BDRange=1.5
+            BDToqR=1
+            Dof=7
+            GravityX=0
+            GravityY=9.81
+            GravityZ=0
+            LoadOffsetSwitch=0
+            TerminalPolar=1
+            TerminalType=1
+            Type=1007
+            [R.A0.CTRL]
+            CartJNTDampJ1=0.6
+            ....
+            #浮点类型参数获取：
+            我想获取[R.A0.CTRL]这个参数组里CartJNTDampJ1的值:
+            para=get_float_params('float','R.A0.CTRL.CartJNTDampJ1')
+
+            #整数类型参数获取：
+            我想获取[R.A0.BASIC]这个参数组里Type的值
+            para=get_int_params('int','R.A0.BASIC.Type')
+        '''
+
+### 设置机器人配置参数
+    set_param(self,type:str,paraName:str,value:float):
+        '''设置参数信息
+        :param type: float or int .参数类型
+        :param paraName:  参数名见robot.ini
+        :param value:
+        :return:
+        eg:
+         robot,ini:
+            [R.A0.BASIC]
+            BDRange=1.5
+            BDToqR=1
+            Dof=7
+            GravityX=0
+            GravityY=9.81
+            GravityZ=0
+            LoadOffsetSwitch=0
+            TerminalPolar=1
+            TerminalType=1
+            Type=1007
+            [R.A0.CTRL]
+            CartJNTDampJ1=0.6
+            ....
+            #设置浮点类型参数获取：
+            我想设置[R.A0.CTRL]这个参数组里CartJNTDampJ1的值为0.0
+            set_params('float','R.A0.CTRL.CartJNTDampJ1,0.0)
+
+            #设置整数类型参数获取：
+            我想设置[R.A0.BASIC]这个参数组里Type的值为0
+            set_params('int','R.A0.BASIC.Type',0)
+        '''
+### 保存机器人配置参数（控制器端）
+    save_para_file(self):
+        '''保存配置文件
+        :return:
+        '''
+
+## （6）数据采集相关
+
+### 采集数据
+    start_collect_data(self, target_num: int, target_id: list, record_num: int) -> bool:
+        """设置保存参数并开始采集数据，频率：1K hz
+
+        :param target_num: 要采集的轴数量（0-35）
+        :param target_id: 采集数据ID序号，
+        :param record_num: 采集的数据点数最少1000行(1秒数据)，最大100万行（100秒数据）
+        :return: bool 成功返回 True，失败返回 False
+
+        采集数据ID序号
+                    左臂
+                        0-6  	左臂关节位置
+                        10-16 	左臂关节速度
+                        20-26   左臂外编位置
+                        30-36   左臂关节指令位置
+                        40-46	左臂关节电流（千分比）
+                        50-56   左臂关节传感器扭矩NM
+                        60-66	左臂摩擦力估计值
+                        70-76	左臂摩檫力速度估计值
+                        80-85   左臂关节外力估计值
+                        90-95	左臂末端点外力估计值
+                    右臂对应 + 100
+
+                    eg1: 采集左臂和右臂的关节位置，一共14列， 采集1000行：
+                        cols=14
+                        idx=[0,1,2,3,4,5,6,
+                             100,101,102,103,104,105,106,
+                             0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0]
+                        rows=1000
+                        robot.start_collect_data(target_num=cols,target_id=idx,record_num=rows)
+
+                    eg2: 采集左臂第二关节的速度和电流一共2列， 采集500行：
+                        cols=2
+                        idx=[11,31,0,0,0,0,0,
+                             0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0,
+                             0,0,0,0,0,0,0]
+                        rows=500
+                        robot.start_collect_data(target_num=cols,target_id=idx,record_num=rows)
+        """
+
+### 停止采集
+    stop_collect_data(self) -> bool:
+        """停止数据采集
+        :return: bool 成功返回 True，失败返回 False
+        """
+### 保存数据为普通格式
+     save_gather_data(self, path: str) -> bool:
+        """保存采集的数据
+        :param path: 保存文件的路径（字符串）
+        :return: bool 成功返回 True，失败返回 False
+        """
+
+### 保存数据为CSV格式
+     save_gather_data_as_csv_to_path(self,path:str) -> bool:
+        '''以csv格式将采集的数据保存到指定的绝对路径
+        :param path:本机绝对路径
+        :return:
+        '''
+
+## （7）指定手臂软急停
+    soft_stop(self, arm: str):
+        '''机械臂急停
+        :param arm: ‘A’, 'B', 'AB', 可以让一条臂软急停，或者两条臂都软急停。
+        :return: None
+        '''
+
+## （8）获取伺服错误码
+    get_servo_error_code(self, arm:str,lang='CN'):
+       '''获取机械臂伺服错误码
+       :param self:
+       :param arm: 机械手臂ID “A” OR “B”
+       :param lang: 'CN' or 'EN'
+       :return: (7,1)错误列表， 16进制
+       '''
+
+## （9）指定机械臂指定轴伺服软复位
+    servo_reset(self, arm: str, axis: int):
+        """指定轴伺服软复位
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param axis: 指定关节 0-6
+        :return: None
+        """
+## （10）设置手臂末端装的工具的参数，便于控制器计算运动学和动力学参数使用，不设置，可能不能切换控制状态
+    set_tool(self, arm: str, kine_para, dyn_para) -> bool:
+        """设置指定手臂的工具参数（运动学和动力学）
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param kine_para: 工具相对于末端法兰的位置偏移（毫米）和姿态旋转（角度，XYZ顺序），长度必须为 6
+        :param dyn_para: 工具动力学参数，长度必须为 10（由上位机软件计算）
+        :return: bool 成功返回 True，失败返回 False
+        """
+
+## （11）切换控制状态
+### 位置状态（高刚度）
+    set_position_state(self, arm: str, velRatio: int, AccRatio: int) -> bool:
+        """设置关节模式的速度和加速度百分比
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param velRatio: 速度百分比, 范围 0~100
+        :param AccRatio: 加速度百分比, 范围 0~100
+        :return: bool 设置成功返回 True，失败返回 False
+### 关节阻抗状态（扭矩）
+    set_imp_joint_state(self, arm: str, velRatio: int, AccRatio: int, K, D) -> bool:
+        """设置阻抗关节模式参数
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param velRatio: 速度百分比, 范围 0~100（超出会自动钳位）
+        :param AccRatio: 加速度百分比, 范围 0~100（超出会自动钳位）
+        :param K: 刚度系数列表/元组，长度必须为 7，值不能为负（负数会设为0）
+        :param D: 阻尼系数列表/元组，长度必须为 7，值范围 0~1（超出会自动钳位）
+        :return: bool 设置成功返回 True，失败返回 False
+        """
+### 笛卡尔阻抗状态（扭矩）
+    set_imp_cart_state(self, arm: str, velRatio: int, AccRatio: int, K, D) -> bool:
+        """设置指定手臂的速度、加速度和笛卡尔阻抗模式
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param velRatio: 速度百分比, 范围 0~100（超出自动钳位）
+        :param AccRatio: 加速度百分比, 范围 0~100（超出自动钳位）
+        :param K: 刚度系数列表/元组，长度必须为 7，值不能为负（负数设为0）
+        :param D: 阻尼系数列表/元组，长度必须为 7，值范围 0~1（超出自动钳位）
+        :return: bool 成功返回 True，失败返回 False
+        """
+
+    指定末端笛卡尔旋转
+    set_eef_rot(self, arm: str, fc_type: int, cart_ctrl_para) -> bool:
+        """设置末端笛卡尔方向的旋转
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param fc_type: 旋转模式，1 自定义方向，2 系统自动计算
+        :param cart_ctrl_para: 笛卡尔参数列表/元组，长度必须为 7（fcType=1 时前三个值为末端的旋转方向，fcType=2 时应全0）
+        :return: bool 成功返回 True，失败返回 False
+        """
+### 力控状态（扭矩）
+    set_imp_cart_state(self, arm: str, velRatio: int, AccRatio: int, K, D) -> bool:
+        """设置指定手臂的速度、加速度和笛卡尔阻抗模式
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param velRatio: 速度百分比, 范围 0~100（超出自动钳位）
+        :param AccRatio: 加速度百分比, 范围 0~100（超出自动钳位）
+        :param K: 刚度系数列表/元组，长度必须为 7，值不能为负（负数设为0）
+        :param D: 阻尼系数列表/元组，长度必须为 7，值范围 0~1（超出自动钳位）
+        :return: bool 成功返回 True，失败返回 False
+        """
+
+## （12）移动到目标关节指令（位置模式，关节阻抗， 笛卡尔阻抗模式均使用该接口下发）
+    set_joint_position_cmd(self, arm: str, joint) -> bool:
+        """设置指定手臂的关节空间位置指令（位置模式扭矩模式下的关节指令）
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param joint: 七个关节的目标角度列表/元组，单位：度，长度必须为 7
+        :return: bool 成功返回 True，失败返回 False
+        """
+
+## （13）力控指令（仅在力控状态（扭矩）设置后使用）
+    set_force_cmd(self, arm: str, force: float) -> bool:
+        """设置指定手臂的力值
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param force: 力，单位：牛（可以是任意实数）
+        :return: bool 成功返回 True，失败返回 False
+        """
+
+## （14）离线轨迹相关
+### 发送轨迹文件到指定ID
+     send_pvt(self, arm: str, local_file: str, serial: int) -> bool:
+        """上传本地 PVT 轨迹文件存为指定 ID
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param local_file: 轨迹文件路径（相对或绝对）
+        :param serial: 轨迹 ID（0~99）
+        :return: bool 成功返回 True，失败返回 False
+        """
+### 运行指定PVT
+    run_pvt(self, arm: str, id_: int) -> bool:
+        """设置指定手臂的 PVT 号并立即运行该轨迹
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param id_: 轨迹 ID（0~99），与 SendPVT 的 serial 对应
+        :return: bool 成功返回 True，失败返回 False
+        """
+
+## （15）拖动示教相关
+    注意：每种拖动模式使用完想切换为另一种拖动（笛卡尔内部方向拖动也需要）都必须先退出拖动，否则拖动效果是混乱的。
+### 进入关节拖动
+    set_joint_drag(self, arm: str) -> bool:
+        """设置指定手臂为关节拖动
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :return: bool 成功返回 True，失败返回 False
+        """
+### 进入笛卡尔拖动
+     set_cart_drag(self, arm: str, type_: str) -> bool:
+        """设置指定手臂为笛卡尔拖动
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param type_: 拖动方向："X" "Y" "Z" "R" 之一
+        :return: bool 成功返回 True，失败返回 False
+        """
+### 退出拖动
+    exit_drag(self, arm: str) -> bool:
+        """设置指定手臂退出拖动
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :return: bool 成功返回 True，失败返回 False
+        """
+    
+## （16）规划运行到目标点位相关
+### 关节空间规划运行
+    先初始化
+    pln_init(self, path: str) -> bool:
+        """关节空间规划初始化（只需初始化一次）
+
+        :param path: 规划文件路径（相对或绝对）
+        :return: bool 成功返回 True，失败返回 False
+        """
+    再设置规划运行的起点和终点
+    run_pln_joint(self, arm: str, start_joints, stop_joints, vel_ratio: float, acc_ratio: float) -> bool:
+        """关节空间下从当前点规划方式运行到目标点
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param start_joints: 起始关节角度（7个，单位度）
+        :param stop_joints: 目标关节角度（7个，单位度）
+        :param vel_ratio: 速度比例（0~1 或百分比）
+        :param acc_ratio: 加速度比例（0~1 或百分比）
+        :return: bool 成功返回 True，失败返回 False
+        """
+### 笛卡尔空间规划运行
+    run_pln_cart(self, arm: str, pset) -> bool:
+        """笛卡尔空间下从当前点规划方式运行到目标点（规划点位 pset 由 KinematicsSDK 计算得出）
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param pset: 规划点位数据（不透明指针，例如由结构体指针传入）
+        :return: bool 成功返回 True，失败返回 False
+        """
+### 中断规划运行（笛卡尔空间和关节空间都适用）
+    stop_pln(self, arm: str) -> bool:
+        """中断规划运行（笛卡尔空间和关节空间都适用）
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :return: bool 成功返回 True，失败返回 False
+        """
+## （17）末端带的工具的数据透传相关
+### 清缓存
+    clear_ch_data(self, arm: str) -> bool:
+        """清缓存数据（手臂末端安装工具的通讯）
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :return: bool 成功返回 True，失败返回 False
+        """
+### 读取指定通道的数据
+    get_ch_data(self, arm: str, channel:int) -> tuple[int, bytes, int]:
+        """获取指定手臂指定通道的数据
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param channel: 通道号（1: CAN/CANFD, 2: COM1, 3: COM2）
+        :return: (实际读取数据长度, 数据字节数组)
+                 若失败返回 (0, b'')
+        """
+### 发送数据到指定通道
+    set_ch_data(self, arm: str, data: bytes, size_int: int, set_ch: int) -> int:
+        """给指定手臂指定通道发送数据
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param data: 要发送的数据字节串
+        :param size_int: 数据长度（不应超过 256）
+        :param set_ch: 通道号（1: CAN/CANFD, 2: COM1, 3: COM2）
+        :return: 实际发送的数据长度（失败返回 -1）
+        """
+## （18）下使能/下电/复位
+    disable(self, arm: str) -> bool:
+        """设置指定手臂下使能/复位
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :return: bool 成功返回 True，失败返回 False
+        """
 
 
-## 三、案例脚本
+# 四、案例脚本
  见 DEMO_PYTHON/readme.md
 
-### 扭矩模式下刚度和阻尼的建议：
+# 扭矩模式下刚度和阻尼的建议：
     刚度用来衡量物体抗变形的能力。刚度越大，形变越小力的传导率高，运动时感觉很脆很硬；反之，刚度越小，形变大，形状恢复慢，传递力效率低，运动时感觉比较柔软富有韧性。
     阻尼用来衡量物体耗散振动能量的能力。阻尼越大，物体振幅减小越快，但对力、位移的响应迟缓，运动时感觉阻力大，有粘滞感； 阻尼越小，减震效果减弱，但运动阻力小，更流畅，停止到位置时有余震感。
 
