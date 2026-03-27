@@ -1047,6 +1047,11 @@ bool set_tool()
            current_dyn_b[7],
            current_dyn_b[8],
            current_dyn_b[9]);
+
+    // robot release
+    // After release, other programs or computers can connect to the robot. After release, if you want to control the robot again, you must reconnect.
+    SLEEP(1000);
+    OnRelease();
     return true;
 }
 
@@ -1174,9 +1179,9 @@ int main()
     // run_pln_cart_space(config_path);
     // //g++ -g main.cpp -o main.exe -Ilib -L. -lMarvinSDK -lKine -lws2_32 -lwinmm
 
-    // ////showcase10: End-effector tool serial communication. Please note to replace the communication commands with the ones used by your own tool.
+    // ////showcase10: set tools info: kinematics and dynamics.
     printf("--------------------------\n");
-    printf("showcase10: End-effector tool serial communication. Please note to replace the communication commands with the ones used by your own tool..\n");
+    printf("showcase10: set tools info: kinematics and dynamics.\n");
     set_tool();
 
     // // ////showcase11: End-effector tool serial communication. Please note to replace the communication commands with the ones used by your own tool.
