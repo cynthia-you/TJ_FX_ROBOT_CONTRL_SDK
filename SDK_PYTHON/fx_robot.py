@@ -1041,15 +1041,15 @@ class Concise_Marvin_Robot:
         self.save_csv_path=None
         self.save_data_path=None
 
-        # ConnectAndCkeck
-        self.robot.ConnectAndCkeck.argtypes = [
+        # Connect
+        self.robot.Connect.argtypes = [
             ctypes.c_ubyte,  # ip1
             ctypes.c_ubyte,  # ip2
             ctypes.c_ubyte,  # ip3
             ctypes.c_ubyte,  # ip4
             ctypes.c_int  # log_switch
         ]
-        self.robot.ConnectAndCkeck.restype = ctypes.c_bool
+        self.robot.Connect.restype = ctypes.c_bool
 
         # OnGetBuf
         self.robot.OnGetBuf.argtypes = [ctypes.POINTER(DCSS)]
@@ -1099,17 +1099,12 @@ class Concise_Marvin_Robot:
             ctypes.c_int,  # velRatio
             ctypes.c_int,  # AccRatio
             ctypes.POINTER(ctypes.c_double),  # K[7]
-            ctypes.POINTER(ctypes.c_double)  # D[7]
+            ctypes.POINTER(ctypes.c_double),  # D[7]
+            ctypes.c_int,  # fcType
+            ctypes.POINTER(ctypes.c_double)
         ]
         self.robot.SetImpCartMode.restype = ctypes.c_bool
 
-        # SetEefRot
-        self.robot.SetEefRot.argtypes = [
-            ctypes.c_char,  # arm
-            ctypes.c_int,  # fcType
-            ctypes.POINTER(ctypes.c_double)  # CartCtrlPara[7]
-        ]
-        self.robot.SetEefRot.restype = ctypes.c_bool
 
         # SetImpForceMode
         self.robot.SetImpForceMode.argtypes = [
@@ -1233,7 +1228,7 @@ class Concise_Marvin_Robot:
         '''
         try:
             ip1, ip2, ip3, ip4 = self._convert_ip(robot_ip)
-            result = self.robot.ConnectAndCkeck(ip1, ip2, ip3, ip4, log_switch)
+            result = self.robot.Connect(ip1, ip2, ip3, ip4, log_switch)
             return bool(result)
         except Exception as e:
             print(f"ConnectAndCkeck failed: {e}")
@@ -1642,14 +1637,16 @@ class Concise_Marvin_Robot:
             print(f"SetImpJointMode failed: {e}")
             return False
 
-    def set_imp_cart_state(self, arm: str, velRatio: int, AccRatio: int, K, D) -> bool:
-        """设置指定手臂的速度、加速度和笛卡尔阻抗模式
+    def set_imp_cart_state(self, arm: str, velRatio: int, AccRatio: int, K, D, rot_type:int, cart_ctrl_para) -> bool:
+        """设置指定手臂的速度、加速度和笛卡尔阻抗模式，并选择是否设置末端笛卡尔方向的旋转
 
         :param arm: 机械手臂ID "A" 或 "B"（单字符）
         :param velRatio: 速度百分比, 范围 0~100（超出自动钳位）
         :param AccRatio: 加速度百分比, 范围 0~100（超出自动钳位）
         :param K: 刚度系数列表/元组，长度必须为 7，值不能为负（负数设为0）
         :param D: 阻尼系数列表/元组，长度必须为 7，值范围 0~1（超出自动钳位）
+        :param rot_type: 旋转模式。  0 不定义末端旋转， 1 用户自定义方向，2 系统自动计算
+        :param cart_ctrl_para: 笛卡尔参数列表/元组，长度必须为 7（fcType=1 时前三个值为末端的旋转方向，fcType=2 时应全0）
         :return: bool 成功返回 True，失败返回 False
         """
         if len(arm) != 1 or arm not in ('A', 'B'):
@@ -1658,39 +1655,22 @@ class Concise_Marvin_Robot:
         AccRatio = max(0, min(AccRatio, 100))
         if len(K) != 7 or len(D) != 7:
             raise ValueError("K and D must have exactly 7 elements")
+
+        if rot_type not in (0,1, 2):
+            raise ValueError(f"rot_type must be 1 or 2, got {rot_type}")
+        if len(cart_ctrl_para) != 7:
+            raise ValueError("cart_ctrl_para must have exactly 7 elements")
         K_clamped = [max(0.0, float(v)) for v in K]
         D_clamped = [max(0.0, min(1.0, float(v))) for v in D]
         arm_byte = arm.encode('ascii')
         k_array = (ctypes.c_double * 7)(*K_clamped)
         d_array = (ctypes.c_double * 7)(*D_clamped)
+        para_array = (ctypes.c_double * 7)(*cart_ctrl_para)
         try:
-            result = self.robot.SetImpCartMode(arm_byte, velRatio, AccRatio, k_array, d_array)
+            result = self.robot.SetImpCartMode(arm_byte, velRatio, AccRatio, k_array, d_array,rot_type,para_array)
             return bool(result)
         except Exception as e:
             print(f"SetImpCartMode failed: {e}")
-            return False
-
-    def set_eef_rot(self, arm: str, fc_type: int, cart_ctrl_para) -> bool:
-        """设置末端笛卡尔方向的旋转
-
-        :param arm: 机械手臂ID "A" 或 "B"（单字符）
-        :param fc_type: 旋转模式，1 自定义方向，2 系统自动计算
-        :param cart_ctrl_para: 笛卡尔参数列表/元组，长度必须为 7（fcType=1 时前三个值为末端的旋转方向，fcType=2 时应全0）
-        :return: bool 成功返回 True，失败返回 False
-        """
-        if len(arm) != 1 or arm not in ('A', 'B'):
-            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
-        if fc_type not in (1, 2):
-            raise ValueError(f"fc_type must be 1 or 2, got {fc_type}")
-        if len(cart_ctrl_para) != 7:
-            raise ValueError("cart_ctrl_para must have exactly 7 elements")
-        arm_byte = arm.encode('ascii')
-        para_array = (ctypes.c_double * 7)(*cart_ctrl_para)
-        try:
-            result = self.robot.SetEefRot(arm_byte, fc_type, para_array)
-            return bool(result)
-        except Exception as e:
-            print(f"SetEefRot failed: {e}")
             return False
 
     def set_imp_force_state(self, arm: str, fx_dir, fc_adj_lmt: float) -> bool:
