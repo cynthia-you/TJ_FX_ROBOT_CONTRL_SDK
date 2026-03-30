@@ -179,7 +179,7 @@
 
 
 	//连接机器人,log_switch（日志默认为关）： 0 关; 1 开。
-	bool ConnectAndCkeck(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_switch=0);
+	bool Connect(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_switch=0);
 
 	//机器人日志开关, signal: 0 关; 1 开
 	void LogSwitch(int signal);
@@ -208,20 +208,20 @@
 	//设置指定手臂的速度和加速度和关节阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
 	bool SetImpJointMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7]);
 
-	//设置指定手臂的速度和加速度和笛卡尔阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
-	bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7]);
-	//设置末端笛卡尔方向的旋转， arm:"A" "B"  两种字符是许可值;
-	//fcType=1，为自定义末端旋转方向； 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	//fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
-	bool SetEefRot(FX_CHAR arm, int fcType, double CartCtrlPara[7]);
+	// 设置指定手臂的速度和加速度和笛卡尔阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
+	// 如果不定义末端笛卡尔的旋转：RotType=0；double CartCtrlPara[7]={0}
+	// 设置末端笛卡尔方向的旋转：
+	// RotType=1，为自定义末端旋转方向； 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0；
+	// RotType=2，为系统自动计算末端笛卡尔旋转； double CartCtrlPara[7]={0}
+	bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7], int RotType, double CartCtrlPara[7]);
 
-	//设置指定手臂的力控参数和力阻抗模式。arm:"A" "B"  两种字符是许可值; fxDir：任意定义方向； fcAdjLmt：力的调节范围，单位毫米
-	bool SetImpForceMode(FX_CHAR arm, double fxDir[6],double fcAdjLmt);
-	//设置指定手臂的力值：arm:"A" "B"  两种字符是许可值; force: 力，单位：牛
-	bool SetForceCmd(FX_CHAR arm, double force);
- 
-	//设置指定手臂的关节空间位置指令（位置模式扭矩模式下的关节指令）。  arm:"A" "B"  两种字符是许可值； joint：七个关节的目标角度(单位：度）
+	// 设置指定手臂的关节空间位置指令（位置模式扭矩模式下的关节指令）。  arm:"A" "B"  两种字符是许可值； joint：七个关节的目标角度(单位：度）
 	bool SetJointPostionCmd(FX_CHAR arm, double joint[7]);
+
+	// 设置指定手臂的力控参数和力阻抗模式。arm:"A" "B"  两种字符是许可值; fxDir：任意定义方向； fcAdjLmt：力的调节范围，单位毫米
+	bool SetImpForceMode(FX_CHAR arm, double fxDir[6], double fcAdjLmt);
+	// 设置指定手臂的力值：arm:"A" "B"  两种字符是许可值; force: 力，单位：牛
+	bool SetForceCmd(FX_CHAR arm, double force);
 
 	//以规划方式运动到目标点（位置模式下，规划执行频率50HZ）
 	//关节空间规划初始化，只需初始化一次

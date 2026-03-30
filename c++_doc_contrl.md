@@ -878,7 +878,7 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
 ### （1） 连接机器人
     // 连接机器人,log_switch（日志默认为关）： 0 关; 1 开。
-    bool ConnectAndCkeck(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_switch=0);
+    bool Connect(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_switch=0);
 
 ### （2）日志开关
 	//机器人日志开关, signal: 0 关; 1 开
@@ -914,12 +914,12 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	bool SetImpJointMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7]);
 
 ### （9）切换为笛卡尔阻抗模式
-	//设置指定手臂的速度和加速度和笛卡尔阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
-	bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7]);
-	//设置末端笛卡尔方向的旋转， arm:"A" "B"  两种字符是许可值;
-	//fcType=1，为自定义末端旋转方向； 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	//fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
-	bool SetEefRot(FX_CHAR arm, int fcType, double CartCtrlPara[7]);
+	// 设置指定手臂的速度和加速度和笛卡尔阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
+	// 如果不定义末端笛卡尔的旋转：RotType=0；double CartCtrlPara[7]={0}
+	// 设置末端笛卡尔方向的旋转：
+	// RotType=1，为自定义末端旋转方向； 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0；
+	// RotType=2，为系统自动计算末端笛卡尔旋转； double CartCtrlPara[7]={0}
+	bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7], int RotType, double CartCtrlPara[7]);
 
 ### （10）下发目标关节
 	//设置指定手臂的关节空间位置指令（位置模式/关节阻抗/笛卡尔阻抗模式下均使用该指令下发目标位置）。  arm:"A" "B"  两种字符是许可值； joint：七个关节的目标角度(单位：度）

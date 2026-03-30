@@ -877,26 +877,19 @@
         :return: bool 设置成功返回 True，失败返回 False
         """
 ### 笛卡尔阻抗状态（扭矩）
-    set_imp_cart_state(self, arm: str, velRatio: int, AccRatio: int, K, D) -> bool:
-        """设置指定手臂的速度、加速度和笛卡尔阻抗模式
+    set_imp_cart_state(self, arm: str, velRatio: int, AccRatio: int, K, D, rot_type:int, cart_ctrl_para) -> bool:
+        """设置指定手臂的速度、加速度和笛卡尔阻抗模式，并选择是否设置末端笛卡尔方向的旋转
 
         :param arm: 机械手臂ID "A" 或 "B"（单字符）
         :param velRatio: 速度百分比, 范围 0~100（超出自动钳位）
         :param AccRatio: 加速度百分比, 范围 0~100（超出自动钳位）
         :param K: 刚度系数列表/元组，长度必须为 7，值不能为负（负数设为0）
         :param D: 阻尼系数列表/元组，长度必须为 7，值范围 0~1（超出自动钳位）
-        :return: bool 成功返回 True，失败返回 False
-        """
-
-    指定末端笛卡尔旋转
-    set_eef_rot(self, arm: str, fc_type: int, cart_ctrl_para) -> bool:
-        """设置末端笛卡尔方向的旋转
-
-        :param arm: 机械手臂ID "A" 或 "B"（单字符）
-        :param fc_type: 旋转模式，1 自定义方向，2 系统自动计算
+        :param rot_type: 旋转模式。  0 不定义末端旋转， 1 用户自定义方向，2 系统自动计算
         :param cart_ctrl_para: 笛卡尔参数列表/元组，长度必须为 7（fcType=1 时前三个值为末端的旋转方向，fcType=2 时应全0）
         :return: bool 成功返回 True，失败返回 False
         """
+
 ### 力控状态（扭矩）
     set_imp_cart_state(self, arm: str, velRatio: int, AccRatio: int, K, D) -> bool:
         """设置指定手臂的速度、加速度和笛卡尔阻抗模式
