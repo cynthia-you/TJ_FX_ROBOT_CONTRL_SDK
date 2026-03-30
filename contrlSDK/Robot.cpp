@@ -1,6 +1,6 @@
 #include "Robot.h"
 
-static CRobot* m_InsRobot = NULL;
+static CRobot *m_InsRobot = NULL;
 
 bool CRobot::OnClearChDataA()
 {
@@ -10,12 +10,13 @@ bool CRobot::OnClearChDataA()
 	}
 	DDSS t;
 	long si = sizeof(DDSS);
-	long num = m_InsRobot->m_ACB1.ReadBuf((unsigned char*)&t, si);
+	long num = m_InsRobot->m_ACB1.ReadBuf((unsigned char *)&t, si);
 	while (num > 0)
 	{
-		num = m_InsRobot->m_ACB1.ReadBuf((unsigned char*)&t, si);
+		num = m_InsRobot->m_ACB1.ReadBuf((unsigned char *)&t, si);
 	}
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Clear 485 cache of A arm\n");
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Clear 485 cache of A arm\n");
 	return true;
 }
 
@@ -27,16 +28,17 @@ bool CRobot::OnClearChDataB()
 	}
 	DDSS t;
 	long si = sizeof(DDSS);
-	long num = m_InsRobot->m_ACB2.ReadBuf((unsigned char*)&t, si);
+	long num = m_InsRobot->m_ACB2.ReadBuf((unsigned char *)&t, si);
 	while (num > 0)
 	{
-		num = m_InsRobot->m_ACB2.ReadBuf((unsigned char*)&t, si);
+		num = m_InsRobot->m_ACB2.ReadBuf((unsigned char *)&t, si);
 	}
-    if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Clear 485 cache of B arm\n");
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Clear 485 cache of B arm\n");
 	return true;
 }
 
-long CRobot::OnGetChDataA(unsigned char data_ptr[256], long* ret_ch)
+long CRobot::OnGetChDataA(unsigned char data_ptr[256], long *ret_ch)
 {
 	if (m_InsRobot == NULL)
 	{
@@ -44,35 +46,38 @@ long CRobot::OnGetChDataA(unsigned char data_ptr[256], long* ret_ch)
 	}
 	DDSS t;
 	long si = sizeof(DDSS);
-	long num =  m_InsRobot->m_ACB1.ReadBuf((unsigned char *) & t, si);
+	long num = m_InsRobot->m_ACB1.ReadBuf((unsigned char *)&t, si);
 	if (num == 0)
 	{
 		return num;
 	}
-    memset(data_ptr,0,256);
+	memset(data_ptr, 0, 256);
 	*ret_ch = t.m_SUB_CH;
 	memcpy(data_ptr, t.m_Data, t.m_Size);
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Get 485 of A arm: \nchannel =%d\n",*ret_ch);
+		printf("[Marvin SDK]: Get 485 of A arm: \nchannel =%d\n", *ret_ch);
 		printf("data:\n");
-        for (int i = 0; i < 256; ++i) {
-            printf("%02x ", data_ptr[i]);
+		for (int i = 0; i < 256; ++i)
+		{
+			printf("%02x ", data_ptr[i]);
 
-            if ((i + 1) % 16 == 0) {
-                printf("  ");
-                for (int j = i-15; j <= i; j++) {
-                    printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
-                }
-                printf("\n");
-            }
-        }
-	    printf("\ndata size=%d \n",t.m_Size);
+			if ((i + 1) % 16 == 0)
+			{
+				printf("  ");
+				for (int j = i - 15; j <= i; j++)
+				{
+					printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
+				}
+				printf("\n");
+			}
+		}
+		printf("\ndata size=%d \n", t.m_Size);
 	}
 	return t.m_Size;
 }
 
-bool CRobot::OnSetChDataA(unsigned char* data_ptr, long size_int, long set_ch)
+bool CRobot::OnSetChDataA(unsigned char *data_ptr, long size_int, long set_ch)
 {
 	if (m_InsRobot == NULL)
 	{
@@ -87,28 +92,31 @@ bool CRobot::OnSetChDataA(unsigned char* data_ptr, long size_int, long set_ch)
 	m_InsRobot->pDDSS1->m_Size = size_int;
 	m_InsRobot->pDDSS1->m_SUB_CH = set_ch;
 	memcpy(m_InsRobot->pDDSS1->m_Data, data_ptr, size_int);
-	sendto(m_InsRobot->_tosock_, (char*)m_InsRobot->m_SendBuf1, sizeof(DDSS)+2, 0, (struct sockaddr*)&m_InsRobot->_to, sizeof(m_InsRobot->_to));
-	if(m_InsRobot->m_LocalLogTag == true)
+	sendto(m_InsRobot->_tosock_, (char *)m_InsRobot->m_SendBuf1, sizeof(DDSS) + 2, 0, (struct sockaddr *)&m_InsRobot->_to, sizeof(m_InsRobot->_to));
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Set 485 of A arm: \nchannel =%d\n",set_ch);
+		printf("[Marvin SDK]: Set 485 of A arm: \nchannel =%d\n", set_ch);
 		printf("data:\n");
-        for (int i = 0; i < 256; ++i) {
-            printf("%02x ", data_ptr[i]);
+		for (int i = 0; i < 256; ++i)
+		{
+			printf("%02x ", data_ptr[i]);
 
-            if ((i + 1) % 16 == 0) {
-                printf("  ");
-                for (int j = i-15; j <= i; j++) {
-                    printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
-                }
-                printf("\n");
-            }
-        }
-	    printf("\ndata size=%d \n",size_int);
+			if ((i + 1) % 16 == 0)
+			{
+				printf("  ");
+				for (int j = i - 15; j <= i; j++)
+				{
+					printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
+				}
+				printf("\n");
+			}
+		}
+		printf("\ndata size=%d \n", size_int);
 	}
 	return true;
 }
 
-long CRobot::OnGetChDataB(unsigned char data_ptr[256], long* ret_ch)
+long CRobot::OnGetChDataB(unsigned char data_ptr[256], long *ret_ch)
 {
 
 	if (m_InsRobot == NULL)
@@ -117,7 +125,7 @@ long CRobot::OnGetChDataB(unsigned char data_ptr[256], long* ret_ch)
 	}
 	DDSS t;
 	long si = sizeof(DDSS);
-	long num = m_InsRobot->m_ACB2.ReadBuf((unsigned char*)&t, si);
+	long num = m_InsRobot->m_ACB2.ReadBuf((unsigned char *)&t, si);
 	if (num == 0)
 	{
 		return num;
@@ -125,26 +133,29 @@ long CRobot::OnGetChDataB(unsigned char data_ptr[256], long* ret_ch)
 	memset(data_ptr, 0, 256);
 	*ret_ch = t.m_SUB_CH;
 	memcpy(data_ptr, t.m_Data, t.m_Size);
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Get 485 of B arm: \nchannel =%d\n",*ret_ch);
+		printf("[Marvin SDK]: Get 485 of B arm: \nchannel =%d\n", *ret_ch);
 		printf("data:\n");
-        for (int i = 0; i < 256; ++i) {
-            printf("%02x ", data_ptr[i]);
-            if ((i + 1) % 16 == 0) {
-                printf("  ");
-                for (int j = i-15; j <= i; j++) {
-                    printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
-                }
-                printf("\n");
-            }
-        }
-	    printf("\ndata size=%d \n",t.m_Size);
+		for (int i = 0; i < 256; ++i)
+		{
+			printf("%02x ", data_ptr[i]);
+			if ((i + 1) % 16 == 0)
+			{
+				printf("  ");
+				for (int j = i - 15; j <= i; j++)
+				{
+					printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
+				}
+				printf("\n");
+			}
+		}
+		printf("\ndata size=%d \n", t.m_Size);
 	}
 	return t.m_Size;
 }
 
-bool CRobot::OnSetChDataB(unsigned char* data_ptr, long size_int, long set_ch)
+bool CRobot::OnSetChDataB(unsigned char *data_ptr, long size_int, long set_ch)
 {
 	if (m_InsRobot == NULL)
 	{
@@ -159,47 +170,52 @@ bool CRobot::OnSetChDataB(unsigned char* data_ptr, long size_int, long set_ch)
 	m_InsRobot->pDDSS2->m_Size = size_int;
 	m_InsRobot->pDDSS2->m_SUB_CH = set_ch;
 	memcpy(m_InsRobot->pDDSS2->m_Data, data_ptr, size_int);
-	sendto(m_InsRobot->_tosock_, (char*)m_InsRobot->m_SendBuf2, sizeof(DDSS) + 2, 0, (struct sockaddr*)&m_InsRobot->_to, sizeof(m_InsRobot->_to));
-	if(m_InsRobot->m_LocalLogTag == true)
+	sendto(m_InsRobot->_tosock_, (char *)m_InsRobot->m_SendBuf2, sizeof(DDSS) + 2, 0, (struct sockaddr *)&m_InsRobot->_to, sizeof(m_InsRobot->_to));
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Set 485 of B arm: channel =%d\n",set_ch);
+		printf("[Marvin SDK]: Set 485 of B arm: channel =%d\n", set_ch);
 		printf("data:\n");
-        for (int i = 0; i < 256; ++i) {
-            printf("%02x ", data_ptr[i]);
+		for (int i = 0; i < 256; ++i)
+		{
+			printf("%02x ", data_ptr[i]);
 
-            if ((i + 1) % 16 == 0) {
-                printf("  ");
-                for (int j = i-15; j <= i; j++) {
-                    printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
-                }
-                printf("\n");
-            }
-        }
-	    printf("\ndata size=%d \n",size_int);
+			if ((i + 1) % 16 == 0)
+			{
+				printf("  ");
+				for (int j = i - 15; j <= i; j++)
+				{
+					printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
+				}
+				printf("\n");
+			}
+		}
+		printf("\ndata size=%d \n", size_int);
 	}
 	return true;
 }
 
 long CRobot::OnGetSDKVersion()
 {
-    if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: SDK version %d\n",SDK_VERSION);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: SDK version %d\n", SDK_VERSION);
 	return SDK_VERSION;
 }
 
-bool CRobot::OnSendPVT_A(char* local_file, long serial)
+bool CRobot::OnSendPVT_A(char *local_file, long serial)
 {
 	if (serial < 0 || serial >= 100)
 	{
 		return false;
 	}
 	char remote[256];
-	memset(remote,0,256);
+	memset(remote, 0, 256);
 	sprintf(remote, "\/home\/FUSION\/Config\/pvt\/user0\/%d.txt", serial);
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Send A arm pvt of serial=%d to local=%s\n ", serial, local_file);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Send A arm pvt of serial=%d to local=%s\n ", serial, local_file);
 	return OnSendFile(local_file, remote);
 }
 
-bool CRobot::OnSendPVT_B(char* local_file, long serial)
+bool CRobot::OnSendPVT_B(char *local_file, long serial)
 {
 	if (serial < 0 || serial >= 100)
 	{
@@ -208,11 +224,12 @@ bool CRobot::OnSendPVT_B(char* local_file, long serial)
 	char remote[256];
 	memset(remote, 0, 256);
 	sprintf(remote, "\/home\/FUSION\/Config\/pvt\/user1\/%d.txt", serial);
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Send B arm pvt of serial=%d to local=%s\n ", serial, local_file);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Send B arm pvt of serial=%d to local=%s\n ", serial, local_file);
 	return OnSendFile(local_file, remote);
 }
 
-bool  CRobot:: OnSendFile( char* local_file, char* remote_file)
+bool CRobot::OnSendFile(char *local_file, char *remote_file)
 {
 	if (m_InsRobot == NULL)
 	{
@@ -220,13 +237,14 @@ bool  CRobot:: OnSendFile( char* local_file, char* remote_file)
 	}
 	if (m_InsRobot->SendFile(local_file, remote_file) == FX_TRUE)
 	{
-	    if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: send file local file:%s, remote file: %s\n ", local_file, remote_file);
+		if (m_InsRobot->m_LocalLogTag == true)
+			printf("[Marvin SDK]: send file local file:%s, remote file: %s\n ", local_file, remote_file);
 		return true;
 	}
-	return  false;
+	return false;
 }
 
-bool CRobot::OnRecvFile(char* local_file, char* remote_file)
+bool CRobot::OnRecvFile(char *local_file, char *remote_file)
 {
 	if (m_InsRobot == NULL)
 	{
@@ -236,7 +254,7 @@ bool CRobot::OnRecvFile(char* local_file, char* remote_file)
 	{
 		return true;
 	}
-	return  false;
+	return false;
 }
 
 #ifdef _WIN32
@@ -245,10 +263,9 @@ void CALLBACK CallBackFunc2(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PT
 	m_InsRobot->DoRecv();
 	m_InsRobot->DoSend();
 	m_InsRobot->DoCnt();
-	
 }
 #elif defined(__linux__)
-void  CallBackFunc(union sigval v)
+void CallBackFunc(union sigval v)
 {
 	m_InsRobot->DoRecv();
 	m_InsRobot->DoSend();
@@ -258,7 +275,7 @@ void  CallBackFunc(union sigval v)
 
 CRobot::CRobot()
 {
-    m_send_response_recv_tag = 0;
+	m_send_response_recv_tag = 0;
 	m_send_response_timeout_cnt = 0;
 	m_last_response_timeout_cnt = 0;
 	m_respones_time_tag = 0;
@@ -280,173 +297,173 @@ CRobot::CRobot()
 	m_LinkTag = FX_FALSE;
 	_local_sock = INVALID_SOCKET;
 	_tosock_ = INVALID_SOCKET;
-	pDDSS1 = (DDSS*)&m_SendBuf1[2];
+	pDDSS1 = (DDSS *)&m_SendBuf1[2];
 	memset(pDDSS1, 0, sizeof(DDSS));
 	m_SendBuf1[0] = 'C';
 	m_SendBuf1[1] = 'H';
 	pDDSS1->m_Serial = 1;
 	pDDSS1->m_CH = 1;
-	pDDSS2 = (DDSS*)&m_SendBuf2[2];
+	pDDSS2 = (DDSS *)&m_SendBuf2[2];
 	memset(pDDSS2, 0, sizeof(DDSS));
 	m_SendBuf2[0] = 'C';
 	m_SendBuf2[1] = 'H';
 	pDDSS2->m_Serial = 1;
 	pDDSS2->m_CH = 2;
-	#ifdef _WIN32
-		char* shm_name = "AAA";  // Windows
-	#else
-		char* shm_name = "/var/tmp/AAA_shm";  // 在/var/tmp创建文件（重启后保留）
-	#endif
-    ShmOnInit(&m_ShMem);
-	// Windows 下检查共享内存是否存在
-	#ifdef _WIN32
-		printf("Checking Windows shared memory: %s\n", shm_name);
-		HANDLE hMapFile = OpenFileMappingA(
-			FILE_MAP_ALL_ACCESS,
-			FALSE,
-			shm_name
-		);
-		if (hMapFile != NULL)
+#ifdef _WIN32
+	char *shm_name = "AAA"; // Windows
+#else
+	char *shm_name = "/var/tmp/AAA_shm"; // 在/var/tmp创建文件（重启后保留）
+#endif
+	ShmOnInit(&m_ShMem);
+// Windows 下检查共享内存是否存在
+#ifdef _WIN32
+	printf("Checking Windows shared memory: %s\n", shm_name);
+	HANDLE hMapFile = OpenFileMappingA(
+		FILE_MAP_ALL_ACCESS,
+		FALSE,
+		shm_name);
+	if (hMapFile != NULL)
+	{
+		CloseHandle(hMapFile);
+	}
+	else
+	{
+		DWORD err = GetLastError();
+		if (err == ERROR_FILE_NOT_FOUND)
 		{
-			CloseHandle(hMapFile);
+			printf("Shared memory %s does not exist (error: %lu), will be created\n", shm_name, err);
 		}
 		else
 		{
-			DWORD err = GetLastError();
-			if (err == ERROR_FILE_NOT_FOUND)
-			{
-				printf("Shared memory %s does not exist (error: %lu), will be created\n", shm_name, err);
-			}
-			else
-			{
-				printf("Error checking shared memory %s, error code: %lu\n", shm_name, err);
-			}
+			printf("Error checking shared memory %s, error code: %lu\n", shm_name, err);
 		}
-	#else
-		// Linux下使用传统文件方式创建共享内存
-		printf("Checking Linux file-based shared memory: %s\n", shm_name);
-		FILE* fp = fopen(shm_name, "rb");
+	}
+#else
+	// Linux下使用传统文件方式创建共享内存
+	printf("Checking Linux file-based shared memory: %s\n", shm_name);
+	FILE *fp = fopen(shm_name, "rb");
+	if (fp != NULL)
+	{
+		fclose(fp);
+		printf("Shared memory file %s already exists\n", shm_name);
+		struct stat st;
+		if (stat(shm_name, &st) == 0)
+		{
+			printf("  Size: %ld bytes\n", st.st_size);
+		}
+	}
+	else
+	{
+		printf("Shared memory file %s does not exist, will be created\n", shm_name);
+		fp = fopen(shm_name, "wb");
 		if (fp != NULL)
 		{
+			fseek(fp, 102399, SEEK_SET);
+			fputc(0, fp);
 			fclose(fp);
-			printf("Shared memory file %s already exists\n", shm_name);
+			chmod(shm_name, 0666);
+			printf("  Created shared memory file with size 102400 bytes\n");
 			struct stat st;
 			if (stat(shm_name, &st) == 0)
 			{
-				printf("  Size: %ld bytes\n", st.st_size);
+				printf("  File permissions: %o\n", st.st_mode & 0777);
 			}
 		}
 		else
 		{
-			printf("Shared memory file %s does not exist, will be created\n", shm_name);
-			fp = fopen(shm_name, "wb");
-			if (fp != NULL)
-			{
-				fseek(fp, 102399, SEEK_SET);
-				fputc(0, fp);
-				fclose(fp);
-				chmod(shm_name, 0666);
-				printf("  Created shared memory file with size 102400 bytes\n");
-				struct stat st;
-				if (stat(shm_name, &st) == 0)
-				{
-					printf("  File permissions: %o\n", st.st_mode & 0777);
-				}
-			}
-			else
-			{
-				printf("  Failed to create shared memory file, errno: %d (%s)\n", errno, strerror(errno));
-			}
+			printf("  Failed to create shared memory file, errno: %d (%s)\n", errno, strerror(errno));
 		}
-		printf("  /var/tmp/ directory permissions:\n");
-		system("ls -ld /var/tmp/");
-	#endif
-    int master_result = m_ShMem.OnMapMster(&m_ShMem, shm_name, 102400);
-    m_psm = m_ShMem.OnGetMem(&m_ShMem);
-    if(m_psm == NULL)
-    {
-        printf("Map Master Err - m_psm is NULL\n");
-	#ifdef _WIN32
-			DWORD err = GetLastError();
-	#else
-			char cmd[256];
-			snprintf(cmd, sizeof(cmd), "ls -la %s 2>/dev/null || echo '  File not found'", shm_name);
-			system(cmd);
-			int fd = open(shm_name, O_RDWR);
-			if (fd != -1)
-			{
-				void* test_map = mmap(NULL, 102400, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-				if (test_map != MAP_FAILED)
-				{
-					munmap(test_map, 102400);
-				}
-				else
-				{
-					printf("    Direct mmap failed, errno: %d (%s)\n", errno, strerror(errno));
-				}
-				close(fd);
-			}
-			else
-			{
-				printf("    Failed to open file, errno: %d (%s)\n", errno, strerror(errno));
-			}
-	#endif
-	int slave_result = m_ShMem.OnMapSlave(&m_ShMem, shm_name);
+	}
+	printf("  /var/tmp/ directory permissions:\n");
+	system("ls -ld /var/tmp/");
+#endif
+	int master_result = m_ShMem.OnMapMster(&m_ShMem, shm_name, 102400);
 	m_psm = m_ShMem.OnGetMem(&m_ShMem);
-	if(m_psm == NULL)
+	if (m_psm == NULL)
 	{
-		printf("Map Slave Err - m_psm is NULL\n");
-	#ifdef _WIN32
+		printf("Map Master Err - m_psm is NULL\n");
+#ifdef _WIN32
 		DWORD err = GetLastError();
-		printf("  Windows Error Code: %lu\n", err);
-		printf("  Checking if Global\\ path requires admin privileges\n");
-	#else
-		printf("  errno: %d (%s)\n", errno, strerror(errno));
-		printf("  Checking file existence:\n");
+#else
 		char cmd[256];
 		snprintf(cmd, sizeof(cmd), "ls -la %s 2>/dev/null || echo '  File not found'", shm_name);
 		system(cmd);
-	#endif
-        }
-        else
-        {
-            printf("Map Slave success - m_psm = %p\n", m_psm);
-        }
-    }
-    else
-    {
-        printf("Map Master success - m_psm = %p\n", m_psm);
-    }
-    if(m_psm != NULL)
-    {
-        m_ACB_ShMem.OnSetBuf(m_psm, 102400);
-        m_ACB_ShMem.Empty();
-    }
-    else
-    {
-    }
+		int fd = open(shm_name, O_RDWR);
+		if (fd != -1)
+		{
+			void *test_map = mmap(NULL, 102400, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+			if (test_map != MAP_FAILED)
+			{
+				munmap(test_map, 102400);
+			}
+			else
+			{
+				printf("    Direct mmap failed, errno: %d (%s)\n", errno, strerror(errno));
+			}
+			close(fd);
+		}
+		else
+		{
+			printf("    Failed to open file, errno: %d (%s)\n", errno, strerror(errno));
+		}
+#endif
+		int slave_result = m_ShMem.OnMapSlave(&m_ShMem, shm_name);
+		m_psm = m_ShMem.OnGetMem(&m_ShMem);
+		if (m_psm == NULL)
+		{
+			printf("Map Slave Err - m_psm is NULL\n");
+#ifdef _WIN32
+			DWORD err = GetLastError();
+			printf("  Windows Error Code: %lu\n", err);
+			printf("  Checking if Global\\ path requires admin privileges\n");
+#else
+			printf("  errno: %d (%s)\n", errno, strerror(errno));
+			printf("  Checking file existence:\n");
+			char cmd[256];
+			snprintf(cmd, sizeof(cmd), "ls -la %s 2>/dev/null || echo '  File not found'", shm_name);
+			system(cmd);
+#endif
+		}
+		else
+		{
+			printf("Map Slave success - m_psm = %p\n", m_psm);
+		}
+	}
+	else
+	{
+		printf("Map Master success - m_psm = %p\n", m_psm);
+	}
+	if (m_psm != NULL)
+	{
+		m_ACB_ShMem.OnSetBuf(m_psm, 102400);
+		m_ACB_ShMem.Empty();
+	}
+	else
+	{
+	}
 }
 
 bool CRobot::OnRelease()
 {
-    if (m_InsRobot == NULL)
-    {
-        return true;
-    }
+	if (m_InsRobot == NULL)
+	{
+		return true;
+	}
 #ifdef _WIN32
-    timeKillEvent(m_InsRobot->m_TimeEventID);
-    SLEEP(10);
+	timeKillEvent(m_InsRobot->m_TimeEventID);
+	SLEEP(10);
 #elif defined(__linux__)
-    if (m_InsRobot->m_LinkTag == FX_TRUE) {
-        timer_delete(m_InsRobot->robot_timer);
-    }
-    SLEEP(10);
+	if (m_InsRobot->m_LinkTag == FX_TRUE)
+	{
+		timer_delete(m_InsRobot->robot_timer);
+	}
+	SLEEP(10);
 #endif
 	m_InsRobot->m_ShMem.OnDest(&m_InsRobot->m_ShMem);
-    delete m_InsRobot;
-    m_InsRobot = NULL;
-    printf("[Marvin SDK]: Robot released\n");
-    return true;
+	delete m_InsRobot;
+	m_InsRobot = NULL;
+	printf("[Marvin SDK]: Robot released\n");
+	return true;
 }
 
 CRobot::~CRobot()
@@ -454,7 +471,7 @@ CRobot::~CRobot()
 	m_InsRobot->m_ShMem.OnDest(&m_InsRobot->m_ShMem);
 }
 
-CRobot* CRobot::GetIns()
+CRobot *CRobot::GetIns()
 {
 	if (m_InsRobot == NULL)
 	{
@@ -465,23 +482,23 @@ CRobot* CRobot::GetIns()
 
 void CRobot::OnLocalLogOn()
 {
-    GetIns();
-    m_InsRobot->m_LocalLogTag = true;
+	GetIns();
+	m_InsRobot->m_LocalLogTag = true;
 }
 
 void CRobot::OnLocalLogOff()
 {
-    GetIns();
-    m_InsRobot->m_LocalLogTag = false;
+	GetIns();
+	m_InsRobot->m_LocalLogTag = false;
 }
 
-bool CRobot::OnGetBuf(DCSS* ret)
+bool CRobot::OnGetBuf(DCSS *ret)
 {
 	if (m_InsRobot == NULL)
 	{
 		return false;
 	}
-	memcpy(ret,&m_InsRobot->m_DCSS,sizeof(m_DCSS));
+	memcpy(ret, &m_InsRobot->m_DCSS, sizeof(m_DCSS));
 	return true;
 }
 
@@ -492,15 +509,15 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	{
 		return false;
 	}
-	#ifdef _WIN32
-		WSADATA wsadata;
-		int ret;
-		ret = WSAStartup(0x101, &wsadata);
-		if (ret != 0)
-		{
-			return false;
-		}
-	#endif
+#ifdef _WIN32
+	WSADATA wsadata;
+	int ret;
+	ret = WSAStartup(0x101, &wsadata);
+	if (ret != 0)
+	{
+		return false;
+	}
+#endif
 	memset(&m_InsRobot->_local, 0, sizeof(m_InsRobot->_local));
 	m_InsRobot->_localLen = sizeof(sockaddr_in);
 	m_InsRobot->_local.sin_family = AF_INET;
@@ -508,30 +525,31 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	m_InsRobot->_local.sin_addr.s_addr = INADDR_ANY;
 	m_InsRobot->_local_sock = socket(AF_INET, SOCK_DGRAM, 0);
 	unsigned long on = 1;
-	#ifdef _WIN32
-		if (0 != ioctlsocket(m_InsRobot->_local_sock, FIONBIO, &on))
-		{
-			return false;
-		}
-	#elif defined(__linux__)
-		if (0 != ioctl(m_InsRobot->_local_sock, FIONBIO, &on))
-		{
-			return false;
-		}
-	#endif
-    if (bind(m_InsRobot->_local_sock, (struct sockaddr*)&m_InsRobot->_local, sizeof(m_InsRobot->_local)) != 0)
-    {
-        if(m_InsRobot->m_LocalLogTag == true) printf("port bind failure, possibly occupied by another program\n");
-        #ifdef _WIN32
-            closesocket(m_InsRobot->_local_sock);
-		#elif defined(__linux__)
-            close(m_InsRobot->_local_sock);
-        #endif
-        m_InsRobot->_local_sock = 0;
+#ifdef _WIN32
+	if (0 != ioctlsocket(m_InsRobot->_local_sock, FIONBIO, &on))
+	{
+		return false;
+	}
+#elif defined(__linux__)
+	if (0 != ioctl(m_InsRobot->_local_sock, FIONBIO, &on))
+	{
+		return false;
+	}
+#endif
+	if (bind(m_InsRobot->_local_sock, (struct sockaddr *)&m_InsRobot->_local, sizeof(m_InsRobot->_local)) != 0)
+	{
+		if (m_InsRobot->m_LocalLogTag == true)
+			printf("port bind failure, possibly occupied by another program\n");
+#ifdef _WIN32
+		closesocket(m_InsRobot->_local_sock);
+#elif defined(__linux__)
+		close(m_InsRobot->_local_sock);
+#endif
+		m_InsRobot->_local_sock = 0;
 		m_InsRobot->m_LinkTag = FX_FALSE;
-    	return false;
-        return false;
-    }
+		return false;
+		return false;
+	}
 	memset(&m_InsRobot->_to, 0, sizeof(_to));
 	char ip_str[100];
 	sprintf(ip_str, "%d.%d.%d.%d", ip1, ip2, ip3, ip4);
@@ -543,35 +561,36 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	m_InsRobot->m_LinkTag = FX_TRUE;
 	{
 		int _localLen = sizeof(m_InsRobot->_local);
-		#ifdef _WIN32
-			int Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr*)&m_InsRobot->_local, &_localLen);
-		#else
-			int Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr*)&m_InsRobot->_local, (socklen_t*)&_localLen);
-		#endif
-		while(Len > 0)
+#ifdef _WIN32
+		int Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr *)&m_InsRobot->_local, &_localLen);
+#else
+		int Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr *)&m_InsRobot->_local, (socklen_t *)&_localLen);
+#endif
+		while (Len > 0)
 		{
-			#ifdef _WIN32
-				Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr*)&m_InsRobot->_local, &_localLen);
-			#else
-				Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr*)&m_InsRobot->_local, (socklen_t*)&_localLen);
-			#endif
+#ifdef _WIN32
+			Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr *)&m_InsRobot->_local, &_localLen);
+#else
+			Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr *)&m_InsRobot->_local, (socklen_t *)&_localLen);
+#endif
 		}
 	}
 
-	#ifdef _WIN32
-		m_InsRobot->m_TimeEventID = timeSetEvent(1, 1, CallBackFunc2, (DWORD)NULL, TIME_PERIODIC);
-	#else
+#ifdef _WIN32
+	m_InsRobot->m_TimeEventID = timeSetEvent(1, 1, CallBackFunc2, (DWORD)NULL, TIME_PERIODIC);
+#else
 	{
 		struct sigevent evp;
 		struct itimerspec ts;
 		int ret;
-		memset   (&evp, 0, sizeof(evp));
+		memset(&evp, 0, sizeof(evp));
 		evp.sigev_value.sival_ptr = &m_InsRobot->robot_timer;
 		evp.sigev_notify = SIGEV_THREAD;
 		evp.sigev_notify_function = CallBackFunc;
 		evp.sigev_value.sival_int = 0;
 		ret = timer_create(CLOCK_REALTIME, &evp, &m_InsRobot->robot_timer);
-		if( ret){
+		if (ret)
+		{
 			return false;
 		}
 		ts.it_interval.tv_sec = 0;
@@ -579,68 +598,69 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 		ts.it_value.tv_sec = 0;
 		ts.it_value.tv_nsec = 1000000;
 		ret = timer_settime(m_InsRobot->robot_timer, TIMER_ABSTIME, &ts, NULL);
-		if( ret )
+		if (ret)
 		{
 			return false;
 		}
 	}
-	#endif
- 	//m_InsRobot->ReadPendingData();
+#endif
+	// m_InsRobot->ReadPendingData();
 	m_InsRobot->m_RunState = 0;
 	m_InsRobot->m_ip1 = ip1;
 	m_InsRobot->m_ip2 = ip2;
 	m_InsRobot->m_ip3 = ip3;
 	m_InsRobot->m_ip4 = ip4;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Robot connected  IP=%d.%d.%d.%d\n", ip1, ip2, ip3, ip4);
+		printf("[Marvin SDK]: Robot connected  IP=%d.%d.%d.%d\n", ip1, ip2, ip3, ip4);
 	}
 	return true;
 }
 
 void CRobot::ReadPendingData()
 {
-    if (!m_InsRobot) {
-        return;
-    }
-    char buffer[2048];
-    sockaddr_in fromAddr;
-    socklen_t fromLen = sizeof(fromAddr);
-    int dataCount = 0;
-    if(m_InsRobot->m_LocalLogTag == true)
-    {
-        printf("[Marvin SDK]: Checking for pending data...\n");
-    }
-    while (true)
-    {
-        memset(buffer, 0, sizeof(buffer));
-        memset(&fromAddr, 0, sizeof(fromAddr));
-        fromLen = sizeof(fromAddr);
+	if (!m_InsRobot)
+	{
+		return;
+	}
+	char buffer[2048];
+	sockaddr_in fromAddr;
+	socklen_t fromLen = sizeof(fromAddr);
+	int dataCount = 0;
+	if (m_InsRobot->m_LocalLogTag == true)
+	{
+		printf("[Marvin SDK]: Checking for pending data...\n");
+	}
+	while (true)
+	{
+		memset(buffer, 0, sizeof(buffer));
+		memset(&fromAddr, 0, sizeof(fromAddr));
+		fromLen = sizeof(fromAddr);
 
-        int len = recvfrom(m_InsRobot->_local_sock, buffer, sizeof(buffer) - 1, 0,
-                          (struct sockaddr*)&fromAddr, &fromLen);
-        if (len <= 0)
-        {
-            break;
-        }
-        dataCount++;
-        buffer[len] = '\0'; 
-        if(m_InsRobot->m_LocalLogTag == true)
-        {
-            char fromIp[32];
-            #ifdef _WIN32
-                sprintf(fromIp, "%s", inet_ntoa(fromAddr.sin_addr));
-            #else
-                inet_ntop(AF_INET, &(fromAddr.sin_addr), fromIp, sizeof(fromIp));
-            #endif
-            printf("[Marvin SDK]: Read pending data %d bytes from %s:%d\n",
-                   len, fromIp, ntohs(fromAddr.sin_port));
-        }
-    }
-    if(m_InsRobot->m_LocalLogTag == true && dataCount > 0)
-    {
-        printf("[Marvin SDK]: Read %d pending packets\n", dataCount);
-    }
+		int len = recvfrom(m_InsRobot->_local_sock, buffer, sizeof(buffer) - 1, 0,
+						   (struct sockaddr *)&fromAddr, &fromLen);
+		if (len <= 0)
+		{
+			break;
+		}
+		dataCount++;
+		buffer[len] = '\0';
+		if (m_InsRobot->m_LocalLogTag == true)
+		{
+			char fromIp[32];
+#ifdef _WIN32
+			sprintf(fromIp, "%s", inet_ntoa(fromAddr.sin_addr));
+#else
+			inet_ntop(AF_INET, &(fromAddr.sin_addr), fromIp, sizeof(fromIp));
+#endif
+			printf("[Marvin SDK]: Read pending data %d bytes from %s:%d\n",
+				   len, fromIp, ntohs(fromAddr.sin_port));
+		}
+	}
+	if (m_InsRobot->m_LocalLogTag == true && dataCount > 0)
+	{
+		printf("[Marvin SDK]: Read %d pending packets\n", dataCount);
+	}
 }
 
 long CRobot::OnSetIntPara(char paraName[30], long setValue)
@@ -660,17 +680,17 @@ long CRobot::OnSetIntPara(char paraName[30], long setValue)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 150;
 	m_InsRobot->m_Slen++;
-	FX_CHAR* pName = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pName = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += 30 * sizeof(FX_CHAR);
-	FX_CHAR* pType = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pType = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_CHAR);
-	FX_CHAR* pIns = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pIns = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_CHAR);
-	FX_INT32* pValueInt = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pValueInt = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_FLOAT* pValueFloat = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pValueFloat = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT);
-	FX_INT16* pSerial = (FX_INT16*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT16 *pSerial = (FX_INT16 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_INT16);
 	long i;
 	for (i = 0; i < 30; i++)
@@ -692,13 +712,13 @@ long CRobot::OnSetIntPara(char paraName[30], long setValue)
 	*pValueInt = setValue;
 	*pValueFloat = 0;
 	*pSerial = serial;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-    if(m_InsRobot->m_LocalLogTag == true)
-    {
-        printf("[Marvin SDK]: Set int parameter: %s, value=%ld\n",paraName,setValue);
-    }
-    CRobot::OnSetSend();
+	if (m_InsRobot->m_LocalLogTag == true)
+	{
+		printf("[Marvin SDK]: Set int parameter: %s, value=%ld\n", paraName, setValue);
+	}
+	CRobot::OnSetSend();
 	for (i = 0; i < 50; i++)
 	{
 		SLEEP(2);
@@ -729,17 +749,17 @@ long CRobot::OnSetFloatPara(char paraName[30], double setValue)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 150;
 	m_InsRobot->m_Slen++;
-	FX_CHAR* pName = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pName = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += 30 * sizeof(FX_CHAR);
-	FX_CHAR* pType = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pType = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_CHAR);
-	FX_CHAR* pIns = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pIns = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_CHAR);
-	FX_INT32* pValueInt = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pValueInt = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_FLOAT* pValueFloat = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pValueFloat = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT);
-	FX_INT16* pSerial = (FX_INT16*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT16 *pSerial = (FX_INT16 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_INT16);
 	long i;
 	for (i = 0; i < 30; i++)
@@ -761,12 +781,12 @@ long CRobot::OnSetFloatPara(char paraName[30], double setValue)
 	*pValueInt = 0;
 	*pValueFloat = setValue;
 	*pSerial = serial;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-    if(m_InsRobot->m_LocalLogTag == true)
-    {
-        printf("[Marvin SDK]: Set float parameter: %s, value=%lf\n",paraName,setValue);
-    }
+	if (m_InsRobot->m_LocalLogTag == true)
+	{
+		printf("[Marvin SDK]: Set float parameter: %s, value=%lf\n", paraName, setValue);
+	}
 	CRobot::OnSetSend();
 	for (i = 0; i < 50; i++)
 	{
@@ -781,7 +801,7 @@ long CRobot::OnSetFloatPara(char paraName[30], double setValue)
 	return -2;
 }
 
-long CRobot::OnGetIntPara(char paraName[30], long* retValue)
+long CRobot::OnGetIntPara(char paraName[30], long *retValue)
 {
 	if (paraName[29] != 0)
 	{
@@ -799,17 +819,17 @@ long CRobot::OnGetIntPara(char paraName[30], long* retValue)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 150;
 	m_InsRobot->m_Slen++;
-	FX_CHAR* pName = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pName = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += 30 * sizeof(FX_CHAR);
-	FX_CHAR* pType = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pType = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_CHAR);
-	FX_CHAR* pIns = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pIns = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_CHAR);
-	FX_INT32* pValueInt = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pValueInt = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_FLOAT* pValueFloat = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pValueFloat = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT);
-	FX_INT16* pSerial = (FX_INT16*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT16 *pSerial = (FX_INT16 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_INT16);
 	long i;
 	for (i = 0; i < 30; i++)
@@ -831,7 +851,7 @@ long CRobot::OnGetIntPara(char paraName[30], long* retValue)
 	*pValueInt = 0;
 	*pValueFloat = 0;
 	*pSerial = serial;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
 	CRobot::OnSetSend();
 	for (i = 0; i < 50; i++)
@@ -845,13 +865,16 @@ long CRobot::OnGetIntPara(char paraName[30], long* retValue)
 			{
 				*retValue = m_InsRobot->m_DCSS.m_ParaValueI;
 			}
-			if(m_InsRobot->m_LocalLogTag == true)
+			if (m_InsRobot->m_LocalLogTag == true)
 			{
-				if (retValue != nullptr) {
-				printf("[Marvin SDK]: Get int parameter: %s, value=%ld\n",paraName, *retValue);
-			} else {
-				printf("[Marvin SDK] retValue is null pointer.\n");
-			}
+				if (retValue != nullptr)
+				{
+					printf("[Marvin SDK]: Get int parameter: %s, value=%ld\n", paraName, *retValue);
+				}
+				else
+				{
+					printf("[Marvin SDK] retValue is null pointer.\n");
+				}
 			}
 			return ret_v;
 		}
@@ -859,7 +882,7 @@ long CRobot::OnGetIntPara(char paraName[30], long* retValue)
 	return -2;
 }
 
-long CRobot::OnGetFloatPara(char paraName[30], double* retValue)
+long CRobot::OnGetFloatPara(char paraName[30], double *retValue)
 {
 	if (paraName[29] != 0)
 	{
@@ -876,17 +899,17 @@ long CRobot::OnGetFloatPara(char paraName[30], double* retValue)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 150;
 	m_InsRobot->m_Slen++;
-	FX_CHAR* pName = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pName = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += 30 * sizeof(FX_CHAR);
-	FX_CHAR* pType = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pType = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_CHAR);
-	FX_CHAR* pIns = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pIns = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_CHAR);
-	FX_INT32* pValueInt = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pValueInt = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_FLOAT* pValueFloat = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pValueFloat = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT);
-	FX_INT16* pSerial = (FX_INT16*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT16 *pSerial = (FX_INT16 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_INT16);
 	long i;
 	for (i = 0; i < 30; i++)
@@ -909,7 +932,7 @@ long CRobot::OnGetFloatPara(char paraName[30], double* retValue)
 	*pValueFloat = 0;
 	*pSerial = serial;
 
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
 	CRobot::OnSetSend();
 	for (i = 0; i < 50; i++)
@@ -923,13 +946,16 @@ long CRobot::OnGetFloatPara(char paraName[30], double* retValue)
 			{
 				*retValue = m_InsRobot->m_DCSS.m_ParaValueF;
 			}
-				if(m_InsRobot->m_LocalLogTag == true)
+			if (m_InsRobot->m_LocalLogTag == true)
 			{
-				if (retValue != nullptr) {
-				printf("[Marvin SDK]: Get float parameter: %s, value=%lf\n",paraName, *retValue);
-			} else {
-				printf("[Marvin SDK] retValue is null pointer.\n");
-			}
+				if (retValue != nullptr)
+				{
+					printf("[Marvin SDK]: Get float parameter: %s, value=%lf\n", paraName, *retValue);
+				}
+				else
+				{
+					printf("[Marvin SDK] retValue is null pointer.\n");
+				}
 			}
 			return ret_v;
 		}
@@ -943,27 +969,27 @@ long CRobot::OnSavePara()
 	{
 		return -1;
 	}
-	long add_size = 1 + sizeof(FX_CHAR) * 32 + sizeof(FX_INT32) + sizeof(FX_FLOAT) +  sizeof(FX_INT16);
+	long add_size = 1 + sizeof(FX_CHAR) * 32 + sizeof(FX_INT32) + sizeof(FX_FLOAT) + sizeof(FX_INT16);
 	if (add_size + m_InsRobot->m_Slen >= 1400)
 	{
 		return -1;
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 150;
 	m_InsRobot->m_Slen++;
-	FX_CHAR* pName = (FX_CHAR *) &m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pName = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += 30 * sizeof(FX_CHAR);
-	FX_CHAR* pType = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen]; 
+	FX_CHAR *pType = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_CHAR);
-	FX_CHAR* pIns = (FX_CHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_CHAR *pIns = (FX_CHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_CHAR);
-	FX_INT32* pValueInt = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pValueInt = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_FLOAT* pValueFloat = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pValueFloat = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT);
-	FX_INT16* pSerial = (FX_INT16*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT16 *pSerial = (FX_INT16 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	m_InsRobot->m_Slen += sizeof(FX_INT16);
 	long i;
-	for ( i = 0; i < 30; i++)
+	for (i = 0; i < 30; i++)
 	{
 		pName[i] = 0;
 	}
@@ -978,14 +1004,14 @@ long CRobot::OnSavePara()
 	*pValueInt = 0;
 	*pValueFloat = 0;
 	*pSerial = serial;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Save parameters\n");
+		printf("[Marvin SDK]: Save parameters\n");
 	}
 	CRobot::OnSetSend();
-	for ( i = 0; i < 50; i++)
+	for (i = 0; i < 50; i++)
 	{
 		SLEEP(2);
 		long ret_s = m_InsRobot->m_DCSS.m_ParaRetSerial;
@@ -1007,7 +1033,7 @@ void CRobot::DoCnt()
 			m_respones_time_tag = 0;
 			m_respones_time_cnt = 0;
 		}
-		m_send_response_timeout_cnt--; 
+		m_send_response_timeout_cnt--;
 		m_last_response_timeout_cnt = m_send_response_timeout_cnt;
 		if (m_send_response_local_tag != m_send_response_recv_tag)
 		{
@@ -1033,19 +1059,19 @@ void CRobot::DoRecv()
 		return;
 	}
 	_localLen = sizeof(_local);
-	#ifdef _WIN32
-		int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr*)&_local, &_localLen);
-	#elif defined(__linux__)
-		int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr*)&_local, (socklen_t*)&_localLen);
-	#endif
-	while(Len > 0)
+#ifdef _WIN32
+	int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr *)&_local, &_localLen);
+#elif defined(__linux__)
+	int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr *)&_local, (socklen_t *)&_localLen);
+#endif
+	while (Len > 0)
 	{
 		if (Len == sizeof(DCSS) + 2)
 		{
 			if (recvbuf[0] == 'F' && recvbuf[1] == 'X')
 			{
 				m_ACB_ShMem.WriteBuf((unsigned char *)recvbuf, Len);
-				DCSS* p = (DCSS*)&recvbuf[2];
+				DCSS *p = (DCSS *)&recvbuf[2];
 				memcpy(&m_DCSS, p, sizeof(m_DCSS));
 				m_send_response_recv_tag = m_DCSS.m_Out[0].m_pad[0];
 				if (m_InsRobot->m_GatherTag == 1)
@@ -1059,7 +1085,7 @@ void CRobot::DoRecv()
 						double v[40];
 						for (long i = 0; i < m_GatherItemSize; i++)
 						{
-							v[i+2] = *m_GatherItem[i];
+							v[i + 2] = *m_GatherItem[i];
 						}
 						v[0] = m_DCSS.m_Out[0].m_OutFrameSerial;
 						v[1] = m_DCSS.m_Out[1].m_OutFrameSerial;
@@ -1092,26 +1118,26 @@ void CRobot::DoRecv()
 				}
 			}
 		}
-		else if(Len == sizeof(DDSS) + 2)
+		else if (Len == sizeof(DDSS) + 2)
 		{
 			if (recvbuf[0] == 'C' && recvbuf[1] == 'H')
 			{
-				DDSS* p = (DDSS*)&recvbuf[2];
+				DDSS *p = (DDSS *)&recvbuf[2];
 				if (p->m_CH == 1)
 				{
 					m_ACB1.WriteBuf((unsigned char *)p, sizeof(DDSS));
 				}
 				if (p->m_CH == 2)
 				{
-					m_ACB2.WriteBuf((unsigned char*)p, sizeof(DDSS));
+					m_ACB2.WriteBuf((unsigned char *)p, sizeof(DDSS));
 				}
 			}
 		}
-	#ifdef _WIN32
-		Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr*)&_local, &_localLen);
-	#elif defined(__linux__)
-		Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr*)&_local, (socklen_t*)&_localLen);
-	#endif
+#ifdef _WIN32
+		Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr *)&_local, &_localLen);
+#elif defined(__linux__)
+		Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr *)&_local, (socklen_t *)&_localLen);
+#endif
 	}
 }
 
@@ -1119,7 +1145,7 @@ void CRobot::DoSend()
 {
 	if (m_SendTag == 100)
 	{
-		int tt = sendto(_tosock_, (char*)m_SendBuf, m_Slen, 0, (struct sockaddr*)&_to, sizeof(_to));
+		int tt = sendto(_tosock_, (char *)m_SendBuf, m_Slen, 0, (struct sockaddr *)&_to, sizeof(_to));
 		m_SendTag = 0;
 		m_Slen = 0;
 	}
@@ -1137,14 +1163,14 @@ bool CRobot::OnStopGather()
 		return false;
 	}
 	m_InsRobot->m_GatherTag = 2;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Stop collect data\n");
+		printf("[Marvin SDK]: Stop collect data\n");
 	}
 	return true;
 }
 
-bool CRobot::OnSaveGatherData(char* path)
+bool CRobot::OnSaveGatherData(char *path)
 {
 	GetIns();
 	if (m_InsRobot->m_LinkTag == false)
@@ -1155,16 +1181,16 @@ bool CRobot::OnSaveGatherData(char* path)
 	{
 		return false;
 	}
-	bool ret =  m_InsRobot->m_GatherSet.OnSave(path);
+	bool ret = m_InsRobot->m_GatherSet.OnSave(path);
 	m_InsRobot->m_GatherTag = 0;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Save collected data to %s\n",path);
+		printf("[Marvin SDK]: Save collected data to %s\n", path);
 	}
 	return ret;
 }
 
-bool CRobot::OnSaveGatherDataCSV(char* path)
+bool CRobot::OnSaveGatherDataCSV(char *path)
 {
 	GetIns();
 	if (m_InsRobot->m_LinkTag == false)
@@ -1177,9 +1203,9 @@ bool CRobot::OnSaveGatherDataCSV(char* path)
 	}
 	bool ret = m_InsRobot->m_GatherSet.OnSaveCSV(path);
 	m_InsRobot->m_GatherTag = 0;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Collected csv saved path=%s\n",path);
+		printf("[Marvin SDK]: Collected csv saved path=%s\n", path);
 	}
 	return ret;
 }
@@ -1187,17 +1213,17 @@ bool CRobot::OnSaveGatherDataCSV(char* path)
 bool CRobot::OnStartGather(long targetNum, long targetID[35], long recordNum)
 {
 	GetIns();
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Collect data settings\n");
-		printf("targetNum=%d\n",targetNum);
+		printf("[Marvin SDK]: Collect data settings\n");
+		printf("targetNum=%d\n", targetNum);
 		printf("targetID= [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d]\n",
-		targetID[0],targetID[1],targetID[2],targetID[3],targetID[4],targetID[5],targetID[6],
-		targetID[7],targetID[8],targetID[9],targetID[10],targetID[11],targetID[12],targetID[13],
-		targetID[14],targetID[15],targetID[16],targetID[17],targetID[18],targetID[19],targetID[20],
-		targetID[21],targetID[22],targetID[23],targetID[24],targetID[25],targetID[26],targetID[27],
-		targetID[28],targetID[29],targetID[30],targetID[31],targetID[32],targetID[33],targetID[34]);
-		printf("recordNum=%d\n",recordNum);
+			   targetID[0], targetID[1], targetID[2], targetID[3], targetID[4], targetID[5], targetID[6],
+			   targetID[7], targetID[8], targetID[9], targetID[10], targetID[11], targetID[12], targetID[13],
+			   targetID[14], targetID[15], targetID[16], targetID[17], targetID[18], targetID[19], targetID[20],
+			   targetID[21], targetID[22], targetID[23], targetID[24], targetID[25], targetID[26], targetID[27],
+			   targetID[28], targetID[29], targetID[30], targetID[31], targetID[32], targetID[33], targetID[34]);
+		printf("recordNum=%d\n", recordNum);
 	}
 	if (m_InsRobot->m_LinkTag == false)
 	{
@@ -1216,7 +1242,7 @@ bool CRobot::OnStartGather(long targetNum, long targetID[35], long recordNum)
 		return false;
 	}
 	long i;
-	for ( i = 0; i < targetNum; i++)
+	for (i = 0; i < targetNum; i++)
 	{
 		long v = targetID[i];
 		long rob = v / 100;
@@ -1238,7 +1264,7 @@ bool CRobot::OnStartGather(long targetNum, long targetID[35], long recordNum)
 		{
 			if (grp == 0)
 			{
-				m_InsRobot->m_GatherItem[i] = & m_InsRobot->m_DCSS.m_Out[0].m_FB_Joint_Pos[pos];
+				m_InsRobot->m_GatherItem[i] = &m_InsRobot->m_DCSS.m_Out[0].m_FB_Joint_Pos[pos];
 			}
 			else if (grp == 1)
 			{
@@ -1302,7 +1328,6 @@ bool CRobot::OnStartGather(long targetNum, long targetID[35], long recordNum)
 			else if (grp == 5)
 			{
 				m_InsRobot->m_GatherItem[i] = &m_InsRobot->m_DCSS.m_Out[1].m_FB_Joint_SToq[pos];
-
 			}
 			else if (grp == 6)
 			{
@@ -1339,15 +1364,15 @@ bool CRobot::OnStartGather(long targetNum, long targetID[35], long recordNum)
 	m_InsRobot->m_GatherRecordMaxNum = recordNum;
 	int t = (targetNum + 2);
 	m_InsRobot->m_GatherSet.OnInit((PoinType)t, recordNum);
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Data collected, targetNum=%ld, recordNum=%ld\n",targetNum,recordNum);
-	    printf("targetID= [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d]\n",
-		targetID[0],targetID[1],targetID[2],targetID[3],targetID[4],targetID[5],targetID[6],
-		targetID[7],targetID[8],targetID[9],targetID[10],targetID[11],targetID[12],targetID[13],
-		targetID[14],targetID[15],targetID[16],targetID[17],targetID[18],targetID[19],targetID[20],
-		targetID[21],targetID[22],targetID[23],targetID[24],targetID[25],targetID[26],targetID[27],
-		targetID[28],targetID[29],targetID[30],targetID[31],targetID[32],targetID[33],targetID[34]);
+		printf("[Marvin SDK]: Data collected, targetNum=%ld, recordNum=%ld\n", targetNum, recordNum);
+		printf("targetID= [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d]\n",
+			   targetID[0], targetID[1], targetID[2], targetID[3], targetID[4], targetID[5], targetID[6],
+			   targetID[7], targetID[8], targetID[9], targetID[10], targetID[11], targetID[12], targetID[13],
+			   targetID[14], targetID[15], targetID[16], targetID[17], targetID[18], targetID[19], targetID[20],
+			   targetID[21], targetID[22], targetID[23], targetID[24], targetID[25], targetID[26], targetID[27],
+			   targetID[28], targetID[29], targetID[30], targetID[31], targetID[32], targetID[33], targetID[34]);
 	}
 	m_InsRobot->m_GatherTag = true;
 	return true;
@@ -1364,9 +1389,9 @@ bool CRobot::OnClearSet()
 	m_InsRobot->m_SendBuf[1] = 'X';
 	m_InsRobot->m_SendBuf[2] = 0;
 	m_InsRobot->m_Slen = 3;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Clear set\n");
+		printf("[Marvin SDK]: Clear set\n");
 	}
 	return true;
 }
@@ -1381,7 +1406,7 @@ bool CRobot::OnSetJointLmt_A(int velRatio, int AccRatio)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 103;
 	m_InsRobot->m_Slen++;
-	FX_INT16* pv = (FX_INT16*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT16 *pv = (FX_INT16 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 
 	if (velRatio < 1)
 	{
@@ -1402,11 +1427,11 @@ bool CRobot::OnSetJointLmt_A(int velRatio, int AccRatio)
 	pv[0] = velRatio;
 	pv[1] = AccRatio;
 	m_InsRobot->m_Slen += sizeof(FX_INT16) * 2;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Set A arm velRatio=%d, AccRatio=%d \n",velRatio,AccRatio);
+		printf("[Marvin SDK]: Set A arm velRatio=%d, AccRatio=%d \n", velRatio, AccRatio);
 	}
 	return true;
 }
@@ -1420,14 +1445,14 @@ bool CRobot::OnSetPVT_A(int id)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 110;
 	m_InsRobot->m_Slen++;
-	FX_UCHAR* pv = (FX_UCHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_UCHAR *pv = (FX_UCHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = id;
 	m_InsRobot->m_Slen += sizeof(FX_UCHAR);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Set A arm PVT id=%d\n",id);
+		printf("[Marvin SDK]: Set A arm PVT id=%d\n", id);
 	}
 	return true;
 }
@@ -1441,14 +1466,14 @@ bool CRobot::OnSetPVT_B(int id)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 210;
 	m_InsRobot->m_Slen++;
-	FX_UCHAR* pv = (FX_UCHAR*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_UCHAR *pv = (FX_UCHAR *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = id;
 	m_InsRobot->m_Slen += sizeof(FX_UCHAR);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Set B arm PVT id=%d\n",id);
+		printf("[Marvin SDK]: Set B arm PVT id=%d\n", id);
 	}
 	return true;
 }
@@ -1462,14 +1487,14 @@ bool CRobot::OnSetForceCmd_A(double force)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 109;
 	m_InsRobot->m_Slen++;
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = force;
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Set A arm force cmd force=%lf\n",force);
+		printf("[Marvin SDK]: Set A arm force cmd force=%lf\n", force);
 	}
 	return true;
 }
@@ -1483,7 +1508,7 @@ bool CRobot::OnSetJointCmdPos_A(double joint[7])
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 108;
 	m_InsRobot->m_Slen++;
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = joint[0];
 	pv[1] = joint[1];
 	pv[2] = joint[2];
@@ -1492,38 +1517,38 @@ bool CRobot::OnSetJointCmdPos_A(double joint[7])
 	pv[5] = joint[5];
 	pv[6] = joint[6];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 7;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Set A arm joint cmd pose, joints=[%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",joint[0],joint[1],joint[2],joint[3],joint[4],joint[5],joint[6]);
+		printf("[Marvin SDK]: Set A arm joint cmd pose, joints=[%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n", joint[0], joint[1], joint[2], joint[3], joint[4], joint[5], joint[6]);
 	}
 	return true;
 }
 
-bool CRobot::OnInitPlnLmt(char * path)
+bool CRobot::OnInitPlnLmt(char *path)
 {
-	double vel[8]={0.0};
-    double acc[8]={0.0};
-    double npos[8]={0.0};
-    double ppos[8]={0.0};
-    long TYPE[2];
-    double GRV[2][3];
-    double DH[2][8][4];
-    double NPVA[2][7][4];
-    double BD[2][4][3];
-	double Mass[2][7]; 
-    double MCP[2][7][3];
-    double I[2][7][6];
-    char c; 
-    long i = 0;
+	double vel[8] = {0.0};
+	double acc[8] = {0.0};
+	double npos[8] = {0.0};
+	double ppos[8] = {0.0};
+	long TYPE[2];
+	double GRV[2][3];
+	double DH[2][8][4];
+	double NPVA[2][7][4];
+	double BD[2][4][3];
+	double Mass[2][7];
+	double MCP[2][7][3];
+	double I[2][7][6];
+	char c;
+	long i = 0;
 	long j = 0;
-	FILE* fp = fopen(path, "rb");
+	FILE *fp = fopen(path, "rb");
 	if (fp == NULL)
 	{
 		return false;
 	}
-    for ( i = 0; i < 2; i++)
+	for (i = 0; i < 2; i++)
 	{
 		if (fscanf(fp, "%ld,%lf,%lf,%lf,%c", &TYPE[i], &GRV[i][0], &GRV[i][1], &GRV[i][2], &c) != 5)
 		{
@@ -1535,14 +1560,14 @@ bool CRobot::OnInitPlnLmt(char * path)
 			fclose(fp);
 			return false;
 		}
-		for ( j = 0; j < 7; j++)
+		for (j = 0; j < 7; j++)
 		{
-			if (fscanf(fp, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%c", 
-				&DH[i][j][0], &DH[i][j][1], &DH[i][j][2], &DH[i][j][3],
-				&NPVA[i][j][0], &NPVA[i][j][1], &NPVA[i][j][2], &NPVA[i][j][3],
-				&Mass[i][j], &MCP[i][j][0], &MCP[i][j][1], &MCP[i][j][2],
-				&I[i][j][0], &I[i][j][1], &I[i][j][2], &I[i][j][3], &I[i][j][4], &I[i][j][5],
-				&c) != 19)
+			if (fscanf(fp, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%c",
+					   &DH[i][j][0], &DH[i][j][1], &DH[i][j][2], &DH[i][j][3],
+					   &NPVA[i][j][0], &NPVA[i][j][1], &NPVA[i][j][2], &NPVA[i][j][3],
+					   &Mass[i][j], &MCP[i][j][0], &MCP[i][j][1], &MCP[i][j][2],
+					   &I[i][j][0], &I[i][j][1], &I[i][j][2], &I[i][j][3], &I[i][j][4], &I[i][j][5],
+					   &c) != 19)
 			{
 				fclose(fp);
 				return false;
@@ -1553,8 +1578,8 @@ bool CRobot::OnInitPlnLmt(char * path)
 				return false;
 			}
 		}
-		if (fscanf(fp, "%lf,%lf,%lf,%lf,%c",&DH[i][7][0], &DH[i][7][1], &DH[i][7][2], &DH[i][7][3],
-			&c) != 5)
+		if (fscanf(fp, "%lf,%lf,%lf,%lf,%c", &DH[i][7][0], &DH[i][7][1], &DH[i][7][2], &DH[i][7][3],
+				   &c) != 5)
 		{
 			fclose(fp);
 			return false;
@@ -1567,7 +1592,7 @@ bool CRobot::OnInitPlnLmt(char * path)
 		for (j = 0; j < 4; j++)
 		{
 			if (fscanf(fp, "%lf,%lf,%lf,%c",
-				 &BD[i][j][0], &BD[i][j][1], &BD[i][j][2],&c) != 4)
+					   &BD[i][j][0], &BD[i][j][1], &BD[i][j][2], &c) != 4)
 			{
 				fclose(fp);
 				return false;
@@ -1581,208 +1606,209 @@ bool CRobot::OnInitPlnLmt(char * path)
 	}
 	fclose(fp);
 
-    for (j = 0; j < 7; j++)
-    {
-        npos[j] = NPVA[0][j][0];  
-        ppos[j] = NPVA[0][j][1];  
-        vel[j] = NPVA[0][j][2];   
-        acc[j] = NPVA[0][j][3];   
-    }
+	for (j = 0; j < 7; j++)
 	{
-		m_InsRobot->pln_A.OnSetLmt(7,npos,ppos,vel,acc);
+		npos[j] = NPVA[0][j][0];
+		ppos[j] = NPVA[0][j][1];
+		vel[j] = NPVA[0][j][2];
+		acc[j] = NPVA[0][j][3];
+	}
+	{
+		m_InsRobot->pln_A.OnSetLmt(7, npos, ppos, vel, acc);
 	}
 
 	for (j = 0; j < 7; j++)
-    {
-        npos[j] = NPVA[1][j][0];  
-        ppos[j] = NPVA[1][j][1];  
-        vel[j] = NPVA[1][j][2];   
-        acc[j] = NPVA[1][j][3];   
-
-    }
 	{
-		m_InsRobot->pln_B.OnSetLmt(7,npos,ppos,vel,acc);
+		npos[j] = NPVA[1][j][0];
+		ppos[j] = NPVA[1][j][1];
+		vel[j] = NPVA[1][j][2];
+		acc[j] = NPVA[1][j][3];
+	}
+	{
+		m_InsRobot->pln_B.OnSetLmt(7, npos, ppos, vel, acc);
 	}
 	return true;
 }
 
-bool CRobot::OnSetPlnCart_A(CPointSet* pset)
+bool CRobot::OnSetPlnCart_A(CPointSet *pset)
 {
 	DCSS t;
 	long num = pset->OnGetPointNum();
-	if(num <=5)
+	if (num <= 5)
 	{
 		return false;
 	}
 	CRobot::OnClearSet();
 	CRobot::OnSetTrajInit_A(num);
-	if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
 		return false;
 	}
 	SLEEP(SLEEP_TIME);
 	if (CRobot::OnGetBuf(&t) == true)
 	{
-		if (t.m_Out[0].m_TrajState !=1)
+		if (t.m_Out[0].m_TrajState != 1)
 		{
 			return false;
 		}
 	}
 	long send_g_num = num / 50;
 	long relic_num = num % 50;
-	long ii,jj,kk;
+	long ii, jj, kk;
 	double SendData[350];
-	double * retp;
+	double *retp;
 	long spos;
 	long ipos = 0;
-	for ( ii = 0; ii < send_g_num; ii++)
+	for (ii = 0; ii < send_g_num; ii++)
 	{
 		spos = 0;
-		for ( jj = 0; jj< 50; jj++)
+		for (jj = 0; jj < 50; jj++)
 		{
 			retp = pset->OnGetPoint(ipos);
 			ipos++;
-			for(kk = 0; kk < 7; kk ++)
+			for (kk = 0; kk < 7; kk++)
 			{
 				SendData[spos] = retp[kk];
-				spos ++;
+				spos++;
 			}
 		}
 		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_A(ii,50,SendData);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+		CRobot::OnSetTrajSet_A(ii, 50, SendData);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 		{
 			return false;
 		}
 	}
-	if(relic_num != 0)
+	if (relic_num != 0)
 	{
 		spos = 0;
-		for ( jj = 0; jj< relic_num; jj++)
+		for (jj = 0; jj < relic_num; jj++)
 		{
 			retp = pset->OnGetPoint(ipos);
 			ipos++;
-			for(kk = 0; kk < 7; kk ++)
+			for (kk = 0; kk < 7; kk++)
 			{
 				SendData[spos] = retp[kk];
-				spos ++;
+				spos++;
 			}
 		}
 		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_A(send_g_num,relic_num,SendData);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+		CRobot::OnSetTrajSet_A(send_g_num, relic_num, SendData);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 		{
 			return false;
 		}
 	}
 	if (CRobot::OnGetBuf(&t) == true)
 	{
-		if (t.m_Out[0].m_TrajState !=2)
+		if (t.m_Out[0].m_TrajState != 2)
 		{
 			return false;
 		}
 	}
 	CRobot::OnClearSet();
 	CRobot::OnSetTrajRun_A();
-	if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
 		return false;
 	}
 	return true;
 }
 
-
-
-bool CRobot::OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], double vel_ratio,double acc_ratio)
+bool CRobot::OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio)
 {
 	DCSS t;
 	double vr = vel_ratio;
 	double ar = acc_ratio;
-	if(vr < 0.01 ) vr = 0.01;
-	if(vr > 1.0  ) vr = 1.0;
-	if(ar < 0.01 ) ar = 0.01;
-	if(ar > 1.0  ) ar = 1.0;
-    long i = 0;
+	if (vr < 0.01)
+		vr = 0.01;
+	if (vr > 1.0)
+		vr = 1.0;
+	if (ar < 0.01)
+		ar = 0.01;
+	if (ar > 1.0)
+		ar = 1.0;
+	long i = 0;
 	double sta[8] = {0};
 	double sto[8] = {0};
-	for ( i = 0; i < 7; i++)
+	for (i = 0; i < 7; i++)
 	{
 		sta[i] = start_joints[i];
 		sto[i] = stop_joints[i];
 	}
-    long num = m_InsRobot->pln_A.OnPln(sta, sto, vr, ar);
-	if(num <=0)
+	long num = m_InsRobot->pln_A.OnPln(sta, sto, vr, ar);
+	if (num <= 0)
 	{
 		return false;
 	}
 	CRobot::OnClearSet();
 	CRobot::OnSetTrajInit_A(num);
-	if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
 		return false;
 	}
 	SLEEP(1000);
 	if (CRobot::OnGetBuf(&t) == true)
 	{
-		if (t.m_Out[0].m_TrajState !=1)
+		if (t.m_Out[0].m_TrajState != 1)
 		{
 			return false;
 		}
 	}
 	long send_g_num = num / 50;
 	long relic_num = num % 50;
-	long ii,jj,kk;
+	long ii, jj, kk;
 	double SendData[350];
 	double retp[8];
 	long spos;
-	for ( ii = 0; ii < send_g_num; ii++)
+	for (ii = 0; ii < send_g_num; ii++)
 	{
 		spos = 0;
-		for ( jj = 0; jj< 50; jj++)
+		for (jj = 0; jj < 50; jj++)
 		{
 			m_InsRobot->pln_A.OnCut(retp);
-			for(kk = 0; kk < 7; kk ++)
+			for (kk = 0; kk < 7; kk++)
 			{
 				SendData[spos] = retp[kk];
-				spos ++;
+				spos++;
 			}
 		}
 		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_A(ii,50,SendData);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+		CRobot::OnSetTrajSet_A(ii, 50, SendData);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 		{
 			return false;
 		}
 	}
-	if(relic_num != 0)
+	if (relic_num != 0)
 	{
 		spos = 0;
-		for ( jj = 0; jj< relic_num; jj++)
+		for (jj = 0; jj < relic_num; jj++)
 		{
 			m_InsRobot->pln_A.OnCut(retp);
-			for(kk = 0; kk < 7; kk ++)
+			for (kk = 0; kk < 7; kk++)
 			{
 				SendData[spos] = retp[kk];
-				spos ++;
+				spos++;
 			}
 		}
 		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_A(send_g_num,relic_num,SendData);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+		CRobot::OnSetTrajSet_A(send_g_num, relic_num, SendData);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 		{
 			return false;
 		}
 	}
 	if (CRobot::OnGetBuf(&t) == true)
 	{
-		if (t.m_Out[0].m_TrajState !=2)
+		if (t.m_Out[0].m_TrajState != 2)
 		{
 			return false;
 		}
 	}
 	CRobot::OnClearSet();
 	CRobot::OnSetTrajRun_A();
-	if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
 		return false;
 	}
@@ -1802,14 +1828,14 @@ bool CRobot::OnSetTrajInit_A(int pointNum)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 112;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = pointNum;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Initial A arm Planning Trajectory , number of point=%d,\n",pointNum);
+		printf("[Marvin SDK]: Initial A arm Planning Trajectory , number of point=%d,\n", pointNum);
 	}
 	return true;
 }
@@ -1824,11 +1850,11 @@ bool CRobot::OnSetTrajRun_A()
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 114;
 	m_InsRobot->m_Slen++;
 
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: A arm run Planning Trajectory \n");
+		printf("[Marvin SDK]: A arm run Planning Trajectory \n");
 	}
 	return true;
 }
@@ -1837,12 +1863,13 @@ bool CRobot::OnStopPlnJoint_A()
 {
 	CRobot::OnClearSet();
 	CRobot::OnStopPlnJoint_interA();
-	if( CRobot::OnSetSendWaitResponse(50)<0)
+	if (CRobot::OnSetSendWaitResponse(50) < 0)
 	{
 		return false;
-	}else
+	}
+	else
 	{
-		if(m_InsRobot->m_LocalLogTag == true)
+		if (m_InsRobot->m_LocalLogTag == true)
 		{
 			printf("[Marvin SDK]: A arm stop run Planning Trajectory \n");
 		}
@@ -1859,47 +1886,47 @@ bool CRobot::OnStopPlnJoint_interA()
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 115;
 	m_InsRobot->m_Slen++;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
 	return true;
 }
 
-bool CRobot::OnSetTrajSet_A(long serial,long pointNum, double* data)
+bool CRobot::OnSetTrajSet_A(long serial, long pointNum, double *data)
 {
-	if ( m_InsRobot->m_Slen !=3)
+	if (m_InsRobot->m_Slen != 3)
 	{
 		return false;
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 113;
 	m_InsRobot->m_Slen++;
-	FX_INT32 * pserial = (FX_INT32 *)& m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
-	* pserial = serial;
-	m_InsRobot->m_Slen+= sizeof(FX_INT32);
-	FX_FLOAT * pdat = (FX_FLOAT * ) & m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pserial = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	*pserial = serial;
+	m_InsRobot->m_Slen += sizeof(FX_INT32);
+	FX_FLOAT *pdat = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	long i;
-    long j;
-    long spos = 0;
-    // printf("\n=== Trajectory Points (total %ld points) ===\n", pointNum);
-    // printf("     Point    J1      J2      J3      J4      J5      J6      J7\n");
-    // printf("--------------------------------------------------------\n");
-    for(i = 0; i < pointNum; i++)
-    {
-        // printf("  %6ld: ", i);  
-        for(j = 0; j < 7; j++)
-        {
-            pdat[spos] = data[spos];
-            // printf("%7.3f ", data[spos]);
-            spos++;
-        }
-        // printf("\n");
-    }
-    // printf("========================================================\n");
-	m_InsRobot->m_Slen+= sizeof(FX_FLOAT) * 7 * pointNum;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
-	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	long j;
+	long spos = 0;
+	// printf("\n=== Trajectory Points (total %ld points) ===\n", pointNum);
+	// printf("     Point    J1      J2      J3      J4      J5      J6      J7\n");
+	// printf("--------------------------------------------------------\n");
+	for (i = 0; i < pointNum; i++)
 	{
-	    printf("[Marvin SDK]: A arm run Planning Trajectory \n");
+		// printf("  %6ld: ", i);
+		for (j = 0; j < 7; j++)
+		{
+			pdat[spos] = data[spos];
+			// printf("%7.3f ", data[spos]);
+			spos++;
+		}
+		// printf("\n");
+	}
+	// printf("========================================================\n");
+	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 7 * pointNum;
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
+	(*pnum)++;
+	if (m_InsRobot->m_LocalLogTag == true)
+	{
+		printf("[Marvin SDK]: A arm run Planning Trajectory \n");
 	}
 	return true;
 }
@@ -1914,10 +1941,10 @@ bool CRobot::OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 107;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv1 = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv1 = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv1[0] = fcType;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = fxDir[0];
 	pv[1] = fxDir[1];
 	pv[2] = fxDir[2];
@@ -1933,28 +1960,32 @@ bool CRobot::OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[
 	pv[12] = fcCtrlPara[6];
 	pv[13] = fcAdjLmt;
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm force control parameters\n fcType=%d,\n",fcType);
-	if(m_InsRobot->m_LocalLogTag == true) printf("fcDirection=[%.0lf,%.0lf,%.0lf,%.0lf,%.0lf,%.0lf],\n",fxDir[0],fxDir[1],fxDir[2],fxDir[3],fxDir[4],fxDir[5]);
-	if(m_InsRobot->m_LocalLogTag == true) printf("fcCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n",fcCtrlPara[0],fcCtrlPara[1],fcCtrlPara[2],fcCtrlPara[3],fcCtrlPara[4],fcCtrlPara[5],fcCtrlPara[6]);
-	if(m_InsRobot->m_LocalLogTag == true) printf("fcAdjLmt=%lf\n",fcAdjLmt);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set A arm force control parameters\n fcType=%d,\n", fcType);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("fcDirection=[%.0lf,%.0lf,%.0lf,%.0lf,%.0lf,%.0lf],\n", fxDir[0], fxDir[1], fxDir[2], fxDir[3], fxDir[4], fxDir[5]);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("fcCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n", fcCtrlPara[0], fcCtrlPara[1], fcCtrlPara[2], fcCtrlPara[3], fcCtrlPara[4], fcCtrlPara[5], fcCtrlPara[6]);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("fcAdjLmt=%lf\n", fcAdjLmt);
 	return true;
 }
 
 bool CRobot::OnSetDragSpace_A(int zsType)
 {
-	long add_size = 1 + sizeof(FX_FLOAT) * 6 + sizeof(FX_INT32) ;
+	long add_size = 1 + sizeof(FX_FLOAT) * 6 + sizeof(FX_INT32);
 	if (add_size + m_InsRobot->m_Slen >= 1400)
 	{
 		return false;
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 106;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv1 = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv1 = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv1[0] = zsType;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = 0;
 	pv[1] = 0;
 	pv[2] = 0;
@@ -1962,13 +1993,14 @@ bool CRobot::OnSetDragSpace_A(int zsType)
 	pv[4] = 0;
 	pv[5] = 0;
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 6;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-    if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm drag space type=%d\n",zsType);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set A arm drag space type=%d\n", zsType);
 	return true;
 }
 
-bool CRobot::OnSetCartKD_A(double K[7], double D[7],int type)
+bool CRobot::OnSetCartKD_A(double K[7], double D[7], int type)
 {
 	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -1977,7 +2009,7 @@ bool CRobot::OnSetCartKD_A(double K[7], double D[7],int type)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 105;
 	m_InsRobot->m_Slen++;
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = K[0];
 	pv[1] = K[1];
 	pv[2] = K[2];
@@ -1993,15 +2025,16 @@ bool CRobot::OnSetCartKD_A(double K[7], double D[7],int type)
 	pv[12] = D[5];
 	pv[13] = D[6];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
-	FX_INT32* pi = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pi = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pi[0] = type;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm Cart k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
-	K[0],K[1],K[2],K[3],K[4],K[5],K[6],
-	D[0],D[1],D[2],D[3],D[4],D[5],D[6],
-	type);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set A arm Cart k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
+			   K[0], K[1], K[2], K[3], K[4], K[5], K[6],
+			   D[0], D[1], D[2], D[3], D[4], D[5], D[6],
+			   type);
 	return true;
 }
 
@@ -2014,10 +2047,10 @@ bool CRobot::OnSetEefRot_A(int fcType, double CartCtrlPara[7])
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 107;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv1 = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv1 = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv1[0] = fcType;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = 0;
 	pv[1] = 0;
 	pv[2] = 0;
@@ -2033,10 +2066,12 @@ bool CRobot::OnSetEefRot_A(int fcType, double CartCtrlPara[7])
 	pv[12] = CartCtrlPara[6];
 	pv[13] = 0;
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm flange Cart rotation parameters.\n fcType=%d,\n",fcType);
-    if(m_InsRobot->m_LocalLogTag == true) printf("CartCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n",CartCtrlPara[0],CartCtrlPara[1],CartCtrlPara[2],CartCtrlPara[3],CartCtrlPara[4],CartCtrlPara[5],CartCtrlPara[6]);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set A arm flange Cart rotation parameters.\n fcType=%d,\n", fcType);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("CartCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n", CartCtrlPara[0], CartCtrlPara[1], CartCtrlPara[2], CartCtrlPara[3], CartCtrlPara[4], CartCtrlPara[5], CartCtrlPara[6]);
 	return true;
 }
 
@@ -2049,7 +2084,7 @@ bool CRobot::OnSetJointKD_A(double K[7], double D[7])
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 104;
 	m_InsRobot->m_Slen++;
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = K[0];
 	pv[1] = K[1];
 	pv[2] = K[2];
@@ -2065,11 +2100,12 @@ bool CRobot::OnSetJointKD_A(double K[7], double D[7])
 	pv[12] = D[5];
 	pv[13] = D[6];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm joint k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",
-	K[0],K[1],K[2],K[3],K[4],K[5],K[6],
-	D[0],D[1],D[2],D[3],D[4],D[5],D[6]);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set A arm joint k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",
+			   K[0], K[1], K[2], K[3], K[4], K[5], K[6],
+			   D[0], D[1], D[2], D[3], D[4], D[5], D[6]);
 	return true;
 }
 
@@ -2082,7 +2118,7 @@ bool CRobot::OnSetTool_A(double kinePara[6], double dynPara[10])
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 102;
 	m_InsRobot->m_Slen++;
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = kinePara[0];
 	pv[1] = kinePara[1];
 	pv[2] = kinePara[2];
@@ -2100,11 +2136,12 @@ bool CRobot::OnSetTool_A(double kinePara[6], double dynPara[10])
 	pv[14] = dynPara[8];
 	pv[15] = dynPara[9];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 16;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm tool kineParams=[%lf,%lf,%lf,%lf,%lf,%lf]\n dynamicParams=[%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",
-	kinePara[0],kinePara[1],kinePara[2],kinePara[3],kinePara[4],kinePara[5],
-	dynPara[0],dynPara[1],dynPara[2],dynPara[3],dynPara[4],dynPara[5],dynPara[6],dynPara[7],dynPara[8],dynPara[9]);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set A arm tool kineParams=[%lf,%lf,%lf,%lf,%lf,%lf]\n dynamicParams=[%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",
+			   kinePara[0], kinePara[1], kinePara[2], kinePara[3], kinePara[4], kinePara[5],
+			   dynPara[0], dynPara[1], dynPara[2], dynPara[3], dynPara[4], dynPara[5], dynPara[6], dynPara[7], dynPara[8], dynPara[9]);
 	return true;
 }
 
@@ -2117,12 +2154,13 @@ bool CRobot::OnSetTargetState_A(int state)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 101;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = state;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm state=%d\n",state);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set A arm state=%d\n", state);
 	return true;
 }
 
@@ -2135,12 +2173,13 @@ bool CRobot::OnSetImpType_A(int type)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 111;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = type;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-    if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set A arm impedance type=%d\n",type);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set A arm impedance type=%d\n", type);
 	return true;
 }
 
@@ -2154,7 +2193,7 @@ bool CRobot::OnSetJointLmt_B(int velRatio, int AccRatio)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 203;
 	m_InsRobot->m_Slen++;
-	FX_INT16* pv = (FX_INT16*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT16 *pv = (FX_INT16 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	if (velRatio < 1)
 	{
 		velRatio = 1;
@@ -2174,9 +2213,10 @@ bool CRobot::OnSetJointLmt_B(int velRatio, int AccRatio)
 	pv[0] = velRatio;
 	pv[1] = AccRatio;
 	m_InsRobot->m_Slen += sizeof(FX_INT16) * 2;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-    if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm velRatio=%d, AccRatio=%d \n",velRatio,AccRatio);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set B arm velRatio=%d, AccRatio=%d \n", velRatio, AccRatio);
 	return true;
 }
 
@@ -2189,12 +2229,13 @@ bool CRobot::OnSetForceCmd_B(double force)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 209;
 	m_InsRobot->m_Slen++;
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = force;
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm force cmd force=%lf\n",force);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set B arm force cmd force=%lf\n", force);
 	return true;
 }
 
@@ -2207,7 +2248,7 @@ bool CRobot::OnSetJointCmdPos_B(double joint[7])
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 208;
 	m_InsRobot->m_Slen++;
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = joint[0];
 	pv[1] = joint[1];
 	pv[2] = joint[2];
@@ -2216,10 +2257,11 @@ bool CRobot::OnSetJointCmdPos_B(double joint[7])
 	pv[5] = joint[5];
 	pv[6] = joint[6];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 7;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm joint cmd pose, joints=[%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",
-	joint[0],joint[1],joint[2],joint[3],joint[4],joint[5],joint[6]);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set B arm joint cmd pose, joints=[%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",
+			   joint[0], joint[1], joint[2], joint[3], joint[4], joint[5], joint[6]);
 	return true;
 }
 
@@ -2232,10 +2274,10 @@ bool CRobot::OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 207;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv1 = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv1 = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv1[0] = fcType;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = fxDir[0];
 	pv[1] = fxDir[1];
 	pv[2] = fxDir[2];
@@ -2251,12 +2293,16 @@ bool CRobot::OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[
 	pv[12] = fcCtrlPara[6];
 	pv[13] = fcAdjLmt;
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm force control parameters\n fcType=%d,\n",fcType);
-	if(m_InsRobot->m_LocalLogTag == true) printf("fcDirection=[%.0lf,%.0lf,%.0lf,%.0lf,%.0lf,%.0lf],\n",fxDir[0],fxDir[1],fxDir[2],fxDir[3],fxDir[4],fxDir[5]);
-	if(m_InsRobot->m_LocalLogTag == true) printf("fcCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n",fcCtrlPara[0],fcCtrlPara[1],fcCtrlPara[2],fcCtrlPara[3],fcCtrlPara[4],fcCtrlPara[5],fcCtrlPara[6]);
-	if(m_InsRobot->m_LocalLogTag == true) printf("fcAdjLmt=%lf\n",fcAdjLmt);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set B arm force control parameters\n fcType=%d,\n", fcType);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("fcDirection=[%.0lf,%.0lf,%.0lf,%.0lf,%.0lf,%.0lf],\n", fxDir[0], fxDir[1], fxDir[2], fxDir[3], fxDir[4], fxDir[5]);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("fcCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n", fcCtrlPara[0], fcCtrlPara[1], fcCtrlPara[2], fcCtrlPara[3], fcCtrlPara[4], fcCtrlPara[5], fcCtrlPara[6]);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("fcAdjLmt=%lf\n", fcAdjLmt);
 	return true;
 }
 
@@ -2269,10 +2315,10 @@ bool CRobot::OnSetDragSpace_B(int zsType)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 206;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv1 = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv1 = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv1[0] = zsType;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = 0;
 	pv[1] = 0;
 	pv[2] = 0;
@@ -2280,13 +2326,14 @@ bool CRobot::OnSetDragSpace_B(int zsType)
 	pv[4] = 0;
 	pv[5] = 0;
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 6;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm drag space type=%d\n",zsType);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set B arm drag space type=%d\n", zsType);
 	return true;
 }
 
-bool CRobot::OnSetCartKD_B(double K[7], double D[7],int type)
+bool CRobot::OnSetCartKD_B(double K[7], double D[7], int type)
 {
 	long add_size = 1 + sizeof(FX_FLOAT) * 14 + sizeof(FX_INT32);
 	if (add_size + m_InsRobot->m_Slen >= 1400)
@@ -2295,7 +2342,7 @@ bool CRobot::OnSetCartKD_B(double K[7], double D[7],int type)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 205;
 	m_InsRobot->m_Slen++;
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = K[0];
 	pv[1] = K[1];
 	pv[2] = K[2];
@@ -2311,15 +2358,16 @@ bool CRobot::OnSetCartKD_B(double K[7], double D[7],int type)
 	pv[12] = D[5];
 	pv[13] = D[6];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
-	FX_INT32* pi = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pi = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pi[0] = type;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm Cart k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
-	K[0],K[1],K[2],K[3],K[4],K[5],K[6],
-	D[0],D[1],D[2],D[3],D[4],D[5],D[6],
-	type);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set B arm Cart k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\ntype=%d\n",
+			   K[0], K[1], K[2], K[3], K[4], K[5], K[6],
+			   D[0], D[1], D[2], D[3], D[4], D[5], D[6],
+			   type);
 	return true;
 }
 
@@ -2332,10 +2380,10 @@ bool CRobot::OnSetEefRot_B(int fcType, double CartCtrlPara[7])
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 207;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv1 = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv1 = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv1[0] = fcType;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = 0;
 	pv[1] = 0;
 	pv[2] = 0;
@@ -2351,10 +2399,12 @@ bool CRobot::OnSetEefRot_B(int fcType, double CartCtrlPara[7])
 	pv[12] = CartCtrlPara[6];
 	pv[13] = 0;
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm flange Cart rotation parameters.\n fcType=%d,\n",fcType);
-    if(m_InsRobot->m_LocalLogTag == true) printf("CartCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n",CartCtrlPara[0],CartCtrlPara[1],CartCtrlPara[2],CartCtrlPara[3],CartCtrlPara[4],CartCtrlPara[5],CartCtrlPara[6]);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set B arm flange Cart rotation parameters.\n fcType=%d,\n", fcType);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("CartCtrlPara=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\n", CartCtrlPara[0], CartCtrlPara[1], CartCtrlPara[2], CartCtrlPara[3], CartCtrlPara[4], CartCtrlPara[5], CartCtrlPara[6]);
 	return true;
 }
 
@@ -2367,7 +2417,7 @@ bool CRobot::OnSetJointKD_B(double K[7], double D[7])
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 204;
 	m_InsRobot->m_Slen++;
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = K[0];
 	pv[1] = K[1];
 	pv[2] = K[2];
@@ -2383,11 +2433,12 @@ bool CRobot::OnSetJointKD_B(double K[7], double D[7])
 	pv[12] = D[5];
 	pv[13] = D[6];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 14;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm joint k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",
-	K[0],K[1],K[2],K[3],K[4],K[5],K[6],
-	D[0],D[1],D[2],D[3],D[4],D[5],D[6]);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set B arm joint k=[%lf,%lf,%lf,%lf,%lf,%lf,%lf],\nD=[%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",
+			   K[0], K[1], K[2], K[3], K[4], K[5], K[6],
+			   D[0], D[1], D[2], D[3], D[4], D[5], D[6]);
 	return true;
 }
 
@@ -2400,7 +2451,7 @@ bool CRobot::OnSetTool_B(double kinePara[6], double dynPara[10])
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 202;
 	m_InsRobot->m_Slen++;
-	FX_FLOAT* pv = (FX_FLOAT*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_FLOAT *pv = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = kinePara[0];
 	pv[1] = kinePara[1];
 	pv[2] = kinePara[2];
@@ -2418,11 +2469,12 @@ bool CRobot::OnSetTool_B(double kinePara[6], double dynPara[10])
 	pv[14] = dynPara[8];
 	pv[15] = dynPara[9];
 	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 16;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm tool kineParams=[%lf,%lf,%lf,%lf,%lf,%lf]\n dynamicParams=[%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",
-	kinePara[0],kinePara[1],kinePara[2],kinePara[3],kinePara[4],kinePara[5],
-	dynPara[0],dynPara[1],dynPara[2],dynPara[3],dynPara[4],dynPara[5],dynPara[6],dynPara[7],dynPara[8],dynPara[9]);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set B arm tool kineParams=[%lf,%lf,%lf,%lf,%lf,%lf]\n dynamicParams=[%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n",
+			   kinePara[0], kinePara[1], kinePara[2], kinePara[3], kinePara[4], kinePara[5],
+			   dynPara[0], dynPara[1], dynPara[2], dynPara[3], dynPara[4], dynPara[5], dynPara[6], dynPara[7], dynPara[8], dynPara[9]);
 	return true;
 }
 
@@ -2436,12 +2488,13 @@ bool CRobot::OnSetTargetState_B(int state)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 201;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = state;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm state=%d\n",state);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set B arm state=%d\n", state);
 	return true;
 }
 
@@ -2454,191 +2507,195 @@ bool CRobot::OnSetImpType_B(int type)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 211;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = type;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-    if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Set B arm impedance type=%d\n",type);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Set B arm impedance type=%d\n", type);
 	return true;
 }
 
-bool CRobot::OnSetPlnCart_B(CPointSet* pset)
+bool CRobot::OnSetPlnCart_B(CPointSet *pset)
 {
 	DCSS t;
 	long num = pset->OnGetPointNum();
-	if(num <=5)
+	if (num <= 5)
 	{
 		return false;
 	}
 	CRobot::OnClearSet();
 	CRobot::OnSetTrajInit_B(num);
-	if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
 		return false;
 	}
 	if (CRobot::OnGetBuf(&t) == true)
 	{
-		if (t.m_Out[1].m_TrajState !=1)
+		if (t.m_Out[1].m_TrajState != 1)
 		{
 			return false;
 		}
 	}
 	long send_g_num = num / 50;
 	long relic_num = num % 50;
-	long ii,jj,kk;
+	long ii, jj, kk;
 	double SendData[350];
-	double * retp;
+	double *retp;
 	long spos;
 	long ipos = 0;
-	for ( ii = 0; ii < send_g_num; ii++)
+	for (ii = 0; ii < send_g_num; ii++)
 	{
 		spos = 0;
-		for ( jj = 0; jj< 50; jj++)
+		for (jj = 0; jj < 50; jj++)
 		{
 			retp = pset->OnGetPoint(ipos);
 			ipos++;
-			for(kk = 0; kk < 7; kk ++)
+			for (kk = 0; kk < 7; kk++)
 			{
 				SendData[spos] = retp[kk];
-				spos ++;
+				spos++;
 			}
 		}
 		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_B(ii,50,SendData);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+		CRobot::OnSetTrajSet_B(ii, 50, SendData);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 		{
 			return false;
 		}
-
 	}
-	if(relic_num != 0)
+	if (relic_num != 0)
 	{
 		spos = 0;
-		for ( jj = 0; jj< relic_num; jj++)
+		for (jj = 0; jj < relic_num; jj++)
 		{
 			retp = pset->OnGetPoint(ipos);
 			ipos++;
-			for(kk = 0; kk < 7; kk ++)
+			for (kk = 0; kk < 7; kk++)
 			{
 				SendData[spos] = retp[kk];
-				spos ++;
+				spos++;
 			}
 		}
 		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_B(send_g_num,relic_num,SendData);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+		CRobot::OnSetTrajSet_B(send_g_num, relic_num, SendData);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 		{
 			return false;
 		}
 	}
 	if (CRobot::OnGetBuf(&t) == true)
 	{
-		if (t.m_Out[1].m_TrajState !=2)
+		if (t.m_Out[1].m_TrajState != 2)
 		{
 			return false;
 		}
 	}
 	CRobot::OnClearSet();
 	CRobot::OnSetTrajRun_B();
-	if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
 		return false;
 	}
 	return true;
 }
 
-bool CRobot::OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_ratio,double acc_ratio)
+bool CRobot::OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio)
 {
 	DCSS t;
 	double vr = vel_ratio;
 	double ar = acc_ratio;
-	if(vr < 0.01 ) vr = 0.01;
-	if(vr > 1.0  ) vr = 1.0;
-	if(ar < 0.01 ) ar = 0.01;
-	if(ar > 1.0  ) ar = 1.0;
-    long i = 0;
+	if (vr < 0.01)
+		vr = 0.01;
+	if (vr > 1.0)
+		vr = 1.0;
+	if (ar < 0.01)
+		ar = 0.01;
+	if (ar > 1.0)
+		ar = 1.0;
+	long i = 0;
 	double sta[8] = {0};
 	double sto[8] = {0};
-	for ( i = 0; i < 7; i++)
+	for (i = 0; i < 7; i++)
 	{
 		sta[i] = start_joints[i];
 		sto[i] = stop_joints[i];
 	}
-	
-    long num = m_InsRobot->pln_B.OnPln(sta, sto, vr, ar);
-	if(num <=0)
+
+	long num = m_InsRobot->pln_B.OnPln(sta, sto, vr, ar);
+	if (num <= 0)
 	{
 		return false;
 	}
 	CRobot::OnClearSet();
 	CRobot::OnSetTrajInit_B(num);
-	if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
 		return false;
 	}
 	if (CRobot::OnGetBuf(&t) == true)
 	{
-		if (t.m_Out[1].m_TrajState !=1)
+		if (t.m_Out[1].m_TrajState != 1)
 		{
 			return false;
 		}
 	}
 	long send_g_num = num / 50;
 	long relic_num = num % 50;
-	long ii,jj,kk;
+	long ii, jj, kk;
 
 	double SendData[350];
 	double retp[8];
 	long spos;
-	for ( ii = 0; ii < send_g_num; ii++)
+	for (ii = 0; ii < send_g_num; ii++)
 	{
 		spos = 0;
-		for ( jj = 0; jj< 50; jj++)
+		for (jj = 0; jj < 50; jj++)
 		{
 			m_InsRobot->pln_B.OnCut(retp);
-			for(kk = 0; kk < 7; kk ++)
+			for (kk = 0; kk < 7; kk++)
 			{
 				SendData[spos] = retp[kk];
-				spos ++;
+				spos++;
 			}
 		}
 		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_B(ii,50,SendData);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+		CRobot::OnSetTrajSet_B(ii, 50, SendData);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 		{
 			return false;
 		}
 	}
-	if(relic_num != 0)
+	if (relic_num != 0)
 	{
 		spos = 0;
-		for ( jj = 0; jj< relic_num; jj++)
+		for (jj = 0; jj < relic_num; jj++)
 		{
 			m_InsRobot->pln_B.OnCut(retp);
-			for(kk = 0; kk < 7; kk ++)
+			for (kk = 0; kk < 7; kk++)
 			{
 				SendData[spos] = retp[kk];
-				spos ++;
+				spos++;
 			}
 		}
 		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_B(send_g_num,relic_num,SendData);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+		CRobot::OnSetTrajSet_B(send_g_num, relic_num, SendData);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 		{
 			return false;
 		}
 	}
 	if (CRobot::OnGetBuf(&t) == true)
 	{
-		if (t.m_Out[1].m_TrajState !=2)
+		if (t.m_Out[1].m_TrajState != 2)
 		{
 			return false;
 		}
 	}
 	CRobot::OnClearSet();
 	CRobot::OnSetTrajRun_B();
-	if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
 		return false;
 	}
@@ -2659,14 +2716,14 @@ bool CRobot::OnSetTrajInit_B(int pointNum)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 212;
 	m_InsRobot->m_Slen++;
-	FX_INT32* pv = (FX_INT32*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pv = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = pointNum;
 	m_InsRobot->m_Slen += sizeof(FX_INT32);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: Initial B arm Planning Trajectory , number of point=%d,\n",pointNum);
+		printf("[Marvin SDK]: Initial B arm Planning Trajectory , number of point=%d,\n", pointNum);
 	}
 	return true;
 }
@@ -2682,11 +2739,11 @@ bool CRobot::OnSetTrajRun_B()
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 214;
 	m_InsRobot->m_Slen++;
 
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	if (m_InsRobot->m_LocalLogTag == true)
 	{
-	    printf("[Marvin SDK]: B arm run Planning Trajectory \n");
+		printf("[Marvin SDK]: B arm run Planning Trajectory \n");
 	}
 	return true;
 }
@@ -2695,12 +2752,13 @@ bool CRobot::OnStopPlnJoint_B()
 {
 	CRobot::OnClearSet();
 	CRobot::OnStopPlnJoint_interB();
-	if (CRobot::OnSetSendWaitResponse(TIME_OUT)<0)
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
 		return false;
-	} else
+	}
+	else
 	{
-		if(m_InsRobot->m_LocalLogTag == true)
+		if (m_InsRobot->m_LocalLogTag == true)
 		{
 			printf("[Marvin SDK]: B arm stop run Planning Trajectory \n");
 		}
@@ -2719,48 +2777,48 @@ bool CRobot::OnStopPlnJoint_interB()
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 215;
 	m_InsRobot->m_Slen++;
 
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
 	return true;
 }
 
-bool CRobot::OnSetTrajSet_B(long serial,long pointNum, double* data)
+bool CRobot::OnSetTrajSet_B(long serial, long pointNum, double *data)
 {
-	if ( m_InsRobot->m_Slen !=3)
+	if (m_InsRobot->m_Slen != 3)
 	{
 		return false;
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 213;
 	m_InsRobot->m_Slen++;
 
-	FX_INT32 * pserial = (FX_INT32 *)& m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
-	* pserial = serial;
-	m_InsRobot->m_Slen+= sizeof(FX_INT32);
-	FX_FLOAT * pdat = (FX_FLOAT * ) & m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	FX_INT32 *pserial = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	*pserial = serial;
+	m_InsRobot->m_Slen += sizeof(FX_INT32);
+	FX_FLOAT *pdat = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	long i;
-    long j;
-    long spos = 0;
-    // printf("\n=== Trajectory Points (total %ld points) ===\n", pointNum);
-    // printf("     Point    J1      J2      J3      J4      J5      J6      J7\n");
-    // printf("--------------------------------------------------------\n");
-    for(i = 0; i < pointNum; i++)
-    {
-        // printf("  %6ld: ", i);
-        for(j = 0; j < 7; j++)
-        {
-            pdat[spos] = data[spos];
-            // printf("%7.3f ", data[spos]);
-            spos++;
-        }
-        // printf("\n");
-    }
-    // printf("========================================================\n");
-	m_InsRobot->m_Slen+= sizeof(FX_FLOAT) * 7 * pointNum;
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
-	(*pnum)++;
-	if(m_InsRobot->m_LocalLogTag == true)
+	long j;
+	long spos = 0;
+	// printf("\n=== Trajectory Points (total %ld points) ===\n", pointNum);
+	// printf("     Point    J1      J2      J3      J4      J5      J6      J7\n");
+	// printf("--------------------------------------------------------\n");
+	for (i = 0; i < pointNum; i++)
 	{
-	    printf("[Marvin SDK]: B arm run Planning Trajectory \n");
+		// printf("  %6ld: ", i);
+		for (j = 0; j < 7; j++)
+		{
+			pdat[spos] = data[spos];
+			// printf("%7.3f ", data[spos]);
+			spos++;
+		}
+		// printf("\n");
+	}
+	// printf("========================================================\n");
+	m_InsRobot->m_Slen += sizeof(FX_FLOAT) * 7 * pointNum;
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
+	(*pnum)++;
+	if (m_InsRobot->m_LocalLogTag == true)
+	{
+		printf("[Marvin SDK]: B arm run Planning Trajectory \n");
 	}
 	return true;
 }
@@ -2787,10 +2845,10 @@ long CRobot::OnSetSendWaitResponse(long time_out)
 	}
 	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 251;
 	m_InsRobot->m_Slen++;
-	char* pv = (char*)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
+	char *pv = (char *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen];
 	pv[0] = m_InsRobot->m_send_response_local_tag;
 	m_InsRobot->m_Slen += sizeof(char);
-	FX_UCHAR* pnum = (FX_UCHAR*)&m_InsRobot->m_SendBuf[2];
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
 	(*pnum)++;
 	long tmp_time_out = time_out;
 	if (tmp_time_out < 20)
@@ -2811,7 +2869,8 @@ long CRobot::OnSetSendWaitResponse(long time_out)
 	if (m_InsRobot->m_respones_time_tag == 1)
 	{
 		m_InsRobot->m_respones_time_tag = 0;
-		if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: OnSetSendWaitResponse\n");
+		if (m_InsRobot->m_LocalLogTag == true)
+			printf("[Marvin SDK]: OnSetSendWaitResponse\n");
 		return m_InsRobot->m_respones_time_cnt;
 	}
 	return 0;
@@ -2824,11 +2883,12 @@ bool CRobot::OnSetSend()
 		return false;
 	}
 	m_InsRobot->m_SendTag = 100;
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: OnSetSend\n");
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: OnSetSend\n");
 	return true;
 }
 
-bool CRobot::OnUpdateSystem(char * local_path)
+bool CRobot::OnUpdateSystem(char *local_path)
 {
 	if (!m_InsRobot->SendFile(local_path, (char *)"/home/FUSION/Tmp/ctrl_package.tar"))
 	{
@@ -2838,21 +2898,23 @@ bool CRobot::OnUpdateSystem(char * local_path)
 	memset(name, 0, 30);
 	sprintf(name, "UPDATES");
 	OnSetIntPara(name, 0);
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: SDK update!\n");
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: SDK update!\n");
 	return true;
 }
 
-bool CRobot::OnDownloadLog(char* local_path)
+bool CRobot::OnDownloadLog(char *local_path)
 {
-	if (!m_InsRobot->RecvFile(local_path, (char*)"/home/FUSION/log/LOG.txt"))
+	if (!m_InsRobot->RecvFile(local_path, (char *)"/home/FUSION/log/LOG.txt"))
 	{
 		return false;
 	}
-	if(m_InsRobot->m_LocalLogTag == true) printf("[Marvin SDK]: Send log to host:%s,\n",local_path);
+	if (m_InsRobot->m_LocalLogTag == true)
+		printf("[Marvin SDK]: Send log to host:%s,\n", local_path);
 	return true;
 }
 
-FX_BOOL CRobot::SendFile(char* local_file, char* remote_file)
+FX_BOOL CRobot::SendFile(char *local_file, char *remote_file)
 {
 	if (m_LinkTag == false)
 	{
@@ -2872,7 +2934,7 @@ FX_BOOL CRobot::SendFile(char* local_file, char* remote_file)
 	return FX_FALSE;
 }
 
-FX_BOOL CRobot::RecvFile(char* local_file, char* remote_file)
+FX_BOOL CRobot::RecvFile(char *local_file, char *remote_file)
 {
 	if (m_LinkTag == false)
 	{

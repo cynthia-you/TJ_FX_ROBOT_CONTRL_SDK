@@ -1,14 +1,15 @@
-#ifndef FX_SDKIF_H_ 
+#ifndef FX_SDKIF_H_
 #define FX_SDKIF_H_
 #include "Robot.h"
 #include "PointSet.h"
 #ifdef _WIN32
-	#define FX_DLL_EXPORT __declspec(dllexport) 
+#define FX_DLL_EXPORT __declspec(dllexport)
 #elif defined(__linux__)
-	#define FX_DLL_EXPORT  
+#define FX_DLL_EXPORT
 #endif
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 	// # ATTENTION
@@ -21,338 +22,329 @@ extern "C" {
 	//                 c.设置目标关节后，测试里小睡几秒等机械臂运行到位，而在生产时可以通过循环订阅机械臂当前位置判断是否走到指定点位或者通过订阅低速标志来判断。
 	//                 d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
 
-
 	//////// API之间SLEEP至少1毫秒. 个别API如清错建议至少200毫秒,保存文件建议至少1秒 ////////
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //连接机器人
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// 连接机器人
 	FX_DLL_EXPORT bool OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4);
-	//释放机器人:只要有连接一定要释放,以便别的程序或者用户控制机器人
+	// 释放机器人:只要有连接一定要释放,以便别的程序或者用户控制机器人
 	FX_DLL_EXPORT bool OnRelease();
 	//////////////////////////////////////////////////////////////////////
-	//获取SDK大版本号
+	// 获取SDK大版本号
 	FX_DLL_EXPORT long OnGetSDKVersion();
-	//升级控制器系统,本地升级包路径
-	FX_DLL_EXPORT bool OnUpdateSystem(char* local_path);
-	//下载控制器日志到本地
-	FX_DLL_EXPORT bool OnDownloadLog(char* local_path);
-	//本地文件上传到控制器远程目录， 绝对路径
-	FX_DLL_EXPORT bool OnSendFile(char* local_file, char* remote_file);
-	//控制器文件从远程传到本地目录， 绝对路径
-	FX_DLL_EXPORT bool OnRecvFile(char* local_file, char* remote_file);
+	// 升级控制器系统,本地升级包路径
+	FX_DLL_EXPORT bool OnUpdateSystem(char *local_path);
+	// 下载控制器日志到本地
+	FX_DLL_EXPORT bool OnDownloadLog(char *local_path);
+	// 本地文件上传到控制器远程目录， 绝对路径
+	FX_DLL_EXPORT bool OnSendFile(char *local_file, char *remote_file);
+	// 控制器文件从远程传到本地目录， 绝对路径
+	FX_DLL_EXPORT bool OnRecvFile(char *local_file, char *remote_file);
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//订阅数据接口,所有数据是结构体.
-	FX_DLL_EXPORT bool OnGetBuf(DCSS * ret);
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-	//软急停
-	// 左臂软急停
+	// 订阅数据接口,所有数据是结构体.
+	FX_DLL_EXPORT bool OnGetBuf(DCSS *ret);
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// 软急停
+	//  左臂软急停
 	FX_DLL_EXPORT void OnEMG_A();
 	// 右臂软急停
 	FX_DLL_EXPORT void OnEMG_B();
 	// 左右臂同时软急停
 	FX_DLL_EXPORT void OnEMG_AB();
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//指定关节伺服软复位
-	// 左臂指定关节伺服软复位
+	// 指定关节伺服软复位
+	//  左臂指定关节伺服软复位
 	FX_DLL_EXPORT void OnServoReset_A(int axis);
 	// 右臂指定关节伺服软复位
 	FX_DLL_EXPORT void OnServoReset_B(int axis);
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//获取伺服错误
-	//获取左臂伺服错误码
+	// 获取伺服错误
+	// 获取左臂伺服错误码
 	FX_DLL_EXPORT void OnGetServoErr_A(long ErrCode[7]);
-	//获取右臂伺服错误码
+	// 获取右臂伺服错误码
 	FX_DLL_EXPORT void OnGetServoErr_B(long ErrCode[7]);
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//全局日志开
+	// 全局日志开
 	FX_DLL_EXPORT void OnLogOn();
-	//全局日志关
+	// 全局日志关
 	FX_DLL_EXPORT void OnLogOff();
-	//本地日志开
+	// 本地日志开
 	FX_DLL_EXPORT void OnLocalLogOn();
-	//本地日志关
+	// 本地日志关
 	FX_DLL_EXPORT void OnLocalLogOff();
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//上传本地PVT轨迹文件存为指定ID
-	FX_DLL_EXPORT bool OnSendPVT_A(char* local_file, long serial);
-	FX_DLL_EXPORT bool OnSendPVT_B(char* local_file, long serial);
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //获取 设置 保存机器人配置参数
-	//1 设置整形和浮点参数信息
-	FX_DLL_EXPORT long OnSetIntPara(char paraName[30],long setValue);
+	// 上传本地PVT轨迹文件存为指定ID
+	FX_DLL_EXPORT bool OnSendPVT_A(char *local_file, long serial);
+	FX_DLL_EXPORT bool OnSendPVT_B(char *local_file, long serial);
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// 获取 设置 保存机器人配置参数
+	// 1 设置整形和浮点参数信息
+	FX_DLL_EXPORT long OnSetIntPara(char paraName[30], long setValue);
 	FX_DLL_EXPORT long OnSetFloatPara(char paraName[30], double setValue);
-	//2 读取整形和浮点参数信息
-	FX_DLL_EXPORT long OnGetIntPara(char paraName[30],long * retValue);
-	FX_DLL_EXPORT long OnGetFloatPara(char paraName[30],double * retValue);
-	//3 保存参数
+	// 2 读取整形和浮点参数信息
+	FX_DLL_EXPORT long OnGetIntPara(char paraName[30], long *retValue);
+	FX_DLL_EXPORT long OnGetFloatPara(char paraName[30], double *retValue);
+	// 3 保存参数
 	FX_DLL_EXPORT long OnSavePara();
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//自动修正传感器偏置,测试中
+	// 自动修正传感器偏置,测试中
 	FX_DLL_EXPORT long OnAutoRectifySensor();
 	////////////////////////////////////////////////////////////////////////////////////////////////
-    //保存数据,该接口后要睡久一点,留够保存数据文件的时间,以防保存出错
-	//保存采集数据到指定文件，任意保存类型
-	FX_DLL_EXPORT bool OnSaveGatherData(char * path);
-	//保存采集数据到指定文件，保存类型为CSV
-	FX_DLL_EXPORT bool OnSaveGatherDataCSV(char* path);
+	// 保存数据,该接口后要睡久一点,留够保存数据文件的时间,以防保存出错
+	// 保存采集数据到指定文件，任意保存类型
+	FX_DLL_EXPORT bool OnSaveGatherData(char *path);
+	// 保存采集数据到指定文件，保存类型为CSV
+	FX_DLL_EXPORT bool OnSaveGatherDataCSV(char *path);
 
-	
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//清除缓存指令
+	// 清除缓存指令
 	FX_DLL_EXPORT bool OnClearSet();
 	// 注意 以下的API都要在 OnClearSet() 和 OnSetSend()之间使用 //
 
-	//清伺服错误,在使用OnLinkTo接口后,立即清错以防总线通讯异常导致
-	//清除左臂错误
+	// 清伺服错误,在使用OnLinkTo接口后,立即清错以防总线通讯异常导致
+	// 清除左臂错误
 	FX_DLL_EXPORT void OnClearErr_A();
-	//清除右臂错误
+	// 清除右臂错误
 	FX_DLL_EXPORT void OnClearErr_B();
 
-	//设置保存参数开始采集数据
+	// 设置保存参数开始采集数据
 	FX_DLL_EXPORT bool OnStartGather(long targetNum, long targetID[35], long recordNum);
-	//停止数据采集
+	// 停止数据采集
 	FX_DLL_EXPORT bool OnStopGather();
 
-    //设置指定手臂的工具参数:运动学和动力学参数,运动学参数使正解到TCP, 动力学使扭矩模式可以正常使用
-    //设置左臂工具的运动学和动力学参数
+	// 设置指定手臂的工具参数:运动学和动力学参数,运动学参数使正解到TCP, 动力学使扭矩模式可以正常使用
+	// 设置左臂工具的运动学和动力学参数
 	FX_DLL_EXPORT bool OnSetTool_A(double kinePara[6], double dynPara[10]);
-    //设置右臂工具的运动学和动力学参数
+	// 设置右臂工具的运动学和动力学参数
 	FX_DLL_EXPORT bool OnSetTool_B(double kinePara[6], double dynPara[10]);
 
-	//切换到控制模式之前先设参数//
-	//1 设置指定手臂的速度和加速度,注意PVT和拖动不受该速度限制
-	//设置左臂运动的速度百分比和加速度百分比
+	// 切换到控制模式之前先设参数//
+	// 1 设置指定手臂的速度和加速度,注意PVT和拖动不受该速度限制
+	// 设置左臂运动的速度百分比和加速度百分比
 	FX_DLL_EXPORT bool OnSetJointLmt_A(int velRatio, int AccRatio);
-	//设置右臂运动的速度百分比和加速度百分比
+	// 设置右臂运动的速度百分比和加速度百分比
 	FX_DLL_EXPORT bool OnSetJointLmt_B(int velRatio, int AccRatio);
-	//2 设置指定手臂的关节阻抗参数, 在扭矩模式关节阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(1) 下参数才有意义(以左臂为例)
-	//设置左臂工具关节阻抗的刚度和阻尼参数
+	// 2 设置指定手臂的关节阻抗参数, 在扭矩模式关节阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(1) 下参数才有意义(以左臂为例)
+	// 设置左臂工具关节阻抗的刚度和阻尼参数
 	FX_DLL_EXPORT bool OnSetJointKD_A(double K[7], double D[7]);
-	//设置右臂工具关节阻抗的刚度和阻尼参数
+	// 设置右臂工具关节阻抗的刚度和阻尼参数
 	FX_DLL_EXPORT bool OnSetJointKD_B(double K[7], double D[7]);
-	//3 设置指定手臂的迪卡尔阻抗参数, 在扭矩模式迪卡尔阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(2) 下参数才有意义(以左臂为例)
-	//3.1 设置笛卡尔阻抗的刚度和阻尼参数
-	//设置左臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
+	// 3 设置指定手臂的迪卡尔阻抗参数, 在扭矩模式迪卡尔阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(2) 下参数才有意义(以左臂为例)
+	// 3.1 设置笛卡尔阻抗的刚度和阻尼参数
+	// 设置左臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
 	FX_DLL_EXPORT bool OnSetCartKD_A(double K[7], double D[7], int type);
-	//设置右臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
-	FX_DLL_EXPORT bool OnSetCartKD_B(double K[7], double D[7],int type);
-	//3.2 设置末端笛卡尔方向的旋转
-	//自定义设置左臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	//设置左臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
+	// 设置右臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
+	FX_DLL_EXPORT bool OnSetCartKD_B(double K[7], double D[7], int type);
+	// 3.2 设置末端笛卡尔方向的旋转
+	// 自定义设置左臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	// 设置左臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
 	FX_DLL_EXPORT bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
-	//自定义设置右臂臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	//设置右臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
+	// 自定义设置右臂臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	// 设置右臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
 	FX_DLL_EXPORT bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
-	//4 如果使用力控模式,在扭矩模式力控模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(3) 以下两个指令连用
-	//4.1 设置指定手臂的力控参数
-	//设置左臂力控参数
+	// 4 如果使用力控模式,在扭矩模式力控模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(3) 以下两个指令连用
+	// 4.1 设置指定手臂的力控参数
+	// 设置左臂力控参数
 	FX_DLL_EXPORT bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
-	//设置右臂力控参数
+	// 设置右臂力控参数
 	FX_DLL_EXPORT bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
-	//4.2 设置指定手臂的力值
-	//设置左臂力控目标
+	// 4.2 设置指定手臂的力值
+	// 设置左臂力控目标
 	FX_DLL_EXPORT bool OnSetForceCmd_A(double force);
-	//设置右臂力控目标
+	// 设置右臂力控目标
 	FX_DLL_EXPORT bool OnSetForceCmd_B(double force);
 
-
-	//设置指定手臂的目标状态:0下使能 1位置 2PVT 3扭矩 4协作释放
-	//设置左臂模式
+	// 设置指定手臂的目标状态:0下使能 1位置 2PVT 3扭矩 4协作释放
+	// 设置左臂模式
 	FX_DLL_EXPORT bool OnSetTargetState_A(int state);
-    //设置右臂模式
+	// 设置右臂模式
 	FX_DLL_EXPORT bool OnSetTargetState_B(int state);
 
-	//设置指定手臂的扭矩类型:1关节 2迪卡尔 3力
-	//设置左臂阻抗类型
+	// 设置指定手臂的扭矩类型:1关节 2迪卡尔 3力
+	// 设置左臂阻抗类型
 	FX_DLL_EXPORT bool OnSetImpType_A(int type);
-	//设置右臂阻抗类型
+	// 设置右臂阻抗类型
 	FX_DLL_EXPORT bool OnSetImpType_B(int type);
 
-	//设置指定手臂的拖动类型,0退出拖动；1关节拖动(进拖动前必须先进关节阻抗模式)；2-5迪卡尔拖动(进每一种迪卡尔拖动前必须先进迪卡尔阻抗模式)
-	//设置左臂工具拖动类型
+	// 设置指定手臂的拖动类型,0退出拖动；1关节拖动(进拖动前必须先进关节阻抗模式)；2-5迪卡尔拖动(进每一种迪卡尔拖动前必须先进迪卡尔阻抗模式)
+	// 设置左臂工具拖动类型
 	FX_DLL_EXPORT bool OnSetDragSpace_A(int dgType);
-	//设置右臂工具拖动类型
+	// 设置右臂工具拖动类型
 	FX_DLL_EXPORT bool OnSetDragSpace_B(int dgType);
 
-	//设置指定手臂的目标关节位置:位置模式扭矩模式下的关节指令
-	//设置左臂目标关节角度
+	// 设置指定手臂的目标关节位置:位置模式扭矩模式下的关节指令
+	// 设置左臂目标关节角度
 	FX_DLL_EXPORT bool OnSetJointCmdPos_A(double joint[7]);
-	//设置右臂目标关节角度
+	// 设置右臂目标关节角度
 	FX_DLL_EXPORT bool OnSetJointCmdPos_B(double joint[7]);
 
-	//设置指定手臂的PVT号并立即运行该轨迹,需在PVT模式下,即OnSetTargetState_A(2)才会生效(以左臂为例)
-	//选择在左臂运行的PVT号并立即n运行轨迹
+	// 设置指定手臂的PVT号并立即运行该轨迹,需在PVT模式下,即OnSetTargetState_A(2)才会生效(以左臂为例)
+	// 选择在左臂运行的PVT号并立即n运行轨迹
 	FX_DLL_EXPORT bool OnSetPVT_A(int id);
-	//选择在右臂运行的PVT号并立即n运行轨迹
+	// 选择在右臂运行的PVT号并立即n运行轨迹
 	FX_DLL_EXPORT bool OnSetPVT_B(int id);
 
-
-    // 注意 以上的API都要在 OnClearSet() 和 OnSetSend()之间使用 //
-	//发送指令给机器人
+	// 注意 以上的API都要在 OnClearSet() 和 OnSetSend()之间使用 //
+	// 发送指令给机器人
 	FX_DLL_EXPORT bool OnSetSend();
-	//发送指令给机器人 设置延时，测试延时
+	// 发送指令给机器人 设置延时，测试延时
 	FX_DLL_EXPORT long OnSetSendWaitResponse(long time_out);
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
-	//pln 
-	//关节空间PLN方式发送指令
-	FX_DLL_EXPORT bool OnInitPlnLmt(char * path);
-	FX_DLL_EXPORT bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
-	FX_DLL_EXPORT bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	// pln
+	// 关节空间PLN方式发送指令
+	FX_DLL_EXPORT bool OnInitPlnLmt(char *path);
+	FX_DLL_EXPORT bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
+	FX_DLL_EXPORT bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
 	FX_DLL_EXPORT bool OnStopPlnJoint_A();
 	FX_DLL_EXPORT bool OnStopPlnJoint_B();
 
 	// 笛卡尔空间PLN方式发送指令
-	FX_DLL_EXPORT void* FX_CPointSet_Create();
-	FX_DLL_EXPORT void FX_CPointSet_Destroy(void* pset);
-	FX_DLL_EXPORT bool OnSetPlnCart_A(void* pset);
-	FX_DLL_EXPORT bool OnSetPlnCart_B(void* pset);
+	FX_DLL_EXPORT void *FX_CPointSet_Create();
+	FX_DLL_EXPORT void FX_CPointSet_Destroy(void *pset);
+	FX_DLL_EXPORT bool OnSetPlnCart_A(void *pset);
+	FX_DLL_EXPORT bool OnSetPlnCart_B(void *pset);
 
-    // 末端工具通讯用接口//
-	//清除左臂末端模块的缓存数据
+	// 末端工具通讯用接口//
+	// 清除左臂末端模块的缓存数据
 	FX_DLL_EXPORT bool OnClearChDataA();
-	//清除右臂末端模块的缓存数据
+	// 清除右臂末端模块的缓存数据
 	FX_DLL_EXPORT bool OnClearChDataB();
-	//获取左臂末端通信模组回复的数据 ret_ch==1:CANFD  ret_ch==2 COM1  ret_ch==3 COM2
-	FX_DLL_EXPORT long OnGetChDataA(unsigned char data_ptr[256], long* ret_ch);
-	//发送协议指令给左臂末端模组 ret_ch==1:CANFD  ret_ch==2 COM1  ret_ch==3 COM2
-	FX_DLL_EXPORT bool OnSetChDataA(unsigned char data_ptr[256], long size_int,long set_ch);
-	//获取右臂末端通信模组回复的数据
-	FX_DLL_EXPORT long OnGetChDataB(unsigned char data_ptr[256], long* ret_ch);
-	//发送协议指令给右臂末端模组
+	// 获取左臂末端通信模组回复的数据 ret_ch==1:CANFD  ret_ch==2 COM1  ret_ch==3 COM2
+	FX_DLL_EXPORT long OnGetChDataA(unsigned char data_ptr[256], long *ret_ch);
+	// 发送协议指令给左臂末端模组 ret_ch==1:CANFD  ret_ch==2 COM1  ret_ch==3 COM2
+	FX_DLL_EXPORT bool OnSetChDataA(unsigned char data_ptr[256], long size_int, long set_ch);
+	// 获取右臂末端通信模组回复的数据
+	FX_DLL_EXPORT long OnGetChDataB(unsigned char data_ptr[256], long *ret_ch);
+	// 发送协议指令给右臂末端模组
 	FX_DLL_EXPORT bool OnSetChDataB(unsigned char data_ptr[256], long size_int, long set_ch);
-
 
 	/////////////////////////////////////简明式接口Concise SDK API//////////////////////////////////////////////
 	// 简明式接口，摒弃了老接口需要在OnClearSet() 和 OnSetSend()之间使用，且左右臂要的单独调取用，且需要查询伺服是否有错，清错后使用的逻辑。
 	// 简明式接口自行在内部做错误状态检查。
 	// 老接口和简明式接口并存兼容
 
-	//使用简明式接口请注意：老接口中，以下接口未作变化，请正常使用：
-				// //获取 设置 保存机器人配置参数
-				// long OnSetIntPara(char paraName[30],long setValue);
-				// long OnSetFloatPara(char paraName[30], double setValue);
-				// long OnGetIntPara(char paraName[30],long * retValue);
-				// long OnGetFloatPara(char paraName[30],double * retValue);
-				// long OnSavePara();
-				// ////////////////////////////////////////////////////////////////////////////////////////////////
-				// //自动修正传感器偏移,测试中
-				// long OnAutoRectifySensor();
-				// ////////////////////////////////////////////////////////////////////////////////////////////////
-				// //保存数据,该接口后要睡久一点,留够保存数据文件的时间,以防保存出错
-				// bool OnSaveGatherData(char * path);
-				// bool OnSaveGatherDataCSV(char* path);
-				//  //释放机器人:只要有连接一定要释放,以便别的程序或者用户控制机器人
-				// bool OnRelease();
-				// //////////////////////////////////////////////////////////////////////
-				// //获取SDK大版本号
-				// long OnGetSDKVersion();
-				// //升级控制器系统,本地升级包路径
-				// bool OnUpdateSystem(char* local_path);
-				// //下载控制器日志到本地
-				// bool OnDownloadLog(char* local_path);
-				// //本地文件上传到控制器远程目录， 绝对路径
-				// bool OnSendFile(char* local_file, char* remote_file);
-				// //控制器文件从远程传到本地目录， 绝对路径
-				// bool OnRecvFile(char* local_file, char* remote_file);
-				// ////////////////////////////////////////////////////////////////////////////////////////////////
-				// //订阅数据接口,所有数据是结构体.
-				// bool OnGetBuf(DCSS * ret);
+	// 使用简明式接口请注意：老接口中，以下接口未作变化，请正常使用：
+	//  //获取 设置 保存机器人配置参数
+	//  long OnSetIntPara(char paraName[30],long setValue);
+	//  long OnSetFloatPara(char paraName[30], double setValue);
+	//  long OnGetIntPara(char paraName[30],long * retValue);
+	//  long OnGetFloatPara(char paraName[30],double * retValue);
+	//  long OnSavePara();
+	//  ////////////////////////////////////////////////////////////////////////////////////////////////
+	//  //自动修正传感器偏移,测试中
+	//  long OnAutoRectifySensor();
+	//  ////////////////////////////////////////////////////////////////////////////////////////////////
+	//  //保存数据,该接口后要睡久一点,留够保存数据文件的时间,以防保存出错
+	//  bool OnSaveGatherData(char * path);
+	//  bool OnSaveGatherDataCSV(char* path);
+	//   //释放机器人:只要有连接一定要释放,以便别的程序或者用户控制机器人
+	//  bool OnRelease();
+	//  //////////////////////////////////////////////////////////////////////
+	//  //获取SDK大版本号
+	//  long OnGetSDKVersion();
+	//  //升级控制器系统,本地升级包路径
+	//  bool OnUpdateSystem(char* local_path);
+	//  //下载控制器日志到本地
+	//  bool OnDownloadLog(char* local_path);
+	//  //本地文件上传到控制器远程目录， 绝对路径
+	//  bool OnSendFile(char* local_file, char* remote_file);
+	//  //控制器文件从远程传到本地目录， 绝对路径
+	//  bool OnRecvFile(char* local_file, char* remote_file);
+	//  ////////////////////////////////////////////////////////////////////////////////////////////////
+	//  //订阅数据接口,所有数据是结构体.
+	//  bool OnGetBuf(DCSS * ret);
 
-	//连接机器人,log_switch（日志默认为关）： 0 关; 1 开。
-	FX_DLL_EXPORT bool ConnectAndCkeck(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_switch=0);
+	// 连接机器人,log_switch（日志默认为关）： 0 关; 1 开。
+	FX_DLL_EXPORT bool Connect(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_switch = 0);
 
-	//机器人日志开关, signal: 0 关; 1 开
+	// 机器人日志开关, signal: 0 关; 1 开
 	FX_DLL_EXPORT void LogSwitch(int signal);
 
-	//指定手臂软急停, arm: "A" "B" "AB" 三种字符是许可值
-	FX_DLL_EXPORT void EStop(const FX_CHAR* arm);
+	// 指定手臂软急停, arm: "A" "B" "AB" 三种字符是许可值
+	FX_DLL_EXPORT void EStop(const FX_CHAR *arm);
 
-	//指定关节伺服软复位, arm: "A" "B"  两种字符是许可值; axis:0~6
+	// 指定关节伺服软复位, arm: "A" "B"  两种字符是许可值; axis:0~6
 	FX_DLL_EXPORT void ServoReset(FX_CHAR arm, int axis);
 
-	//检查手臂错误并清错
+	// 检查手臂错误并清错
 	FX_DLL_EXPORT bool CheckArmError();
-	//检查伺服错误并清错
+	// 检查伺服错误并清错
 	FX_DLL_EXPORT bool CheckServoError();
 
-	//清除连个手臂的错误
+	// 清除连个手臂的错误
 	FX_DLL_EXPORT void ClearErr();
 
-	//设置指定手臂的工具参数:运动学和动力学参数,运动学参数使正解到TCP, 动力学使扭矩模式可以正常使用
-    //arm:"A" "B"  两种字符是许可值; kinePara:工具相对于末端法兰的位置的偏移（毫米）和姿态的旋转（角度，XYZ顺序）；dynPara：工具动力学参数，用提供的上位机软件可识别
+	// 设置指定手臂的工具参数:运动学和动力学参数,运动学参数使正解到TCP, 动力学使扭矩模式可以正常使用
+	// arm:"A" "B"  两种字符是许可值; kinePara:工具相对于末端法兰的位置的偏移（毫米）和姿态的旋转（角度，XYZ顺序）；dynPara：工具动力学参数，用提供的上位机软件可识别
 	FX_DLL_EXPORT bool SetTool(FX_CHAR arm, double kinePara[6], double dynPara[10]);
 
-	//设置指定手臂的速度和加速度和位置模式,注意PVT和拖动不受该速度限制。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100
+	// 设置指定手臂的速度和加速度和位置模式,注意PVT和拖动不受该速度限制。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100
 	FX_DLL_EXPORT bool SetJointMode(FX_CHAR arm, int velRatio, int AccRatio);
 
-	//设置指定手臂的速度和加速度和关节阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
+	// 设置指定手臂的速度和加速度和关节阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
 	FX_DLL_EXPORT bool SetImpJointMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7]);
 
-	//设置指定手臂的速度和加速度和笛卡尔阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
-	FX_DLL_EXPORT bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7]);
-	//设置末端笛卡尔方向的旋转， arm:"A" "B"  两种字符是许可值;
-	//fcType=1，为自定义末端旋转方向； 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	//fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
-	FX_DLL_EXPORT bool SetEefRot(FX_CHAR arm, int fcType, double CartCtrlPara[7]);
+	// 设置指定手臂的速度和加速度和笛卡尔阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
+	// 如果不定义末端笛卡尔的旋转：RotType=0；double CartCtrlPara[7]={0}
+	// 设置末端笛卡尔方向的旋转：
+	// RotType=1，为自定义末端旋转方向； 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0；
+	// RotType=2，为系统自动计算末端笛卡尔旋转； double CartCtrlPara[7]={0}
+	FX_DLL_EXPORT bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7], int RotType, double CartCtrlPara[7]);
 
-	//设置指定手臂的力控参数和力阻抗模式。arm:"A" "B"  两种字符是许可值; fxDir：任意定义方向； fcAdjLmt：力的调节范围，单位毫米
-	FX_DLL_EXPORT bool SetImpForceMode(FX_CHAR arm, double fxDir[6],double fcAdjLmt);
-	//设置指定手臂的力值：arm:"A" "B"  两种字符是许可值; force: 力，单位：牛
-	FX_DLL_EXPORT bool SetForceCmd(FX_CHAR arm, double force);
- 
-	//设置指定手臂的关节空间位置指令（位置模式扭矩模式下的关节指令）。  arm:"A" "B"  两种字符是许可值； joint：七个关节的目标角度(单位：度）
+	// 设置指定手臂的关节空间位置指令（位置模式扭矩模式下的关节指令）。  arm:"A" "B"  两种字符是许可值； joint：七个关节的目标角度(单位：度）
 	FX_DLL_EXPORT bool SetJointPostionCmd(FX_CHAR arm, double joint[7]);
 
-	//关节空间规划初始化，只需初始化一次
-	FX_DLL_EXPORT bool PlnInit(char * path);
-	//关节空间下从当前点规划方式运行到目标点
-	FX_DLL_EXPORT bool RunPlnJoint(FX_CHAR arm, double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	// 设置指定手臂的力控参数和力阻抗模式。arm:"A" "B"  两种字符是许可值; fxDir：任意定义方向； fcAdjLmt：力的调节范围，单位毫米
+	FX_DLL_EXPORT bool SetImpForceMode(FX_CHAR arm, double fxDir[6], double fcAdjLmt);
+	// 设置指定手臂的力值：arm:"A" "B"  两种字符是许可值; force: 力，单位：牛
+	FX_DLL_EXPORT bool SetForceCmd(FX_CHAR arm, double force);
+
+	// 关节空间规划初始化，只需初始化一次
+	FX_DLL_EXPORT bool PlnInit(char *path);
+	// 关节空间下从当前点规划方式运行到目标点
+	FX_DLL_EXPORT bool RunPlnJoint(FX_CHAR arm, double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
 	// 笛卡尔空间下从当前点规划方式运行到目标点，规划点位pset由KinematicsSDK计算接口FX_Robot_PLN_MOVLA计算得出。
-	FX_DLL_EXPORT bool RunPlnCart(FX_CHAR arm, void* pset);
-	//中断规划运行，笛卡尔空间和关节空间都适用
+	FX_DLL_EXPORT bool RunPlnCart(FX_CHAR arm, void *pset);
+	// 中断规划运行，笛卡尔空间和关节空间都适用
 	FX_DLL_EXPORT bool StopPln(FX_CHAR arm);
-	
-	//上传本地PVT轨迹文件存为指定ID, arm:"A" "B"  两种字符是许可值; local_file:相对或绝对路径； serial:0~99
-	FX_DLL_EXPORT bool SendPVT(FX_CHAR arm, char* local_file, long serial);
-	//设置指定手臂的PVT号并立即运行该轨迹, arm:"A" "B"  两种字符是许可值； id：0~99(SendPVT上传的pvt文件的serial).特别注意运行PVT，需要将机器人位置调到PVT规划轨迹的起点
+
+	// 上传本地PVT轨迹文件存为指定ID, arm:"A" "B"  两种字符是许可值; local_file:相对或绝对路径； serial:0~99
+	FX_DLL_EXPORT bool SendPVT(FX_CHAR arm, char *local_file, long serial);
+	// 设置指定手臂的PVT号并立即运行该轨迹, arm:"A" "B"  两种字符是许可值； id：0~99(SendPVT上传的pvt文件的serial).特别注意运行PVT，需要将机器人位置调到PVT规划轨迹的起点
 	FX_DLL_EXPORT bool RunPVT(FX_CHAR arm, int id);
 
-	//拖动，每种拖动使用完毕需要退出拖动再切换为别的拖动模式，否则拖动效果是叠加混乱的哦。
-	//设置指定手臂为关节拖动。 arm:"A" "B"  两种字符是许可值
+	// 拖动，每种拖动使用完毕需要退出拖动再切换为别的拖动模式，否则拖动效果是叠加混乱的哦。
+	// 设置指定手臂为关节拖动。 arm:"A" "B"  两种字符是许可值
 	FX_DLL_EXPORT bool SetJointDrag(FX_CHAR arm);
-	//设置指定手臂为笛卡尔拖动。 arm:"A" "B"  两种字符是许可值; type: "X" "Y" "Z" "R" 四种字符是许可值（X/Y/Z/旋转， 四个方向选一）;
+	// 设置指定手臂为笛卡尔拖动。 arm:"A" "B"  两种字符是许可值; type: "X" "Y" "Z" "R" 四种字符是许可值（X/Y/Z/旋转， 四个方向选一）;
 	FX_DLL_EXPORT bool SetCartDrag(FX_CHAR arm, FX_CHAR type);
-	//设置指定手臂退出拖动。arm:"A" "B"  两种字符是许可值
+	// 设置指定手臂退出拖动。arm:"A" "B"  两种字符是许可值
 	FX_DLL_EXPORT bool ExitDrag(FX_CHAR arm);
 
-	//手臂末端安装工具的通讯
-	//清缓存数据。arm:"A" "B"  两种字符是许可值
+	// 手臂末端安装工具的通讯
+	// 清缓存数据。arm:"A" "B"  两种字符是许可值
 	FX_DLL_EXPORT bool ClearChData(FX_CHAR arm);
-	//获取指定手臂指定通道的数据. arm:"A" "B" 两种字符是许可值; ret_ch==1: CAN/CANFD  ret_ch==2: COM1  ret_ch==3: COM2
-	FX_DLL_EXPORT long GetChData(FX_CHAR arm, unsigned char data_ptr[256], long* ret_ch);
-	//给指定手臂指定通道发送数据. arm:"A" "B" 两种字符是许可值; ret_ch==1: CAN/CANFD  ret_ch==2: COM1  ret_ch==3: COM2
-	FX_DLL_EXPORT long SetChData(FX_CHAR arm, unsigned char data_ptr[256], long size_int,long set_ch);
+	// 获取指定手臂指定通道的数据. arm:"A" "B" 两种字符是许可值; ret_ch==1: CAN/CANFD  ret_ch==2: COM1  ret_ch==3: COM2
+	FX_DLL_EXPORT long GetChData(FX_CHAR arm, unsigned char data_ptr[256], long *ret_ch);
+	// 给指定手臂指定通道发送数据. arm:"A" "B" 两种字符是许可值; ret_ch==1: CAN/CANFD  ret_ch==2: COM1  ret_ch==3: COM2
+	FX_DLL_EXPORT long SetChData(FX_CHAR arm, unsigned char data_ptr[256], long size_int, long set_ch);
 
-	//开始采集 停止采集  
-	//设置保存参数开始采集数据
+	// 开始采集 停止采集
+	// 设置保存参数开始采集数据
 	FX_DLL_EXPORT bool StartCollectData(long targetNum, long targetID[35], long recordNum);
-	//停止数据采集
-	FX_DLL_EXPORT bool StopCollectData(); 
+	// 停止数据采集
+	FX_DLL_EXPORT bool StopCollectData();
 
-	//下使能/复位
-	//设置指定手臂下使能/复位。arm:"A" "B"  两种字符是许可值
+	// 下使能/复位
+	// 设置指定手臂下使能/复位。arm:"A" "B"  两种字符是许可值
 	FX_DLL_EXPORT bool Disable(FX_CHAR arm);
 
-
-	//接口内部检查用
+	// 接口内部检查用
 	bool ValidateArm(char arm);
-	
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-
-
