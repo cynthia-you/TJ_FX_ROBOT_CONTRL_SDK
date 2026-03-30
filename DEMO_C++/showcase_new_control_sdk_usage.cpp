@@ -2,7 +2,6 @@
 #include "FxRobot.h" // only used by run_pln_cart_space() case
 #include "stdio.h"
 #include "stdlib.h"
-#include "unistd.h"
 #include <iostream>
 #include <cstdlib>
 #include <time.h>
@@ -70,7 +69,7 @@ int hex_string_to_bytes(const char *hex_str, unsigned char *bytes, int max_bytes
 bool link()
 {
     int log_switch = 1; // ON
-    if (!ConnectAndCkeck(192, 168, 1, 190, log_switch))
+    if (!Connect(192, 168, 1, 190, log_switch))
     {
         printf("---link failed---");
         return false;
@@ -97,7 +96,7 @@ bool position()
     {
         idx = 1;
     }
-    if (!ConnectAndCkeck(192, 168, 1, 190)) // default log_switch=0: log off
+    if (!Connect(192, 168, 1, 190)) // default log_switch=0: log off
     {
         printf("---link failed---");
         return false;
@@ -169,7 +168,7 @@ bool joint_impedance()
     DCSS dcss;
     double fb_joints[7] = {0};
     // define parameters: which arm, vel and acc and k and d, target joints
-    char arm = 'B';
+    char arm = 'A';
     int log_switch = 1;
     double k[7] = {10, 10, 10, 1.6, 1, 1, 1};
     double d[7] = {0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 0.4};
@@ -182,7 +181,7 @@ bool joint_impedance()
     {
         idx = 1;
     }
-    if (!ConnectAndCkeck(192, 168, 1, 190, log_switch))
+    if (!Connect(192, 168, 1, 190, log_switch))
     {
         printf("---link failed---");
         return false;
@@ -258,6 +257,8 @@ bool cart_impedance()
     double d[7] = {0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 0.4};
     int run_vel = 50;
     int run_acc = 50;
+    int RotType = 0;
+    double CartCtrlPara[7] = {0};
     double target_joint[7] = {0, 0, 0, 0, 0, 0, 0};
     double target_joint1[7] = {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35};
     int idx = 0;
@@ -265,7 +266,7 @@ bool cart_impedance()
     {
         idx = 1;
     }
-    if (!ConnectAndCkeck(192, 168, 1, 190, log_switch))
+    if (!Connect(192, 168, 1, 190, log_switch))
     {
         printf("---link failed---");
         return false;
@@ -273,7 +274,7 @@ bool cart_impedance()
     // turn off log
     LogSwitch(0);
     // switch to cartesian impedance state
-    if (!SetImpCartMode(arm, run_vel, run_acc, k, d))
+    if (!SetImpCartMode(arm, run_vel, run_acc, k, d, RotType, CartCtrlPara))
     {
         printf("---set cart impedance state failed---");
         return false;
@@ -355,7 +356,7 @@ bool force_impedance()
         idx = 1;
     }
 
-    if (!ConnectAndCkeck(192, 168, 1, 190, log_switch))
+    if (!Connect(192, 168, 1, 190, log_switch))
     {
         printf("---link failed---");
         return false;
@@ -431,7 +432,7 @@ bool joint_drag()
         idx = 1;
     }
     int stage = 0;
-    if (!ConnectAndCkeck(192, 168, 1, 190, log_switch))
+    if (!Connect(192, 168, 1, 190, log_switch))
     {
         printf("---link failed---");
         return false;
@@ -501,6 +502,8 @@ bool cart_z_drag_and_save_data(char *save_path)
     double d[7] = {0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 0.4};
     int run_vel = 50;
     int run_acc = 50;
+    int RotType = 0;
+    double CartCtrlPara[7] = {0};
     int idx = 0;
     if (arm == 'B')
     {
@@ -514,14 +517,14 @@ bool cart_z_drag_and_save_data(char *save_path)
                          0, 0, 0, 0, 0, 0, 0};
     long recordNum = 1000000;
     int stage = 0;
-    if (!ConnectAndCkeck(192, 168, 1, 190, log_switch))
+    if (!Connect(192, 168, 1, 190, log_switch))
     {
         printf("---link failed---");
         return false;
     }
 
     // switch to cartesian impedance state
-    if (!SetImpCartMode(arm, run_vel, run_acc, k, d))
+    if (!SetImpCartMode(arm, run_vel, run_acc, k, d, RotType = 0, CartCtrlPara))
     {
         printf("---set cart impedance state failed---");
         return false;
@@ -603,7 +606,7 @@ bool run_pln_joint_space(char *config_path)
     {
         idx = 1;
     }
-    if (!ConnectAndCkeck(192, 168, 1, 190, log_switch))
+    if (!Connect(192, 168, 1, 190, log_switch))
     {
         printf("---link failed---");
         return false;
@@ -687,7 +690,7 @@ bool run_pln_cart_space(char *config_path)
     DCSS dcss;
     double current_joints[7] = {0.0};
     // define parameters: which arm, vel and acc, target joints
-    char arm = 'B';
+    char arm = 'A';
     int log_on = 1;
     int pln_vel = 0.5;
     int pln_acc = 0.5;
@@ -698,7 +701,7 @@ bool run_pln_cart_space(char *config_path)
     {
         idx = 1;
     }
-    if (!ConnectAndCkeck(192, 168, 1, 190, log_on))
+    if (!Connect(192, 168, 1, 190, log_on))
     {
         printf("---link failed---");
         return false;
@@ -969,7 +972,7 @@ bool run_pln_cart_space(char *config_path)
 bool set_tool()
 {
     // set kinematics and dynamics infomations for two arms
-    if (!ConnectAndCkeck(192, 168, 1, 190)) // default log_switch=0: log off
+    if (!Connect(192, 168, 1, 190)) // default log_switch=0: log off
     {
         printf("---link failed---");
         return false;
@@ -1075,7 +1078,7 @@ bool eef_hands_cmd()
     {
         idx = 1;
     }
-    if (!ConnectAndCkeck(192, 168, 1, 190)) // default log_switch=0: log off
+    if (!Connect(192, 168, 1, 190)) // default log_switch=0: log off
     {
         printf("---link failed---");
         return false;
@@ -1127,36 +1130,36 @@ int main()
     printf("------------Concise SDK API showcases--------------\n");
     printf("Concise SDK APIe coexists compatibly with the old interface.\nPlease uncomment the showcases below one by one and compile and run them.\n");
 
-    // //showcase1: connect to robot
+    // // showcase1: connect to robot
     // printf("--------------------------\n");
     // printf("showcase: connect to robot:\n");
     // link();
 
-    // ////showcase2: set position state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}
+    // //showcase2: set position state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}
     // printf("--------------------------\n");
     // printf("showcase: set position state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}\n");
     // position();
 
-    // // ////showcase3: set joint impedance state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}
+    // //showcase3: set joint impedance state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}
     // printf("--------------------------\n");
     // printf("showcase3: set joint impedance state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}\n");
     // joint_impedance();
 
-    // // ////showcase4: set cartesian impedance state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}
+    // //showcase4: set cartesian impedance state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}
     // printf("--------------------------\n");
     // printf("showcase4: set cart impedance state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}\n");
-    // cart_impedance();// //switch off some robot logs
+    // cart_impedance(); // //switch off some robot logs
 
-    // // ////showcase5: set forcestate and run to {69.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}, Apply a force of 50N in the Y direction, over a range of 50 millimeters
+    // // showcase5: set forcestate and run to {69.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}, Apply a force of 50N in the Y direction, over a range of 50 millimeters
     // printf("--------------------------\n");
     // printf("showcase5: set forcestate and run to {69.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}, Apply a force of 50N in the Y direction, over a range of 50 millimeters\n");
-    // //Observation: Five seconds after reaching the position, a force of 50 N pulled the end of the arm down by 50 millimeters for 5 sec.
+    // // Observation: Five seconds after reaching the position, a force of 50 N pulled the end of the arm down by 50 millimeters for 5 sec.
     // force_impedance();
 
-    // // ////showcase6: set joint drag state
+    // // showcase6: set joint drag state
     // printf("--------------------------\n");
     // printf("showcase6: set joint drag state \n");
-    // //USAGE:After entering drag mode, press and hold the end button to start dragging, release the button, and disable after 5 seconds.
+    // // USAGE:After entering drag mode, press and hold the end button to start dragging, release the button, and disable after 5 seconds.
     // joint_drag();
 
     // // ////showcase7: set cart drag state :direction: Z .then save drag data(max collect time:100 seconds).
@@ -1166,23 +1169,23 @@ int main()
     // char save_path[] = "drag_cart_z.txt";
     // cart_z_drag_and_save_data(save_path);
 
-    // // ////showcase8: In joint space: Perform multiple loops, plan motion from the starting point to the end point, and interrupt the planned motion during the movement.
+    // //showcase8: In joint space: Perform multiple loops, plan motion from the starting point to the end point, and interrupt the planned motion during the movement.
     // printf("--------------------------\n");
     // printf("showcase8: In joint space: Perform multiple loops, plan motion from the starting point to the end point, and interrupt the planned motion during the movement.\n");
     // char config_path[] = "ccs_m6_40.MvKDCfg";
     // run_pln_joint_space(config_path);
 
-    // // ////showcase9: In cartesian space: planning rectangular movement from the starting point.
+    // //showcase9: In cartesian space: planning rectangular movement from the starting point.
     // printf("--------------------------\n");
     // printf("showcase9: In joint space: planning rectangular movement from the starting point.\n");
     // char config_path[] = "ccs_m6_40.MvKDCfg";
     // run_pln_cart_space(config_path);
-    // //g++ -g main.cpp -o main.exe -Ilib -L. -lMarvinSDK -lKine -lws2_32 -lwinmm
+    // g++ -g showcase_new_control_sdk_usage.cpp -o showcase_new_control_sdk_usage.exe -Ilib -L. -lMarvinSDK -lKine -lws2_32 -lwinmm
 
-    // ////showcase10: set tools info: kinematics and dynamics.
-    printf("--------------------------\n");
-    printf("showcase10: set tools info: kinematics and dynamics.\n");
-    set_tool();
+    // ////showcase10: set End-effector tools info :kinematics and dynamics
+    // printf("--------------------------\n");
+    // printf("showcase10: set End-effector tools info :kinematics and dynamics\n");
+    // set_tool();
 
     // // ////showcase11: End-effector tool serial communication. Please note to replace the communication commands with the ones used by your own tool.
     // printf("--------------------------\n");
