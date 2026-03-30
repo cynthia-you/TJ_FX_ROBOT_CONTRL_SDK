@@ -225,6 +225,8 @@ def case5_impedance_cart():
     acc=20
     k= [3000, 3000, 3000, 100, 100, 100, 1]
     d = [0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 0.4]
+    rot_type=0
+    cart_ctrl_para=[0]*7
     joints1=[0]*7
     joints2=[9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35]
     idx =0
@@ -242,7 +244,7 @@ def case5_impedance_cart():
         logger.error("--- connect failed ---")
 
     '''switch to cartesian impedance state'''
-    if not robot.set_imp_cart_state(arm=arm,velRatio=vel,AccRatio=acc, K=k, D=d):
+    if not robot.set_imp_cart_state(arm=arm,velRatio=vel,AccRatio=acc, K=k, D=d,rot_type=rot_type, cart_ctrl_para=cart_ctrl_para):
         logger.error("--- switch to joint impedance failed ---")
     time.sleep(0.5) #reserve time for switch to cartesian impedance state
 
@@ -541,7 +543,7 @@ def case9_run_pln_joint_space(config_path="ccs_m6_40.MvKDCfg"):
     robot.disable(arm=arm)
     robot.release_robot()
 
-def case10_run_pln_joint_space(config_path="ccs_m6_40.MvKDCfg"):
+def case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg"):
     '''define parameters'''
     arm='A'
     pln_vel = 0.5
@@ -850,17 +852,16 @@ if __name__=="__main__":
     # logger.info("showcase: In joint space: Perform multiple loops, plan motion from the starting point to the end point, and interrupt the planned motion during the movement.")
     # case9_run_pln_joint_space(config_path="ccs_m6_40.MvKDCfg")
 
-    '''showcase10: In joint space: Perform multiple loops, plan motion from the starting point to the end point, and interrupt the planned motion during the movement.'''
+    '''showcase10: In cartesian space: planning rectangular movement from the starting point.'''
     # logger.info("--------------------------")
-    # logger.info("showcase: In joint space: Perform multiple loops, plan motion from the starting point to the end point, and interrupt the planned motion during the movement.")
-    # case10_run_pln_joint_space(config_path="ccs_m6_40.MvKDCfg")
+    # logger.info("showcase: In cartesian space: planning rectangular movement from the starting point.")
+    # case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg")
 
     '''showcase11: set End-effector tools info :kinematics and dynamics'''
     # logger.info("--------------------------")
     # logger.info("showcase: set End-effector tools info :kinematics and dynamics")
     # case11_set_eef_tools()
     # logger.info("!!!After the controller restarts, the tool information must be rewritten.!!!")
-    #
 
     '''showcase12: End-effector tool serial communication. Please note to replace the communication commands with the ones used by your own tool.'''
     # logger.info("--------------------------")
