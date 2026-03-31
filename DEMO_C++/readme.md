@@ -9,17 +9,17 @@
                 d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
 
 # 一、SDK文档
-    请阅读SDK文档，了解接口的功能和输入参数类型数值含义。
+    请阅读SDK文档，详细全面了解机器人使用逻辑，接口的功能，以及更新和注意事项。
 
-    SDK的主文档为master分支下的主文档：readme.md
+[SDK首页](../README.md)
 
-    机器人控制SDK文档：
-        c++_doc_contrl.md
-        python_doc_contrl.md
+[C++ 控制SDK 文档](../c++_doc_contrl.md)
 
-    机器人计算SDK文档：
-        c++_doc_kine.md
-        python_doc_kine.md
+[PYTHON 控制SDK 文档](../python_doc_contrl.md)
+
+[C++ 运动计算SDK 文档]( ../c++_doc_kine.md)
+
+[PYTHON 运动计算SDK 文档](../python_doc_kine.md)
 
 # 二、 DEMO_C++/下必要文件
     
@@ -40,7 +40,6 @@
 ## 2.1.1使用自动化编译脚本：
         master分支下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
         master分支下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
-
 
 ### 2.1.2 编译so动态库:
     linux设备编译:
@@ -176,5 +175,5 @@
 ## 18. 笛卡尔空间以规划方式下发指令，中断规划运行
             showcase_pln_cartSpace_PositionMode_with_break.cpp
     
-# 六、 控制SDK简明式接口案例(内含11个案例)
+# 六、 控制SDK简明式接口案例
             showcase_new_control_sdk_usage.cpp
