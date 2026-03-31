@@ -11,17 +11,15 @@
 
 
 ## 一、SDK文档
-    请阅读SDK文档，了解接口的功能和输入参数类型数值含义。
+    请阅读SDK文档，详细全面了解机器人使用逻辑，接口的功能，以及更新和注意事项。
 
-    SDK的主文档为master分支下的主文档：readme.md
+[SDK首页](../README.md)
 
-    机器人控制SDK文档：
-        c++_doc_contrl.md
-        python_doc_contrl.md
+[C++ 控制SDK 文档](../c++_doc_contrl.md)
+[PYTHON 控制SDK 文档](../python_doc_contrl.md)
 
-    机器人计算SDK文档：
-        c++_doc_kine.md
-        python_doc_kine.md
+[C++ 运动计算SDK 文档]( ../c++_doc_kine.md)
+[PYTHON 运动计算SDK 文档](../python_doc_kine.md)
 
 ## 二、SDK库文件夹下文件说明
     SDK_PYTHON文件下文件为：
@@ -158,6 +156,3 @@
 
 ### 9.在线直线规划，约束构型并以笛卡尔阻抗模式以50HZ频率执行点位，定于旋转
             showcase_online_pln_movl_with_specific_rot.py
-
-## 六. 简明式控制SDK  内含12个showcases
-			showcases_new_control_sdk.py
