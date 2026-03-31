@@ -11,17 +11,17 @@
 
 
 ## 一、SDK文档
-    请阅读SDK文档，了解接口的功能和输入参数类型数值含义。
+    请阅读SDK文档，详细全面了解机器人使用逻辑，接口的功能，以及更新和注意事项。
 
-    SDK的主文档为master分支下的主文档：readme.md
+[SDK首页](../README.md)
 
-    机器人控制SDK文档：
-        c++_doc_contrl.md
-        python_doc_contrl.md
+[C++ 控制SDK 文档](../c++_doc_contrl.md)
 
-    机器人计算SDK文档：
-        c++_doc_kine.md
-        python_doc_kine.md
+[PYTHON 控制SDK 文档](../python_doc_contrl.md)
+
+[C++ 运动计算SDK 文档]( ../c++_doc_kine.md)
+
+[PYTHON 运动计算SDK 文档](../python_doc_kine.md)
 
 ## 二、SDK库文件夹下文件说明
     SDK_PYTHON文件下文件为：
@@ -59,14 +59,14 @@
 ### 3.2.2 编译c++调用的dll动态库:
     1)windows下使用MinGW编译dll动态库:
 			控制SDK(contrlSDK): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
-            运动学SDK(kinematicsSDK): g++ *.cpp -Wall -w -O2 -fPIC -shared -o libKine.dll
+            运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll
     编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
 
 			
 ### 3.2.3 编译python调用的dll动态库
     1)linux下编译dll动态库:
         控制SDK(contrlSDK):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
-        运动学SDK(kinematicsSDK): g++ *.cpp -Wall -w -O2 -fPIC -shared -o libKine.dll 
+        运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll 
 
 	2）windows下使用MinGW编译dll动态库：
 			控制SDK（contrlSDK）：g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
