@@ -7,12 +7,21 @@
 
 
 # 一 、SDK_PYTHON简要介绍
+
     为天机双臂机器人和人形机器人基于python开发的SDK。
     其分为 控制SDK：SDK_PYTHON/fx_robot.py 和运动学计算的SDK:SDK_PYTHON/fx_kine.py
 
 [控制SDK](SDK_PYTHON/fx_robot.py)
 
 [计算SDK](SDK_PYTHON/fx_kine.py)
+
+    运动计算接口主要提供：
+## （1） 设置和移除工具（设置工具后，正逆运动学解算到TCP中心， 不设置工具正逆运动学解算到末端法兰中心）
+## （2） 运动学正逆解
+## （3） 雅可比矩阵计算
+## （4） 运动规划
+## （5） XYZABC和齐次变换矩阵互转
+
 
 ## 1.1 SDK文档
 [SDK首页](README.md)
