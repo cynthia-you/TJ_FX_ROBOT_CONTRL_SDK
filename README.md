@@ -147,8 +147,12 @@
 ## 三、 SDK更新
 ## 3.1 控制SDK
 ### 控制SDK新增简明接口
-# 为了更简明地使用控制SDK，我们特别提供了简明式接口，原SDK接口介绍见c++_doc_contrl.md下 二、接口介绍，  简明式SDK见c++_doc_contrl.md下 三、简明式接口介绍
-[简明式控制SDK MarvinSDK.h](contrlSDK/MarvinSDK.h)
+# 为了更简明地使用控制SDK，我们特别提供了简明式接口，
+[原SDK接口介绍](c++_doc_contrl.md#L118)
+
+[简明式接口介绍](c++_doc_contrl.md#L840)
+
+[控制SDK MarvinSDK.h](contrlSDK/MarvinSDK.h)
     
 ### 以规划方式下发关节指令消除抖动：
     //关节空间PLN方式发送指令
