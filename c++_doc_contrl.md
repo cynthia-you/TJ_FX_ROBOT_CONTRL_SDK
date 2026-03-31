@@ -1,4 +1,4 @@
-0# 天机-孚晞 机器人控制工具包 MarvinSDK
+0# 天机-孚晞 机器人控制工具包 contrlSDK
 ## 机器人型号： MARVIN人形双臂, 单臂
 ## 版本： 1003
 ## 支持平台： LINUX 及 WINDOWS
@@ -16,13 +16,13 @@
                 c.设置目标关节后，测试里小睡几秒等机械臂运行到位，而在生产时可以通过循环订阅机械臂当前位置判断是否走到指定点位或者通过订阅低速标志来判断。
                 d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
 
-# 为了更简明地使用控制SDK，我们特别提供了简明式接口，原SDK接口介绍见 二、接口介绍，  简明式SDK见 三、简明式接口介绍
 
-## 一、 MarvinSDK为上位机控制机器人（双臂系统）的二次开发工具包，提供功能大类有：
-(1) 1KHz 通信
+# 一、 控制SDK介绍
+    contrlSDK为上位机控制机器人（双臂系统）的二次开发工具包
+## 1.1 功能大类
+### （1） 1KHz 通信
     下发指令和订阅机器人数据是1KHz 通信， 采用UDP通信。
-
-(2) 控制状态切换
+### （2）控制状态切换
     ① 下使能
     ② 位置跟随模式
     ③ 位置PVT模式
@@ -32,7 +32,7 @@
         3) 力控制/力控制位置跟随
     ⑤ 协作释放
 
-(3) 控制状态参数（1KHz）
+### （3）控制状态参数（1KHz）
     ① 参数
         1) 目标跟随速度加速度设定，（百分比，值范围0-100）
         2) 关节阻抗参数设定
@@ -43,8 +43,7 @@
         1) 位置跟随目标指令 
         2) 力控目标指令 
 
-(4) 数据反馈和采集（1KHz）
-
+### （4）数据反馈和采集（1KHz）
     ① 实时反馈
         1) 位置
         2) 速度
@@ -56,25 +55,23 @@
     ② 数据采集
         1) 针对实时反馈数据可选择多达35项数据进行实时采集。
 
-(5) 参数获取和设置
+### （5）参数获取和设置
 
     ① 统一接口以参数名方式获取和设置所有参数。
 
+## 1.2 SDK文档
 
-# 二、接口介绍
+[SDK首页](README.md)
 
-## 2.1 SDK文档
-    SDK的主文档为master分支下的主文档：readme.md
+[C++ 控制SDK 文档](c++_doc_contrl.md)
 
-    机器人控制SDK文档：
-        c++_doc_contrl.md
-        python_doc_contrl.md
+[PYTHON 控制SDK 文档](python_doc_contrl.md)
 
-    机器人计算SDK文档：
-        c++_doc_kine.md
-        python_doc_kine.md
+[C++ 运动计算SDK 文档]( c++_doc_kine.md)
 
-## 2.2 SDK库文件编译
+[PYTHON 运动计算SDK 文档](python_doc_kine.md)
+
+## 1.3 SDK库文件编译
 
     使用自动化编译脚本：
         master分支下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
@@ -98,7 +95,7 @@
         编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
     
 
-## 2.3 控制机器人的主要逻辑
+## 1.4 控制机器人的主要逻辑
 
     机器人控制的主逻辑为:
         UDP连接机器人,通过接收数的更新据确认为有效连接
@@ -111,11 +108,14 @@
         |
         任务完成,释放机器人以便别的程序或者用户连接机器人
 
-## 2.4  接口详解
-    接口快速全览见:contrlSDK/MarvinSDK.h
+## 1.5  接口详解
+[控制SDK MarvinSDK.h](contrlSDK/MarvinSDK.h)
+    
     注意：所有左右臂相关接口都是后缀_A或_B表示， _A 为左臂 _B 为右臂
 
-### （1）连接和释放运行内存
+
+# 二、接口介绍
+## （1）连接和释放运行内存
 bool OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4);
 
     DEMO:  
@@ -165,7 +165,7 @@ bool OnRelease();
 
     释放内存后，要获取机器人的控制，需再次连接
 
-### （2）系统及系统更新相关
+## （2）系统及系统更新相关
 long OnGetSDKVersion();
 
     获取SDK版本:为SDK大版本
@@ -187,7 +187,7 @@ bool OnDownloadLog(char* local_path);
     获取系统日志，下载到本机绝对路径
 
 
-### （3）系统日志开关
+## （3）系统日志开关
 void OnLogOn();
 
     全局日志开， 日志信息将全部打印，包括1000HZ频率日志以及清空待发送数据缓冲区日志信息
@@ -201,7 +201,7 @@ void OnLocalLogOff();
 
     主要日志关
 
-### （4）急停、获取错误码和清错
+## （4）急停、获取错误码和清错
 void OnEMG_A();
 
 void OnEMG_B();
@@ -227,7 +227,7 @@ void OnClearErr_B();
 
     清除指定手臂的错误/复位
 
-### （5）实时订阅机器人数据
+## （5）实时订阅机器人数据
 bool OnGetBuf(DCSS * ret);
 
 
@@ -422,8 +422,8 @@ bool OnGetBuf(DCSS * ret);
     }ArmState;
     
 
-### （6）配置机器人参数相关(参数名见robot.ini文件)
-#### 读取整形和浮点参数信息：
+## （6）配置机器人参数相关(参数名见robot.ini文件)
+### 读取整形和浮点参数信息：
 long OnGetIntPara(char paraName[30],long * retValue);
 
     DEMO：获取左臂第一关节编码器单圈脉冲
@@ -449,7 +449,7 @@ long OnGetFloatPara(char paraName[30],double * retValue);
     }
 
 
-#### 设置整形和浮点参数信息：
+### 设置整形和浮点参数信息：
 long OnSetIntPara(char paraName[30],long setValue);
 
     设置整形配置参数
@@ -457,7 +457,7 @@ long OnSetFloatPara(char paraName[30], double setValue);
 
     设置浮点配置参数
 
-#### 保存参数
+### 保存参数
 long OnSavePara();
 
     返回值说明如下
@@ -465,7 +465,7 @@ long OnSavePara();
     return ParaRetSerial,       /////// 保存参数的序号
 
 
-### （7）数据采集和保存相关
+## （7）数据采集和保存相关
 
 bool OnStartGather(long targetNum, long targetID[35], long recordNum);
 
@@ -509,14 +509,14 @@ bool OnSaveGatherDataCSV(char* path);
     以CSV格式保存采集数据，保存到本机绝对路径
     在停止采集并且存在采集数据的情况下，可以将数据保存到文件
 
-### （8）末端通信模组指令收发相关
+## （8）末端通信模组指令收发相关
 ### 注意，无指令发送到末端模组，读取返回为0,使用逻辑为： 清缓存---发数据---读数据  或者： 读数据---清缓存---发数据---读数据
-#### 清除指定手臂的缓存数据
+### 清除指定手臂的缓存数据
 bool OnClearChDataA();
 
 bool OnClearChDataB();
 
-#### 获取指定手臂的末端通信模块数据
+### 获取指定手臂的末端通信模块数据
 long OnGetChDataA(unsigned char data_ptr[256], long* ret_ch);
 
 long OnGetChDataB(unsigned char data_ptr[256], long* ret_ch);
@@ -524,7 +524,7 @@ long OnGetChDataB(unsigned char data_ptr[256], long* ret_ch);
     data_ptr[256]为数据，最长可收256长度字节
     ret_ch：信息来源。 1：‘C’端; 2：com1; 3:com2
 
-#### 设置指定手臂的末端通信模块的指令数据
+### 设置指定手臂的末端通信模块的指令数据
 bool OnSetChDataA(unsigned char data_ptr[256], long size_int,long set_ch);
 
 bool OnSetChDataB(unsigned char data_ptr[256], long size_int, long set_ch);
@@ -535,7 +535,7 @@ bool OnSetChDataB(unsigned char data_ptr[256], long size_int, long set_ch);
     数据可发原始字节数据例如 b'0x00 0x101'  或者HEX数据"00 B1"
 
 
-### （9）上传PVT文件 
+## （9）上传PVT文件 
 bool OnSendPVT_A(char* local_file, long serial);
 
 bool OnSendPVT_B(char* local_file, long serial);
@@ -550,10 +550,9 @@ bool OnSendPVT_B(char* local_file, long serial);
 
     
 
-### （10）指令发送  可以以1000HZ频率进行发送
+## （10）指令发送  可以以1000HZ频率进行发送
 //清空待发送数据缓冲区
 bool OnClearSet();
-    
 
 //发送指令
 bool OnSetSend();
@@ -651,7 +650,7 @@ long OnSetSendWaitResponse(long time_out);
     OnSetForceCmd_B(XXX)    // 设置右臂力控位置
     OnSetSend()
 
-### （11）设置指定手臂的目标状态
+## （11）设置指定手臂的目标状态
 bool OnSetTargetState_A(int state);
 
 bool OnSetTargetState_B(int state);
@@ -664,7 +663,7 @@ bool OnSetTargetState_B(int state);
     4，        //协作释放，用于机器人撞机扭在一起，位置模式不能用情况下
 
 
-### （12）设置指定手臂在扭矩模式下阻抗类型
+## （12）设置指定手臂在扭矩模式下阻抗类型
 bool OnSetImpType_A(int type);
 
 bool OnSetImpType_B(int type);
@@ -675,7 +674,7 @@ bool OnSetImpType_B(int type);
     3,       // 力控 
     需要在OnSetTargetState_A（3）状态
 
-### （13）设置指定手臂的关节跟随速度/加速度
+## （13）设置指定手臂的关节跟随速度/加速度
 bool OnSetJointLmt_A(int velRatio, int AccRatio)
 
 bool OnSetJointLmt_B(int velRatio, int AccRatio)
@@ -683,7 +682,7 @@ bool OnSetJointLmt_B(int velRatio, int AccRatio)
     velRatio 速度百分比， 全速100, 安全起见，调试期间设为10
     AccRatio 加速度百分比， 全速100, 安全起见，调试期间设为10
 
-### （14）设置指定手臂的工具信息
+## （14）设置指定手臂的工具信息
 bool OnSetTool_A(double kinePara[6], double dynPara[10]);
 
 bool OnSetTool_B(double kinePara[6], double dynPara[10]);
@@ -691,7 +690,7 @@ bool OnSetTool_B(double kinePara[6], double dynPara[10]);
     kinePara: 运动学参数 XYZABC 单位毫米和度
     dynPara:  动力学参数分别为 质量M  质心[3]:mx,my,mz 惯量I[6]:XX,XY,XZ,YY,YZ,ZZ
 
-### （15）设置指定手臂的关节阻抗参数
+## （15）设置指定手臂的关节阻抗参数
 bool OnSetJointKD_A(double K[7], double D[7])
 
 bool OnSetJointKD_B(double K[7], double D[7])
@@ -705,7 +704,7 @@ bool OnSetJointKD_B(double K[7], double D[7])
 
 	注：1.参数在不同构型下的表现不同，请自行调节值到合适范围
 
-### （16）设置指定手臂的坐标阻抗参数
+## （16）设置指定手臂的坐标阻抗参数
 bool OnSetCartKD_A(double K[7], double D[7], int type)
 
 bool OnSetCartKD_B(double K[7], double D[7], int type)
@@ -725,7 +724,7 @@ bool OnSetCartKD_B(double K[7], double D[7], int type)
 
 
 
-### （17）设置指定手臂的力控参数和力控指令
+## （17）设置指定手臂的力控参数和力控指令
 bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt)
 bool OnSetForceCmd_A(double force)
 
@@ -764,7 +763,7 @@ bool OnSetForceCmd_B(double force)
 
 
 
-### （18）设置指定手臂的关节跟踪指令值
+## （18）设置指定手臂的关节跟踪指令值
 bool OnSetJointCmdPos_A(double joint[7])
 
 bool OnSetJointCmdPos_B(double joint[7])
@@ -773,7 +772,7 @@ bool OnSetJointCmdPos_B(double joint[7])
     在位置跟随和扭矩模式下均有效
 
 
-### （19）设置指定手臂的设置运行PVT指令
+## （19）设置指定手臂的设置运行PVT指令
 bool OnSetPVT_A(int id)
 
 bool OnSetPVT_B(int id)
@@ -783,7 +782,7 @@ bool OnSetPVT_B(int id)
 
 
 
-### （20）设置指定手臂的拖动空间
+## （20）设置指定手臂的拖动空间
 bool OnSetDragSpace_A(int dgType);
 
 bool OnSetDragSpace_B(int dgType);
@@ -800,7 +799,7 @@ bool OnSetDragSpace_B(int dgType);
         2.笛卡尔拖动需要在笛卡尔阻抗下使用
         3.切换不同拖动模式前需要退出拖动模式再切换，否则控制效果是叠加混乱的。
 
-### （21）设置末端笛卡尔方向的旋转
+## （21）设置末端笛卡尔方向的旋转
 //自定义设置末端笛卡尔方向的旋转
 //自定义设置左臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
 bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
@@ -813,7 +812,7 @@ bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
 //设置右臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
 bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
-### （22）规划功能
+## （22）规划功能
  //关节空间PLN方式发送指令
  bool OnInitPlnLmt(char * path);
  bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
@@ -838,7 +837,7 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
 
 
-## 三、简明式接口介绍
+# 三、简明式接口介绍
     /////////////////////////////////////简明式接口Concise SDK API//////////////////////////////////////////////
 	// 简明式接口，摒弃了老接口需要在OnClearSet() 和 OnSetSend()之间使用，且左右臂要的单独调取用，且需要查询伺服是否有错，清错后使用的逻辑。
 	// 简明式接口自行在内部做错误状态检查。
@@ -876,23 +875,23 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
 
 
-### （1） 连接机器人
+## （1） 连接机器人
     // 连接机器人,log_switch（日志默认为关）： 0 关; 1 开。
     bool Connect(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_switch=0);
 
-### （2）日志开关
+## （2）日志开关
 	//机器人日志开关, signal: 0 关; 1 开
 	void LogSwitch(int signal);
 
-### （3）软急停
+## （3）软急停
 	//指定手臂软急停, arm: "A" "B" "AB" 三种字符是许可值
 	void EStop(const FX_CHAR* arm);
 
-### （4）伺服软复位
+## （4）伺服软复位
 	//指定关节伺服软复位, arm: "A" "B"  两种字符是许可值; axis:0~6
 	void ServoReset(FX_CHAR arm, int axis);
 
-### （5）清错
+## （5）清错
 	//检查手臂错误并清错
 	bool CheckArmError();
 	//检查伺服错误并清错
@@ -900,20 +899,20 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	//清除两手臂的错误
 	void ClearErr();
 
-### （6）设定工具
+## （6）设定工具
 	//设置指定手臂的工具参数:运动学和动力学参数,运动学参数使正解到TCP, 动力学使扭矩模式可以正常使用
     //arm:"A" "B"  两种字符是许可值; kinePara:工具相对于末端法兰的位置的偏移（毫米）和姿态的旋转（角度，XYZ顺序）；dynPara：工具动力学参数，用提供的上位机软件可识别
 	bool SetTool(FX_CHAR arm, double kinePara[6], double dynPara[10]);
 
-### （7）切换为位置模式（刚度高）
+## （7）切换为位置模式（刚度高）
 	//设置指定手臂的速度和加速度和位置模式,注意PVT和拖动不受该速度限制。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100
 	bool SetJointMode(FX_CHAR arm, int velRatio, int AccRatio);
 
-### （8）切换为关节阻抗模式
+## （8）切换为关节阻抗模式
 	//设置指定手臂的速度和加速度和关节阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
 	bool SetImpJointMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7]);
 
-### （9）切换为笛卡尔阻抗模式
+## （9）切换为笛卡尔阻抗模式
 	// 设置指定手臂的速度和加速度和笛卡尔阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
 	// 如果不定义末端笛卡尔的旋转：RotType=0；double CartCtrlPara[7]={0}
 	// 设置末端笛卡尔方向的旋转：
@@ -921,20 +920,20 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	// RotType=2，为系统自动计算末端笛卡尔旋转； double CartCtrlPara[7]={0}
 	bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7], int RotType, double CartCtrlPara[7]);
 
-### （10）下发目标关节
+## （10）下发目标关节
 	//设置指定手臂的关节空间位置指令（位置模式/关节阻抗/笛卡尔阻抗模式下均使用该指令下发目标位置）。  arm:"A" "B"  两种字符是许可值； joint：七个关节的目标角度(单位：度）
 	bool SetJointPostionCmd(FX_CHAR arm, double joint[7]);
 
-### （11）切换为力控模式
+## （11）切换为力控模式
 	//设置指定手臂的力控参数和力阻抗模式。arm:"A" "B"  两种字符是许可值; fxDir：任意定义方向； fcAdjLmt：力的调节范围，单位毫米
 	bool SetImpForceMode(FX_CHAR arm, double fxDir[6],double fcAdjLmt);
 
-### （12）下发力控指令
+## （12）下发力控指令
     //力控模式下下发力指令
 	//设置指定手臂的力值：arm:"A" "B"  两种字符是许可值; force: 力，单位：牛
 	bool SetForceCmd(FX_CHAR arm, double force);
 
-### （13）规划运动到目标位置（位置模式下，规划执行频率50HZ）
+## （13）规划运动到目标位置（位置模式下，规划执行频率50HZ）
 	//关节空间规划初始化，只需初始化一次
 	bool PlnInit(char * path);
 	//关节空间下从当前点规划方式运行到目标点
@@ -946,13 +945,13 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	//中断规划运行，笛卡尔空间和关节空间都适用
 	bool StopPln(FX_CHAR arm);
 
-### （14）PVT指令
+## （14）PVT指令
 	//上传本地PVT轨迹文件存为指定ID, arm:"A" "B"  两种字符是许可值; local_file:相对或绝对路径； serial:0~99
 	bool SendPVT(FX_CHAR arm, char* local_file, long serial);
 	//设置指定手臂的PVT号并立即运行该轨迹, arm:"A" "B"  两种字符是许可值； id：0~99(SendPVT上传的pvt文件的serial).特别注意运行PVT，需要将机器人位置调到PVT规划轨迹的起点
 	bool RunPVT(FX_CHAR arm, int id);
 
-### （15）拖动
+## （15）拖动
 	//拖动，每种拖动使用完毕需要退出拖动再切换为别的拖动模式，否则拖动效果是叠加混乱的哦。
 	//设置指定手臂为关节拖动。 arm:"A" "B"  两种字符是许可值
 	bool SetJointDrag(FX_CHAR arm);
@@ -961,7 +960,7 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	//设置指定手臂退出拖动。arm:"A" "B"  两种字符是许可值
 	bool ExitDrag(FX_CHAR arm);
 
-### （16）末端工具通讯
+## （16）末端工具通讯
 	//手臂末端安装工具的通讯
 	//清缓存数据。arm:"A" "B"  两种字符是许可值
 	bool ClearChData(FX_CHAR arm);
@@ -970,19 +969,19 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	//给指定手臂指定通道发送数据. arm:"A" "B" 两种字符是许可值; ret_ch=1: CAN/CANFD  ret_ch=2: COM1  ret_ch=3: COM2
 	long SetChData(FX_CHAR arm, unsigned char data_ptr[256], long size_int,long set_ch);
 
-### （17）采集指令 
+## （17）采集指令 
 	//设置保存参数并开始采集数据
 	bool StartCollectData(long targetNum, long targetID[35], long recordNum);
 	//停止数据采集
 	bool StopCollectData(); 
 	//保存数据使用老接口：bool OnSaveGatherData(char * path);
 
-### （18）下使能/复位
+## （18）下使能/复位
 	//设置指定手臂下使能/复位。arm:"A" "B"  两种字符是许可值
 	bool Disable(FX_CHAR arm);
 
 
-## 四、扭矩模式下刚度和阻尼的建议：
+# 四、扭矩模式下刚度和阻尼的建议：
     刚度用来衡量物体抗变形的能力。刚度越大，形变越小力的传导率高，运动时感觉很脆很硬；反之，刚度越小，形变大，形状恢复慢，传递力效率低，运动时感觉比较柔软富有韧性。
     阻尼用来衡量物体耗散振动能量的能力。阻尼越大，物体振幅减小越快，但对力、位移的响应迟缓，运动时感觉阻力大，有粘滞感； 阻尼越小，减震效果减弱，但运动阻力小，更流畅，停止到位置时有余震感。
 
@@ -1002,8 +1001,8 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
 
 
-## 五、案例脚本
- 见 DEMO_C++/readme.md
+# 五、案例脚本
+[SDK使用](DEMO_C++/readme.md)
 
 
 

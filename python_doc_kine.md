@@ -3,22 +3,27 @@
 ## 版本： 1004
 ## 支持平台： LINUX 及 WINDOWS
 ## LINUX支持： ubuntu18.04 - ubuntu24.04
-## 更新日期：2025-12
+## 更新日期：2026-03
 
 
 # 一 、SDK_PYTHON简要介绍
-    为天机双臂机器人和人形机器人基于python开发的SDK，其分为控制SDK：SDK_PYTHON/fx_robot.py 和运动学计算的SDK:SDK_PYTHON/fx_kine.py
+    为天机双臂机器人和人形机器人基于python开发的SDK。
+    其分为 控制SDK：SDK_PYTHON/fx_robot.py 和运动学计算的SDK:SDK_PYTHON/fx_kine.py
+
+[控制SDK](SDK_PYTHON/fx_robot.py)
+
+[计算SDK](SDK_PYTHON/fx_kine.py)
 
 ## 1.1 SDK文档
-    SDK的主文档为master分支下的主文档：readme.md
+[SDK首页](README.md)
 
-    机器人控制SDK文档：
-        c++_doc_contrl.md
-        python_doc_contrl.md
+[C++ 控制SDK 文档](c++_doc_contrl.md)
 
-    机器人计算SDK文档：
-        c++_doc_kine.md
-        python_doc_kine.md
+[PYTHON 控制SDK 文档](python_doc_contrl.md)
+
+[C++ 运动计算SDK 文档]( c++_doc_kine.md)
+
+[PYTHON 运动计算SDK 文档](python_doc_kine.md)
     
 ## 1.2 SDK库文件夹下文件说明
     SDK_PYTHON文件下文件为：
@@ -37,9 +42,9 @@
 ## 1.3 SDK库文件编译
 
     使用自动化编译脚本：
-        master分支下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
-        master分支下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
-        
+        master下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
+        master下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+
     
     手动编译指令：
     
@@ -407,7 +412,7 @@ mat4x4_to_mat1x16(self,pose_mat):
 
 
 ## 三、案例脚本
- 见 DEMO_PYTHON/readme.md
+[showcase for python](DEMO_PYTHON/readme.md)
 
 
 

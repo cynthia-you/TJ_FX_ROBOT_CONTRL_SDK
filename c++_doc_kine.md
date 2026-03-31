@@ -3,22 +3,26 @@
 ## 版本： 1004
 ## 支持平台： LINUX 及 WINDOWS
 ## LINUX支持： ubuntu18.04 - ubuntu24.04
-## 更新日期：2025-09
+## 更新日期：2026-03
 
 
 
-## 一、接口介绍
+# 一、接口介绍
+    kinematicsSDK 为天机七轴机器人计算运动的接口，主要提供：
+## （1） 设置和移除工具（设置工具后，正逆运动学解算到TCP中心， 不设置工具正逆运动学解算到末端法兰中心）
+## （2） 运动学正逆解
+## （3） 雅可比矩阵计算
+## （4） 运动规划
+## （5） XYZABC和齐次变换矩阵互转
 
 ## 1.1 SDK文档
-    SDK的主文档为master分支下的主文档：readme.md
+[SDK首页](README.md)
 
-    机器人控制SDK文档：
-        c++_doc_contrl.md
-        python_doc_contrl.md
+[C++ 控制SDK 文档](c++_doc_contrl.md)
+[PYTHON 控制SDK 文档](python_doc_contrl.md)
 
-    机器人计算SDK文档：
-        c++_doc_kine.md
-        python_doc_kine.md
+[C++ 运动计算SDK 文档]( c++_doc_kine.md)
+[PYTHON 运动计算SDK 文档](python_doc_kine.md)
 
 ## 1.2 SDK库文件编译
 
@@ -30,22 +34,21 @@
     编译c++调用的dll动态库:
         1)windows下使用MinGW编译dll动态库:
                 控制SDK(contrlSDK): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
-                运动学SDK(kinematicsSDK): g++ *.cpp -Wall -w -O2 -fPIC -shared -o libKine.dll
+                运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -w -O2 -fPIC -shared -o libKine.dll
         编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
     
     编译so动态库:
         linux设备编译:
             控制SDK(contrlSDK)，以下方法均可编译: 
-                1. g++ *.cpp -Wall -w -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
+                1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
                 2./contrlSDK/makefile 生成libMarvinSDK.so
             运动学SDK(kinematicsSDK)，以下方法均可编译: 
-                1. g++ *.cpp -Wall -w -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
+                1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
                 2./kinematicsSDK/makefile 生成libKine.so
         编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
 
 ## 1.3 接口详解
-
-    接口快速全览见[kinematicsSDK/FxRobot.h]
+[计算SDK FxRobot.h](kinematicsSDK/FxRobot.h)
 
     注意
     一定要确认RobotSerial是左臂0 还是右臂1
@@ -402,7 +405,7 @@ FX_BOOL  FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L R
 
 # 二、案例脚本
 ## C++开发的使用编译见：
-    ./DEMO_C++/readme.md
+[SDK使用](DEMO_C++/readme.md)
 
 
 

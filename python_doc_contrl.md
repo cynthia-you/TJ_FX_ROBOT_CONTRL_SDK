@@ -16,21 +16,24 @@
                 c.设置目标关节后，测试里小睡几秒等机械臂运行到位，而在生产时可以通过循环订阅机械臂当前位置判断是否走到指定点位或者通过订阅低速标志来判断。
                 d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
 
-# 为了更简明地使用控制SDK，我们特别提供了简明式接口，原SDK接口介绍见 二、接口介绍，  简明式SDK见 三、简明式接口介绍
-
 # 一 、SDK_PYTHON简要介绍
-    为天机双臂机器人和人形机器人基于python开发的SDK，其分为控制SDK：SDK_PYTHON/fx_robot.py 和运动学计算的SDK:SDK_PYTHON/fx_kine.py
+    为天机双臂机器人和人形机器人基于python开发的SDK。
+    其分为 控制SDK：SDK_PYTHON/fx_robot.py 和运动学计算的SDK:SDK_PYTHON/fx_kine.py
+
+[控制SDK](SDK_PYTHON/fx_robot.py)
+
+[计算SDK](SDK_PYTHON/fx_kine.py)
 
 ## 1.1 SDK文档
-    SDK的主文档为master分支下的主文档：readme.md
+[SDK首页](README.md)
 
-    机器人控制SDK文档：
-        c++_doc_contrl.md
-        python_doc_contrl.md
+[C++ 控制SDK 文档](c++_doc_contrl.md)
 
-    机器人计算SDK文档：
-        c++_doc_kine.md
-        python_doc_kine.md
+[PYTHON 控制SDK 文档](python_doc_contrl.md)
+
+[C++ 运动计算SDK 文档]( c++_doc_kine.md)
+
+[PYTHON 运动计算SDK 文档](python_doc_kine.md)
     
 ## 1.2 SDK库文件夹下文件说明
     SDK_PYTHON文件下文件为：
@@ -1036,7 +1039,7 @@
 
 
 # 四、案例脚本
- 见 DEMO_PYTHON/readme.md
+[showcase for python](DEMO_PYTHON/readme.md)
 
 # 扭矩模式下刚度和阻尼的建议：
     刚度用来衡量物体抗变形的能力。刚度越大，形变越小力的传导率高，运动时感觉很脆很硬；反之，刚度越小，形变大，形状恢复慢，传递力效率低，运动时感觉比较柔软富有韧性。
