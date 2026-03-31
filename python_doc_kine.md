@@ -66,12 +66,12 @@
 
 ## 二、 接口详解 
 
- 运动计算接口主要提供：
-## （1） 设置和移除工具（设置工具后，正逆运动学解算到TCP中心， 不设置工具正逆运动学解算到末端法兰中心）
-## （2） 运动学正逆解
-## （3） 雅可比矩阵计算
-## （4） 运动规划
-## （5） XYZABC和齐次变换矩阵互转
+     运动计算接口主要提供：
+            1）设置和移除工具（设置工具后，正逆运动学解算到TCP中心， 不设置工具正逆运动学解算到末端法兰中心）
+            2）运动学正逆解
+            3）雅可比矩阵计算
+            4）运动规划
+            5）XYZABC和齐次变换矩阵互转
 
     SDK_PYTHON/fx_kine.py 是基于机器人（双臂系统）C++开发的SDK的的二次开发工具包
     将类实例化后可以使用其具体功能函数：
@@ -82,7 +82,6 @@
     使用前，请一定确认机型，导入正确的配置文件(*.MvKDCfg)，文件导错，计算会错误啊啊啊,甚至看起来运行正常，但是值错误！！！
 
 ### 逆解结构体参数介绍
-
     class FX_InvKineSolvePara(ctypes.Structure):
         _fields_ = [
             # 输入部分
@@ -107,14 +106,14 @@
             ("m_Output_RunLmtN", Vect7) #各个关节运行的负限位，可作为计算六七关节的干涉参考最大限制。                                                                                mm
         ]
 
-###    2.0 日志关闭
+### （1）日志关闭
     def log_switch(switch:int):
         '''
         :param switch: 打印日志开：1；打印日志关：0
         '''
 
     
-###    2.1 导入运动学相关参数
+### （2）导入运动学相关参数
 load_config(arm_type: int, config_path: str)
 
         :param srm_type: 选择左臂还是右臂, 左臂:0, 右臂:1
@@ -130,7 +129,7 @@ load_config(arm_type: int, config_path: str)
 
 
 
-###    2.2 初始化运动学相关参数
+### （3）初始化运动学相关参数
 initial_kine(robot_type: int, dh: list, pnva: list, j67: list)
 
         '''初始化运动学相关参数
@@ -143,7 +142,7 @@ initial_kine(robot_type: int, dh: list, pnva: list, j67: list)
             bool
         '''
 
-###    2.3 工具设置
+### （4）工具设置
 设置工具的运动学参数
 set_tool_dyn(dyn: list)
 移除工具的运动学参数
@@ -165,7 +164,7 @@ remove_tool_kine()
 
 
 
-###    2.4 计算正运动学
+### （5）计算正运动学
 fk(joints: list)
 
     '''关节角度正解到末端TCP位置和姿态4*4
@@ -182,7 +181,7 @@ fk(joints: list)
 
 
 
-###    2.5 计算正运动学并得到该构型下的零空间参数矩阵
+### （6）计算正运动学并得到该构型下的零空间参数矩阵
 fk_nsp(joints: list)
 
         '''关节角度正解到末端TCP位置和姿态4*4，并得到基于该角度下的零空间参数
@@ -192,7 +191,7 @@ fk_nsp(joints: list)
             零空间参数矩阵 array(3,3), 其中第一列可以作为逆解结构体里面m_Input_IK_ZSPPara的x y z的输入值。
         '''
 
-###    2.6 计算逆运动学
+### （7）计算逆运动学
 ik(structure_data):
         '''末端位置和姿态逆解到关节值
         :param 结构体数据
@@ -249,7 +248,7 @@ ik(structure_data):
 
 
 
-###    2.7 计算末端位姿不变、改变零空间（臂角方向）的逆运动学
+### （8）计算末端位姿不变、改变零空间（臂角方向）的逆运动学
 ik_nsp(sturcture_data):
         '''逆解优化：可调整方向,不能单独使用，ik得到的逆运动学解的臂角不满足当前选解需求时使用。
             输入参数：
@@ -276,7 +275,7 @@ ik_nsp(sturcture_data):
             成功：True/1; 失败：False/0
         '''
 
-###    2.8 计算雅可比矩阵
+###  （9）计算雅可比矩阵
 joints2JacobMatrix(joints: list)
 
     • 输入关节角度及RobotSerial（参数含义参考初始化参数部分），输出为6*7的雅可比矩阵
@@ -285,7 +284,7 @@ joints2JacobMatrix(joints: list)
             :return: 雅可比矩阵6*7矩阵
             '''
 
-###    2.9 直线规划（MOVL）
+### （10）直线规划（MOVL）
 movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, freq_hz:int, save_path)
 
     • 输出点位频率为500Hz，即每20ms执行一行
@@ -306,7 +305,7 @@ movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: fl
         '''
 
             
-###    2.10 直线插值规划，约束起始结束关节构型（movL_KeepJ）
+### （11）直线插值规划，约束起始结束关节构型（movL_KeepJ）
 movL_KeepJ(start_joints:list, end_joints:list,vel:float,freq_hz:int,save_path)
 
     • 输出点位频率为50Hz，即每2ms执行一行
@@ -326,7 +325,7 @@ movL_KeepJ(start_joints:list, end_joints:list,vel:float,freq_hz:int,save_path)
 
 
 
-###    2.11 在线直线规划（MOVL）
+### （12）在线直线规划（MOVL）
 movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float,freq_hz:int)
 
     • 输出点位频率为500Hz，即每20ms执行一行
@@ -346,7 +345,7 @@ movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: f
         '''
 
             
-###    2.12 在线直线插值规划，约束起始结束关节构型（movL_KeepJ）
+### （13）在线直线插值规划，约束起始结束关节构型（movL_KeepJ）
 movL_KeepJA(start_joints:list, end_joints:list,vel:float,freq_hz:int,save_path)
 
     • 输出点位频率为50Hz，即每2ms执行一行
@@ -367,7 +366,7 @@ movL_KeepJA(start_joints:list, end_joints:list,vel:float,freq_hz:int,save_path)
 
                 
 
-###    2.13 工具动力学参数辨识
+### （14）工具动力学参数辨识
 identify_tool_dyn(robot_type: int, ipath: str)
 
         '''工具动力学参数辨识
@@ -384,7 +383,7 @@ identify_tool_dyn(robot_type: int, ipath: str)
         '''
 
 
-###     2.14 位置姿态4×4矩阵转XYZABC
+###  （15）位置姿态4×4矩阵转XYZABC
 mat4x4_to_xyzabc(pose_mat:list)
 
     • 输入为4*4的法兰末端位姿矩阵
@@ -396,7 +395,7 @@ mat4x4_to_xyzabc(pose_mat:list)
                 （6,1）位姿信息XYZ及欧拉角ABC（单位：mm/度）
         '''
     
-###     2.15 XYZABC转位置姿态4×4矩阵
+### （16） XYZABC转位置姿态4×4矩阵
 xyzabc_to_mat4x4(xyzabc:list)
 
     • 输入为位姿信息XYZ及欧拉角ABC（单位：mm/度）
@@ -409,7 +408,7 @@ xyzabc_to_mat4x4(xyzabc:list)
 
         '''
         
-###     2.16 位姿矩阵展开表示
+### （17）位姿矩阵展开表示
 mat4x4_to_mat1x16(self,pose_mat):
         matrix_data=[]
         for i in range(4):
