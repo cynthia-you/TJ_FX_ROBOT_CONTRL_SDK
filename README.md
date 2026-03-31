@@ -148,13 +148,12 @@
 ## 3.1 控制SDK
 ### 控制SDK新增简明接口
 # 为了更简明地使用控制SDK，我们特别提供了简明式接口，
-[原SDK接口介绍](c++_doc_contrl.md#L118)
+[原SDK接口](contrlSDK/MarvinSDK.h#L27)
 
-[简明式接口介绍](c++_doc_contrl.md#L840)
-
-[控制SDK MarvinSDK.h](contrlSDK/MarvinSDK.h)
+[简明式接口](contrlSDK/MarvinSDK.h#L222)
 
 [简明式控制案例C++](DEMO_C++/showcase_new_control_sdk_usage.cpp)
+
 [简明式控制案例PYTHON](DEMO_PYTHON/showcases_new_control_sdk.py)
     
 ### 以规划方式下发关节指令消除抖动：
