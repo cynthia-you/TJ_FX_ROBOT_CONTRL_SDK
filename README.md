@@ -21,7 +21,11 @@
          4. 我司linux下仅有x_86架构机器开发和测试，特殊架构请编译测试
          5. 提供ubuntu-x_86/Windows 上位机控制软件APP(开源软件代码)
 
-    特别说明：为了您更流畅操控我们的机器人，请您务必先查阅文档和案列，使用操作上位机软件UI-MarvinPlatform(LINUX/WINDOWS)/FxStation.exe(WINDOWS)后再根据您的控制需求开发业务和生产脚本。
+    特别说明：
+            1.为了您更流畅操控我们的机器人，请您务必先查阅文档和案列，
+            2. 使用操作上位机软件后再根据您的控制需求开发业务和生产脚本。
+[上位机软件MarvinPlatform](https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/tree/UI-MarvinPlatform)
+
 
      机器人控制的主逻辑为:
         UDP连接机器人,通过接收数的更新据确认为有效连接
@@ -53,13 +57,13 @@
             左臂特征序号：
                         0-6  	左臂关节位置 
                         10-16 	左臂关节速度
-                        20-26   左臂外编位置
-                        30-36   左臂关节指令位置
+                        20-26       左臂外部编码器位置
+                        30-36       左臂关节指令位置
                         40-46	左臂关节电流（千分比）
-                        50-56   左臂关节传感器扭矩NM
+                        50-56       左臂关节传感器扭矩NM
                         60-66	左臂摩擦力估计值
                         70-76	左臂摩檫力速度估计值
-                        80-85   左臂关节外力估计值
+                        80-85       左臂关节外力估计值
                         90-95	左臂末端点外力估计值
             右臂特征序号对应 + 100
 
@@ -71,12 +75,16 @@
 
 ## 1.1 机器人控制SDK文档：
 [C++ 控制SDK 文档](c++_doc_contrl.md)
+
 [PYTHON 控制SDK 文档](python_doc_contrl.md)
+
     文档内含DEMO说明
 
 ## 1.2 机器人计算SDK文档：
 [C++ 运动计算SDK 文档]( c++_doc_kine.md)
+
 [PYTHON 运动计算SDK 文档](python_doc_kine.md)
+
     文档内含DEMO说明
 
 
@@ -140,133 +148,7 @@
 ## 3.1 控制SDK
 ### 控制SDK新增简明接口
 # 为了更简明地使用控制SDK，我们特别提供了简明式接口，原SDK接口介绍见c++_doc_contrl.md下 二、接口介绍，  简明式SDK见c++_doc_contrl.md下 三、简明式接口介绍
-    /////////////////////////////////////简明式接口Concise SDK API//////////////////////////////////////////////
-	// 简明式接口，摒弃了老接口需要在OnClearSet() 和 OnSetSend()之间使用，且左右臂要的单独调取用，且需要查询伺服是否有错，清错后使用的逻辑。
-	// 简明式接口自行在内部做错误状态检查。
-	// 老接口和简明式接口并存兼容
-
-	//使用简明式接口请注意：老接口中，以下接口未作变化，请正常使用：
-				// //获取 设置 保存机器人配置参数
-				// long OnSetIntPara(char paraName[30],long setValue);
-				// long OnSetFloatPara(char paraName[30], double setValue);
-				// long OnGetIntPara(char paraName[30],long * retValue);
-				// long OnGetFloatPara(char paraName[30],double * retValue);
-				// long OnSavePara();
-				// ////////////////////////////////////////////////////////////////////////////////////////////////
-				// //自动修正传感器偏移,测试中
-				// long OnAutoRectifySensor();
-				// ////////////////////////////////////////////////////////////////////////////////////////////////
-				// //保存数据,该接口后要睡久一点,留够保存数据文件的时间,以防保存出错
-				// bool OnSaveGatherData(char * path);
-				// bool OnSaveGatherDataCSV(char* path);
-				//  //释放机器人:只要有连接一定要释放,以便别的程序或者用户控制机器人
-				// bool OnRelease();
-				// //////////////////////////////////////////////////////////////////////
-				// //获取SDK大版本号
-				// long OnGetSDKVersion();
-				// //升级控制器系统,本地升级包路径
-				// bool OnUpdateSystem(char* local_path);
-				// //下载控制器日志到本地
-				// bool OnDownloadLog(char* local_path);
-				// //本地文件上传到控制器远程目录， 绝对路径
-				// bool OnSendFile(char* local_file, char* remote_file);
-				// //控制器文件从远程传到本地目录， 绝对路径
-				// bool OnRecvFile(char* local_file, char* remote_file);
-				// ////////////////////////////////////////////////////////////////////////////////////////////////
-				// //订阅数据接口,所有数据是结构体.
-				// bool OnGetBuf(DCSS * ret);
-
-
-
-	//连接机器人,log_switch（日志默认为关）： 0 关; 1 开。
-	bool Connect(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_switch=0);
-
-	//机器人日志开关, signal: 0 关; 1 开
-	void LogSwitch(int signal);
-
-	//指定手臂软急停, arm: "A" "B" "AB" 三种字符是许可值
-	void EStop(const FX_CHAR* arm);
-
-	//指定关节伺服软复位, arm: "A" "B"  两种字符是许可值; axis:0~6
-	void ServoReset(FX_CHAR arm, int axis);
-
-	//检查手臂错误并清错
-	bool CheckArmError();
-	//检查伺服错误并清错
-	bool CheckServoError();
-
-	//清除两手臂的错误
-	void ClearErr();
-
-	//设置指定手臂的工具参数:运动学和动力学参数,运动学参数使正解到TCP, 动力学使扭矩模式可以正常使用
-    //arm:"A" "B"  两种字符是许可值; kinePara:工具相对于末端法兰的位置的偏移（毫米）和姿态的旋转（角度，XYZ顺序）；dynPara：工具动力学参数，用提供的上位机软件可识别
-	bool SetTool(FX_CHAR arm, double kinePara[6], double dynPara[10]);
-
-	//设置指定手臂的速度和加速度和位置模式,注意PVT和拖动不受该速度限制。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100
-	bool SetJointMode(FX_CHAR arm, int velRatio, int AccRatio);
-
-	//设置指定手臂的速度和加速度和关节阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
-	bool SetImpJointMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7]);
-
-	// 设置指定手臂的速度和加速度和笛卡尔阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
-	// 如果不定义末端笛卡尔的旋转：RotType=0；double CartCtrlPara[7]={0}
-	// 设置末端笛卡尔方向的旋转：
-	// RotType=1，为自定义末端旋转方向； 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0；
-	// RotType=2，为系统自动计算末端笛卡尔旋转； double CartCtrlPara[7]={0}
-	bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7], int RotType, double CartCtrlPara[7]);
-
-	// 设置指定手臂的关节空间位置指令（位置模式扭矩模式下的关节指令）。  arm:"A" "B"  两种字符是许可值； joint：七个关节的目标角度(单位：度）
-	bool SetJointPostionCmd(FX_CHAR arm, double joint[7]);
-
-	// 设置指定手臂的力控参数和力阻抗模式。arm:"A" "B"  两种字符是许可值; fxDir：任意定义方向； fcAdjLmt：力的调节范围，单位毫米
-	bool SetImpForceMode(FX_CHAR arm, double fxDir[6], double fcAdjLmt);
-	// 设置指定手臂的力值：arm:"A" "B"  两种字符是许可值; force: 力，单位：牛
-	bool SetForceCmd(FX_CHAR arm, double force);
-
-	//以规划方式运动到目标点（位置模式下，规划执行频率50HZ）
-	//关节空间规划初始化，只需初始化一次
-	bool PlnInit(char * path);
-	//关节空间下从当前点规划方式运行到目标点
-	bool RunPlnJoint(FX_CHAR arm, double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
-	// 笛卡尔空间下从当前点规划方式运行到目标点，规划点位pset由KinematicsSDK计算接口FX_Robot_PLN_MOVLA计算得出。
-	bool RunPlnCart(FX_CHAR arm, void* pset);
-	//中断规划运行，笛卡尔空间和关节空间都适用
-	bool StopPln(FX_CHAR arm);
-	
-	//上传本地PVT轨迹文件存为指定ID, arm:"A" "B"  两种字符是许可值; local_file:相对或绝对路径； serial:0~99
-	bool SendPVT(FX_CHAR arm, char* local_file, long serial);
-	//设置指定手臂的PVT号并立即运行该轨迹, arm:"A" "B"  两种字符是许可值； id：0~99(SendPVT上传的pvt文件的serial).特别注意运行PVT，需要将机器人位置调到PVT规划轨迹的起点
-	bool RunPVT(FX_CHAR arm, int id);
-
-	//拖动，每种拖动使用完毕需要退出拖动再切换为别的拖动模式，否则拖动效果是叠加混乱的哦。
-	//设置指定手臂为关节拖动。 arm:"A" "B"  两种字符是许可值
-	bool SetJointDrag(FX_CHAR arm);
-	//设置指定手臂为笛卡尔拖动。 arm:"A" "B"  两种字符是许可值; type: "X" "Y" "Z" "R" 四种字符是许可值（X/Y/Z/旋转， 四个方向选一）;
-	bool SetCartDrag(FX_CHAR arm, FX_CHAR type);
-	//设置指定手臂退出拖动。arm:"A" "B"  两种字符是许可值
-	bool ExitDrag(FX_CHAR arm);
-
-	//手臂末端安装工具的通讯
-	//清缓存数据。arm:"A" "B"  两种字符是许可值
-	bool ClearChData(FX_CHAR arm);
-	//获取指定手臂指定通道的数据. arm:"A" "B" 两种字符是许可值; ret_ch==1: CAN/CANFD  ret_ch==2: COM1  ret_ch==3: COM2
-	long GetChData(FX_CHAR arm, unsigned char data_ptr[256], long* ret_ch);
-	//给指定手臂指定通道发送数据. arm:"A" "B" 两种字符是许可值; ret_ch==1: CAN/CANFD  ret_ch==2: COM1  ret_ch==3: COM2
-	long SetChData(FX_CHAR arm, unsigned char data_ptr[256], long size_int,long set_ch);
-
-
-	//采集数据 停止采集  
-	//设置保存参数并开始采集数据
-	bool StartCollectData(long targetNum, long targetID[35], long recordNum);
-	//停止数据采集
-	bool StopCollectData(); 
-	//保存数据使用老接口：bool OnSaveGatherData(char * path);
-
-	//下使能/复位
-	//设置指定手臂下使能/复位。arm:"A" "B"  两种字符是许可值
-	bool Disable(FX_CHAR arm);
-
-    用例：showcase_new_control_sdk_usage.cpp （main内提供了10个关于新接口的案例）
+[简明式控制SDK MarvinSDK.h](contrlSDK/MarvinSDK.h)
     
 ### 以规划方式下发关节指令消除抖动：
     //关节空间PLN方式发送指令
