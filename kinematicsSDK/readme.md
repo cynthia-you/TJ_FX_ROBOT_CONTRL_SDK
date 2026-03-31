@@ -11,17 +11,17 @@
 
 
 # 一、SDK文档
-    请阅读SDK文档，了解接口的功能和输入参数类型数值含义。
+    请阅读SDK文档，详细全面了解机器人使用逻辑，接口的功能，以及更新和注意事项。
 
-    SDK的主文档为master分支下的主文档：readme.md
+[SDK首页](../README.md)
 
-    机器人控制SDK文档：
-        c++_doc_contrl.md
-        python_doc_contrl.md
+[C++ 控制SDK 文档](../c++_doc_contrl.md)
 
-    机器人计算SDK文档：
-        c++_doc_kine.md
-        python_doc_kine.md
+[PYTHON 控制SDK 文档](../python_doc_contrl.md)
+
+[C++ 运动计算SDK 文档]( ../c++_doc_kine.md)
+
+[PYTHON 运动计算SDK 文档](../python_doc_kine.md)
 
 # 二、 运动学SDK库文件编译
     运动学SDK头文件：FxRobot.h
