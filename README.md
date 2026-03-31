@@ -153,6 +153,9 @@
 [简明式接口介绍](c++_doc_contrl.md#L840)
 
 [控制SDK MarvinSDK.h](contrlSDK/MarvinSDK.h)
+
+[简明式控制案例C++](DEMO_C++/showcase_new_control_sdk_usage.cpp)
+[简明式控制案例PYTHON](DEMO_PYTHON/showcases_new_control_sdk.py)
     
 ### 以规划方式下发关节指令消除抖动：
     //关节空间PLN方式发送指令
