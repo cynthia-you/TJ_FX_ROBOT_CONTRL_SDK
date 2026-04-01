@@ -30,6 +30,25 @@ logger = logging.getLogger('debug_printer')
 logger.setLevel(logging.INFO)# 一键关闭所有调试打印
 logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
 
+kine_cfg_file='ccs_m6_40.MvKDCfg'
+
+'''实列化计算'''
+kk1=Marvin_Kine() # LEFT ARM
+ini_result1=kk1.load_config(arm_type=0,config_path=os.path.join(current_path,kine_cfg_file))
+initial_kine_tag=kk1.initial_kine(
+                                 robot_type=ini_result1['TYPE'][0],
+                                 dh=ini_result1['DH'][0],
+                                 pnva=ini_result1['PNVA'][0],
+                                 j67=ini_result1['BD'][0])
+
+kk2=Marvin_Kine() # right ARM
+ini_result1=kk2.load_config(arm_type=0,config_path=os.path.join(current_path,kine_cfg_file))
+initial_kine_tag=kk2.initial_kine(
+                                 robot_type=ini_result1['TYPE'][1],
+                                 dh=ini_result1['DH'][1],
+                                 pnva=ini_result1['PNVA'][1],
+                                 j67=ini_result1['BD'][1])
+
 '''1初始化订阅数据的结构体'''
 dcss=DCSS()
 
