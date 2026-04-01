@@ -39,6 +39,7 @@ protected:
 	long m_filt_cnt;
 	long m_filt_pos;
 
+	bool   m_Set_Freq;
 	double m_freq;
 	double m_cycle;  //frequency to cycle
 };

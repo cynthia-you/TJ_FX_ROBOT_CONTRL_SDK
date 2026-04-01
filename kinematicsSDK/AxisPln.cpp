@@ -10,7 +10,7 @@
 
 CAxisPln::CAxisPln()
 {
-
+	m_Set_Freq = FX_FALSE;
 }
 
 CAxisPln::~CAxisPln()
@@ -29,13 +29,17 @@ void CAxisPln::OnSetFreq(long freq)
 	{
 		m_freq = (double)freq;
 		m_cycle = 1 / m_freq;
+		m_filt_cnt = (long)(0.1 * m_freq);
 	}
 	else
 	{
 		//default 500Hz
 		m_cycle = 0.002; 
 		m_freq = 500.0;
+		m_filt_cnt = 50;
 	}
+
+	m_Set_Freq = FX_TRUE;
 }
 
 bool CAxisPln::OnPln(double start_pos, double end_pos, double vel, double acc, double jerk, CPointSet* ret)
@@ -61,18 +65,12 @@ bool CAxisPln::OnPln(double start_pos, double end_pos, double vel, double acc, d
 		return false;
 	}
 
-	double fln = fabs(acc / jerk) * 500.0;
-	if (fln < 10)
+	if (!m_Set_Freq)
 	{
-		fln = 10;
-	}
-	if (fln > 399)
-	{
-		fln = 399;
+		OnSetFreq(500); // default 500Hz
 	}
 
-	m_filt_cnt = fln;
-	fln = m_filt_cnt;
+	double fln  = m_filt_cnt;
 	m_filt_pos = 0;
 	long i = 0;
 	long j = 0;
@@ -145,7 +143,7 @@ bool CAxisPln::OnPln(double start_pos, double end_pos, double vel, double acc, d
 		double* pre = ret->OnGetPoint(i - 1);
 		double* cur = ret->OnGetPoint(i);
 		double* nex = ret->OnGetPoint(i + 1);
-		cur[1] = (nex[0] - pre[0]) * m_freq;
+		cur[1] = (nex[0] - pre[0]) * m_freq * 0.5;
 		//cur[1] = (nex[0] - pre[0]) * 250.0;
 	}
 	
