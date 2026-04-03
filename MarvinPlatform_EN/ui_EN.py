@@ -4572,19 +4572,26 @@ class App:
                     com = 2
                 elif com_ == 'COM2':
                     com = 3
-                self.eef_thread = threading.Thread(target=read_data, args=(robot_id, com), daemon=True)
-                self.eef_thread.start()
-
-                received_count, received_data = get_received_data()
-                if received_count > 0:
-                    if len(received_data) > 0:
-                        print(f'received_count:{received_count},  eef received:{received_data[0]}')
-                        if robot_id == 'A':
-                            self.recv_text1.delete('1.0', tk.END)
-                            self.recv_text1.insert(tk.END, received_data[0])
-                        if robot_id == 'B':
-                            self.recv_text2.delete('1.0', tk.END)
-                            self.recv_text2.insert(tk.END, received_data[0])
+                # self.eef_thread = threading.Thread(target=read_data, args=(robot_id, com), daemon=True)
+                # self.eef_thread.start()
+                # received_count, received_data = get_received_data()
+                # if received_count > 0:
+                #     if len(received_data) > 0:
+                #         print(f'received_count:{received_count},  eef received:{received_data[0]}')
+                #         if robot_id == 'A':
+                #             self.recv_text1.delete('1.0', tk.END)
+                #             self.recv_text1.insert(tk.END, received_data[0])
+                #         if robot_id == 'B':
+                #             self.recv_text2.delete('1.0', tk.END)
+                #             self.recv_text2.insert(tk.END, received_data[0])
+                tag, receive_hex_data = robot.get_485_data(robot_id, com)
+                if tag >= 1:
+                    if robot_id == 'A':
+                        self.recv_text1.delete('1.0', tk.END)
+                        self.recv_text1.insert(tk.END, receive_hex_data)
+                    if robot_id == 'B':
+                        self.recv_text2.delete('1.0', tk.END)
+                        self.recv_text2.insert(tk.END, receive_hex_data)
             except Exception as e:
                 messagebox.showerror('error', e)
         else:
