@@ -19,7 +19,7 @@ import queue
     查验连接是否成功。失败程序直接退出；成功：清CAN缓存，开启读CAN回复数据的线程
     关日志以便检查
     发送HEX数据到com1串口
-    接收线程收到的回复
+    接收收到的回复
     任务完成,下使能,释放内存使别的程序或者用户可以连接机器人
 '''#################################################################
 
@@ -51,7 +51,6 @@ def get_received_data():
     '''获取接收到的数据并计数'''
     received_count = 0
     received_data_list = []
-
     while True:
         try:
             data = data_queue.get_nowait()
@@ -109,9 +108,9 @@ success, sdk_return = robot.set_485_data(robot_id,hex_data, len(hex_data), com)
 logger.info(f"设置结果: {'成功' if success else '失败'}")
 
 '''接收com1串口的HEX数据'''
-received_count, received_data = get_received_data()
-if received_count>0:
-    print(f'thread接收的数据信息， 帧数：{received_count},  接收的数据:\n{received_data}')
+tag, receive_hex_data = robot.get_485_data(robot_id, com)
+if tag >= 1:
+    logger.info(f"接收的HEX数据：{receive_hex_data}")
 
 
 '''释放机器人内存'''
