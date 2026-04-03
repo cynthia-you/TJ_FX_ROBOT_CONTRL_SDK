@@ -146,57 +146,87 @@
                  
 ## 三、 SDK更新
 
-## 3.1 控制SDK
+## 3.1 案例更新
+### 关节力矩转末端六维力
+[PYTHON案例](DEMO_PYTHON/showcase_jointsTorque2EefTorque.py)
 
+
+## 3.2 控制SDK
 ### 控制SDK新增简明接口
 # 为了更简明地使用控制SDK，我们特别提供了简明式接口，
-[原SDK接口](contrlSDK/MarvinSDK.h#L27)
+[原SDK接口介绍](c++_doc_contrl.md#L118)
 
-[简明式接口](contrlSDK/MarvinSDK.h#L222)
+[简明式接口介绍](c++_doc_contrl.md#L840)
+
+[控制SDK MarvinSDK.h](contrlSDK/MarvinSDK.h)
 
 [简明式控制案例C++](DEMO_C++/showcase_new_control_sdk_usage.cpp)
-
 [简明式控制案例PYTHON](DEMO_PYTHON/showcases_new_control_sdk.py)
     
 ### 以规划方式下发关节指令消除抖动：
-	关节空间 和 笛卡尔空间（直线）PLN方式发送指令
-[规划运行](contrlSDK/MarvinSDK.h#L303-L310) 
+    //关节空间PLN方式发送指令
+    FX_DLL_EXPORT bool OnInitPlnLmt(char * path);
+	FX_DLL_EXPORT bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	FX_DLL_EXPORT bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
 
+### 以规划方式下发指令实现走直线
+    // 笛卡尔空间PLN方式发送指令
+	FX_DLL_EXPORT void* FX_CPointSet_Create();
+	FX_DLL_EXPORT void FX_CPointSet_Destroy(void* pset);
+	FX_DLL_EXPORT bool OnSetPlnCart_A(void* pset);
+	FX_DLL_EXPORT bool OnSetPlnCart_B(void* pset);
 
-## 3.2运动计算SDK
-### 3.2.1更新在线规划功能
-[在线规划C++接口](kinematicsSDK/FxRobot.h#L341-L344)       
+### 规划中断运行
+	FX_DLL_EXPORT bool OnStopPlnJoint_A();
+	FX_DLL_EXPORT bool OnStopPlnJoint_B();
 
-	c++ demo: 
-[左臂离线和在线规划功能接口](DEMO_C++/showcase_online_and_offline_pln_all_function.cpp)
+### 设置末端力控类型和笛卡尔方向的旋转
+	//设置左臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	FX_DLL_EXPORT bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
+	//设置右臂力控类型fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	FX_DLL_EXPORT bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
-[左臂笛卡尔阻抗50HZ执行离线直线规划文件](DEMO_C++/showcase_offline_movl_execution.cpp)
+### 指定关节伺服软复位
+	// 左臂指定关节伺服软复位
+	FX_DLL_EXPORT void OnServoReset_A(int axis);
+	// 右臂指定关节伺服软复位
+	FX_DLL_EXPORT void OnServoReset_B(int axis);
 
-[左臂笛卡尔阻抗50HZ执行在线直线规划点](DEMO_C++/showcase_online_movla_execution.cpp)
+## 3.3运动计算SDK
+### 更新在线规划功能
 
-[臂关节阻抗50HZ执行约束构型的离线直线规划文件](DEMO_C++/showcase_offline_movl_keepj_execution.cpp)
+     C++接口：
+        FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, FX_CHAR* OutPutPath);
+        FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc, FX_INT32L Freq, FX_CHAR* OutPutPath);
+        FX_BOOL FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC,Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, CPointSet* ret_pset);
+        FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints,FX_DOUBLE vel, FX_DOUBLE acc, FX_INT32L Freq, CPointSet* ret_pset);
 
-[左臂关节阻抗50HZ执行约束构型的在线直线规划点位](DEMO_C++/showcase_online_movl_keepja_execution.cpp)
+     c++ demo: 
+          1.演示左臂离线和在线规划功能接口：showcase_online_and_offline_pln_all_function.cpp
+          2.左臂关节阻抗50HZ执行离线直线规划文件：showcase_offline_movl_execution.cpp
+          3.左臂关节阻抗50HZ执行在线直线规划点：showcase_online_movla_execution.cpp
+          4.臂关节阻抗50HZ执行约束构型的离线直线规划文件：showcase_offline_movl_keepj_execution.cpp
+          5.左臂关节阻抗50HZ执行约束构型的在线直线规划点位：showcase_online_movl_keepja_execution.cpp
 
      PY接口：
-[直线插值规划](SDK_PYTHON/fx_kine.py#L814)
+        直线插值规划
+       - movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, freq_hz:int, save_path)
+    
+        直线插值规划，约束起始结束关节构型
+        - movL_KeepJ(start_joints:list, end_joints:list,vel:float,acc: float,freq_hz:int, save_path)
+    
+          在线直线插值规划
+        - movLA(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float,freq_hz:int )
+    
+          在线直线插值规划，约束起始结束关节构型
+        - movL_KeepJA(start_joints:list, end_joints:list,vel:float,acc: float,freq_hz:int)
 
-[直线插值规划，约束起始结束关节构型](SDK_PYTHON/fx_kine.py#L916)
+       py demo:
+            showcase_online_pln_movl.py
+            showcase_online_pln_movl_keepj.py
+            showcase_online_pln_movl_with_specific_rot.py
+          
 
- [在线直线插值规划](SDK_PYTHON/fx_kine.py#L858)   
-
-[在线直线插值规划，约束起始结束关节构型](SDK_PYTHON/fx_kine.py#L955)
-
-
-    py demo:
-[online直线插值规划案例](DEMO_PYTHON/showcase_online_pln_movl.py)
-
-[online在线直线插值规划（约束起始结束关节构型）案例](DEMO_PYTHON/showcase_online_pln_movl_keepj.py)
-
-[online在线直线插值规划（带旋转姿态）案例](DEMO_PYTHON/showcase_online_pln_movl_with_specific_rot.py)
-
-			
-                   
 ### 代码获取控制器版本号
      C++:
           char paraName[30]="VERSION";
