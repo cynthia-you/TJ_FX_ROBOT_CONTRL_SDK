@@ -1,9 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, ttk, scrolledtext, filedialog, simpledialog
-from PIL import Image, ImageTk
 import threading
 import time
-import random
 import queue
 import os
 import glob
@@ -18,10 +16,13 @@ import difflib
 import re
 import json
 from typing import Optional
+import random
+import matplotlib
+matplotlib.use('TkAgg')
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class DataSubscriber:
     """数据订阅器，定期更新数据"""
-
     def __init__(self, callback):
         self.callback = callback
         self.running = True
@@ -32,9 +33,8 @@ class DataSubscriber:
         """订阅数据"""
         while self.running:
             result = robot.subscribe(dcss)
-            # 回调更新UI
             self.callback(result)
-            time.sleep(0.2)  # 每0.2秒更新一次
+            time.sleep(0.001)
 
     def stop(self):
         self.running = False
@@ -198,6 +198,12 @@ class App:
         self.tools_txt = 'tool_dyn_kine.txt'
         self.tool_result = None
 
+        # update ui realtime data
+        self.fresh_time = 200
+        self._ui_update_after_id = None
+        self._schedule_ui_update()
+
+
         # 初始化两个点的列表
         self.points1 = []
         self.points2 = []
@@ -261,6 +267,8 @@ class App:
                      'est_cart_fn': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}
                 ]
         }
+
+        self.visual_data=self.result
 
         self.display_mode = 0
         self.mode_names = ["位置数据", "速度数据", "传感器数据", "电流数据", "温度数据", "外编位置数据", "指令位置数据",
@@ -1634,6 +1642,8 @@ class App:
         # 创建菜单
         menu = tk.Menu(self.root, tearoff=0)
         # 添加菜单项
+        menu.add_command(label="实时数据可视化", command=self.realtime_vis_dialog)
+        menu.add_separator()
         menu.add_command(label="系统升级", command=self.system_update_dialog)
         menu.add_separator()
         menu.add_command(label="直线规划", command=self.movl_dialog)
@@ -1819,6 +1829,210 @@ class App:
         self.motor_btn_31 = tk.Button(self.motor_frame_2, text="编码器清错", bg="#7ED2B4",
                                       command=lambda: self.clear_motor_error('B'))
         self.motor_btn_31.grid(row=0, column=5, padx=5)
+
+    def realtime_vis_dialog(self):
+        """实时关节数据监控对话框（左右臂独立，可选择数据类型/关节，可调时间窗口）"""
+        hidden_window = tk.Toplevel(self.root)
+        hidden_window.title("实时关节数据监控")
+        hidden_window.geometry("1200x900")
+        hidden_window.configure(bg="white")
+        hidden_window.transient(self.root)
+        hidden_window.grab_set()
+
+        # ---------- 辅助类：单个臂的绘图器 ----------
+        class ArmPlotter:
+            # 数据类型与字典key的映射（需根据实际数据调整）
+            DATA_KEYS = {
+                "关节位置": "fb_joint_pos",
+                "关节速度": "fb_joint_vel",
+                "外编位置": "fb_joint_posE",
+                "关节指令": "fb_joint_cmd",
+                "关节电流": "fb_joint_cToq",
+                "关节扭矩": "fb_joint_sToq",
+                "关节外力": "est_joint_force",
+            }
+
+            def __init__(self, parent, arm_id, data_source):
+                """
+                arm_id: 臂标识，0=左臂，1=右臂
+                """
+                self.parent = parent
+                self.arm_id = arm_id  # 0: left, 1: right
+                self.data_source = data_source
+                self.num_joints = 7
+                self.window_size = 200  # 点数（默认200ms，采样间隔1ms）
+                self.is_running = True
+                self._stop = False
+                self.after_id = None
+
+                # 环形缓冲区（保存最近window_size个数据点）
+                from collections import deque
+                self.buffer = deque(maxlen=self.window_size)
+
+                # 控制变量
+                self.data_type_var = tk.StringVar(value="关节位置")
+                self.joint_var = tk.IntVar(value=0)
+
+                self.create_widgets()
+                self.setup_plot()
+                self.start_updates()
+
+            def create_widgets(self):
+                # 控制栏（每臂独立）
+                ctrl_frame = tk.Frame(self.parent,bg="white")
+                ctrl_frame.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
+
+                # 臂标签
+                arm_label = "左臂" if self.arm_id == 0 else "右臂"
+                tk.Label(ctrl_frame, text=arm_label, font=("Arial", 10, "bold"),bg="white").pack(side=tk.LEFT, padx=5)
+
+
+                # 数据类型下拉框
+                data_combo = ttk.Combobox(ctrl_frame, textvariable=self.data_type_var,
+                                          values=list(self.DATA_KEYS.keys()), width=12)
+                data_combo.pack(side=tk.LEFT, padx=5)
+                data_combo.bind('<<ComboboxSelected>>', self.on_data_or_joint_change)  # 新增绑定
+
+                # 关节下拉框
+                joint_combo = ttk.Combobox(ctrl_frame, textvariable=self.joint_var,
+                                           values=list(range(self.num_joints)), width=5)
+                joint_combo.pack(side=tk.LEFT, padx=5)
+                joint_combo.bind('<<ComboboxSelected>>', self.on_data_or_joint_change)  # 新增绑定
+
+                # 暂停/恢复按钮
+                self.pause_btn = ttk.Button(ctrl_frame, text="暂停", command=self.toggle_pause)
+                self.pause_btn.pack(side=tk.LEFT, padx=10)
+
+                # 绘图区域
+                self.plot_frame = tk.Frame(self.parent)
+                self.plot_frame.pack(fill=tk.BOTH, expand=True)
+
+            def clear_buffer(self):
+                """清空数据缓冲区并重置显示"""
+                self.buffer.clear()
+                self.line.set_data([], [])  # 清空曲线
+                self.ax.set_ylim(-200, 200)  # 重置 y 轴范围（可选）
+                self.canvas.draw_idle()  # 立即刷新画布
+
+            def on_data_or_joint_change(self, event):
+                """数据类型或关节改变时，清空已有数据"""
+                self.clear_buffer()
+
+            def setup_plot(self):
+                import matplotlib.pyplot as plt
+                self.fig, self.ax = plt.subplots(figsize=(6, 3))
+                self.line, = self.ax.plot([], [], 'b-', linewidth=1)
+                self.ax.set_xlim(0, self.window_size - 1)
+                self.ax.set_ylim(-200, 200)
+                self.ax.set_xlabel("time(ms)")
+                self.ax.set_ylabel("value")
+                self.ax.set_title(f"{'left arm ' if self.arm_id == 0 else 'right arm '}realtime data")
+                self.ax.grid(True)
+
+                from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+                self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_frame)
+                self.canvas.draw()
+                self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+            def get_current_value(self):
+                """从data_source.visual_data获取当前臂、数据类型、关节的数值"""
+                try:
+                    data = self.data_source.visual_data
+                    output = data['outputs'][self.arm_id]
+                    key = self.DATA_KEYS[self.data_type_var.get()]
+                    vec = output[key]
+                    return vec[self.joint_var.get()]
+                except Exception as e:
+                    print(f"获取数据出错: {e}")
+                    return 0.0
+
+            def update_plot(self):
+                if not self.is_running or self._stop:
+                    return
+                val = self.get_current_value()
+                self.buffer.append(val)
+                data = list(self.buffer)
+                x = list(range(len(data)))
+
+                self.line.set_data(x, data)
+                if data:
+                    min_val = min(data)
+                    max_val = max(data)
+                    margin = (max_val - min_val) * 0.1 if max_val != min_val else 10
+                    self.ax.set_ylim(min_val - margin, max_val + margin)
+                else:
+                    self.ax.set_ylim(-200, 200)
+
+                self.ax.set_xlim(0, self.window_size - 1)
+                self.canvas.draw_idle()
+
+                self.after_id = self.parent.after(200, self.update_plot)
+
+            def start_updates(self):
+                self.update_plot()
+
+            def toggle_pause(self):
+                self.is_running = not self.is_running
+                self.pause_btn.config(text="恢复" if not self.is_running else "暂停")
+                if self.is_running:
+                    self.update_plot()
+                else:
+                    if self.after_id:
+                        self.parent.after_cancel(self.after_id)
+                        self.after_id = None
+
+            def set_window_size(self, new_size_ms):
+                """
+                改变时间窗口（毫秒），这里假设采样间隔为1ms，所以点数=窗口毫秒数
+                """
+                new_size = new_size_ms
+                if new_size < 1:
+                    new_size = 1
+                self.window_size = new_size
+                self.buffer = deque(list(self.buffer), maxlen=self.window_size)
+                self.ax.set_xlim(0, self.window_size - 1)
+                self.canvas.draw_idle()
+
+            def on_close(self):
+                self._stop = True
+                if self.after_id:
+                    self.parent.after_cancel(self.after_id)
+                    self.after_id = None
+
+        global_frame = tk.Frame(hidden_window, bg="white")
+        global_frame.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
+
+        tk.Label(global_frame, text="时间窗口 (ms):", bg="white").pack(side=tk.LEFT, padx=5)
+        time_scale = tk.Scale(global_frame, from_=50, to=1000, orient=tk.HORIZONTAL,
+                              length=200, resolution=10, bg="white")
+        time_scale.set(200)
+        time_scale.pack(side=tk.LEFT, padx=5)
+        time_label = tk.Label(global_frame, text="200 ms", bg="white", width=8)
+        time_label.pack(side=tk.LEFT)
+
+        def update_window_size(val):
+            ms = int(val)
+            time_label.config(text=f"{ms} ms")
+            left_plotter.set_window_size(ms)
+            right_plotter.set_window_size(ms)
+
+        time_scale.config(command=update_window_size)
+
+        left_frame = tk.Frame(hidden_window, bg="white")
+        left_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=10, pady=5)
+        right_frame = tk.Frame(hidden_window, bg="white")
+        right_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+        left_plotter = ArmPlotter(left_frame, arm_id=0, data_source=self)
+        right_plotter = ArmPlotter(right_frame, arm_id=1, data_source=self)
+
+
+        def on_close_all():
+            left_plotter.on_close()
+            right_plotter.on_close()
+            hidden_window.destroy()
+
+        hidden_window.protocol("WM_DELETE_WINDOW", on_close_all)
 
     def system_update_dialog(self):
         """显示隐藏功能选择窗口"""
@@ -4970,19 +5184,29 @@ class App:
                     com = 2
                 elif com_ == 'COM2':
                     com = 3
-                self.eef_thread = threading.Thread(target=read_data, args=(robot_id, com), daemon=True)
-                self.eef_thread.start()
+                # self.eef_thread = threading.Thread(target=read_data, args=(robot_id, com), daemon=True)
+                # self.eef_thread.start()
+                # received_count, received_data = get_received_data()
+                # if received_count > 0:
+                #     if len(received_data) > 0:
+                #         print(f'received_count:{received_count},  eef received:{received_data[0]}')
+                #         if robot_id == 'A':
+                #             self.recv_text1.delete('1.0', tk.END)
+                #             self.recv_text1.insert(tk.END, received_data[0])
+                #         if robot_id == 'B':
+                #             self.recv_text2.delete('1.0', tk.END)
+                #             self.recv_text2.insert(tk.END, received_data[0])
 
-                received_count, received_data = get_received_data()
-                if received_count > 0:
-                    if len(received_data) > 0:
-                        print(f'received_count:{received_count},  eef received:{received_data[0]}')
-                        if robot_id == 'A':
-                            self.recv_text1.delete('1.0', tk.END)
-                            self.recv_text1.insert(tk.END, received_data[0])
-                        if robot_id == 'B':
-                            self.recv_text2.delete('1.0', tk.END)
-                            self.recv_text2.insert(tk.END, received_data[0])
+                tag, receive_hex_data = robot.get_485_data(robot_id, com)
+                if tag >= 1:
+                    if robot_id == 'A':
+                        self.recv_text1.delete('1.0', tk.END)
+                        self.recv_text1.insert(tk.END, receive_hex_data)
+                    if robot_id == 'B':
+                        self.recv_text2.delete('1.0', tk.END)
+                        self.recv_text2.insert(tk.END, receive_hex_data)
+
+
             except Exception as e:
                 messagebox.showerror('error', e)
         else:
@@ -5983,7 +6207,7 @@ class App:
                 ret, version = robot.get_param('int', 'VERSION')
                 self.version = version
 
-                '''启动读485数据'''
+                '''启动读数据'''
                 self.data_subscriber = DataSubscriber(self.update_data)
 
                 '''tool '''
@@ -6097,14 +6321,22 @@ class App:
     def update_data(self, result):
         """更新订阅的数据"""
         self.result = result
-        self.root.after(0, self.update_ui)
-        self.root.after(0, self.update_6d)
+        self.visual_data=result
+
+    def _schedule_ui_update(self):
+        self._ui_update_after_id = self.root.after(self.fresh_time, self._update_ui_periodic)
+
+    def _update_ui_periodic(self):
+        '''5hz fresh joints and xyzabc'''
+        self.update_ui()
+        self.update_6d()
+        self._schedule_ui_update()
 
     def toggle_display_mode(self):
         """切换数据显示模式"""
         self.display_mode = (self.display_mode + 1) % 8
         self.mode_btn.config(text=self.mode_names[self.display_mode])
-        self.update_ui()
+        # self.update_ui()
 
     def update_ui(self):
         type = ''
@@ -6146,7 +6378,7 @@ class App:
         self.pose_6d_l = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_l)  # 用关节正解的姿态转XYZABC
         # print(f'pose_6d_1:{pose_6d_1}')
         # 格式化笛卡尔数据为单行
-        cartesian_text_l = f"{self.pose_6d_l[0]:.3f},{self.pose_6d_l[1]:.3f},{self.pose_6d_l[2]:.3f},{self.pose_6d_l[3]:.3f}, {self.pose_6d_l[4]:.3f}, {self.pose_6d_l[5]:.3f}"
+        cartesian_text_l = f"{self.pose_6d_l[0]:.2f},{self.pose_6d_l[1]:.2f},{self.pose_6d_l[2]:.2f},{self.pose_6d_l[3]:.2f}, {self.pose_6d_l[4]:.2f}, {self.pose_6d_l[5]:.2f}"
         # 格式化关节数据为单行：
         joint_text_l = ""
         for i in range(7):
@@ -6172,7 +6404,7 @@ class App:
         self.pose_6d_r = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_r)  # 用关节正解的姿态转XYZABC
         # print(f'pose_6d_2:{pose_6d_2}')
         # 格式化笛卡尔数据为单行
-        cartesian_text_r = f"{self.pose_6d_r[0]:.3f},{self.pose_6d_r[1]:.3f},{self.pose_6d_r[2]:.3f},{self.pose_6d_r[3]:.3f}, {self.pose_6d_r[4]:.3f}, {self.pose_6d_r[5]:.3f}"
+        cartesian_text_r = f"{self.pose_6d_r[0]:.2f},{self.pose_6d_r[1]:.2f},{self.pose_6d_r[2]:.2f},{self.pose_6d_r[3]:.2f}, {self.pose_6d_r[4]:.2f}, {self.pose_6d_r[5]:.2f}"
         # 格式化关节数据为单行：
         joint_text_r = ""
         for i in range(7):
