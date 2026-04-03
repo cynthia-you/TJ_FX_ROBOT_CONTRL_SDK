@@ -127,6 +127,8 @@
         showcase_pln_joint_positionMode_with_break.py
 ### 27. 笛卡尔空间以规划方式下发指令，并中断运行
         showcase_pln_cart_positionMode_with_break.py
+### 28. 关节力矩转末端六维力
+        showcase_jointsTorque2EefTorque.py
 
 ## 五. 计算showcases
 
