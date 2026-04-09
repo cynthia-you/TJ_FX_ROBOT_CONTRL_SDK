@@ -27,6 +27,7 @@ def case1_link_robot():
     ''' connection '''
     if not robot.connect(  robot_ip='192.168.1.190',log_switch=1):# log ON
         logger.error("--- connect failed ---")
+        return False
 
     ''' release robot
     After release, other programs or computers can connect to the robot. 
@@ -55,6 +56,7 @@ def case2_position():
     ''' connection '''
     if not robot.connect(robot_ip='192.168.1.190', log_switch=1):  # log ON
         logger.error("--- connect failed ---")
+        return False
 
     '''switch to position state'''
     if not robot.set_position_state(arm=arm,velRatio=vel,AccRatio=acc):
@@ -109,12 +111,14 @@ def case3_position_two_arms():
     ''' connection '''
     if not robot.connect(robot_ip='192.168.1.190', log_switch=1):  # log ON
         logger.error("--- connect failed ---")
+        return False
 
     '''switch to position state'''
     re=robot.set_position_state(arm='A',velRatio=vel,AccRatio=acc)
     re1=robot.set_position_state(arm='B',velRatio=vel,AccRatio=acc)
     if not re or not re1:
         logger.error("--- switch to position failed ---")
+        return False
     time.sleep(0.5) #reserve time for switch to position state
 
     '''go to joint1'''
@@ -122,6 +126,7 @@ def case3_position_two_arms():
     re1=robot.set_joint_position_cmd(arm='B',joint=joints1)
     if not re or not re1:
         logger.error("--- set joints cmd failed ---")
+        return False
     '''judge reached or los speed'''
     time.sleep(0.05) #waite robot accelerate then check low speed
     while 1:
@@ -138,6 +143,7 @@ def case3_position_two_arms():
     re1=robot.set_joint_position_cmd(arm='B',joint=joints2)
     if not re or not re1:
         logger.error("--- set joints cmd failed ---")
+        return False
     '''judge reached or los speed'''
     time.sleep(0.05) #waite robot accelerate then check low speed
     while 1:
@@ -180,6 +186,7 @@ def case4_impedance_joint():
     ''' connection '''
     if not robot.connect(robot_ip='192.168.1.190', log_switch=1):  # log ON
         logger.error("--- connect failed ---")
+        return False
 
     '''switch to joint impedance state'''
     if not robot.set_imp_joint_state(arm=arm,velRatio=vel,AccRatio=acc, K=k, D=d):
@@ -189,6 +196,7 @@ def case4_impedance_joint():
     '''go to joint1'''
     if not robot.set_joint_position_cmd(arm=arm,joint=joints1):
         logger.error("--- set joint cmd failed ---")
+        return False
     '''judge reached or los speed'''
     time.sleep(0.05)  # waite robot accelerate then check low speed
     while 1:
@@ -201,6 +209,7 @@ def case4_impedance_joint():
     '''go to joint2'''
     if not robot.set_joint_position_cmd(arm=arm,joint=joints2):
         logger.error("--- set joint cmd failed ---")
+        return False
     '''judge reached or los speed'''
     time.sleep(0.05)  # waite robot accelarate then check low speed
     while 1:
@@ -242,6 +251,7 @@ def case5_impedance_cart():
     ''' connection '''
     if not robot.connect(robot_ip='192.168.1.190', log_switch=0):  # log ON
         logger.error("--- connect failed ---")
+        return False
 
     '''switch to cartesian impedance state'''
     if not robot.set_imp_cart_state(arm=arm,velRatio=vel,AccRatio=acc, K=k, D=d,rot_type=rot_type, cart_ctrl_para=cart_ctrl_para):
@@ -251,6 +261,7 @@ def case5_impedance_cart():
     '''go to joint1'''
     if not robot.set_joint_position_cmd(arm=arm,joint=joints1):
         logger.error("--- set joint cmd failed ---")
+        return False
     '''judge reached or los speed'''
     time.sleep(0.05)  # waite robot accelerate then check low speed
     while 1:
@@ -263,6 +274,7 @@ def case5_impedance_cart():
     '''go to joint2'''
     if not robot.set_joint_position_cmd(arm=arm,joint=joints2):
         logger.error("--- set joint cmd failed ---")
+        return False
     '''judge reached or los speed'''
     time.sleep(0.05)  # waite robot accelarate then check low speed
     while 1:
@@ -305,15 +317,18 @@ def case6_impedance_force():
     ''' connection '''
     if not robot.connect(robot_ip='192.168.1.190', log_switch=0):  # log ON
         logger.error("--- connect failed ---")
+        return False
 
     '''switch to joint impedance state'''
     if not robot.set_imp_joint_state(arm=arm, velRatio=vel, AccRatio=acc, K=k, D=d):
         logger.error("--- switch to joint impedance failed ---")
+        return False
     time.sleep(0.5)  # reserve time for switch to joint impedance state
 
     '''go to joint1'''
     if not robot.set_joint_position_cmd(arm=arm,joint=joints1):
         logger.error("--- set joint cmd failed ---")
+        return False
     '''judge reached or los speed'''
     time.sleep(0.05)  # waite robot accelerate then check low speed
     while 1:
@@ -326,6 +341,7 @@ def case6_impedance_force():
     '''go to joint2'''
     if not robot.set_joint_position_cmd(arm=arm,joint=joints2):
         logger.error("--- set joint cmd failed ---")
+        return False
     '''judge reached or los speed'''
     time.sleep(0.05)  # waite robot accelarate then check low speed
     while 1:
@@ -338,6 +354,7 @@ def case6_impedance_force():
     time.sleep(5)
     if not robot.set_imp_force_state(arm=arm,fx_dir=fxDir,fc_adj_lmt=fcAdjLmt):
         logger.error("--- switch to force state failed ---")
+        return False
     time.sleep(0.2)
     if not robot.set_force_cmd(arm=arm,force=force):
         logger.error("--- set force cmd failed ---")
@@ -368,7 +385,7 @@ def case7_joint_drag():
     ''' connection '''
     if not robot.connect(robot_ip='192.168.1.190', log_switch=0):  # log ON
         logger.error("--- connect failed ---")
-
+        return False
 
     '''switch to joint drag mode'''
     if not robot.set_joint_drag(arm=arm):
@@ -394,6 +411,7 @@ def case7_joint_drag():
     '''exit drag'''
     if not robot.exit_drag(arm=arm):
         logger.error("--- exit drag failed ---")
+        return False
 
 
     ''' disable and release robot
@@ -428,11 +446,12 @@ def case8_cart_drag_z_and_save_data(save_path='drag_z.txt'):
     ''' connection '''
     if not robot.connect(robot_ip='192.168.1.190', log_switch=0):  # log ON
         logger.error("--- connect failed ---")
-
+        return False
 
     '''switch to cartesian drag mode'''
     if not robot.set_cart_drag(arm=arm,type_=type):
         logger.error("--- switch to cartesian drag mode failed ---")
+        return False
     time.sleep(0.5)  # reserve time for switch to joint impedance state
     logger.info("---press and hold the end button to start dragging")
 
@@ -460,6 +479,7 @@ def case8_cart_drag_z_and_save_data(save_path='drag_z.txt'):
     '''exit drag'''
     if not robot.exit_drag(arm=arm):
         logger.error("--- exit drag failed ---")
+        return False
 
     ''' disable and release robot
     After release, other programs or computers can connect to the robot. 
@@ -489,10 +509,12 @@ def case9_run_pln_joint_space(config_path="ccs_m6_40.MvKDCfg"):
     ''' connection '''
     if not robot.connect(robot_ip='192.168.1.190', log_switch=0):  # log ON
         logger.error("--- connect failed ---")
+        return False
 
     ''' joint space PLN initialize'''
     if not robot.pln_init(path=config_path):
         logger.error("--- initialize pln failed ---")
+        return False
 
     ''' if robot not at start joints planing to start joints '''
     sub_data=robot.subscribe(dcss)
@@ -506,6 +528,7 @@ def case9_run_pln_joint_space(config_path="ccs_m6_40.MvKDCfg"):
         if not robot.run_pln_joint(arm=arm, start_joints=current_joints, stop_joints=start_joint,
                             vel_ratio=pln_vel,acc_ratio=pln_acc):
             logger.error("--- pln failed ---")
+            return False
         while 1:
             sub_data = robot.subscribe(dcss)
             fb_joints = sub_data['outputs'][idx]['fb_joint_pos']
@@ -525,12 +548,14 @@ def case9_run_pln_joint_space(config_path="ccs_m6_40.MvKDCfg"):
         if not robot.run_pln_joint(arm=arm, start_joints=start_joint, stop_joints=target_joint,
                                      vel_ratio=pln_vel,acc_ratio=pln_acc):
             logger.error("--- pln failed ---")
+            return False
 
 
         '''break pln'''
         time.sleep(0.5)
         if not robot.stop_pln(arm=arm):
             logger.error("--- stop pln failed ---")
+            return False
         data = robot.subscribe(dcss)
         logger.info(f'break at:{data["outputs"][idx]["fb_joint_pos"]}')
 
@@ -562,6 +587,7 @@ def case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg"):
     ''' connection '''
     if not robot.connect(robot_ip='192.168.1.190', log_switch=0):  # log ON
         logger.error("--- connect failed ---")
+        return False
 
     ''' if robot not at start joints planing to start joints '''
     sub_data=robot.subscribe(dcss)
@@ -570,6 +596,7 @@ def case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg"):
         ''' joint space PLN initialize'''
         if not robot.pln_init(path=config_path):
             logger.error("--- initialize pln failed ---")
+            return False
 
         while 1:
             sub_data = robot.subscribe(dcss)
@@ -579,6 +606,7 @@ def case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg"):
         if not robot.run_pln_joint(arm=arm, start_joints=current_joints, stop_joints=start_joint,
                             vel_ratio=pln_vel,acc_ratio=pln_acc):
             logger.error("--- pln failed ---")
+            return False
         while 1:
             sub_data = robot.subscribe(dcss)
             fb_joints = sub_data['outputs'][idx]['fb_joint_pos']
@@ -598,6 +626,7 @@ def case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg"):
     fk_mat = kk.fk(joints=start_joint)
     if not fk_mat:
         logger.info("kk.fk failes")
+        return False
     pose_6d_start = kk.mat4x4_to_xyzabc(pose_mat=fk_mat)
 
     '''矩形框yz平面'''
@@ -613,6 +642,7 @@ def case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg"):
         '''run cart pln'''
         if not robot.run_pln_cart(arm=arm, pset=pset):
             logger.error("--- pln failed ---")
+            return False
 
     '''waite for no running pln'''
     while True:
@@ -634,6 +664,7 @@ def case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg"):
         '''run cart pln'''
         if not robot.run_pln_cart(arm=arm, pset=pset):
             logger.error("--- pln failed ---")
+            return False
 
     '''waite for no running pln'''
     while True:
@@ -655,6 +686,7 @@ def case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg"):
         '''run cart pln'''
         if not robot.run_pln_cart(arm=arm, pset=pset):
             logger.error("--- pln failed ---")
+            return False
 
     '''waite for no running pln'''
     while True:
@@ -676,6 +708,7 @@ def case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg"):
         '''run cart pln'''
         if not robot.run_pln_cart(arm=arm, pset=pset):
             logger.error("--- pln failed ---")
+            return False
 
     '''waite for no running pln'''
     while True:
@@ -711,12 +744,14 @@ def case11_set_eef_tools():
     ''' connection '''
     if not robot.connect(robot_ip='192.168.1.190', log_switch=1):  # log ON
         logger.error("--- connect failed ---")
+        return False
 
     '''set tools for two arms'''
     re = robot.set_tool(arm='A',kine_para=kine_a,dyn_para=dyn_a)
     re1 = robot.set_tool(arm='B', kine_para=kine_b, dyn_para=dyn_b)
     if not re and not re1:
         logger.error("--- set tools failed ---")
+        return False
 
     time.sleep(0.5)
     sub_data=robot.subscribe(dcss)
@@ -736,39 +771,10 @@ def case11_set_eef_tools():
     robot.release_robot()
 
 def case12_eef_communication():
-    import queue
-    '''创建队列'''
-    data_queue = queue.Queue()
 
     '''define parameters'''
     arm='A'
     channel=2
-
-    def read_data():
-        while True:
-            try:
-                tag, receive_hex_data = robot.get_ch_data(arm=arm,channel=channel )
-                if tag >= 1:
-                    logger.info(f"receive HEX:{receive_hex_data}")
-                    data_queue.put(receive_hex_data)
-                else:
-                    time.sleep(0.001)
-            except Exception as e:
-                logger.error(f"read data error:{e}")
-                time.sleep(0.001)
-
-    def get_received_data():
-        received_count = 0
-        received_data_list = []
-        while True:
-            try:
-                data = data_queue.get_nowait()
-                received_count += 1
-                received_data_list.append(data)
-            except queue.Empty:
-                break
-        return received_count, received_data_list
-
 
     ''' initialize robot class '''
     robot = Concise_Marvin_Robot()
@@ -776,6 +782,7 @@ def case12_eef_communication():
     ''' connection '''
     if not robot.connect(robot_ip='192.168.1.190', log_switch=1):  # log ON
         logger.error("--- connect failed ---")
+        return False
 
     '''clear cache'''
     robot.clear_ch_data()
@@ -784,11 +791,12 @@ def case12_eef_communication():
     hex_data = "01 06 00 00 00 01 48 0A"
     success, sdk_return = robot.set_ch_data(arm=arm, data=hex_data, size_int=len(hex_data), set_ch=channel)
     logger.info(f"result {'success' if success else 'fail'}")
-
-    '''read data from com1'''
-    received_count, received_data = get_received_data()
-    if received_count > 0:
-        print(f'receiving info, frames：{received_count},  received data:\n{received_data}')
+    while 1:
+        '''read data from com1'''
+        received_count, received_data = robot.get_ch_data(arm=arm,channel=channel)
+        if received_count > 0:
+            print(f'receiving info, received data:\n{received_data}')
+            break
 
     ''' release robot
     After release, other programs or computers can connect to the robot. 
@@ -807,7 +815,7 @@ if __name__=="__main__":
     # logger.info("showcase: connect to robot:")
     # case1_link_robot()
 
-    '''showcase1: set position state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}'''
+    '''showcase2: set position state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}'''
     # logger.info("--------------------------")
     # logger.info("showcase: set position state and run from {0,0,0,0,0,0,0} to {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35}")
     # case2_position()
