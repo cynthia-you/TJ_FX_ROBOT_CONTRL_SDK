@@ -31,7 +31,7 @@ MOVL_KEEPJ在线直线规划步骤：
     运行到起始点位
     实列化计算并导入机型DH数据并初始化计算接口
     定义起点和终点的构型
-    运行在线规划，用笛卡尔阻抗执行规划文件：规划点位为500HZ， 下采样为50HZ执行
+    运行在线规划，用笛卡尔阻抗执行规划文件：规划点位为50HZ执行
 '''  #################################################################
 
 '''初始化订阅数据的结构体'''
@@ -156,19 +156,19 @@ initial_kine_tag = kk.initial_kine(
 '''
 
 '''直线规划（MOVL_KEEPJ）
-    运行在线规划,规划点位为500HZ， 下采样为50HZ执行
+    运行在线规划,规划点位为50HZ执行
 '''
 # ONLINE
 points = kk.movL_KeepJA(start_joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995],
                         end_joints=[-26.908, -91.109, 74.502, -88.083, -93.599, 17.151, -13.602], vel=100, acc=100,freq_hz=50)
 print(f"Got {len(points)} planning points")
 if points:
-    # 500hz-->50hz
+    # 50hz
     for i in range(0, len(points), 1):
         robot.clear_set()
         robot.set_joint_cmd_pose(arm='A', joints=points[i])
         robot.send_cmd()
-        time.sleep(0.02)  # 500HZ:sleep 2ms,  50hz:sleep 20ms
+        time.sleep(0.02)  #50hz:sleep 20ms
 
 '''停止采集'''
 robot.clear_set()

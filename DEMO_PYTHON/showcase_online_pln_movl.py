@@ -33,7 +33,7 @@ MOVLA在线直线规划步骤：
     将起点的关节角度通过正运动学得到起点的末端位置姿态矩阵
     起点的末端位置姿态矩阵转为XYZABC
     定义直线结束点的XYZABC，showcase是规划了末端Z方向移动100毫米
-    运行在线规划,规划点位为500HZ， 下采样为50HZ执行
+    运行在线规划,规划点位为50HZ执行
 
 
 '''  #################################################################
@@ -166,14 +166,14 @@ pose_6d_2[2] += 100  # Z方向移动100mm
 print(f'6d_pose_2:{pose_6d_2}')
 
 '''直线规划（MOVLA）
-    运行在线规划,规划点位为500HZ， 下采样为50HZ执行
+    运行在线规划50HZ
 '''
 # ONLINE
 points,pset = kk.movLA(start_xyzabc=pose_6d_1, end_xyzabc=pose_6d_2,
                   ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68], vel=100, acc=100,freq_hz=50)
 print(f"Got {len(points)} planning points")
 if points:
-    # 500hz-->50hz
+    #50hz
     for i in range(0, len(points), 1):
         robot.clear_set()
         robot.set_joint_cmd_pose(arm='A', joints=points[i])
