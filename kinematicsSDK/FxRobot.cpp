@@ -3853,6 +3853,126 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect
 	return FX_FALSE;
 }
 
+/////Joint Torque to EE Torque Mapping
+FX_BOOL  FX_Robot_Solve66_GaussJordan(const Matrix6 A, const Vect6 b, Vect6 x)
+{
+	FX_DOUBLE M[6][7] = { {0} };
+
+	FX_INT32L r = 0;
+	FX_INT32L c = 0;
+	FX_INT32L i = 0;
+
+	for (i = 0; i < 6; ++i) 
+	{
+		for (FX_INT32L j = 0; j < 6; ++j)
+		{
+			M[i][j] = A[i][j];
+		}
+		M[i][6] = b[i];
+	}
+
+	for (FX_INT32L col = 0; col < 6; ++col) 
+	{
+		FX_INT32L pivot_row = col;
+		FX_DOUBLE max_abs = FX_Fabs(M[col][col]);
+		for (r = col + 1; r < 6; ++r) 
+		{
+			FX_DOUBLE v = FX_Fabs(M[r][col]);
+			if (v > max_abs) 
+			{ 
+				max_abs = v; 
+				pivot_row = r; 
+			}
+		}
+		if (max_abs < FXARM_EPS_L)
+		{
+			return FX_FALSE;
+		}
+
+		if (pivot_row != col) 
+		{
+			for (c = col; c < 7; ++c)
+			{
+				FX_DOUBLE a = M[col][c];
+				FX_DOUBLE b = M[pivot_row][c];
+
+				M[col][c] = b;
+				M[pivot_row][c] = a;
+			}
+		}
+
+		FX_DOUBLE pivot = M[col][col];
+		for (c = col; c < 7; ++c)
+		{
+			M[col][c] /= pivot;
+		}
+
+		for (r = 0; r < 6; ++r) 
+		{
+			if (r == col)
+			{
+				continue;
+			}
+			FX_DOUBLE factor = M[r][col];
+			if (FX_Fabs(factor) < FXARM_EPS)
+			{
+				continue;
+			}
+			for (c = col; c < 7; ++c) 
+			{
+				M[r][c] -= factor * M[col][c];
+			}
+		}
+	}
+
+	for (i = 0; i < 6; ++i)
+	{
+		x[i] = M[i][6];
+	}
+
+	return FX_TRUE;
+}
+
+FX_BOOL  FX_Robot_JntTau2EETau(FX_INT32L RobotSerial, Vect7 q, Vect7 Joint_Torque, Vect6 EE_Torque)
+{
+	if (FX_LOG_TAG) FX_LOG_INFO("[FxRobot - FX_Robot_JntTau2EETau]\n");
+
+	Matrix6 JJt = { {0} };
+	Vect6 rhs = { 0 };
+
+	FX_INT32L i = 0;
+	FX_INT32L j = 0;
+	FX_INT32L k = 0;
+
+	FX_Jacobi jcb;
+	FX_Robot_Kine_Jacb(RobotSerial, q, &jcb);
+
+	// JJt = J * J^T
+	for (i = 0; i < 6; ++i) 
+	{
+		for (j = 0; j < 6; ++j) 
+		{
+			FX_DOUBLE s = 0.0;
+			for (k = 0; k < 7; ++k)
+			{
+				s += jcb.m_Jcb[i][k] * jcb.m_Jcb[j][k];
+			}
+			JJt[i][j] = s;
+		}
+	}
+
+	// rhs = J * tau
+	for (i = 0; i < 6; ++i) {
+		FX_DOUBLE s = 0.0;
+		for (k = 0; k < 7; ++k)
+		{
+			s += jcb.m_Jcb[i][k] * Joint_Torque[k];
+		}
+		rhs[i] = s;
+	}
+
+	return FX_Robot_Solve66_GaussJordan(JJt, rhs, EE_Torque);
+}
 ////Parameters Identification
 FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 TYPE, FX_CHAR* path, FX_DOUBLE* mass, Vect3 mr, Vect6 I)
 {
