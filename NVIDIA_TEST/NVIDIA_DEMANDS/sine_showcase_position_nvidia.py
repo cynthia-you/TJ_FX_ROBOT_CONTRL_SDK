@@ -1,40 +1,51 @@
-import sys
+import atexit
+import ctypes
+import logging
+import math
 import os
+import sys
+import time
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
-current_file_path = os.path.abspath(__file__)
-current_path = os.path.dirname(current_file_path)
-from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS
-import time
-import logging
-import math
-import ctypes
-import atexit
 
-'''#################################################################
-该DEMO 为关节位置跟随控制案列
-
-使用逻辑
-    初始化订阅数据的结构体
-    初始化机器人接口
-    查验连接是否成功,失败程序直接退出
-    开启日志以便检查
-    设置位置模式和速度加速度百分比
-    订阅查看设置是否成功
-    下发运动点位1
-    订阅查看是否运动到位
-    下发运动点位2
-    订阅查看是否运动到位
-    任务完成,下使能,释放内存使别的程序或者用户可以连接机器人
-'''#################################################################
+from SDK_PYTHON.fx_robot import DCSS, Marvin_Robot
+from nvidia_feedback_tools import (
+    append_feedback_sample,
+    finalize_feedback_collector,
+    start_feedback_collector,
+)
+from nvidia_plot_tools import generate_showcase_plots
 
 
 # 配置日志系统
-logging.basicConfig(format='%(message)s')
-logger = logging.getLogger('debug_printer')
-logger.setLevel(logging.INFO)# 一键关闭所有调试打印
-logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
+logging.basicConfig(format="%(message)s")
+logger = logging.getLogger("debug_printer")
+logger.setLevel(logging.INFO)
+
+
+# ==================== 配置区（给客户看的） ====================
+ROBOT_IP = "192.168.1.190"
+
+DT = 0.02
+RUN_TIME_S = 20.0
+SIN_FREQ_HZ = 0.5
+
+VEL_RATIO = 100
+ACC_RATIO = 100
+MOVE_TO_DEFAULT_WAIT_S = 5.0
+
+LEFT_DEFAULT_POS = [90.0, -90.0, -90.0, -90.0, 0.0, 0.0, 0.0]
+RIGHT_DEFAULT_POS = [90.0, 90.0, -90.0, -90.0, 0.0, 0.0, 0.0]
+
+SIN_AMP_LEFT_J1_DEG = 10.0
+SIN_AMP_LEFT_J4_DEG = 10.0
+SIN_AMP_LEFT_J6_DEG = 30.0
+
+SIN_AMP_RIGHT_J1_DEG = 10.0
+SIN_AMP_RIGHT_J4_DEG = 10.0
+SIN_AMP_RIGHT_J6_DEG = 30.0
 
 
 def sleep_until(deadline, spin_threshold=0.0005):
@@ -51,18 +62,19 @@ def sleep_until(deadline, spin_threshold=0.0005):
             return
 
 
+# 激活 Windows 高精度定时器
 winmm = None
 high_res_timer_enabled = False
-if os.name == 'nt':
+if os.name == "nt":
     try:
-        winmm = ctypes.WinDLL('winmm')
+        winmm = ctypes.WinDLL("winmm")
         if winmm.timeBeginPeriod(1) == 0:
             high_res_timer_enabled = True
-            logger.info('enabled Windows high-resolution timer: 1ms')
+            logger.info("enabled Windows high-resolution timer: 1ms")
         else:
-            logger.warning('failed to enable Windows high-resolution timer')
+            logger.warning("failed to enable Windows high-resolution timer")
     except Exception as exc:
-        logger.warning(f'failed to load winmm timer APIs: {exc}')
+        logger.warning(f"failed to load winmm timer APIs: {exc}")
 
 
 def _release_high_res_timer():
@@ -72,134 +84,184 @@ def _release_high_res_timer():
 
 atexit.register(_release_high_res_timer)
 
-'''初始化订阅数据的结构体'''
-dcss=DCSS()
 
-'''初始化机器人接口'''
-robot=Marvin_Robot()
+def main():
+    dcss = DCSS()
+    robot = Marvin_Robot()
 
-'''查验连接是否成功'''
-init = robot.connect('192.168.1.190')
-if init==0:
-    logger.error('failed to connect to the robot, port is occupied')
-    exit(0)
+    try:
+        # connect
+        init = robot.connect(ROBOT_IP)
+        if init == 0:
+            raise RuntimeError("failed to connect to the robot, port is occupied")
 
-'''检查机械臂和伺服当前是否存错误，有错误清错'''
-robot.check_error_and_clear(dcss)
+        # clear error
+        robot.check_error_and_clear(dcss)
 
-'''通过确认freame数据的刷新，确认UDP数据通道连接成功（防火墙等可能不能正常收到数据）'''
-motion_tag = 0
-frame_update = None
-for i in range(5):
-    sub_data = robot.subscribe(dcss)
-    print(f"connect frames :{sub_data['outputs'][0]['frame_serial']}")
-    if sub_data['outputs'][0]['frame_serial'] != 0 and frame_update != sub_data['outputs'][0]['frame_serial']:
-        motion_tag += 1
-        frame_update = sub_data['outputs'][0]['frame_serial']
-    time.sleep(0.1)
-if motion_tag > 0:
-    logger.info('success:robot connected')
-else:
-    logger.error('failed:robot connection failed')
-    exit(0)
+        # 通过左右臂 frame 刷新确认 UDP 通道都正常
+        left_motion_tag = 0
+        right_motion_tag = 0
+        left_frame_last = None
+        right_frame_last = None
+        for _ in range(5):
+            sub_data = robot.subscribe(dcss)
+            left_frame = sub_data["outputs"][0]["frame_serial"]
+            right_frame = sub_data["outputs"][1]["frame_serial"]
+            print(f"connect frame A: {left_frame}, B: {right_frame}")
 
-'''开启日志以便检查'''
-robot.log_switch('1') #全局日志开："1", 关："0"
-robot.local_log_switch('1') # 主要日志开："1", 关："0"
+            if left_frame != 0 and left_frame != left_frame_last:
+                left_motion_tag += 1
+                left_frame_last = left_frame
+            if right_frame != 0 and right_frame != right_frame_last:
+                right_motion_tag += 1
+                right_frame_last = right_frame
+            time.sleep(0.1)
 
-'''设置位置模式和速度 加速度百分比'''
-robot.clear_set()
-robot.set_state(arm='A',state=0)#state=1位置模式
-robot.set_state(arm='B',state=0)#state=1位置模式
-robot.set_vel_acc(arm='A',velRatio=10, AccRatio=10)
-robot.set_vel_acc(arm='B',velRatio=10, AccRatio=10)
-robot.send_cmd()
-time.sleep(1.0)
+        if left_motion_tag <= 0 or right_motion_tag <= 0:
+            raise RuntimeError("failed: robot connection failed (A/B frame not updating)")
+        logger.info("success: robot connected")
 
-robot.clear_set()
-robot.set_state(arm='A',state=1)#state=1位置模式
-robot.set_state(arm='B',state=1)#state=1位置模式
-robot.send_cmd()
-time.sleep(1.0)
+        # set mode(position)
+        robot.clear_set()
+        robot.set_state(arm="A", state=0)
+        robot.set_state(arm="B", state=0)
+        robot.set_vel_acc(arm="A", velRatio=VEL_RATIO, AccRatio=ACC_RATIO)
+        robot.set_vel_acc(arm="B", velRatio=VEL_RATIO, AccRatio=ACC_RATIO)
+        robot.send_cmd()
+        time.sleep(1.0)
 
-'''订阅数据查看是否设置'''
-sub_data=robot.subscribe(dcss)
-logger.info('-----------\nA arm:')
-logger.info(f'current state{sub_data["states"][0]["cur_state"]}')
-logger.info(f'arm error code:{sub_data["states"][0]["err_code"]}')
-logger.info(f'set vel={sub_data["inputs"][0]["joint_vel_ratio"]}, acc={sub_data["inputs"][0]["joint_acc_ratio"]}')
-logger.info('-----------\nB arm:')
-logger.info(f'current state{sub_data["states"][1]["cur_state"]}')
-logger.info(f'arm error code:{sub_data["states"][1]["err_code"]}')
-logger.info(f'set vel={sub_data["inputs"][1]["joint_vel_ratio"]}, acc={sub_data["inputs"][1]["joint_acc_ratio"]}')
+        robot.clear_set()
+        robot.set_state(arm="A", state=1)
+        robot.send_cmd()
+        time.sleep(2.0)
+        robot.clear_set()
+        robot.set_state(arm="B", state=1)
+        robot.send_cmd()
+        time.sleep(1.0)
+
+        sub_data = robot.subscribe(dcss)
+        logger.info("-----------")
+        logger.info("A arm:")
+        logger.info(f"current state: {sub_data['states'][0]['cur_state']}")
+        logger.info(f"arm error code: {sub_data['states'][0]['err_code']}")
+        logger.info(
+            f"vel={sub_data['inputs'][0]['joint_vel_ratio']}, "
+            f"acc={sub_data['inputs'][0]['joint_acc_ratio']}"
+        )
+        logger.info("-----------")
+        logger.info("B arm:")
+        logger.info(f"current state: {sub_data['states'][1]['cur_state']}")
+        logger.info(f"arm error code: {sub_data['states'][1]['err_code']}")
+        logger.info(
+            f"vel={sub_data['inputs'][1]['joint_vel_ratio']}, "
+            f"acc={sub_data['inputs'][1]['joint_acc_ratio']}"
+        )
+
+        # move to default
+        robot.clear_set()
+        robot.set_joint_cmd_pose(arm="A", joints=LEFT_DEFAULT_POS)
+        robot.set_joint_cmd_pose(arm="B", joints=RIGHT_DEFAULT_POS)
+        robot.send_cmd()
+        time.sleep(MOVE_TO_DEFAULT_WAIT_S)
+
+        # 启动后台异步采样器
+        collector = start_feedback_collector(
+            robot=robot,
+            dcss=dcss,
+            collection_mode="async",
+            poll_period_s=0.02,
+            stale_threshold_s=0.100,
+        )
+
+        # 跑双臂同步正弦
+        run_t0 = time.perf_counter()
+        next_deadline = run_t0
+        count = 0
+        max_count = int(RUN_TIME_S / DT)
+
+        while True:
+            sin_term = math.sin(2.0 * math.pi * count * DT * SIN_FREQ_HZ)
+
+            left_q_cmd = LEFT_DEFAULT_POS.copy()
+            left_q_cmd[0] += SIN_AMP_LEFT_J1_DEG * sin_term
+            left_q_cmd[3] += SIN_AMP_LEFT_J4_DEG * sin_term
+            left_q_cmd[5] += SIN_AMP_LEFT_J6_DEG * sin_term
+
+            right_q_cmd = RIGHT_DEFAULT_POS.copy()
+            right_q_cmd[0] += SIN_AMP_RIGHT_J1_DEG * sin_term
+            right_q_cmd[3] += SIN_AMP_RIGHT_J4_DEG * sin_term
+            right_q_cmd[5] += SIN_AMP_RIGHT_J6_DEG * sin_term
+
+            robot.clear_set()
+            robot.set_joint_cmd_pose(arm="A", joints=left_q_cmd)
+            robot.set_joint_cmd_pose(arm="B", joints=right_q_cmd)
+            robot.send_cmd()
+
+            send_ts_perf_s = time.perf_counter()
+            append_feedback_sample(
+                collector=collector,
+                left_q_cmd_deg=left_q_cmd,
+                right_q_cmd_deg=right_q_cmd,
+                t_cmd_s=send_ts_perf_s - run_t0,
+                send_ts_perf_s=send_ts_perf_s,
+            )
+
+            
+            if count > max_count:
+                break
+            count += 1
+
+            next_deadline += DT
+            sleep_until(next_deadline)
+
+        # 收尾整理
+        result = finalize_feedback_collector(collector)
+
+        # 出图和导出 json
+        plot_paths, metrics, json_path = generate_showcase_plots(
+            result=result,
+            output_dir=os.path.join(current_dir, "results_nvidia_showcase"),
+            tag=time.strftime("%Y%m%d_%H%M%S"),
+            mode_title="NVIDIA Position Showcase",
+            ctrl_hz=1.0 / DT,
+            save_json=True,
+        )
+
+        # 最短打印逻辑（双臂）
+        print(f"json: {json_path}")
+        for arm_name in ("left", "right"):
+            arm_plots = plot_paths.get(arm_name, {})
+            for key, value in arm_plots.items():
+                print(f"{arm_name}_{key}: {value}")
+
+        print(f"left_lag_estimated_s: {metrics.get('left', {}).get('lag_estimated_s')}")
+        print(f"right_lag_estimated_s: {metrics.get('right', {}).get('lag_estimated_s')}")
+
+        timing_metrics = metrics.get("timing", {})
+        print(f"delta_t_mean_ms: {timing_metrics.get('delta_t_mean_ms')}")
+        print(f"delta_t_std_ms: {timing_metrics.get('delta_t_std_ms')}")
+        print(f"delta_t_max_ms: {timing_metrics.get('delta_t_max_ms')}")
+        print(f"delta_t_p95_ms: {timing_metrics.get('delta_t_p95_ms')}")
+        print(f"jitter_mean_ms: {timing_metrics.get('jitter_mean_ms')}")
+        print(f"jitter_std_ms: {timing_metrics.get('jitter_std_ms')}")
+        print(f"jitter_max_ms: {timing_metrics.get('jitter_max_ms')}")
+        print(f"jitter_p95_ms: {timing_metrics.get('jitter_p95_ms')}")
+
+    finally:
+        # 下使能 + 释放资源
+        try:
+            robot.clear_set()
+            robot.set_state(arm="A", state=0)
+            robot.set_state(arm="B", state=0)
+            robot.send_cmd()
+        except Exception as exc:
+            logger.warning(f"failed to disable arms: {exc}")
+
+        try:
+            robot.release_robot()
+        except Exception as exc:
+            logger.warning(f"failed to release robot: {exc}")
 
 
-'''点位1'''
-count = 0
-time_max = 60
-dt = 0.01
-
-left_default_pos = [90.0, -90.0, -90.0, -90.0, 0.0, 0.0, 0.0]
-right_default_pos = [90.0, 90.0, -90.0, -90.0, 0.0, 0.0, 0.0]
-
-robot.clear_set()
-robot.set_joint_cmd_pose(arm='A',joints=left_default_pos)
-robot.set_joint_cmd_pose(arm='B',joints=right_default_pos)
-robot.send_cmd()
-time.sleep(10) #预留运动时间
-
-next_deadline = time.perf_counter()
-max_count = time_max / dt
-
-while True:
-    sin_term = math.sin(2 * math.pi * count * dt * 0.5)
-    left_pos = left_default_pos.copy()
-    left_pos[0] += 10.0 * sin_term
-    left_pos[3] += 10.0 * sin_term
-    left_pos[5] += 30.0 * sin_term
-    right_pos = right_default_pos.copy()
-    right_pos[0] += 10.0 * sin_term
-    right_pos[3] += 10.0 * sin_term
-    right_pos[5] += 30.0 * sin_term
-
-    robot.clear_set()
-    robot.set_joint_cmd_pose(arm='A',joints=left_pos)
-    robot.set_joint_cmd_pose(arm='B',joints=right_pos)
-    robot.send_cmd()
-
-    '''订阅数据查看是否到位'''
-    sub_data=robot.subscribe(dcss)
-    logger.info('-----------\nA arm:')
-    logger.info(f'set joint={sub_data["inputs"][0]["joint_cmd_pos"]}')
-    logger.info(f'current joint={sub_data["outputs"][0]["fb_joint_pos"]}')
-    logger.info('-----------\nB arm:')
-    logger.info(f'set joint={sub_data["inputs"][1]["joint_cmd_pos"]}')
-    logger.info(f'current joint={sub_data["outputs"][1]["fb_joint_pos"]}')
-
-    count += 1
-    if count > max_count:
-        break
-    next_deadline += dt
-    now = time.perf_counter()
-    if next_deadline < now:
-        next_deadline = now
-    sleep_until(next_deadline)
-
-
-'''下使能'''
-robot.clear_set()
-robot.set_state(arm='A',state=0)
-robot.set_state(arm='B',state=0)
-robot.send_cmd()
-
-'''释放机器人内存'''
-robot.release_robot()
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    main()
