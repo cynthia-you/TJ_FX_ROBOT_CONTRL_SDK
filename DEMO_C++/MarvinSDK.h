@@ -401,7 +401,7 @@ extern "C" {
 
 
 	//连接机器人,log_switch（日志默认为关）： 0 关; 1 开。
-	bool ConnectAndCkeck(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_switch=0);
+	bool Connect(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_switch=0);
 
 	//机器人日志开关, signal: 0 关; 1 开
 	void LogSwitch(int signal);
