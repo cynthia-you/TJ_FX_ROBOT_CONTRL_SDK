@@ -21,14 +21,21 @@ FX_DOUBLE = c_double
 FX_BOOL = c_ubyte
 FX_VOID = None
 
-# ==================== Enumerations (from L1Robot.h / FXCommon.h) ====================
-# These values are typical; adjust according to actual SDK headers if needed
+# ==================== Enumerations ====================
 class FXObjType:
     OBJ_ARM0 = 0
     OBJ_ARM1 = 1
     OBJ_HEAD = 2
     OBJ_BODY = 3
     OBJ_LIFT = 4
+
+class FXObjMask:
+    OBJ_ARM0_FLAG = 1 << 0
+    OBJ_ARM1_FLAG = 1 << 1
+    OBJ_HEAD_FLAG = 1 << 2
+    OBJ_BODY_FLAG = 1 << 3
+    OBJ_LIFT_FLAG = 1 << 4
+    OBJ_ALL_FLAG = (OBJ_ARM0_FLAG | OBJ_ARM1_FLAG | OBJ_HEAD_FLAG | OBJ_BODY_FLAG | OBJ_LIFT_FLAG)
 
 class FXChnType:
     CHN_CANFD = 1
@@ -46,7 +53,7 @@ class FXStateType:
     STATE_RELEASE = 3
     STATE_ERROR = 100
 
-# ==================== RT/SG structures (copied from GentoRobot.py) ====================
+# ==================== RT/SG structures====================
 class StateCtr(Structure):
     _fields_ = [
         ("m_CurState", FX_UINT16),
@@ -56,24 +63,24 @@ class StateCtr(Structure):
 
 class ARM_OUT(Structure):
     _fields_ = [
-        ("m_ARM_FB_Joint_Pos", FX_FLOAT * 7),
-        ("m_ARM_FB_Joint_Vel", FX_FLOAT * 7),
-        ("m_ARM_FB_Joint_Cmd", FX_FLOAT * 7),
-        ("m_ARM_FB_Joint_SToq", FX_FLOAT * 7),
-        ("m_ARM_FB_Joint_EST_Toq", FX_FLOAT * 7),
-        ("m_ARM_FB_Base_EST_FN", FX_FLOAT * 6),
-        ("m_ARM_FB_Base_GYRO", FX_FLOAT * 6),
-        ("m_ARM_FB_Flang_SSR", FX_FLOAT * 6),
+        ("m_ARM_FBK_Joint_Pos", FX_FLOAT * 7),
+        ("m_ARM_FBK_Joint_Vel", FX_FLOAT * 7),
+        ("m_ARM_FBK_Joint_Cmd", FX_FLOAT * 7),
+        ("m_ARM_FBK_Joint_SensorTor", FX_FLOAT * 7),
+        ("m_ARM_FBK_Joint_ExternalTorEst", FX_FLOAT * 7),
+        ("m_ARM_FBK_Base_FNEst", FX_FLOAT * 6),
+        ("m_ARM_FBK_Base_Gyro", FX_FLOAT * 6),
+        ("m_ARM_FBK_Flange_FTSensor", FX_FLOAT * 6),
     ]
 
 class ARM_IN(Structure):
     _fields_ = [
-        ("m_ARM_CMD_Joint_Trq", FX_FLOAT * 7),
+        ("m_ARM_CMD_Joint_Tor", FX_FLOAT * 7),
         ("m_ARM_CMD_Joint_Pos", FX_FLOAT * 7),
-        ("m_ARM_CMD_Drag_Type", FX_INT16),
-        ("m_ARM_CMD_ForceCtrl_Type", FX_INT16),
-        ("m_ARM_CMD_Force_Dir", FX_FLOAT * 5),
-        ("m_ARM_CMD_Torque_Dir", FX_FLOAT * 5),
+        ("m_ARM_CMD_Ctrl_DragType", FX_INT16),
+        ("m_ARM_CMD_Ctrl_ForceType", FX_INT16),
+        ("m_ARM_CMD_Ctrl_ForceDir", FX_FLOAT * 5),
+        ("m_ARM_CMD_Ctrl_TorqueDir", FX_FLOAT * 5),
     ]
 
 class ARM_RT(Structure):
@@ -84,70 +91,70 @@ class ARM_RT(Structure):
     ]
 
 class HEAD_OUT(Structure):
-    _fields_ = [("m_HEAD_FB_Pos", FX_FLOAT * 3)]
+    _fields_ = [("m_HEAD_FBK_Joint_Pos", FX_FLOAT * 3)]
 
 class HEAD_IN(Structure):
-    _fields_ = [("m_HEAD_CMD_Pos", FX_FLOAT * 3)]
+    _fields_ = [("m_HEAD_CMD_Joint_Pos", FX_FLOAT * 3)]
 
 class HEAD_RT(Structure):
     _fields_ = [
         ("m_HEAD_State", StateCtr),
-        ("m_HEAD_In", HEAD_IN),
-        ("m_HEAD_Out", HEAD_OUT),
+        ("m_HEAD_IN", HEAD_IN),
+        ("m_HEAD_OUT", HEAD_OUT),
     ]
 
 class BODY_OUT(Structure):
     _fields_ = [
-        ("m_BODY_FB_Pos", FX_FLOAT * 6),
-        ("m_BODY_FB_Vel", FX_FLOAT * 6),
-        ("m_BODY_FB_STorq", FX_FLOAT * 6),
-        ("m_BODY_FB_GYRO", FX_FLOAT * 6),
+        ("m_BODY_FBK_Joint_Pos", FX_FLOAT * 6),
+        ("m_BODY_FBK_Joint_Vel", FX_FLOAT * 6),
+        ("m_BODY_FBK_Joint_SensorTor", FX_FLOAT * 6),
+        ("m_BODY_FBK_Base_Gyro", FX_FLOAT * 6),
     ]
 
 class BODY_IN(Structure):
     _fields_ = [
-        ("m_BODY_CMD_CtrlType", FX_INT32),
-        ("m_BODY_CMD_Pos", FX_FLOAT * 6),
+        ("m_BODY_CMD_Ctrl_Type", FX_INT32),
+        ("m_BODY_CMD_Joint_Pos", FX_FLOAT * 6),
     ]
 
 class BODY_RT(Structure):
     _fields_ = [
         ("m_BODY_State", StateCtr),
-        ("m_BODY_In", BODY_IN),
-        ("m_BODY_Out", BODY_OUT),
+        ("m_BODY_IN", BODY_IN),
+        ("m_BODY_OUT", BODY_OUT),
     ]
 
 class LIFT_OUT(Structure):
-    _fields_ = [("m_LIFT_FB_Pos", FX_FLOAT * 2)]
+    _fields_ = [("m_LIFT_FBK_Joint_Pos", FX_FLOAT * 2)]
 
 class LIFT_IN(Structure):
-    _fields_ = [("m_LIFT_CMD_Pos", FX_FLOAT * 2)]
+    _fields_ = [("m_LIFT_CMD_Joint_Pos", FX_FLOAT * 2)]
 
 class LIFT_RT(Structure):
     _fields_ = [
         ("m_LIFT_State", StateCtr),
-        ("m_LIFT_In", LIFT_IN),
-        ("m_LIFT_Out", LIFT_OUT),
+        ("m_LIFT_IN", LIFT_IN),
+        ("m_LIFT_OUT", LIFT_OUT),
     ]
 
 class HAND_OUT(Structure):
     _fields_ = [
-        ("m_HAND_FB_Poq", FX_INT16 * 24),
-        ("m_HAND_FB_Toq", FX_INT16 * 24),
-        ("m_HAND_FB_F", FX_INT16 * 24),
+        ("m_HAND_FBK_Joint_Pos", FX_INT16 * 24),
+        ("m_HAND_FBK_Joint_Tor", FX_INT16 * 24),
+        ("m_HAND_FBK_F", FX_INT16 * 24),
     ]
 
 class HAND_IN(Structure):
     _fields_ = [
-        ("m_HAND_CMD_Pos", FX_INT16 * 24),
-        ("m_HAND_CMD_Toq", FX_INT16 * 24),
+        ("m_HAND_CMD_Joint_Pos", FX_INT16 * 24),
+        ("m_HAND_CMD_Joint_Tor", FX_INT16 * 24),
     ]
 
 class HAND_RT(Structure):
     _fields_ = [
         ("m_HAND_State", StateCtr),
-        ("m_HAND_In", HAND_IN),
-        ("m_HAND_Out", HAND_OUT),
+        ("m_HAND_IN", HAND_IN),
+        ("m_HAND_OUT", HAND_OUT),
     ]
 
 class ROBOT_RT(Structure):
@@ -164,26 +171,26 @@ class ROBOT_RT(Structure):
 
 class ARM_SET(Structure):
     _fields_ = [
-        ("m_ARM_SET_ImpType", FX_INT32),
-        ("m_ARM_SET_Vel_Ratio", FX_FLOAT),
-        ("m_ARM_SET_Acc_Ratio", FX_FLOAT),
-        ("m_ARM_SET_Joint_K", FX_FLOAT * 7),
-        ("m_ARM_SET_Joint_D", FX_FLOAT * 7),
-        ("m_ARM_SET_Cart_K", FX_FLOAT * 7),
-        ("m_ARM_SET_Cart_D", FX_FLOAT * 7),
-        ("m_ARM_SET_Tool_Kine", FX_FLOAT * 6),
-        ("m_ARM_SET_Tool_Dyna", FX_FLOAT * 10),
+        ("m_ARM_Ctrl_ImpType", FX_INT32),
+        ("m_ARM_Ctrl_VelRatio", FX_FLOAT),
+        ("m_ARM_Ctrl_AccRatio", FX_FLOAT),
+        ("m_ARM_Ctrl_JointK", FX_FLOAT * 7),
+        ("m_ARM_Ctrl_JointD", FX_FLOAT * 7),
+        ("m_ARM_Ctrl_CartK", FX_FLOAT * 7),
+        ("m_ARM_Ctrl_CartD", FX_FLOAT * 7),
+        ("m_ARM_Ctrl_ToolKine", FX_FLOAT * 6),
+        ("m_ARM_Ctrl_ToolDyna", FX_FLOAT * 10),
         ("m_ARM_SET_SetTags", FX_BOOL * 16),
         ("m_ARM_SET_UpDateTag", FX_BOOL * 16),
     ]
 
 class ARM_GET(Structure):
     _fields_ = [
-        ("m_ARM_GET_Joint_CToq", FX_FLOAT * 7),
-        ("m_ARM_GET_Joint_PosE", FX_FLOAT * 7),
-        ("m_ARM_GET_TipDI", FX_CHAR),
-        ("m_ARM_GET_LowSpdFlag", FX_CHAR),
-        ("m_ARM_GET_TrajState", FX_CHAR),
+        ("m_ARM_FBK_Joint_Tor", FX_FLOAT * 7),
+        ("m_ARM_FBK_Joint_ExtPos", FX_FLOAT * 7),
+        ("m_ARM_FBK_Flange_DI", FX_CHAR),
+        ("m_ARM_FBK_LowSpdFlag", FX_CHAR),
+        ("m_ARM_FBK_TrajState", FX_CHAR),
         ("m_pad", FX_CHAR * 1),
     ]
 
@@ -195,16 +202,16 @@ class ARM_SG(Structure):
 
 class HEAD_SET(Structure):
     _fields_ = [
-        ("m_HEAD_SET_VelRatio", FX_FLOAT),
-        ("m_HEAD_SET_AccRatio", FX_FLOAT),
+        ("m_HEAD_Ctrl_VelRatio", FX_FLOAT),
+        ("m_HEAD_Ctrl_AccRatio", FX_FLOAT),
         ("m_HEAD_SET_SetTags", FX_BOOL * 4),
         ("m_HEAD_SET_UpDateTag", FX_BOOL * 4),
     ]
 
 class HEAD_GET(Structure):
     _fields_ = [
-        ("m_HEAD_GET_CToq", FX_FLOAT * 3),
-        ("m_HEAD_GET_PosE", FX_FLOAT * 3),
+        ("m_HEAD_FBK_Joint_Tor", FX_FLOAT * 3),
+        ("m_HEAD_FBK_Joint_ExtPos", FX_FLOAT * 3),
     ]
 
 class HEAD_SG(Structure):
@@ -215,19 +222,19 @@ class HEAD_SG(Structure):
 
 class BODY_SET(Structure):
     _fields_ = [
-        ("m_BODY_SET_VelRatio", FX_FLOAT),
-        ("m_BODY_SET_AccRatio", FX_FLOAT),
-        ("m_BODY_SET_PDK", FX_FLOAT * 6),
-        ("m_BODY_SET_PDD", FX_FLOAT * 6),
+        ("m_BODY_Ctrl_VelRatio", FX_FLOAT),
+        ("m_BODY_Ctrl_AccRatio", FX_FLOAT),
+        ("m_BODY_Ctrl_PDK", FX_FLOAT * 6),
+        ("m_BODY_Ctrl_PDD", FX_FLOAT * 6),
         ("m_BODY_SET_SetTags", FX_BOOL * 6),
         ("m_BODY_SET_UpDateTag", FX_BOOL * 6),
     ]
 
 class BODY_GET(Structure):
     _fields_ = [
-        ("m_BODY_GET_CToq", FX_FLOAT * 6),
-        ("m_BODY_GET_PosE", FX_FLOAT * 6),
-        ("m_BODY_GET_TrajState", FX_CHAR),
+        ("m_BODY_FBK_Joint_Tor", FX_FLOAT * 6),
+        ("m_BODY_FBK_Joint_ExtPos", FX_FLOAT * 6),
+        ("m_BODY_FBK_TrajState", FX_CHAR),
         ("m_pad", FX_CHAR * 3),
     ]
 
@@ -239,16 +246,16 @@ class BODY_SG(Structure):
 
 class LIFT_SET(Structure):
     _fields_ = [
-        ("m_LIFT_SET_VelRatio", FX_FLOAT),
-        ("m_LIFT_SET_AccRatio", FX_FLOAT),
+        ("m_LIFT_Ctrl_VelRatio", FX_FLOAT),
+        ("m_LIFT_Ctrl_AccRatio", FX_FLOAT),
         ("m_LIFT_SET_SetTags", FX_BOOL * 4),
         ("m_LIFT_SET_UpDateTag", FX_BOOL * 4),
     ]
 
 class LIFT_GET(Structure):
     _fields_ = [
-        ("m_LIFT_GET_CToq", FX_FLOAT * 2),
-        ("m_LIFT_GET_TrajState", FX_CHAR),
+        ("m_LIFT_FBK_Joint_Tor", FX_FLOAT * 2),
+        ("m_LIFT_FBK_TrajState", FX_CHAR),
         ("m_pad", FX_CHAR * 3),
     ]
 
@@ -260,9 +267,9 @@ class LIFT_SG(Structure):
 
 class HAND_SET(Structure):
     _fields_ = [
-        ("m_HAND_SET_KP", FX_INT16 * 24),
-        ("m_HAND_SET_KD", FX_INT16 * 24),
-        ("m_HAND_SET_VEL", FX_INT16 * 24),
+        ("m_HAND_Ctrl_KP", FX_INT16 * 24),
+        ("m_HAND_Ctrl_KD", FX_INT16 * 24),
+        ("m_HAND_Ctrl_Vel", FX_INT16 * 24),
     ]
 
 class HAND_SG(Structure):
@@ -296,11 +303,11 @@ class FX_InvKineSolverParams(Structure):
     _fields_ = [
         ("robot_serial", FX_INT32),
         ("target_pose", FX_DOUBLE * 6),
-        ("initial_joints", FX_DOUBLE * 7),
-        ("solution_joints", FX_DOUBLE * 7),
+        ("ref_joints", FX_DOUBLE * 7),
+        ("solution", FX_DOUBLE * 7),
         ("max_iter", FX_INT32),
         ("tol", FX_DOUBLE),
-        ("success", FX_BOOL),
+        ("solution_valid", FX_BOOL),
     ]
 
 class DualArmFixedBodyParams(Structure):
@@ -314,7 +321,7 @@ class DualArmFixedBodyParams(Structure):
         ("acc_ratio", FX_DOUBLE),
     ]
 
-
+# ==================== fault code dictionary ====================
 fault_code_dict_EN = {
     "0x2250": "Drive short circuit",
     "0x2280": "Drive short circuit",
@@ -435,7 +442,6 @@ fault_code_dict_EN = {
     "0xFF91": "Drive internal error 2",
 }
 
-
 error_dict = {
     1: "Failed to load robot.ini config file",
     2: "Parameter exception",
@@ -461,10 +467,9 @@ error_dict = {
     114: "BusLinkDown",
 }
 
-# ==================== L1 Robot class ====================
+# ==================== GentoRobot class ====================
 class GentoRobot:
     def __init__(self, precision: int = 3):
-        """Load L1 SDK DLL and initialize function prototypes."""
         self._lock = threading.Lock()
         self.precision = precision
         self._round_float = lambda v: round(v, self.precision)
@@ -474,9 +479,9 @@ class GentoRobot:
         else:
             self.dll = ctypes.CDLL(os.path.join(current_path, 'libGentoSDKPY.so'))
         self._init_funcs()
-        self._kin_handle = self.kinematics_create()
 
-        # Initialize cache (RobotCache_Init)
+        self._kin_handle = None
+
         ret = self.dll.RobotCache_Init()
         if ret != 0:
             raise RuntimeError("RobotCache_Init failed")
@@ -525,8 +530,8 @@ class GentoRobot:
         d.FX_L1_State_GetServoErrorCode.restype = FX_BOOL
         d.FX_L1_State_ResetError.argtypes = [FX_UINT32]
         d.FX_L1_State_ResetError.restype = FX_UINT32
-        d.FX_L1_State_EmergencyStop.argtypes = [FX_UINT32]
-        d.FX_L1_State_EmergencyStop.restype = FX_UINT32
+        d.FX_L1_Runtime_EmergencyStop.argtypes = [FX_UINT32]
+        d.FX_L1_Runtime_EmergencyStop.restype = FX_UINT32
 
         # State switching
         switch_funcs = [
@@ -543,7 +548,6 @@ class GentoRobot:
                 print(f"Warning: {full_name} not found in DLL, skipping this function.")
                 continue
 
-            # Set argtypes based on function name
             if func_name == "SwitchToPositionMode":
                 func.argtypes = [FX_INT32, FX_UINT32, FX_DOUBLE, FX_DOUBLE]
             elif func_name in ["SwitchToImpJointMode", "SwitchToImpCartMode"]:
@@ -554,7 +558,7 @@ class GentoRobot:
             elif func_name in ["SwitchToDragJoint", "SwitchToDragCartX", "SwitchToDragCartY",
                                "SwitchToDragCartZ", "SwitchToDragCartR", "SwitchToCollaborativeRelease"]:
                 func.argtypes = [FX_INT32, FX_UINT32]
-            else:  # SwitchToIdle
+            else:
                 func.argtypes = [FX_INT32, FX_UINT32]
             func.restype = FX_INT32
 
@@ -577,9 +581,16 @@ class GentoRobot:
         d.FX_L1_Terminal_SetData.restype = FX_BOOL
 
         # Config
-        for func in ["SetBrakeLock", "SetBrakeUnlock", "ResetEncOffset", "ClearEncError", "DisableSoftLimit"]:
-            getattr(d, f"FX_L1_Config_{func}").argtypes = [FX_INT32, FX_UINT8]
-            getattr(d, f"FX_L1_Config_{func}").restype = FX_BOOL
+        d.FX_L1_Config_SetBrakeLock.argtypes = [FX_INT32, FX_UINT8]
+        d.FX_L1_Config_SetBrakeLock.restype = FX_BOOL
+        d.FX_L1_Config_SetBrakeUnlock.argtypes = [FX_INT32, FX_UINT8]
+        d.FX_L1_Config_SetBrakeUnlock.restype = FX_BOOL
+        d.FX_L1_Config_ResetEncOffset.argtypes = [FX_INT32, FX_UINT8]
+        d.FX_L1_Config_ResetEncOffset.restype = FX_BOOL
+        d.FX_L1_Config_ClearEncError.argtypes = [FX_INT32, FX_UINT8]
+        d.FX_L1_Config_ClearEncError.restype = FX_BOOL
+        d.FX_L1_Config_DisableSoftLimit.argtypes = [FX_INT32, FX_UINT8]
+        d.FX_L1_Config_DisableSoftLimit.restype = FX_BOOL
         d.FX_L1_Config_ClearAxisSensorOffset.argtypes = [FX_INT32, FX_UINT32]
         d.FX_L1_Config_ClearAxisSensorOffset.restype = FX_BOOL
         d.FX_L1_Config_ClearSensorOffset.argtypes = [FX_INT32]
@@ -612,11 +623,11 @@ class GentoRobot:
         d.FX_L1_Runtime_SetCartD.restype = FX_BOOL
         d.FX_L1_Runtime_SetCartKD.argtypes = [FX_INT32, POINTER(FX_DOUBLE * 7), POINTER(FX_DOUBLE * 7)]
         d.FX_L1_Runtime_SetCartKD.restype = FX_BOOL
-        d.FX_L1_Runtime_SetToolK.argtypes = [FX_INT32, POINTER(FX_DOUBLE * 7)]
+        d.FX_L1_Runtime_SetToolK.argtypes = [FX_INT32, POINTER(FX_DOUBLE * 6)]
         d.FX_L1_Runtime_SetToolK.restype = FX_BOOL
-        d.FX_L1_Runtime_SetToolD.argtypes = [FX_INT32, POINTER(FX_DOUBLE * 7)]
+        d.FX_L1_Runtime_SetToolD.argtypes = [FX_INT32, POINTER(FX_DOUBLE * 10)]
         d.FX_L1_Runtime_SetToolD.restype = FX_BOOL
-        d.FX_L1_Runtime_SetToolKD.argtypes = [FX_INT32, POINTER(FX_DOUBLE * 7), POINTER(FX_DOUBLE * 7)]
+        d.FX_L1_Runtime_SetToolKD.argtypes = [FX_INT32, POINTER(FX_DOUBLE * 6), POINTER(FX_DOUBLE * 10)]
         d.FX_L1_Runtime_SetToolKD.restype = FX_BOOL
         d.FX_L1_Runtime_SetBodyPDP.argtypes = [POINTER(FX_DOUBLE * 6)]
         d.FX_L1_Runtime_SetBodyPDP.restype = FX_BOOL
@@ -629,52 +640,80 @@ class GentoRobot:
         d.FX_L1_Runtime_StopTraj.argtypes = [FX_UINT32]
         d.FX_L1_Runtime_StopTraj.restype = FX_UINT32
 
-        # Kinematics
+        # Kinematics functions
         d.FX_L1_Kinematics_Create.argtypes = []
         d.FX_L1_Kinematics_Create.restype = c_void_p
+
         d.FX_L1_Kinematics_Destroy.argtypes = [c_void_p]
         d.FX_L1_Kinematics_Destroy.restype = None
+
         d.FX_L1_Kinematics_LogSwitch.argtypes = [c_void_p, FX_INT32]
         d.FX_L1_Kinematics_LogSwitch.restype = None
-        d.FX_L1_Kinematics_InitSingleArm.argtypes = [c_void_p, c_char_p, FX_INT32]
-        d.FX_L1_Kinematics_InitSingleArm.restype = FX_BOOL
-        d.FX_L1_Kinematics_InitDualArm.argtypes = [c_void_p, c_char_p]
-        d.FX_L1_Kinematics_InitDualArm.restype = FX_BOOL
+
+        d.FX_L1_Kinematics_InitSingleArm.argtypes = [
+            c_void_p,  # handle
+            FX_INT32,  # RobotSerial
+            POINTER(FX_INT32),  # type (int*)
+            (FX_DOUBLE * 4) * 8,  # DH[8][4]
+            (FX_DOUBLE * 4) * 8,  # PNVA[8][4]
+            (FX_DOUBLE * 3) * 4,  # BOUND[4][3]
+            FX_DOUBLE * 3,  # GRV[3]
+            FX_DOUBLE * 7,  # MASS[7]
+            (FX_DOUBLE * 3) * 7,  # MCP[7][3]
+            (FX_DOUBLE * 6) * 7,  # I[7][6]
+        ]
+        d.FX_L1_Kinematics_InitSingleArm.restype = FX_INT32
+
+        d.FX_L1_Kinematics_InitDualArm.argtypes = [
+            c_void_p,  # handle
+            POINTER(FX_INT32 * 2),  # type[2]
+            ((FX_DOUBLE * 4) * 8) * 2,  # DH[2][8][4]
+            ((FX_DOUBLE * 4) * 8) * 2,  # PNVA[2][8][4]
+            ((FX_DOUBLE * 3) * 4) * 2,  # BOUND[2][4][3]
+        ]
+        d.FX_L1_Kinematics_InitDualArm.restype = FX_INT32
+
         d.FX_L1_Kinematics_ForwardKinematics.argtypes = [c_void_p, FX_INT32, POINTER(FX_DOUBLE * 7), POINTER(FX_DOUBLE * 16)]
-        d.FX_L1_Kinematics_ForwardKinematics.restype = FX_BOOL
+        d.FX_L1_Kinematics_ForwardKinematics.restype = FX_INT32
+
         d.FX_L1_Kinematics_Jacobian.argtypes = [c_void_p, FX_INT32, POINTER(FX_DOUBLE * 7), POINTER(FX_DOUBLE * 42)]
-        d.FX_L1_Kinematics_Jacobian.restype = FX_BOOL
+        d.FX_L1_Kinematics_Jacobian.restype = FX_INT32
+
         d.FX_L1_Kinematics_InverseKinematics.argtypes = [c_void_p, FX_INT32, POINTER(FX_InvKineSolverParams)]
-        d.FX_L1_Kinematics_InverseKinematics.restype = FX_BOOL
-        d.FX_L1_Kinematics_GetJointLimits.argtypes = [c_void_p, FX_INT32, POINTER(FX_INT32),
-                                                      POINTER(FX_DOUBLE * 7), POINTER(FX_DOUBLE * 7),
-                                                      POINTER(FX_DOUBLE * 7), POINTER(FX_DOUBLE * 7)]
-        d.FX_L1_Kinematics_GetJointLimits.restype = FX_BOOL
+        d.FX_L1_Kinematics_InverseKinematics.restype = FX_INT32
+
         d.FX_L1_Kinematics_SetBodyCondition.argtypes = [c_void_p, POINTER(FX_DOUBLE * 3), POINTER(FX_DOUBLE * 3),
                                                         FX_DOUBLE, FX_DOUBLE, FX_DOUBLE, FX_DOUBLE]
-        d.FX_L1_Kinematics_SetBodyCondition.restype = FX_BOOL
+        d.FX_L1_Kinematics_SetBodyCondition.restype = FX_INT32
+
         d.FX_L1_Kinematics_BodyForward.argtypes = [c_void_p, POINTER(FX_DOUBLE * 3),
                                                    POINTER(FX_DOUBLE * 16), POINTER(FX_DOUBLE * 16)]
-        d.FX_L1_Kinematics_BodyForward.restype = FX_BOOL
+        d.FX_L1_Kinematics_BodyForward.restype = FX_INT32
+
         d.FX_L1_Kinematics_CalcBodyPosition.argtypes = [c_void_p, POINTER(FX_DOUBLE * 3), POINTER(FX_DOUBLE * 3),
                                                         POINTER(FX_DOUBLE * 3)]
-        d.FX_L1_Kinematics_CalcBodyPosition.restype = FX_BOOL
+        d.FX_L1_Kinematics_CalcBodyPosition.restype = FX_INT32
+
         d.FX_L1_Kinematics_CalcBodyPositionWithRef.argtypes = [c_void_p, POINTER(FX_DOUBLE * 3),
                                                                POINTER(FX_DOUBLE * 3), POINTER(FX_DOUBLE * 3),
                                                                POINTER(FX_DOUBLE * 3)]
-        d.FX_L1_Kinematics_CalcBodyPositionWithRef.restype = FX_BOOL
+        d.FX_L1_Kinematics_CalcBodyPositionWithRef.restype = FX_INT32
+
         d.FX_L1_Kinematics_PlanJointMove.argtypes = [c_void_p, FX_INT32, POINTER(FX_DOUBLE * 7), POINTER(FX_DOUBLE * 7),
-                                                     FX_DOUBLE, FX_DOUBLE, c_void_p]
-        d.FX_L1_Kinematics_PlanJointMove.restype = FX_BOOL
+                                                     FX_DOUBLE, FX_DOUBLE, c_void_p, POINTER(FX_INT32)]
+        d.FX_L1_Kinematics_PlanJointMove.restype = FX_INT32
+
         d.FX_L1_Kinematics_PlanLinearMove.argtypes = [c_void_p, FX_INT32, POINTER(FX_DOUBLE * 6), POINTER(FX_DOUBLE * 6),
-                                                      POINTER(FX_DOUBLE * 7), FX_DOUBLE, FX_DOUBLE, FX_INT32, c_void_p]
-        d.FX_L1_Kinematics_PlanLinearMove.restype = FX_BOOL
+                                                      POINTER(FX_DOUBLE * 7), FX_DOUBLE, FX_DOUBLE, FX_INT32, c_void_p, POINTER(FX_INT32)]
+        d.FX_L1_Kinematics_PlanLinearMove.restype = FX_INT32
+
         d.FX_L1_Kinematics_PlanLinearKeepJoints.argtypes = [c_void_p, FX_INT32, POINTER(FX_DOUBLE * 7), POINTER(FX_DOUBLE * 7),
-                                                            FX_DOUBLE, FX_DOUBLE, FX_INT32, c_void_p]
-        d.FX_L1_Kinematics_PlanLinearKeepJoints.restype = FX_BOOL
+                                                            FX_DOUBLE, FX_DOUBLE, FX_INT32, c_void_p, POINTER(FX_INT32)]
+        d.FX_L1_Kinematics_PlanLinearKeepJoints.restype = FX_INT32
+
         d.FX_L1_Kinematics_PlanDualArmFixedBody.argtypes = [c_void_p, POINTER(DualArmFixedBodyParams),
-                                                            c_void_p, c_void_p]
-        d.FX_L1_Kinematics_PlanDualArmFixedBody.restype = FX_BOOL
+                                                            c_void_p, c_void_p, POINTER(FX_INT32)]
+        d.FX_L1_Kinematics_PlanDualArmFixedBody.restype = FX_INT32
 
         # Helpers
         d.FX_L1_XYZABC2Matrix.argtypes = [POINTER(FX_DOUBLE * 6), POINTER(FX_DOUBLE * 16)]
@@ -695,6 +734,8 @@ class GentoRobot:
         d.FX_L1_CPointSet_OnGetPoint.restype = POINTER(FX_DOUBLE)
         d.FX_L1_CPointSet_OnSetPoint.argtypes = [c_void_p, POINTER(FX_DOUBLE)]
         d.FX_L1_CPointSet_OnSetPoint.restype = FX_BOOL
+        d.FX_L1_CPointSet_OnAppendPoint.argtypes = [c_void_p, POINTER(FX_DOUBLE)]
+        d.FX_L1_CPointSet_OnAppendPoint.restype = FX_BOOL
 
         # File transfer
         d.FX_L1_SendFile.argtypes = [c_char_p, c_char_p]
@@ -702,7 +743,6 @@ class GentoRobot:
         d.FX_L1_RecvFile.argtypes = [c_char_p, c_char_p]
         d.FX_L1_RecvFile.restype = FX_BOOL
 
-    # ==================== RT/SG access ====================
     @property
     def rt(self) -> ROBOT_RT:
         return self._rt.contents
@@ -712,7 +752,6 @@ class GentoRobot:
         return self._sg.contents
 
     def get_rt_dict(self) -> dict:
-        """Convert RT structure to dictionary with rounded floats."""
         if not self._connected:
             return {"error": "Robot not connected"}
         rt = self.rt
@@ -724,8 +763,8 @@ class GentoRobot:
                     "cmd": rt.m_HEAD.m_HEAD_State.m_CmdState,
                     "err": rt.m_HEAD.m_HEAD_State.m_ERRCode,
                 },
-                "cmd_pos": [self._round_float(rt.m_HEAD.m_HEAD_In.m_HEAD_CMD_Pos[i]) for i in range(3)],
-                "fb_pos": [self._round_float(rt.m_HEAD.m_HEAD_Out.m_HEAD_FB_Pos[i]) for i in range(3)],
+                "cmd_pos": [self._round_float(rt.m_HEAD.m_HEAD_IN.m_HEAD_CMD_Joint_Pos[i]) for i in range(3)],
+                "fb_pos": [self._round_float(rt.m_HEAD.m_HEAD_OUT.m_HEAD_FBK_Joint_Pos[i]) for i in range(3)],
             },
             "arms": [],
             "body": {
@@ -734,12 +773,12 @@ class GentoRobot:
                     "cmd": rt.m_BODY.m_BODY_State.m_CmdState,
                     "err": rt.m_BODY.m_BODY_State.m_ERRCode,
                 },
-                "cmd_type": rt.m_BODY.m_BODY_In.m_BODY_CMD_CtrlType,
-                "cmd_pos": [self._round_float(rt.m_BODY.m_BODY_In.m_BODY_CMD_Pos[i]) for i in range(6)],
-                "fb_pos": [self._round_float(rt.m_BODY.m_BODY_Out.m_BODY_FB_Pos[i]) for i in range(6)],
-                "fb_vel": [self._round_float(rt.m_BODY.m_BODY_Out.m_BODY_FB_Vel[i]) for i in range(6)],
-                "fb_torque": [self._round_float(rt.m_BODY.m_BODY_Out.m_BODY_FB_STorq[i]) for i in range(6)],
-                "gyro": [self._round_float(rt.m_BODY.m_BODY_Out.m_BODY_FB_GYRO[i]) for i in range(6)],
+                "cmd_type": rt.m_BODY.m_BODY_IN.m_BODY_CMD_Ctrl_Type,
+                "cmd_pos": [self._round_float(rt.m_BODY.m_BODY_IN.m_BODY_CMD_Joint_Pos[i]) for i in range(6)],
+                "fb_pos": [self._round_float(rt.m_BODY.m_BODY_OUT.m_BODY_FBK_Joint_Pos[i]) for i in range(6)],
+                "fb_vel": [self._round_float(rt.m_BODY.m_BODY_OUT.m_BODY_FBK_Joint_Vel[i]) for i in range(6)],
+                "fb_sensor": [self._round_float(rt.m_BODY.m_BODY_OUT.m_BODY_FBK_Joint_SensorTor[i]) for i in range(6)],
+                "gyro": [self._round_float(rt.m_BODY.m_BODY_OUT.m_BODY_FBK_Base_Gyro[i]) for i in range(6)],
             },
             "lift": {
                 "state": {
@@ -747,12 +786,11 @@ class GentoRobot:
                     "cmd": rt.m_LIFT.m_LIFT_State.m_CmdState,
                     "err": rt.m_LIFT.m_LIFT_State.m_ERRCode,
                 },
-                "cmd_pos": [self._round_float(rt.m_LIFT.m_LIFT_In.m_LIFT_CMD_Pos[i]) for i in range(2)],
-                "fb_pos": [self._round_float(rt.m_LIFT.m_LIFT_Out.m_LIFT_FB_Pos[i]) for i in range(2)],
+                "cmd_pos": [self._round_float(rt.m_LIFT.m_LIFT_IN.m_LIFT_CMD_Joint_Pos[i]) for i in range(2)],
+                "fb_pos": [self._round_float(rt.m_LIFT.m_LIFT_OUT.m_LIFT_FBK_Joint_Pos[i]) for i in range(2)],
             },
             "hands": [],
         }
-        # Arms
         for arm_idx in range(2):
             arm = rt.m_ARMS[arm_idx]
             arm_data = {
@@ -762,26 +800,26 @@ class GentoRobot:
                     "err": arm.m_ARM_State.m_ERRCode,
                 },
                 "cmd": {
-                    "joint_trq": [self._round_float(arm.m_ARM_IN.m_ARM_CMD_Joint_Trq[i]) for i in range(7)],
+                    "joint_trq": [self._round_float(arm.m_ARM_IN.m_ARM_CMD_Joint_Tor[i]) for i in range(7)],
                     "joint_pos": [self._round_float(arm.m_ARM_IN.m_ARM_CMD_Joint_Pos[i]) for i in range(7)],
-                    "drag_type": arm.m_ARM_IN.m_ARM_CMD_Drag_Type,
-                    "force_ctrl_type": arm.m_ARM_IN.m_ARM_CMD_ForceCtrl_Type,
-                    "force_dir": [self._round_float(arm.m_ARM_IN.m_ARM_CMD_Force_Dir[i]) for i in range(5)],
-                    "torque_dir": [self._round_float(arm.m_ARM_IN.m_ARM_CMD_Torque_Dir[i]) for i in range(5)],
+                    "drag_type": arm.m_ARM_IN.m_ARM_CMD_Ctrl_DragType,
+                    "force_ctrl_type": arm.m_ARM_IN.m_ARM_CMD_Ctrl_ForceType,
+                    "force_dir": [self._round_float(arm.m_ARM_IN.m_ARM_CMD_Ctrl_ForceDir[i]) for i in range(5)],
+                    "torque_dir": [self._round_float(arm.m_ARM_IN.m_ARM_CMD_Ctrl_TorqueDir[i]) for i in range(5)],
                 },
                 "fb": {
-                    "joint_pos": [self._round_float(arm.m_ARM_OUT.m_ARM_FB_Joint_Pos[i]) for i in range(7)],
-                    "joint_vel": [self._round_float(arm.m_ARM_OUT.m_ARM_FB_Joint_Vel[i]) for i in range(7)],
-                    "joint_cmd": [self._round_float(arm.m_ARM_OUT.m_ARM_FB_Joint_Cmd[i]) for i in range(7)],
-                    "joint_torque": [self._round_float(arm.m_ARM_OUT.m_ARM_FB_Joint_SToq[i]) for i in range(7)],
-                    "joint_est_torque": [self._round_float(arm.m_ARM_OUT.m_ARM_FB_Joint_EST_Toq[i]) for i in range(7)],
-                    "base_force": [self._round_float(arm.m_ARM_OUT.m_ARM_FB_Base_EST_FN[i]) for i in range(6)],
-                    "base_gyro": [self._round_float(arm.m_ARM_OUT.m_ARM_FB_Base_GYRO[i]) for i in range(6)],
-                    "flange_force": [self._round_float(arm.m_ARM_OUT.m_ARM_FB_Flang_SSR[i]) for i in range(6)],
+                    "fb_pos": [self._round_float(arm.m_ARM_OUT.m_ARM_FBK_Joint_Pos[i]) for i in range(7)],
+                    "fb_vel": [self._round_float(arm.m_ARM_OUT.m_ARM_FBK_Joint_Vel[i]) for i in range(7)],
+                    "cmd_pos": [self._round_float(arm.m_ARM_OUT.m_ARM_FBK_Joint_Cmd[i]) for i in range(7)],
+                    "fb_sensor": [self._round_float(arm.m_ARM_OUT.m_ARM_FBK_Joint_SensorTor[i]) for i in range(7)],
+                    "fb_ext_torque": [self._round_float(arm.m_ARM_OUT.m_ARM_FBK_Joint_ExternalTorEst[i]) for i in
+                                         range(7)],
+                    "base_force": [self._round_float(arm.m_ARM_OUT.m_ARM_FBK_Base_FNEst[i]) for i in range(6)],
+                    "base_gyro": [self._round_float(arm.m_ARM_OUT.m_ARM_FBK_Base_Gyro[i]) for i in range(6)],
+                    "flange_force": [self._round_float(arm.m_ARM_OUT.m_ARM_FBK_Flange_FTSensor[i]) for i in range(6)],
                 },
             }
             data["arms"].append(arm_data)
-        # Hands (simplified)
         for hand_idx in range(2):
             hand = rt.m_HANDS[hand_idx]
             hand_data = {
@@ -791,20 +829,19 @@ class GentoRobot:
                     "err": hand.m_HAND_State.m_ERRCode,
                 },
                 "cmd": {
-                    "pos": [hand.m_HAND_In.m_HAND_CMD_Pos[i] for i in range(24)],
-                    "torque": [hand.m_HAND_In.m_HAND_CMD_Toq[i] for i in range(24)],
+                    "pos": [hand.m_HAND_IN.m_HAND_CMD_Joint_Pos[i] for i in range(24)],
+                    "torque": [hand.m_HAND_IN.m_HAND_CMD_Joint_Tor[i] for i in range(24)],
                 },
                 "fb": {
-                    "pos": [hand.m_HAND_Out.m_HAND_FB_Poq[i] for i in range(24)],
-                    "torque": [hand.m_HAND_Out.m_HAND_FB_Toq[i] for i in range(24)],
-                    "force": [hand.m_HAND_Out.m_HAND_FB_F[i] for i in range(24)],
+                    "pos": [hand.m_HAND_OUT.m_HAND_FBK_Joint_Pos[i] for i in range(24)],
+                    "torque": [hand.m_HAND_OUT.m_HAND_FBK_Joint_Tor[i] for i in range(24)],
+                    "force": [hand.m_HAND_OUT.m_HAND_FBK_F[i] for i in range(24)],
                 },
             }
             data["hands"].append(hand_data)
         return data
 
     def get_sg_dict(self) -> dict:
-        """Convert SG structure to dictionary with rounded floats."""
         if not self._connected:
             return {"error": "Robot not connected"}
         sg = self.sg
@@ -812,43 +849,43 @@ class GentoRobot:
             "frame_serial": sg.m_RT_FrameSerial,
             "head": {
                 "set": {
-                    "vel_ratio": self._round_float(sg.m_HEAD.m_HEAD_SET.m_HEAD_SET_VelRatio),
-                    "acc_ratio": self._round_float(sg.m_HEAD.m_HEAD_SET.m_HEAD_SET_AccRatio),
+                    "vel_ratio": self._round_float(sg.m_HEAD.m_HEAD_SET.m_HEAD_Ctrl_VelRatio),
+                    "acc_ratio": self._round_float(sg.m_HEAD.m_HEAD_SET.m_HEAD_Ctrl_AccRatio),
                     "set_tags": [sg.m_HEAD.m_HEAD_SET.m_HEAD_SET_SetTags[i] for i in range(4)],
                     "update_tags": [sg.m_HEAD.m_HEAD_SET.m_HEAD_SET_UpDateTag[i] for i in range(4)],
                 },
                 "get": {
-                    "current": [self._round_float(sg.m_HEAD.m_HEAD_GET.m_HEAD_GET_CToq[i]) for i in range(3)],
-                    "ext_pos": [self._round_float(sg.m_HEAD.m_HEAD_GET.m_HEAD_GET_PosE[i]) for i in range(3)],
+                    "current": [self._round_float(sg.m_HEAD.m_HEAD_GET.m_HEAD_FBK_Joint_Tor[i]) for i in range(3)],
+                    "ext_pos": [self._round_float(sg.m_HEAD.m_HEAD_GET.m_HEAD_FBK_Joint_ExtPos[i]) for i in range(3)],
                 },
             },
             "arms": [],
             "hands": [],
             "body": {
                 "set": {
-                    "vel_ratio": self._round_float(sg.m_BODY.m_BODY_SET.m_BODY_SET_VelRatio),
-                    "acc_ratio": self._round_float(sg.m_BODY.m_BODY_SET.m_BODY_SET_AccRatio),
-                    "pdk": [self._round_float(sg.m_BODY.m_BODY_SET.m_BODY_SET_PDK[i]) for i in range(6)],
-                    "pdd": [self._round_float(sg.m_BODY.m_BODY_SET.m_BODY_SET_PDD[i]) for i in range(6)],
+                    "vel_ratio": self._round_float(sg.m_BODY.m_BODY_SET.m_BODY_Ctrl_VelRatio),
+                    "acc_ratio": self._round_float(sg.m_BODY.m_BODY_SET.m_BODY_Ctrl_AccRatio),
+                    "pdk": [self._round_float(sg.m_BODY.m_BODY_SET.m_BODY_Ctrl_PDK[i]) for i in range(6)],
+                    "pdd": [self._round_float(sg.m_BODY.m_BODY_SET.m_BODY_Ctrl_PDD[i]) for i in range(6)],
                     "set_tags": [sg.m_BODY.m_BODY_SET.m_BODY_SET_SetTags[i] for i in range(6)],
                     "update_tags": [sg.m_BODY.m_BODY_SET.m_BODY_SET_UpDateTag[i] for i in range(6)],
                 },
                 "get": {
-                    "current": [self._round_float(sg.m_BODY.m_BODY_GET.m_BODY_GET_CToq[i]) for i in range(6)],
-                    "ext_pos": [self._round_float(sg.m_BODY.m_BODY_GET.m_BODY_GET_PosE[i]) for i in range(6)],
-                    "traj_state": sg.m_BODY.m_BODY_GET.m_BODY_GET_TrajState,
+                    "joint_torque": [self._round_float(sg.m_BODY.m_BODY_GET.m_BODY_FBK_Joint_Tor[i]) for i in range(6)],
+                    "ext_pos": [self._round_float(sg.m_BODY.m_BODY_GET.m_BODY_FBK_Joint_ExtPos[i]) for i in range(6)],
+                    "traj_state": sg.m_BODY.m_BODY_GET.m_BODY_FBK_TrajState,
                 },
             },
             "lift": {
                 "set": {
-                    "vel_ratio": self._round_float(sg.m_LIFT.m_LIFT_SET.m_LIFT_SET_VelRatio),
-                    "acc_ratio": self._round_float(sg.m_LIFT.m_LIFT_SET.m_LIFT_SET_AccRatio),
+                    "vel_ratio": self._round_float(sg.m_LIFT.m_LIFT_SET.m_LIFT_Ctrl_VelRatio),
+                    "acc_ratio": self._round_float(sg.m_LIFT.m_LIFT_SET.m_LIFT_Ctrl_AccRatio),
                     "set_tags": [sg.m_LIFT.m_LIFT_SET.m_LIFT_SET_SetTags[i] for i in range(4)],
                     "update_tags": [sg.m_LIFT.m_LIFT_SET.m_LIFT_SET_UpDateTag[i] for i in range(4)],
                 },
                 "get": {
-                    "current": [self._round_float(sg.m_LIFT.m_LIFT_GET.m_LIFT_GET_CToq[i]) for i in range(2)],
-                    "traj_state": sg.m_LIFT.m_LIFT_GET.m_LIFT_GET_TrajState,
+                    "joint_torque": [self._round_float(sg.m_LIFT.m_LIFT_GET.m_LIFT_FBK_Joint_Tor[i]) for i in range(2)],
+                    "traj_state": sg.m_LIFT.m_LIFT_GET.m_LIFT_FBK_TrajState,
                 },
             },
             "op_set": {
@@ -860,40 +897,38 @@ class GentoRobot:
                 "ret_serial": sg.m_OP_SET.m_OpRetSerial,
             },
         }
-        # Arms
         for arm_idx in range(2):
             arm_sg = sg.m_ARMS[arm_idx]
             arm_data = {
                 "set": {
-                    "imp_type": arm_sg.m_ARM_SET.m_ARM_SET_ImpType,
-                    "vel_ratio": self._round_float(arm_sg.m_ARM_SET.m_ARM_SET_Vel_Ratio),
-                    "acc_ratio": self._round_float(arm_sg.m_ARM_SET.m_ARM_SET_Acc_Ratio),
-                    "joint_k": [self._round_float(arm_sg.m_ARM_SET.m_ARM_SET_Joint_K[i]) for i in range(7)],
-                    "joint_d": [self._round_float(arm_sg.m_ARM_SET.m_ARM_SET_Joint_D[i]) for i in range(7)],
-                    "cart_k": [self._round_float(arm_sg.m_ARM_SET.m_ARM_SET_Cart_K[i]) for i in range(7)],
-                    "cart_d": [self._round_float(arm_sg.m_ARM_SET.m_ARM_SET_Cart_D[i]) for i in range(7)],
-                    "tool_kine": [self._round_float(arm_sg.m_ARM_SET.m_ARM_SET_Tool_Kine[i]) for i in range(6)],
-                    "tool_dyna": [self._round_float(arm_sg.m_ARM_SET.m_ARM_SET_Tool_Dyna[i]) for i in range(10)],
+                    "imp_type": arm_sg.m_ARM_SET.m_ARM_Ctrl_ImpType,
+                    "vel_ratio": self._round_float(arm_sg.m_ARM_SET.m_ARM_Ctrl_VelRatio),
+                    "acc_ratio": self._round_float(arm_sg.m_ARM_SET.m_ARM_Ctrl_AccRatio),
+                    "joint_k": [self._round_float(arm_sg.m_ARM_SET.m_ARM_Ctrl_JointK[i]) for i in range(7)],
+                    "joint_d": [self._round_float(arm_sg.m_ARM_SET.m_ARM_Ctrl_JointD[i]) for i in range(7)],
+                    "cart_k": [self._round_float(arm_sg.m_ARM_SET.m_ARM_Ctrl_CartK[i]) for i in range(7)],
+                    "cart_d": [self._round_float(arm_sg.m_ARM_SET.m_ARM_Ctrl_CartD[i]) for i in range(7)],
+                    "tool_kine": [self._round_float(arm_sg.m_ARM_SET.m_ARM_Ctrl_ToolKine[i]) for i in range(6)],
+                    "tool_dyna": [self._round_float(arm_sg.m_ARM_SET.m_ARM_Ctrl_ToolDyna[i]) for i in range(10)],
                     "set_tags": [arm_sg.m_ARM_SET.m_ARM_SET_SetTags[i] for i in range(16)],
                     "update_tags": [arm_sg.m_ARM_SET.m_ARM_SET_UpDateTag[i] for i in range(16)],
                 },
                 "get": {
-                    "joint_current": [self._round_float(arm_sg.m_ARM_GET.m_ARM_GET_Joint_CToq[i]) for i in range(7)],
-                    "joint_ext_pos": [self._round_float(arm_sg.m_ARM_GET.m_ARM_GET_Joint_PosE[i]) for i in range(7)],
-                    "tip_di": arm_sg.m_ARM_GET.m_ARM_GET_TipDI,
-                    "low_speed_flag": arm_sg.m_ARM_GET.m_ARM_GET_LowSpdFlag,
-                    "traj_state": arm_sg.m_ARM_GET.m_ARM_GET_TrajState,
+                    "joint_torque": [self._round_float(arm_sg.m_ARM_GET.m_ARM_FBK_Joint_Tor[i]) for i in range(7)],
+                    "ext_pos": [self._round_float(arm_sg.m_ARM_GET.m_ARM_FBK_Joint_ExtPos[i]) for i in range(7)],
+                    "tip_di": arm_sg.m_ARM_GET.m_ARM_FBK_Flange_DI,
+                    "low_speed_flag": arm_sg.m_ARM_GET.m_ARM_FBK_LowSpdFlag,
+                    "traj_state": arm_sg.m_ARM_GET.m_ARM_FBK_TrajState,
                 },
             }
             data["arms"].append(arm_data)
-        # Hands (simplified)
         for hand_idx in range(2):
             hand_sg = sg.m_HANDS[hand_idx]
             hand_data = {
                 "set": {
-                    "kp": [hand_sg.m_HAND_SET.m_HAND_SET_KP[i] for i in range(24)],
-                    "kd": [hand_sg.m_HAND_SET.m_HAND_SET_KD[i] for i in range(24)],
-                    "vel": [hand_sg.m_HAND_SET.m_HAND_SET_VEL[i] for i in range(24)],
+                    "kp": [hand_sg.m_HAND_SET.m_HAND_Ctrl_KP[i] for i in range(24)],
+                    "kd": [hand_sg.m_HAND_SET.m_HAND_Ctrl_KD[i] for i in range(24)],
+                    "vel": [hand_sg.m_HAND_SET.m_HAND_Ctrl_Vel[i] for i in range(24)],
                 },
             }
             data["hands"].append(hand_data)
@@ -936,11 +971,9 @@ class GentoRobot:
         return self.dll.FX_L1_Fbk_CurrentState(obj_type)
 
     def get_servo_error_codes(self, obj_type: int) -> Optional[str]:
-        """Get servo error codes with descriptions, return formatted string."""
         arr = (FX_INT32 * 7)()
         with self._lock:
             if self.dll.FX_L1_State_GetServoErrorCode(obj_type, arr):
-                # Determine number of axes
                 if obj_type in (FXObjType.OBJ_ARM0, FXObjType.OBJ_ARM1):
                     num_axes = 7
                 elif obj_type == FXObjType.OBJ_BODY:
@@ -954,7 +987,7 @@ class GentoRobot:
                 axis_names = ["J1", "J2", "J3", "J4", "J5", "J6", "J7"][:num_axes]
                 lines = []
                 for i in range(num_axes):
-                    code_val = arr[i] & 0xFFFF  # take lower 16 bits
+                    code_val = arr[i] & 0xFFFF
                     code_str = f"0x{code_val:04X}"
                     if code_val == 0:
                         desc = "No error"
@@ -970,9 +1003,9 @@ class GentoRobot:
 
     def emergency_stop(self, obj_mask: int) -> int:
         with self._lock:
-            return self.dll.FX_L1_State_EmergencyStop(obj_mask)
+            return self.dll.FX_L1_Runtime_EmergencyStop(obj_mask)
 
-    # ==================== State switching (with timeout) ====================
+    # ==================== State switching ====================
     def switch_to_idle(self, obj_type: int, timeout: int, raise_error: bool = False) -> int:
         with self._lock:
             ret = self.dll.FX_L1_State_SwitchToIdle(obj_type, timeout)
@@ -1086,16 +1119,13 @@ class GentoRobot:
         return (chn.value, bytes(data[:n]))
 
     def terminal_set(self, terminal_type: int, chn_type: int, data) -> bool:
-        # If data is a hex string like "01 06 00 01" or "01060001", convert to bytes
         if isinstance(data, str):
-            # Remove spaces and convert hex string to bytes
             hex_str = data.replace(' ', '')
             if len(hex_str) % 2 != 0:
                 raise ValueError("Hex string must have even length")
             data = bytes.fromhex(hex_str)
         elif not isinstance(data, bytes):
             raise TypeError("data must be bytes or a hex string")
-
         data_len = len(data)
         if data_len > 64:
             raise ValueError("Data too long (max 64 bytes)")
@@ -1126,7 +1156,7 @@ class GentoRobot:
 
     def config_clear_axis_sensor_offset(self, obj_type: int, axis_id: int) -> bool:
         with self._lock:
-            return bool(self.dll.FX_L1_Config_SetAxisSensorOffset(obj_type, axis_id))
+            return bool(self.dll.FX_L1_Config_ClearAxisSensorOffset(obj_type, axis_id))
 
     def config_clear_sensor_offset(self, obj_type: int) -> bool:
         with self._lock:
@@ -1140,7 +1170,6 @@ class GentoRobot:
 
     # ==================== Runtime commands ====================
     def runtime_set_joint_pos_cmd(self, obj_type: int, positions: List[float]) -> bool:
-        # Determine expected number of joints based on object type
         if obj_type in (FXObjType.OBJ_ARM0, FXObjType.OBJ_ARM1):
             expected = 7
         elif obj_type == FXObjType.OBJ_BODY:
@@ -1151,11 +1180,8 @@ class GentoRobot:
             expected = 2
         else:
             raise ValueError(f"Unsupported object type: {obj_type}")
-
         if len(positions) != expected:
             raise ValueError(f"Expected {expected} positions for object type {obj_type}, got {len(positions)}")
-
-        # Pad to 7 elements with zeros
         padded = list(positions) + [0.0] * (7 - expected)
         arr = (FX_DOUBLE * 7)(*padded)
         with self._lock:
@@ -1240,33 +1266,34 @@ class GentoRobot:
             return bool(self.dll.FX_L1_Runtime_SetCartKD(obj_type, k_arr, d_arr))
 
     def runtime_set_tool_k(self, obj_type: int, k: List[float]) -> bool:
-        if len(k) != 7:
-            raise ValueError("k must have 7 elements")
-        k = [max(0, v) for v in k]
-        arr = (FX_DOUBLE * 7)(*k)
+        """Tool offset: [x, y, z, rx, ry, rz] (6 elements)"""
+        if len(k) != 6:
+            raise ValueError("kinematics must have 6 elements (tool offset)")
+        arr = (FX_DOUBLE * 6)(*k)
         with self._lock:
             return bool(self.dll.FX_L1_Runtime_SetToolK(obj_type, arr))
 
     def runtime_set_tool_d(self, obj_type: int, d: List[float]) -> bool:
-        if len(d) != 7:
-            raise ValueError("d must have 7 elements")
-        d = [max(0, v) for v in d]
-        arr = (FX_DOUBLE * 7)(*d)
+        """Tool dynamics: [mass, com_x, com_y, com_z, Ixx, Ixy, Ixz, Iyy, Iyz, Izz] (10 elements)"""
+        if len(d) != 10:
+            raise ValueError("dynamics must have 10 elements (tool dynamics)")
+        arr = (FX_DOUBLE * 10)(*d)
         with self._lock:
             return bool(self.dll.FX_L1_Runtime_SetToolD(obj_type, arr))
 
     def runtime_set_tool_kd(self, obj_type: int, k: List[float], d: List[float]) -> bool:
-        k = [max(0, v) for v in k]
-        d = [max(0, v) for v in d]
-        k_arr = (FX_DOUBLE * 7)(*k)
-        d_arr = (FX_DOUBLE * 7)(*d)
+        if len(k) != 6:
+            raise ValueError("kinematics must have 6 elements (tool offset)")
+        if len(d) != 10:
+            raise ValueError("dynamics must have 10 elements (tool dynamics)")
+        k_arr = (FX_DOUBLE * 6)(*k)
+        d_arr = (FX_DOUBLE * 10)(*d)
         with self._lock:
             return bool(self.dll.FX_L1_Runtime_SetToolKD(obj_type, k_arr, d_arr))
 
     def runtime_set_body_pdp(self, p: List[float]) -> bool:
         if len(p) != 6:
             raise ValueError("p must have 6 elements")
-
         p = [max(0, v) for v in p]
         arr = (FX_DOUBLE * 6)(*p)
         with self._lock:
@@ -1281,6 +1308,8 @@ class GentoRobot:
             return bool(self.dll.FX_L1_Runtime_SetBodyPDD(arr))
 
     def runtime_set_body_pd(self, p: List[float], d: List[float]) -> bool:
+        if len(p) != 6 or len(d) != 6:
+            raise ValueError("p and d must have 6 elements each")
         p = [max(0, v) for v in p]
         d = [max(0, v) for v in d]
         p_arr = (FX_DOUBLE * 6)(*p)
@@ -1297,145 +1326,368 @@ class GentoRobot:
             return self.dll.FX_L1_Runtime_StopTraj(obj_mask)
 
     # ==================== Kinematics ====================
-    def init_kinematics(self, config_path: str) -> bool:
-        """
-        Initialize kinematics for both arms using the same configuration file.
-        Args:
-            config_path: Full path to the kinematics configuration file (e.g., "./ccs_m6_40.MvKDCfg")
-        Returns:
-            True if both arms initialized successfully, False otherwise.
-        """
+    # ---------- Private handle management ----------
+    def _ensure_kin_handle(self):
+        """Create kinematics handle if not already created."""
         if self._kin_handle is None:
-            self._kin_handle = self.kinematics_create()
-        if self._kin_handle is None:
-            return False
-        ok0 = self.kinematics_init_single_arm(self._kin_handle, config_path, 0)
-        ok1 = self.kinematics_init_single_arm(self._kin_handle, config_path, 1)
-        return ok0 and ok1
+            self._kin_handle = self.dll.FX_L1_Kinematics_Create()
+            if self._kin_handle is None:
+                raise RuntimeError("Failed to create kinematics handle")
 
-    def forward_kinematics_single(self, arm_idx: int, joints: List[float]) -> Optional[List[float]]:
-        """Compute forward kinematics for a single arm. Must call init_kinematics first."""
+    def _destroy_kin_handle(self):
+        """Destroy kinematics handle if it exists."""
+        if self._kin_handle:
+            self.dll.FX_L1_Kinematics_Destroy(self._kin_handle)
+            self._kin_handle = None
+
+    # ---------- Initialization ----------
+    def init_single_arm(self, robot_serial: int, robot_type: int,
+                        DH: List[List[float]],  # 8x4
+                        PNVA: List[List[float]],  # 8x4
+                        BOUND: List[List[float]],  # 4x3
+                        GRV: List[float],  # 3
+                        MASS: List[float],  # 7
+                        MCP: List[List[float]],  # 7x3
+                        I: List[List[float]]  # 7x6
+                        ) -> bool:
+        self._ensure_kin_handle()
+        type_var = FX_INT32(robot_type)
+
+        # DH: 8x4
+        dh_arr = ((FX_DOUBLE * 4) * 8)()
+        for i in range(8):
+            for j in range(4):
+                dh_arr[i][j] = DH[i][j]
+
+        # PNVA: 8x4
+        pnva_arr = ((FX_DOUBLE * 4) * 8)()
+        for i in range(8):
+            for j in range(4):
+                pnva_arr[i][j] = PNVA[i][j]
+
+        # BOUND: 4x3
+        bound_arr = ((FX_DOUBLE * 3) * 4)()
+        for i in range(4):
+            for j in range(3):
+                bound_arr[i][j] = BOUND[i][j]
+
+        grv_arr = (FX_DOUBLE * 3)(*GRV)
+        mass_arr = (FX_DOUBLE * 7)(*MASS)
+
+        # MCP: 7x3
+        mcp_arr = ((FX_DOUBLE * 3) * 7)()
+        for i in range(7):
+            for j in range(3):
+                mcp_arr[i][j] = MCP[i][j]
+
+        # I: 7x6
+        i_arr = ((FX_DOUBLE * 6) * 7)()
+        for i in range(7):
+            for j in range(6):
+                i_arr[i][j] = I[i][j]
+
+        with self._lock:
+            ret = self.dll.FX_L1_Kinematics_InitSingleArm(
+                self._kin_handle, robot_serial,
+                byref(type_var), dh_arr, pnva_arr, bound_arr,
+                grv_arr, mass_arr, mcp_arr, i_arr
+            )
+        return ret == 0
+
+    def init_dual_arm(self,
+                      robot_types: List[int],  # length 2
+                      DH: List[List[List[float]]],  # 2 x 8 x 4
+                      PNVA: List[List[List[float]]],  # 2 x 8 x 4
+                      BOUND: List[List[List[float]]]  # 2 x 4 x 3
+                      ) -> bool:
+        self._ensure_kin_handle()
+        type_arr = (FX_INT32 * 2)(*robot_types)
+
+        # DH: 2x8x4
+        dh_arr = (((FX_DOUBLE * 4) * 8) * 2)()
+        for arm in range(2):
+            for i in range(8):
+                for j in range(4):
+                    dh_arr[arm][i][j] = DH[arm][i][j]
+
+        # PNVA: 2x8x4
+        pnva_arr = (((FX_DOUBLE * 4) * 8) * 2)()
+        for arm in range(2):
+            for i in range(8):
+                for j in range(4):
+                    pnva_arr[arm][i][j] = PNVA[arm][i][j]
+
+        # BOUND: 2x4x3
+        bound_arr = (((FX_DOUBLE * 3) * 4) * 2)()
+        for arm in range(2):
+            for i in range(4):
+                for j in range(3):
+                    bound_arr[arm][i][j] = BOUND[arm][i][j]
+
+        with self._lock:
+            ret = self.dll.FX_L1_Kinematics_InitDualArm(
+                self._kin_handle, type_arr, dh_arr, pnva_arr, bound_arr
+            )
+        return ret == 0
+
+    # ---------- Forward kinematics ----------
+    def forward_kinematics(self, arm_idx: int, joints: List[float]) -> Optional[List[float]]:
+        """Compute forward kinematics. Returns 4x4 matrix as list of 16 floats."""
         if len(joints) != 7:
             raise ValueError("joints must have 7 elements")
-        if self._kin_handle is None:
-            raise RuntimeError("Kinematics not initialized. Call init_kinematics() first.")
-        return self.kinematics_forward(self._kin_handle, arm_idx, joints)
-
-    def kinematics_create(self) -> c_void_p:
-        return self.dll.FX_L1_Kinematics_Create()
-
-    def kinematics_destroy(self, handle):
-        with self._lock:
-            self.dll.FX_L1_Kinematics_Destroy(handle)
-
-    def kinematics_log_switch(self, handle, on: int):
-        with self._lock:
-            self.dll.FX_L1_Kinematics_LogSwitch(handle, on)
-
-    def kinematics_init_single_arm(self, handle, env_path: str, robot_serial: int) -> bool:
-        with self._lock:
-            return bool(self.dll.FX_L1_Kinematics_InitSingleArm(handle, env_path.encode('utf-8'), robot_serial))
-
-    def kinematics_init_dual_arm(self, handle, env_path: str) -> bool:
-        with self._lock:
-            return bool(self.dll.FX_L1_Kinematics_InitDualArm(handle, env_path.encode('utf-8')))
-
-    def kinematics_forward(self, handle, robot_serial: int, joints: List[float]) -> Optional[List[float]]:
-        if len(joints) != 7:
-            raise ValueError("joints must have 7 elements")
+        self._ensure_kin_handle()
         j_arr = (FX_DOUBLE * 7)(*joints)
         pose_arr = (FX_DOUBLE * 16)()
         with self._lock:
-            if self.dll.FX_L1_Kinematics_ForwardKinematics(handle, robot_serial, j_arr, pose_arr):
+            ret = self.dll.FX_L1_Kinematics_ForwardKinematics(self._kin_handle, arm_idx, j_arr, pose_arr)
+            if ret == 0:
                 return [pose_arr[i] for i in range(16)]
         return None
 
-    def kinematics_jacobian(self, handle, robot_serial: int, joints: List[float]) -> Optional[List[float]]:
+    # ---------- Jacobian ----------
+    def jacobian(self, arm_idx: int, joints: List[float]) -> Optional[List[float]]:
+        """Compute Jacobian matrix (6x7) as list of 42 floats."""
         if len(joints) != 7:
             raise ValueError("joints must have 7 elements")
+        self._ensure_kin_handle()
         j_arr = (FX_DOUBLE * 7)(*joints)
         jac_arr = (FX_DOUBLE * 42)()
         with self._lock:
-            if self.dll.FX_L1_Kinematics_Jacobian(handle, robot_serial, j_arr, jac_arr):
+            ret = self.dll.FX_L1_Kinematics_Jacobian(self._kin_handle, arm_idx, j_arr, jac_arr)
+            if ret == 0:
                 return [jac_arr[i] for i in range(42)]
         return None
 
-    def kinematics_inverse(self, robot_serial: int, target_pose: List[float],
-                           initial_joints: List[float], max_iter: int = 100, tol: float = 1e-6) -> Optional[List[float]]:
+    # ---------- Inverse kinematics ----------
+    def inverse_kinematics(self, arm_idx: int, target_pose: List[float],
+                           ref_joints: List[float], max_iter: int = 100, tol: float = 1e-6) -> Optional[List[float]]:
+        """
+        Solve inverse kinematics.
+        target_pose: [x, y, z, rx, ry, rz] (angles in degrees)
+        ref_joints: initial guess (7 values)
+        Returns joint angles list of 7 floats on success.
+        """
         if len(target_pose) != 6:
             raise ValueError("target_pose must have 6 elements")
-        if len(initial_joints) != 7:
-            raise ValueError("initial_joints must have 7 elements")
-        if self._kin_handle is None:
-            raise RuntimeError("Kinematics not initialized. Call init_kinematics() first.")
+        if len(ref_joints) != 7:
+            raise ValueError("ref_joints must have 7 elements")
+        self._ensure_kin_handle()
         params = FX_InvKineSolverParams()
-        params.robot_serial = robot_serial
+        params.robot_serial = arm_idx
         for i in range(6):
             params.target_pose[i] = target_pose[i]
         for i in range(7):
-            params.initial_joints[i] = initial_joints[i]
+            params.ref_joints[i] = ref_joints[i]
         params.max_iter = max_iter
         params.tol = tol
         with self._lock:
-            if self.dll.FX_L1_Kinematics_InverseKinematics(self._kin_handle, robot_serial, byref(params)):
-                return [params.solution_joints[i] for i in range(7)]
+            ret = self.dll.FX_L1_Kinematics_InverseKinematics(self._kin_handle, arm_idx, byref(params))
+            if ret == 0 and params.solution_valid:
+                return [params.solution[i] for i in range(7)]
         return None
 
-    def kinematics_get_joint_limits(self, handle, robot_serial: int):
-        robot_type = FX_INT32()
-        pos_limit = (FX_DOUBLE * 7)()
-        neg_limit = (FX_DOUBLE * 7)()
-        vel_limit = (FX_DOUBLE * 7)()
-        acc_limit = (FX_DOUBLE * 7)()
+    # ---------- Body kinematics ----------
+    def set_body_condition(self,
+                           std_body: List[float], k_body: List[float],
+                           std_left_len: float, k_left: float,
+                           std_right_len: float, k_right: float) -> bool:
+        """Set MAX body kinematics parameters."""
+        if len(std_body) != 3 or len(k_body) != 3:
+            raise ValueError("std_body and k_body must have 3 elements each")
+        self._ensure_kin_handle()
+        std_arr = (FX_DOUBLE * 3)(*std_body)
+        k_arr = (FX_DOUBLE * 3)(*k_body)
         with self._lock:
-            if self.dll.FX_L1_Kinematics_GetJointLimits(handle, robot_serial, byref(robot_type),
-                                                         pos_limit, neg_limit, vel_limit, acc_limit):
-                return {
-                    'robot_type': robot_type.value,
-                    'pos_limit': [pos_limit[i] for i in range(7)],
-                    'neg_limit': [neg_limit[i] for i in range(7)],
-                    'vel_limit': [vel_limit[i] for i in range(7)],
-                    'acc_limit': [acc_limit[i] for i in range(7)]
-                }
-        return None
+            ret = self.dll.FX_L1_Kinematics_SetBodyCondition(
+                self._kin_handle, std_arr, k_arr,
+                std_left_len, k_left, std_right_len, k_right
+            )
+        return ret == 0
 
-    def kinematics_body_forward(self, handle, body_joints: List[float]) -> Optional[Tuple[List[float], List[float]]]:
+    def body_forward(self, body_joints: List[float]) -> Optional[Tuple[List[float], List[float]]]:
         """
-        Compute forward kinematics for the body (two legs).
-        Args:
-            handle: kinematics handle
-            body_joints: 6 joint positions (J1~J6)
-        Returns:
-            (left_flange_pose, right_flange_pose) each as 4x4 matrix (16 floats)
-            or None if failed.
+        Body forward kinematics.
+        Returns two 4x4 matrices (left_shoulder, right_shoulder) each as list of 16 floats.
         """
         if len(body_joints) != 3:
-            raise ValueError("body_joints must have 6 elements")
+            raise ValueError("body_joints must have 3 elements")
+        self._ensure_kin_handle()
         j_arr = (FX_DOUBLE * 3)(*body_joints)
         left_pose = (FX_DOUBLE * 16)()
         right_pose = (FX_DOUBLE * 16)()
         with self._lock:
-            if self.dll.FX_L1_Kinematics_BodyForward(handle, j_arr, left_pose, right_pose):
+            ret = self.dll.FX_L1_Kinematics_BodyForward(self._kin_handle, j_arr, left_pose, right_pose)
+            if ret == 0:
                 return ([left_pose[i] for i in range(16)], [right_pose[i] for i in range(16)])
         return None
 
-    def body_forward_kinematics(self, body_joints: List[float]) -> Optional[Tuple[List[float], List[float]]]:
+    def body_forward_xyzabc(self, body_joints: List[float]) -> Optional[Tuple[List[float], List[float]]]:
         """
-        High‑level Body forward kinematics.
-        Returns (left_xyzabc, right_xyzabc) as 6‑element lists.
+        Body forward kinematics returning XYZABC poses (6 values each).
         """
-        if self._kin_handle is None:
-            raise RuntimeError("Kinematics not initialized. Call init_kinematics() first.")
-        result = self.kinematics_body_forward(self._kin_handle, body_joints)
-        if result is None:
+        matrices = self.body_forward(body_joints)
+        if matrices is None:
             return None
-        left_matrix, right_matrix = result
+        left_matrix, right_matrix = matrices
         left_xyzabc = self.matrix2xyzabc(left_matrix)
         right_xyzabc = self.matrix2xyzabc(right_matrix)
         return left_xyzabc, right_xyzabc
 
-    # ==================== Helpers ====================
+    def calc_body_position(self, left_tcp: List[float], right_tcp: List[float]) -> Optional[List[float]]:
+        """Compute body joint values from dual-arm TCP positions."""
+        if len(left_tcp) != 3 or len(right_tcp) != 3:
+            raise ValueError("left_tcp and right_tcp must have 3 elements each")
+        self._ensure_kin_handle()
+        left_arr = (FX_DOUBLE * 3)(*left_tcp)
+        right_arr = (FX_DOUBLE * 3)(*right_tcp)
+        body_joints = (FX_DOUBLE * 3)()
+        with self._lock:
+            ret = self.dll.FX_L1_Kinematics_CalcBodyPosition(self._kin_handle, left_arr, right_arr, body_joints)
+            if ret == 0:
+                return [body_joints[i] for i in range(3)]
+        return None
+
+    def calc_body_position_with_ref(self, ref_body_joints: List[float],
+                                    left_tcp: List[float], right_tcp: List[float]) -> Optional[List[float]]:
+        """Compute body joint values with a reference body pose."""
+        if len(ref_body_joints) != 3 or len(left_tcp) != 3 or len(right_tcp) != 3:
+            raise ValueError("All input arrays must have 3 elements")
+        self._ensure_kin_handle()
+        ref_arr = (FX_DOUBLE * 3)(*ref_body_joints)
+        left_arr = (FX_DOUBLE * 3)(*left_tcp)
+        right_arr = (FX_DOUBLE * 3)(*right_tcp)
+        body_joints = (FX_DOUBLE * 3)()
+        with self._lock:
+            ret = self.dll.FX_L1_Kinematics_CalcBodyPositionWithRef(
+                self._kin_handle, ref_arr, left_arr, right_arr, body_joints
+            )
+            if ret == 0:
+                return [body_joints[i] for i in range(3)]
+        return None
+
+    # ---------- Motion planning ----------
+    def plan_joint_move(self, arm_idx: int,
+                        start_joints: List[float], end_joints: List[float],
+                        vel_ratio: float, acc_ratio: float,
+                        point_set_handle, point_num_ptr) -> bool:
+        """Plan a joint-space MoveJ path."""
+        if len(start_joints) != 7 or len(end_joints) != 7:
+            raise ValueError("start_joints and end_joints must have 7 elements")
+        self._ensure_kin_handle()
+        start_arr = (FX_DOUBLE * 7)(*start_joints)
+        end_arr = (FX_DOUBLE * 7)(*end_joints)
+        with self._lock:
+            ret = self.dll.FX_L1_Kinematics_PlanJointMove(
+                self._kin_handle, arm_idx, start_arr, end_arr,
+                vel_ratio, acc_ratio, point_set_handle, point_num_ptr
+            )
+        return ret == 0
+
+    def plan_linear_move(self, arm_idx: int,
+                         start_xyzabc: List[float], end_xyzabc: List[float],
+                         ref_joints: List[float],
+                         vel: float, acc: float, freq: int,
+                         point_set_handle, point_num_ptr) -> bool:
+        """Plan a Cartesian linear MoveL path."""
+        if len(start_xyzabc) != 6 or len(end_xyzabc) != 6:
+            raise ValueError("start_xyzabc and end_xyzabc must have 6 elements")
+        if len(ref_joints) != 7:
+            raise ValueError("ref_joints must have 7 elements")
+        self._ensure_kin_handle()
+        start_arr = (FX_DOUBLE * 6)(*start_xyzabc)
+        end_arr = (FX_DOUBLE * 6)(*end_xyzabc)
+        ref_arr = (FX_DOUBLE * 7)(*ref_joints)
+        with self._lock:
+            ret = self.dll.FX_L1_Kinematics_PlanLinearMove(
+                self._kin_handle, arm_idx, start_arr, end_arr, ref_arr,
+                vel, acc, freq, point_set_handle, point_num_ptr
+            )
+        return ret == 0
+
+    def plan_linear_keep_joints(self, arm_idx: int,
+                                start_joints: List[float], end_joints: List[float],
+                                vel: float, acc: float, freq: int,
+                                point_set_handle, point_num_ptr) -> bool:
+        """Plan a linear path while keeping joint posture."""
+        if len(start_joints) != 7 or len(end_joints) != 7:
+            raise ValueError("start_joints and end_joints must have 7 elements")
+        self._ensure_kin_handle()
+        start_arr = (FX_DOUBLE * 7)(*start_joints)
+        end_arr = (FX_DOUBLE * 7)(*end_joints)
+        with self._lock:
+            ret = self.dll.FX_L1_Kinematics_PlanLinearKeepJoints(
+                self._kin_handle, arm_idx, start_arr, end_arr,
+                vel, acc, freq, point_set_handle, point_num_ptr
+            )
+        return ret == 0
+
+    # Multi-segment linear motion planning
+    def plan_linear_move_multi_points_set_start(self, arm_idx: int,
+                                                ref_joints: List[float],
+                                                start_xyzabc: List[float], end_xyzabc: List[float],
+                                                allow_range: float, zsp_type: int,
+                                                zsp_para: List[float],
+                                                vel: float, acc: float, freq: int) -> bool:
+        """Start a multi-segment Cartesian MoveL planning sequence."""
+        if len(ref_joints) != 7:
+            raise ValueError("ref_joints must have 7 elements")
+        if len(start_xyzabc) != 6 or len(end_xyzabc) != 6:
+            raise ValueError("start_xyzabc and end_xyzabc must have 6 elements")
+        if len(zsp_para) != 6:
+            raise ValueError("zsp_para must have 6 elements")
+        self._ensure_kin_handle()
+        ref_arr = (FX_DOUBLE * 7)(*ref_joints)
+        start_arr = (FX_DOUBLE * 6)(*start_xyzabc)
+        end_arr = (FX_DOUBLE * 6)(*end_xyzabc)
+        zsp_arr = (FX_DOUBLE * 6)(*zsp_para)
+        with self._lock:
+            ret = self.dll.FX_L1_Kinematics_PlanLinearMove_MultiPoints_SetStart(
+                self._kin_handle, arm_idx, ref_arr, start_arr, end_arr,
+                allow_range, zsp_type, zsp_arr, vel, acc, freq
+            )
+        return ret == 0
+
+    def plan_linear_move_multi_points_set_next(self, arm_idx: int,
+                                               next_xyzabc: List[float],
+                                               allow_range: float, zsp_type: int,
+                                               zsp_para: List[float],
+                                               vel: float, acc: float) -> bool:
+        """Append the next segment to a multi-segment Cartesian MoveL path."""
+        if len(next_xyzabc) != 6:
+            raise ValueError("next_xyzabc must have 6 elements")
+        if len(zsp_para) != 6:
+            raise ValueError("zsp_para must have 6 elements")
+        self._ensure_kin_handle()
+        next_arr = (FX_DOUBLE * 6)(*next_xyzabc)
+        zsp_arr = (FX_DOUBLE * 6)(*zsp_para)
+        with self._lock:
+            ret = self.dll.FX_L1_Kinematics_PlanLinearMove_MultiPoints_SetNextPoints(
+                self._kin_handle, arm_idx, next_arr,
+                allow_range, zsp_type, zsp_arr, vel, acc
+            )
+        return ret == 0
+
+    def plan_linear_move_multi_points_get_path(self, point_set_handle, point_num_ptr) -> bool:
+        """Export the planned path of a multi-segment Cartesian MoveL sequence."""
+        self._ensure_kin_handle()
+        with self._lock:
+            ret = self.dll.FX_L1_Kinematics_PlanLinearMove_MultiPoints_GetPath(
+                self._kin_handle, point_set_handle, point_num_ptr
+            )
+        return ret == 0
+
+    def plan_dual_arm_fixed_body(self, params_ptr, left_point_set, right_point_set, point_num_ptr) -> bool:
+        """Plan a synchronized dual-arm linear path with fixed body."""
+        self._ensure_kin_handle()
+        with self._lock:
+            ret = self.dll.FX_L1_Kinematics_PlanDualArmFixedBody(
+                self._kin_handle, params_ptr, left_point_set, right_point_set, point_num_ptr
+            )
+        return ret == 0
+
+    # ---------- Helper conversions ----------
     def xyzabc2matrix(self, xyzabc: List[float]) -> List[float]:
+        """Convert XYZABC pose to 4x4 transformation matrix (16 floats, row-major)."""
         if len(xyzabc) != 6:
             raise ValueError("xyzabc must have 6 elements")
         arr_in = (FX_DOUBLE * 6)(*xyzabc)
@@ -1445,6 +1697,7 @@ class GentoRobot:
         return [arr_out[i] for i in range(16)]
 
     def matrix2xyzabc(self, matrix: List[float]) -> List[float]:
+        """Convert 4x4 transformation matrix to XYZABC pose (angles in degrees)."""
         if len(matrix) != 16:
             raise ValueError("matrix must have 16 elements")
         arr_in = (FX_DOUBLE * 16)(*matrix)
@@ -1453,7 +1706,7 @@ class GentoRobot:
             self.dll.FX_L1_Matrix2XYZABC(arr_in, arr_out)
         return [arr_out[i] for i in range(6)]
 
-    # ==================== PointSet ====================
+    # ---------- PointSet ----------
     def pointset_create(self) -> c_void_p:
         with self._lock:
             return self.dll.FX_L1_CPointSet_Create()
@@ -1472,14 +1725,24 @@ class GentoRobot:
     def pointset_get_point(self, pset, index: int) -> Optional[List[float]]:
         ptr = self.dll.FX_L1_CPointSet_OnGetPoint(pset, index)
         if ptr:
-            # Assume point is an array of doubles, length depends on context
-            return [ptr[i] for i in range(7)]  # adjust length as needed
+            return [ptr[i] for i in range(7)]
         return None
 
     def pointset_set_point(self, pset, point: List[float]) -> bool:
         arr = (FX_DOUBLE * len(point))(*point)
         with self._lock:
             return bool(self.dll.FX_L1_CPointSet_OnSetPoint(pset, arr))
+
+    def pointset_append_point(self, pset, point: List[float]) -> bool:
+        arr = (FX_DOUBLE * len(point))(*point)
+        with self._lock:
+            return bool(self.dll.FX_L1_CPointSet_OnAppendPoint(pset, arr))
+
+    # ---------- Cleanup ----------
+    def cleanup(self):
+        """Clean up all resources including kinematics handle."""
+        self._destroy_kin_handle()
+        self.dll.RobotCache_Cleanup()
 
     @staticmethod
     def _get_switch_error_msg(error_code: int) -> str:
@@ -1513,17 +1776,8 @@ class GentoRobot:
         with self._lock:
             return bool(self.dll.FX_L1_RecvFile(local_path.encode('utf-8'), remote_path.encode('utf-8')))
 
-    # ==================== Cleanup ====================
-    def cleanup(self):
-        self.dll.RobotCache_Cleanup()
 
-    def __del__(self):
-        try:
-            self.cleanup()
-        except:
-            pass
-
-
+# ==================== RobotDataManager (unchanged) ====================
 class RobotDataManager:
     def __init__(self, robot):
         self.robot = robot
@@ -1531,8 +1785,6 @@ class RobotDataManager:
         self._latest_sg = None
         self._running = True
         self._lock = threading.Lock()
-
-        # 启动两个后台线程
         self._rt_thread = threading.Thread(target=self._fetch_rt, daemon=True)
         self._sg_thread = threading.Thread(target=self._fetch_sg, daemon=True)
         self._rt_thread.start()
@@ -1547,7 +1799,7 @@ class RobotDataManager:
             except:
                 with self._lock:
                     self._latest_rt = None
-            time.sleep(0.001)   # 1 ms
+            time.sleep(0.001)
 
     def _fetch_sg(self):
         while self._running:
@@ -1558,7 +1810,7 @@ class RobotDataManager:
             except:
                 with self._lock:
                     self._latest_sg = None
-            time.sleep(0.002)   # 2 ms
+            time.sleep(0.002)
 
     @property
     def latest_rt(self):
@@ -1575,8 +1827,7 @@ class RobotDataManager:
         self._rt_thread.join(timeout=1.0)
         self._sg_thread.join(timeout=1.0)
 
-
-if __name__ =="__main__":
+if __name__ == "__main__":
     robot = GentoRobot()
     version = robot.link(6, 6, 7, 190, log_switch=1)
     if version <= 0:

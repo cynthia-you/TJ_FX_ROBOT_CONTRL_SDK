@@ -1,0 +1,20 @@
+
+//  L1   windows下c++调用源码测试控制库，不编译为库 
+ g++ -w main.cpp ./L0Control/*.cpp ./FileClient/*.cpp ./Kinematics/*.cpp ./L1Robot/L1Robot.cpp -I./Common -I./Kinematics -I./FileClient -I./L0Control -I./L1Robot  -o main.exe -lws2_32 -lwinmm -DCMPL_WIN -DL1_SDK_EXPORTS -DCONTROL_SDK_API
+
+
+//  L1   LINUX 下c++调用源码测试控制库，不编译为库 
+g++ -w main.cpp ./L0Control/*.cpp ./FileClient/*.cpp ./L1Robot/L1Robot.cpp -I./FileClient -I./Common -I./L0Control -I./L1Robot -o main -DCMPL_LIN -lrt -DL1_SDK_EXPORTS
+
+
+//L1 dll （windows）
+g++ ./L0Control/*.cpp ./FileClient/*.cpp ./Kinematics/*.cpp ./L1Robot/L1Robot.cpp -Wall -O2 -shared -I./Common -I./Kinematics -I./FileClient -I./L0Control -I./L1Robot -o libGentoSDKPY.dll -DL1_SDK_EXPORTS  -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+
+
+// L1 SO  (*.so only used under compile meachine)
+g++ ./L0Control/*.cpp ./FileClient/*.cpp ./Kinematics/*.cpp ./L1Robot/L1Robot.cpp -Wall -O2 -shared -fPIC -I./Common -I./Kinematics -I./FileClient -I./L0Control -I./L1Robot -o libGentoSDKPY.so -DL1_SDK_EXPORTS -DCMPL_LIN -lrt -lpthread
+
+
+
+//L1 SO  all x86_86 LINUX
+g++ ./L0Control/*.cpp ./FileClient/*.cpp ./Kinematics/*.cpp ./L1Robot/L1Robot.cpp -Wall -O2 -shared -fPIC -march=x86-64 -mtune=generic -I./Common -I./Kinematics -I./FileClient -I./L0Control -I./L1Robot -o libGentoSDKPY.so -DL1_SDK_EXPORTS -DCMPL_LIN -lrt -lpthread -Wl,--no-undefined

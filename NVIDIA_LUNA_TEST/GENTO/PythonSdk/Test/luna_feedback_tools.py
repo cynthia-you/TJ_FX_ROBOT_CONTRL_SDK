@@ -21,6 +21,14 @@ def safe_get(data, path, default=None):
     return cur
 
 
+def safe_get_multi(data, paths, default=None):
+    for path in paths:
+        value = safe_get(data, path, None)
+        if value is not None:
+            return value
+    return default
+
+
 def safe_vec(values, dim, fill_value=NAN):
     out = [fill_value] * int(dim)
     if not isinstance(values, (list, tuple)):
@@ -126,12 +134,71 @@ def extract_group_feedback(rt_data, sg_data, group_type, group_index):
 
     if group_type == "arm":
         idx = int(group_index)
-        q_rt_cmd = safe_vec(safe_get(rt_data, ["arms", idx, "cmd", "joint_pos"], None), 7)
-        q_fb = safe_vec(safe_get(rt_data, ["arms", idx, "fb", "joint_pos"], None), 7)
-        q_fb_vel = safe_vec(safe_get(rt_data, ["arms", idx, "fb", "joint_vel"], None), 7)
-        fb_torque = safe_vec(safe_get(rt_data, ["arms", idx, "fb", "joint_torque"], None), 7)
-        ctoq = safe_vec(safe_get(sg_data, ["arms", idx, "get", "joint_current"], None), 7)
-        ext_pos = safe_vec(safe_get(sg_data, ["arms", idx, "get", "joint_ext_pos"], None), 7)
+        q_rt_cmd = safe_vec(
+            safe_get_multi(
+                rt_data,
+                [
+                    ["arms", idx, "cmd", "joint_pos"],
+                ],
+                None,
+            ),
+            7,
+        )
+        q_fb = safe_vec(
+            safe_get_multi(
+                rt_data,
+                [
+                    ["arms", idx, "fb", "joint_pos"],
+                    ["arms", idx, "fb", "fb_pos"],
+                ],
+                None,
+            ),
+            7,
+        )
+        q_fb_vel = safe_vec(
+            safe_get_multi(
+                rt_data,
+                [
+                    ["arms", idx, "fb", "joint_vel"],
+                    ["arms", idx, "fb", "fb_vel"],
+                ],
+                None,
+            ),
+            7,
+        )
+        fb_torque = safe_vec(
+            safe_get_multi(
+                rt_data,
+                [
+                    ["arms", idx, "fb", "joint_torque"],
+                    ["arms", idx, "fb", "fb_sensor"],
+                ],
+                None,
+            ),
+            7,
+        )
+        ctoq = safe_vec(
+            safe_get_multi(
+                sg_data,
+                [
+                    ["arms", idx, "get", "joint_current"],
+                    ["arms", idx, "get", "joint_torque"],
+                ],
+                None,
+            ),
+            7,
+        )
+        ext_pos = safe_vec(
+            safe_get_multi(
+                sg_data,
+                [
+                    ["arms", idx, "get", "joint_ext_pos"],
+                    ["arms", idx, "get", "ext_pos"],
+                ],
+                None,
+            ),
+            7,
+        )
         state = safe_get(rt_data, ["arms", idx, "state", "cur"], None)
         err_code = safe_get(rt_data, ["arms", idx, "state", "err"], None)
 
@@ -151,7 +218,17 @@ def extract_group_feedback(rt_data, sg_data, group_type, group_index):
         q_fb = safe_vec(safe_get(rt_data, ["head", "fb_pos"], None), 2)
         q_fb_vel = [NAN, NAN]
         fb_torque = [NAN, NAN]
-        ctoq = safe_vec(safe_get(sg_data, ["head", "get", "current"], None), 2)
+        ctoq = safe_vec(
+            safe_get_multi(
+                sg_data,
+                [
+                    ["head", "get", "current"],
+                    ["head", "get", "joint_torque"],
+                ],
+                None,
+            ),
+            2,
+        )
         ext_pos = safe_vec(safe_get(sg_data, ["head", "get", "ext_pos"], None), 2)
         state = safe_get(rt_data, ["head", "state", "cur"], None)
         err_code = safe_get(rt_data, ["head", "state", "err"], None)
@@ -169,16 +246,36 @@ def extract_group_feedback(rt_data, sg_data, group_type, group_index):
         q_rt_cmd_full = safe_vec(safe_get(rt_data, ["body", "cmd_pos"], None), 6)
         q_fb_full = safe_vec(safe_get(rt_data, ["body", "fb_pos"], None), 6)
         q_fb_vel_full = safe_vec(safe_get(rt_data, ["body", "fb_vel"], None), 6)
-        fb_torque_full = safe_vec(safe_get(rt_data, ["body", "fb_torque"], None), 6)
-        ctoq_full = safe_vec(safe_get(sg_data, ["body", "get", "current"], None), 6)
+        fb_torque_full = safe_vec(
+            safe_get_multi(
+                rt_data,
+                [
+                    ["body", "fb_torque"],
+                    ["body", "fb_sensor"],
+                ],
+                None,
+            ),
+            6,
+        )
+        ctoq_full = safe_vec(
+            safe_get_multi(
+                sg_data,
+                [
+                    ["body", "get", "current"],
+                    ["body", "get", "joint_torque"],
+                ],
+                None,
+            ),
+            6,
+        )
         ext_pos_full = safe_vec(safe_get(sg_data, ["body", "get", "ext_pos"], None), 6)
 
-        q_rt_cmd = q_rt_cmd_full[:3]
-        q_fb = q_fb_full[:3]
-        q_fb_vel = q_fb_vel_full[:3]
-        fb_torque = fb_torque_full[:3]
-        ctoq = ctoq_full[:3]
-        ext_pos = ext_pos_full[:3]
+        q_rt_cmd = q_rt_cmd_full[:6]
+        q_fb = q_fb_full[:6]
+        q_fb_vel = q_fb_vel_full[:6]
+        fb_torque = fb_torque_full[:6]
+        ctoq = ctoq_full[:6]
+        ext_pos = ext_pos_full[:6]
         state = safe_get(rt_data, ["body", "state", "cur"], None)
         err_code = safe_get(rt_data, ["body", "state", "err"], None)
 
@@ -220,7 +317,7 @@ def append_luna_feedback_sample(
     send_ts_perf_s,
     test_name=None,
 ):
-    joint_dim_map = {"arm": 7, "head": 2, "body": 3}
+    joint_dim_map = {"arm": 7, "head": 2, "body": 6}
     joint_dim = joint_dim_map[group_type]
 
     q_cmd = safe_vec(q_cmd_deg, joint_dim)

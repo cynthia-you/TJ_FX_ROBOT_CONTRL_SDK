@@ -32,8 +32,11 @@ ROBOT_IP = (6, 6, 7, 190)
 LOG_SWITCH = 0
 ALL_OBJ_MASK = 0x1F
 
-VEL_RATIO = 40
-ACC_RATIO = 40
+INIT_VEL_RATIO = 10
+INIT_ACC_RATIO = 10
+
+TEST_VEL_RATIO = 100
+TEST_ACC_RATIO = 100
 
 DT = 0.01
 TIME_PER_JOINT = 10.0
@@ -42,7 +45,7 @@ SIN_FREQ_HZ = 0.5
 POLL_PERIOD_S = 0.005
 STALE_THRESHOLD_S = 0.100
 MOVE_TO_DEFAULT_WAIT_S = 3.0
-RESTORE_BETWEEN_JOINT_S = 0.8
+RESTORE_BETWEEN_JOINT_S = 2.8
 
 # Per-joint amplitudes in degrees.
 # Arm amplitudes apply to both left_arm and right_arm.
@@ -51,7 +54,7 @@ ARM_J2_AMP_DEG = 10.0
 ARM_J3_AMP_DEG = 10.0
 ARM_J4_AMP_DEG = 10.0
 ARM_J5_AMP_DEG = 10.0
-ARM_J6_AMP_DEG = 10.0
+ARM_J6_AMP_DEG = 30.0
 ARM_J7_AMP_DEG = 10.0
 
 HEAD_J1_AMP_DEG = 10.0
@@ -60,6 +63,9 @@ HEAD_J2_AMP_DEG = 10.0
 BODY_J1_AMP_DEG = 5.0
 BODY_J2_AMP_DEG = 5.0
 BODY_J3_AMP_DEG = 5.0
+BODY_J4_AMP_DEG = 5.0
+BODY_J5_AMP_DEG = 5.0
+BODY_J6_AMP_DEG = 5.0
 
 ARM_JOINT_AMP_DEG = [
     ARM_J1_AMP_DEG,
@@ -78,6 +84,9 @@ BODY_JOINT_AMP_DEG = [
     BODY_J1_AMP_DEG,
     BODY_J2_AMP_DEG,
     BODY_J3_AMP_DEG,
+    BODY_J4_AMP_DEG,
+    BODY_J5_AMP_DEG,
+    BODY_J6_AMP_DEG,
 ]
 
 GROUP_TESTS = [
@@ -106,7 +115,7 @@ GROUP_TESTS = [
         "group_name": "body",
         "group_type": "body",
         "group_index": None,
-        "joint_count": 3,
+        "joint_count": 6,
         "amp_deg": BODY_JOINT_AMP_DEG,
     },
 ]
@@ -208,10 +217,10 @@ def main():
             raise RuntimeError("failed: robot connection failed (RT frame not refreshing)")
         print("success: robot connected")
 
-        ret_a = robot.switch_to_position_mode(FXObjType.OBJ_ARM0, 1000, VEL_RATIO, ACC_RATIO)
-        ret_b = robot.switch_to_position_mode(FXObjType.OBJ_ARM1, 1000, VEL_RATIO, ACC_RATIO)
-        ret_h = robot.switch_to_position_mode(FXObjType.OBJ_HEAD, 1000, VEL_RATIO, ACC_RATIO)
-        ret_body = robot.switch_to_position_mode(FXObjType.OBJ_BODY, 1000, VEL_RATIO, ACC_RATIO)
+        ret_a = robot.switch_to_position_mode(FXObjType.OBJ_ARM0, 3000, INIT_VEL_RATIO, INIT_ACC_RATIO)
+        ret_b = robot.switch_to_position_mode(FXObjType.OBJ_ARM1, 3000, INIT_VEL_RATIO, INIT_ACC_RATIO)
+        ret_h = robot.switch_to_position_mode(FXObjType.OBJ_HEAD, 3000, INIT_VEL_RATIO, INIT_ACC_RATIO)
+        ret_body = robot.switch_to_position_mode(FXObjType.OBJ_BODY, 3000, INIT_VEL_RATIO, INIT_ACC_RATIO)
         if ret_a != 0 or ret_b != 0 or ret_h != 0 or ret_body != 0:
             raise RuntimeError(
                 f"switch_to_position_mode failed, ret_a={ret_a}, ret_b={ret_b}, "
@@ -234,6 +243,16 @@ def main():
             stage="before sending default poses",
         )
         time.sleep(MOVE_TO_DEFAULT_WAIT_S)
+
+        ret_a = robot.switch_to_position_mode(FXObjType.OBJ_ARM0, 3000, TEST_VEL_RATIO, TEST_ACC_RATIO)
+        ret_b = robot.switch_to_position_mode(FXObjType.OBJ_ARM1, 3000, TEST_VEL_RATIO, TEST_ACC_RATIO)
+        ret_h = robot.switch_to_position_mode(FXObjType.OBJ_HEAD, 3000, TEST_VEL_RATIO, TEST_ACC_RATIO)
+        ret_body = robot.switch_to_position_mode(FXObjType.OBJ_BODY, 3000, TEST_VEL_RATIO, TEST_ACC_RATIO)
+        if ret_a != 0 or ret_b != 0 or ret_h != 0 or ret_body != 0:
+            raise RuntimeError(
+                f"switch_to_position_mode failed before test, ret_a={ret_a}, ret_b={ret_b}, "
+                f"ret_h={ret_h}, ret_body={ret_body}"
+            )
 
         collector = start_luna_feedback_collector(
             robot=robot,
@@ -258,7 +277,8 @@ def main():
                 next_deadline = time.perf_counter()
 
                 while True:
-                    sin_term = math.sin(2.0 * math.pi * count * DT * SIN_FREQ_HZ)
+                    fade_in = min(1.0, count * DT / 2.0) #starting more smoothly to avoid abrupt changes at the beginning of the test
+                    sin_term = fade_in * math.sin(2.0 * math.pi * count * DT * SIN_FREQ_HZ)
 
                     left_pos = LEFT_DEFAULT_POS.copy()
                     right_pos = RIGHT_DEFAULT_POS.copy()
@@ -284,7 +304,7 @@ def main():
 
                     elif group_name == "body":
                         body_pos[joint_idx] += amp * sin_term
-                        q_cmd_active_group = body_pos[:3]
+                        q_cmd_active_group = body_pos[:6]
 
                     else:
                         raise RuntimeError(f"Unsupported group_name: {group_name}")
@@ -345,8 +365,8 @@ def main():
             dt=DT,
             sin_freq_hz=SIN_FREQ_HZ,
             time_per_joint=TIME_PER_JOINT,
-            vel_ratio=VEL_RATIO,
-            acc_ratio=ACC_RATIO,
+            vel_ratio=TEST_VEL_RATIO,
+            acc_ratio=TEST_ACC_RATIO,
             poll_period_s=POLL_PERIOD_S,
             stale_threshold_s=STALE_THRESHOLD_S,
         )
@@ -366,6 +386,16 @@ def main():
 
         if robot is not None:
             try:
+                ret_a = robot.switch_to_position_mode(FXObjType.OBJ_ARM0, 3000, INIT_VEL_RATIO, INIT_ACC_RATIO)
+                ret_b = robot.switch_to_position_mode(FXObjType.OBJ_ARM1, 3000, INIT_VEL_RATIO, INIT_ACC_RATIO)
+                ret_h = robot.switch_to_position_mode(FXObjType.OBJ_HEAD, 3000, INIT_VEL_RATIO, INIT_ACC_RATIO)
+                ret_body = robot.switch_to_position_mode(FXObjType.OBJ_BODY, 3000, INIT_VEL_RATIO, INIT_ACC_RATIO)
+                if ret_a != 0 or ret_b != 0 or ret_h != 0 or ret_body != 0:
+                    raise RuntimeError(
+                        f"switch_to_position_mode failed before final restore, ret_a={ret_a}, ret_b={ret_b}, "
+                        f"ret_h={ret_h}, ret_body={ret_body}"
+                    )
+
                 send_all_pos_cmds(
                     robot,
                     LEFT_DEFAULT_POS,
