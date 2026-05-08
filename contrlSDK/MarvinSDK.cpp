@@ -94,12 +94,12 @@ void OnGetServoErr_A(long ErrCode[7])
 	memset(name, 0, 30);
 	for (long i = 0; i < 7; i++)
 	{
-		sprintf(name, "SERVO0ERR%d", i);
+		sprintf(name, "SERVO0ERR%ld", i);
 		CRobot::OnGetIntPara(name, &ErrCode[i]);
 	}
 	if (local_log_tag == true)
 	{
-		printf("[Marvin SDK]: A arm Servo error code=[%d,%d,%d,%d,%d,%d,%d],\n", ErrCode[0], ErrCode[1], ErrCode[2], ErrCode[3], ErrCode[4], ErrCode[5], ErrCode[6]);
+		printf("[Marvin SDK]: A arm Servo error code=[%ld,%ld,%ld,%ld,%ld,%ld,%ld],\n", ErrCode[0], ErrCode[1], ErrCode[2], ErrCode[3], ErrCode[4], ErrCode[5], ErrCode[6]);
 	}
 }
 
@@ -110,12 +110,12 @@ void OnGetServoErr_B(long ErrCode[7])
 
 	for (long i = 0; i < 7; i++)
 	{
-		sprintf(name, "SERVO1ERR%d", i);
+		sprintf(name, "SERVO1ERR%ld", i);
 		CRobot::OnGetIntPara(name, &ErrCode[i]);
 	}
 	if (local_log_tag == true)
 	{
-		printf("[Marvin SDK]: B arm Servo error code=[%d,%d,%d,%d,%d,%d,%d],\n", ErrCode[0], ErrCode[1], ErrCode[2], ErrCode[3], ErrCode[4], ErrCode[5], ErrCode[6]);
+		printf("[Marvin SDK]: B arm Servo error code=[%ld,%ld,%ld,%ld,%ld,%ld,%ld],\n", ErrCode[0], ErrCode[1], ErrCode[2], ErrCode[3], ErrCode[4], ErrCode[5], ErrCode[6]);
 	}
 }
 
@@ -189,7 +189,7 @@ bool OnSendPVT_A(char *local_file, long serial)
 {
 	if (serial < 0 || serial >= 100)
 	{
-		printf("[ERROR] OnSendPVT_A: Invalid serial  %d (valid range: 0~99)n", serial);
+		printf("[ERROR] OnSendPVT_A: Invalid serial  %ld (valid range: 0~99)n", serial);
 		return false;
 	}
 	return CRobot::OnSendPVT_A(local_file, serial);
@@ -199,7 +199,7 @@ bool OnSendPVT_B(char *local_file, long serial)
 {
 	if (serial < 0 || serial >= 100)
 	{
-		printf("[ERROR] OnSendPVT_B: Invalid serial  %d (valid range: 0~99)n", serial);
+		printf("[ERROR] OnSendPVT_B: Invalid serial  %ld (valid range: 0~99)n", serial);
 		return false;
 	}
 	return CRobot::OnSendPVT_B(local_file, serial);
@@ -529,12 +529,12 @@ bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], doub
 	}
 	if (fcType != 0)
 	{
-		printf("[WARNING] OnSetForceCtrPara_A: fcType set to 0\n", fcType);
+		printf("[WARNING] OnSetForceCtrPara_A: fcType set %d to 0\n", fcType);
 		fcType = 0;
 	}
 	if (isnan(fcAdjLmt) || isinf(fcAdjLmt))
 	{
-		printf("[ERROR] OnSetForceCtrPara_A: fcAdjLmt %d is invalid (NaN or Inf)\n");
+		printf("[ERROR] OnSetForceCtrPara_A: fcAdjLmt %lf is invalid (NaN or Inf)\n",fcAdjLmt);
 		return false;
 	}
 	return CRobot::OnSetForceCtrPara_A(fcType, fxDir, fcCtrlPara, fcAdjLmt);
@@ -562,7 +562,7 @@ bool OnSetForceCmd_A(double force)
 {
 	if (isnan(force) || isinf(force))
 	{
-		printf("[ERROR] OnSetForceCmd_A: force %d is invalid (NaN or Inf)\n");
+		printf("[ERROR] OnSetForceCmd_A: force %lf is invalid (NaN or Inf)\n",force);
 		return false;
 	}
 	return CRobot::OnSetForceCmd_A(force);
@@ -793,12 +793,12 @@ bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], doub
 	}
 	if (fcType != 0)
 	{
-		printf("[WARNING] OnSetForceCtrPara_B: fcType set to 0\n", fcType);
+		printf("[WARNING] OnSetForceCtrPara_B: fcType set %d to 0\n", fcType);
 		fcType = 0;
 	}
 	if (isnan(fcAdjLmt) || isinf(fcAdjLmt))
 	{
-		printf("[ERROR] OnSetForceCtrPara_B: fcAdjLmt %d is invalid (NaN or Inf)\n");
+		printf("[ERROR] OnSetForceCtrPara_B: fcAdjLmt %lf is invalid (NaN or Inf)\n",fcAdjLmt);
 		return false;
 	}
 	return CRobot::OnSetForceCtrPara_B(fcType, fxDir, fcCtrlPara, fcAdjLmt);
@@ -826,7 +826,7 @@ bool OnSetForceCmd_B(double force)
 {
 	if (isnan(force) || isinf(force))
 	{
-		printf("[ERROR] OnSetForceCmd_B: force %d is invalid (NaN or Inf)\n");
+		printf("[ERROR] OnSetForceCmd_B: force %lf is invalid (NaN or Inf)\n",force);
 		return false;
 	}
 	return CRobot::OnSetForceCmd_B(force);
@@ -882,22 +882,22 @@ bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], double vel_r
 	}
 	if (vel_ratio < 0)
 	{
-		printf("[ERROR] OnSetPlnJoint_A: Invalid vel_ratio %d (valid range: 0~1)\n", vel_ratio);
+		printf("[ERROR] OnSetPlnJoint_A: Invalid vel_ratio %lf (valid range: 0~1)\n", vel_ratio);
 		return false;
 	}
 	if (vel_ratio > 1)
 	{
-		printf("[WARNING] OnSetPlnJoint_A: Invalid vel_ratio %d (valid range: 0~1), set vel_ratio to 1\n", vel_ratio);
+		printf("[WARNING] OnSetPlnJoint_A: Invalid vel_ratio %lf (valid range: 0~1), set vel_ratio to 1\n", vel_ratio);
 		vel_ratio = 1.0;
 	}
 	if (acc_ratio < 0)
 	{
-		printf("[ERROR] OnSetPlnJoint_A: Invalid acc_ratio %d (valid range: 0~1)\n", acc_ratio);
+		printf("[ERROR] OnSetPlnJoint_A: Invalid acc_ratio %lf (valid range: 0~1)\n", acc_ratio);
 		return false;
 	}
 	if (acc_ratio > 1)
 	{
-		printf("[WARNING] OnSetPlnJoint_A: Invalid acc_ratio %d (valid range: 0~1), set acc_ratio to 1\n", acc_ratio);
+		printf("[WARNING] OnSetPlnJoint_A: Invalid acc_ratio %lf (valid range: 0~1), set acc_ratio to 1\n", acc_ratio);
 		acc_ratio = 1.0;
 	}
 	return CRobot::OnSetPlnJoint_A(start_joints, stop_joints, vel_ratio, acc_ratio);
@@ -928,22 +928,22 @@ bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_r
 	}
 	if (vel_ratio < 0)
 	{
-		printf("[ERROR] OnSetPlnJoint_B: Invalid vel_ratio %d (valid range: 0~1)\n", vel_ratio);
+		printf("[ERROR] OnSetPlnJoint_B: Invalid vel_ratio %lf (valid range: 0~1)\n", vel_ratio);
 		return false;
 	}
 	if (vel_ratio > 1)
 	{
-		printf("[WARNING] OnSetPlnJoint_B: Invalid vel_ratio %d (valid range: 0~1), set vel_ratio to 1\n", vel_ratio);
+		printf("[WARNING] OnSetPlnJoint_B: Invalid vel_ratio %lf (valid range: 0~1), set vel_ratio to 1\n", vel_ratio);
 		vel_ratio = 1.0;
 	}
 	if (acc_ratio < 0)
 	{
-		printf("[ERROR] OnSetPlnJoint_B: Invalid acc_ratio %d (valid range: 0~1)\n", acc_ratio);
+		printf("[ERROR] OnSetPlnJoint_B: Invalid acc_ratio %lf (valid range: 0~1)\n", acc_ratio);
 		return false;
 	}
 	if (acc_ratio > 1)
 	{
-		printf("[WARNING] OnSetPlnJoint_B: Invalid acc_ratio %d (valid range: 0~1), set acc_ratio to 1\n", acc_ratio);
+		printf("[WARNING] OnSetPlnJoint_B: Invalid acc_ratio %lf (valid range: 0~1), set acc_ratio to 1\n", acc_ratio);
 		acc_ratio = 1.0;
 	}
 	return CRobot::OnSetPlnJoint_B(start_joints, stop_joints, vel_ratio, acc_ratio);
@@ -988,7 +988,7 @@ long OnGetChDataA(unsigned char data_ptr[256], long *ret_ch)
 {
 	if (*ret_ch != 1 && *ret_ch != 2 && *ret_ch != 3)
 	{
-		printf("[ERROR] OnGetChDataA: Invalid ret_ch number %d (valid range: 1~3)\n", ret_ch);
+		printf("[ERROR] OnGetChDataA: Invalid ret_ch number %ld (valid range: 1~3)\n", *ret_ch);
 		return false;
 	}
 	return CRobot::OnGetChDataA(data_ptr, ret_ch);
@@ -1003,7 +1003,7 @@ bool OnSetChDataA(unsigned char data_ptr[256], long size_int, long set_ch)
 	}
 	if (set_ch != 1 && set_ch != 2 && set_ch != 3)
 	{
-		printf("[ERROR] OnSetChDataA: Invalid set_ch number %d (valid range: 1~3)\n", set_ch);
+		printf("[ERROR] OnSetChDataA: Invalid set_ch number %ld (valid range: 1~3)\n", set_ch);
 		return false;
 	}
 	return CRobot::OnSetChDataA(data_ptr, size_int, set_ch);
@@ -1013,7 +1013,7 @@ long OnGetChDataB(unsigned char data_ptr[256], long *ret_ch)
 {
 	if (*ret_ch != 1 && *ret_ch != 2 && *ret_ch != 3)
 	{
-		printf("[ERROR] OnGetChDataB: Invalid ret_ch number %d (valid range: 1~3)\n", ret_ch);
+		printf("[ERROR] OnGetChDataB: Invalid ret_ch number %ld (valid range: 1~3)\n", *ret_ch);
 		return false;
 	}
 	return CRobot::OnGetChDataB(data_ptr, ret_ch);
@@ -1028,7 +1028,7 @@ bool OnSetChDataB(unsigned char data_ptr[256], long size_int, long set_ch)
 	}
 	if (set_ch != 1 && set_ch != 2 && set_ch != 3)
 	{
-		printf("[ERROR] OnSetChDataB: Invalid set_ch number %d (valid range: 1~3)\n", set_ch);
+		printf("[ERROR] OnSetChDataB: Invalid set_ch number %ld (valid range: 1~3)\n", set_ch);
 		return false;
 	}
 	return CRobot::OnSetChDataB(data_ptr, size_int, set_ch);
@@ -1099,6 +1099,7 @@ bool CheckArmError()
 		printf("[ERROR] CheckArmError: Arm B error still present, arm_error_code = %d, arm_state = %d\n", arm_error_b, arm_state_b);
 		return false;
 	}
+	return true;
 }
 
 bool CheckServoError()
@@ -1109,8 +1110,8 @@ bool CheckServoError()
 	char name_b[30];
 	for (long i = 0; i < 7; i++)
 	{
-		sprintf(name_a, "SERVO0ERR%d", i);
-		sprintf(name_b, "SERVO1ERR%d", i);
+		sprintf(name_a, "SERVO0ERR%ld", i);
+		sprintf(name_b, "SERVO1ERR%ld", i);
 		CRobot::OnGetIntPara(name_a, &errCode_a[i]);
 		CRobot::OnGetIntPara(name_b, &errCode_b[i]);
 	}
@@ -1143,8 +1144,8 @@ bool CheckServoError()
 	}
 	for (long i = 0; i < 7; i++)
 	{
-		sprintf(name_a, "SERVO0ERR%d", i);
-		sprintf(name_b, "SERVO1ERR%d", i);
+		sprintf(name_a, "SERVO0ERR%ld", i);
+		sprintf(name_b, "SERVO1ERR%ld", i);
 		CRobot::OnGetIntPara(name_a, &errCode_a[i]);
 		CRobot::OnGetIntPara(name_b, &errCode_b[i]);
 	}
@@ -1161,14 +1162,15 @@ bool CheckServoError()
 	}
 	if (!a_ok)
 	{
-		printf("[ERROR] CheckServoError: Arm A servo error still present, Servo error code=[%d,%d,%d,%d,%d,%d,%d],\n", errCode_a[0], errCode_a[1], errCode_a[2], errCode_a[3], errCode_a[4], errCode_a[5], errCode_a[6]);
+		printf("[ERROR] CheckServoError: Arm A servo error still present, Servo error code=[%ld,%ld,%ld,%ld,%ld,%ld,%ld],\n", errCode_a[0], errCode_a[1], errCode_a[2], errCode_a[3], errCode_a[4], errCode_a[5], errCode_a[6]);
 		return false;
 	}
 	else if (!b_ok)
 	{
-		printf("[ERROR] CheckServoError: Arm B servo error still present, Servo error code=[%d,%d,%d,%d,%d,%d,%d],\n", errCode_b[0], errCode_b[1], errCode_b[2], errCode_b[3], errCode_b[4], errCode_b[5], errCode_b[6]);
+		printf("[ERROR] CheckServoError: Arm B servo error still present, Servo error code=[%ld,%ld,%ld,%ld,%ld,%ld,%ld],\n", errCode_b[0], errCode_b[1], errCode_b[2], errCode_b[3], errCode_b[4], errCode_b[5], errCode_b[6]);
 		return false;
 	}
+	return true;
 }
 
 bool ValidateArm(char arm)
@@ -1339,7 +1341,7 @@ bool SendPVT(FX_CHAR arm, char *local_file, long serial)
 	}
 	if (serial < 0 || serial >= 100)
 	{
-		printf("[ERROR] SendPVT: Invalid serial  %d (valid range: 0~99)n", serial);
+		printf("[ERROR] SendPVT: Invalid serial  %ld (valid range: 0~99)n", serial);
 		return false;
 	}
 	if (arm == 'A')
@@ -1391,7 +1393,7 @@ bool RunPVT(FX_CHAR arm, int id)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] RunPVT: arm '%c' is not stationary, switch to position failed.\n", arm);
 			return false;
@@ -1420,7 +1422,7 @@ bool RunPVT(FX_CHAR arm, int id)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] RunPVT: arm '%c' is not stationary, switch to position failed.\n", arm);
 			return false;
@@ -1581,6 +1583,7 @@ bool SetTool(FX_CHAR arm, double kinePara[6], double dynPara[10])
 		}
 		return verified;
 	}
+	return true;
 }
 
 bool SetJointMode(FX_CHAR arm, int velRatio, int AccRatio)
@@ -1636,7 +1639,7 @@ bool SetJointMode(FX_CHAR arm, int velRatio, int AccRatio)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetJointMode: arm '%c' is not stationary, switch to position failed.\n", arm);
 			return false;
@@ -1694,7 +1697,7 @@ bool SetJointMode(FX_CHAR arm, int velRatio, int AccRatio)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetJointMode: arm '%c' is not stationary, switch to position failed.\n", arm);
 			return false;
@@ -1822,7 +1825,7 @@ bool SetImpJointMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], doubl
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetImpJointMode: arm '%c' is not stationary, switch to joint impedance mode failed.\n", arm);
 			return false;
@@ -1873,7 +1876,7 @@ bool SetImpJointMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], doubl
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetImpJointMode: arm '%c' is not stationary, switch to joint impedance mode failed.\n", arm);
 			return false;
@@ -2018,7 +2021,7 @@ bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetImpCartMode: arm '%c' is not stationary, switch to cartesian impedance mode failed.\n", arm);
 			return false;
@@ -2091,7 +2094,7 @@ bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetImpCartMode: arm '%c' is not stationary, switch to cartesian impedance mode failed.\n", arm);
 			return false;
@@ -2176,7 +2179,7 @@ bool SetImpForceMode(FX_CHAR arm, double fxDir[6], double fcAdjLmt)
 	}
 	if (isnan(fcAdjLmt) || isinf(fcAdjLmt))
 	{
-		printf("[ERROR] SetImpForceMode: arm '%c' fcAdjLmt %d is invalid (NaN or Inf)\n", arm);
+		printf("[ERROR] SetImpForceMode: arm '%c' fcAdjLmt %lf is invalid (NaN or Inf)\n", arm, fcAdjLmt);
 		return false;
 	}
 	if (!CheckArmError())
@@ -2202,7 +2205,7 @@ bool SetImpForceMode(FX_CHAR arm, double fxDir[6], double fcAdjLmt)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetImpForceMode: arm '%c' is not stationary, switch to force impedance mode failed.\n", arm);
 			return false;
@@ -2251,7 +2254,7 @@ bool SetImpForceMode(FX_CHAR arm, double fxDir[6], double fcAdjLmt)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetImpForceMode: arm '%c' is not stationary, switch to force impedance mode failed.\n", arm);
 			return false;
@@ -2323,7 +2326,7 @@ bool SetJointDrag(FX_CHAR arm)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetJointDrag: arm '%c' is not stationary, switch to joint drag failed.\n", arm);
 			return false;
@@ -2372,7 +2375,7 @@ bool SetJointDrag(FX_CHAR arm)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetJointDrag: arm '%c' is not stationary, switch to joint drag failed.\n", arm);
 			return false;
@@ -2400,7 +2403,7 @@ bool SetJointDrag(FX_CHAR arm)
 			}
 			SLEEP(SLEEP_TIME);
 			CRobot::OnClearSet();
-			CRobot::OnSetDragSpace_A(1);
+			CRobot::OnSetDragSpace_B(1);
 			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetJointDrag: arm '%c' already in joint impedance state, but set joint drag failed, timeout.\n", arm);
@@ -2468,7 +2471,7 @@ bool SetCartDrag(FX_CHAR arm, FX_CHAR type)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetJointDrag: arm '%c' is not stationary, switch to joint drag failed.\n", arm);
 			return false;
@@ -2517,7 +2520,7 @@ bool SetCartDrag(FX_CHAR arm, FX_CHAR type)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] SetJointDrag: arm '%c' is not stationary, switch to joint drag failed.\n", arm);
 			return false;
@@ -2581,7 +2584,7 @@ bool ExitDrag(FX_CHAR arm)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] ExitDrag: arm '%c' is not stationary, cannot exit drag.\n", arm);
 			return false;
@@ -2607,7 +2610,7 @@ bool ExitDrag(FX_CHAR arm)
 			}
 			SLEEP(1);
 		}
-		if (state_tag = 0)
+		if (state_tag == 0)
 		{
 			printf("[ERROR] ExitDrag: arm '%c' is not stationary, cannot exit drag.\n", arm);
 			return false;
@@ -2676,7 +2679,7 @@ bool SetForceCmd(FX_CHAR arm, double force)
 	}
 	if (isnan(force) || isinf(force))
 	{
-		printf("[ERROR] SetForceCmd: force %d is invalid (NaN or Inf)\n");
+		printf("[ERROR] SetForceCmd: force %lf is invalid (NaN or Inf)\n",force);
 		return false;
 	}
 	if (arm == 'A')
@@ -2738,22 +2741,22 @@ bool RunPlnJoint(FX_CHAR arm, double start_joints[7], double stop_joints[7], dou
 	}
 	if (vel_ratio < 0)
 	{
-		printf("[ERROR] RunPlnJoint: Invalid vel_ratio %d (valid range: 0~1)\n", vel_ratio);
+		printf("[ERROR] RunPlnJoint: Invalid vel_ratio %lf (valid range: 0~1)\n", vel_ratio);
 		return false;
 	}
 	if (vel_ratio > 1)
 	{
-		printf("[WARNING] RunPlnJoint: Invalid vel_ratio %d (valid range: 0~1), set vel_ratio to 1\n", vel_ratio);
+		printf("[WARNING] RunPlnJoint: Invalid vel_ratio %lf (valid range: 0~1), set vel_ratio to 1\n", vel_ratio);
 		vel_ratio = 1.0;
 	}
 	if (acc_ratio < 0)
 	{
-		printf("[ERROR] RunPlnJoint: Invalid acc_ratio %d (valid range: 0~1)\n", acc_ratio);
+		printf("[ERROR] RunPlnJoint: Invalid acc_ratio %lf (valid range: 0~1)\n", acc_ratio);
 		return false;
 	}
 	if (acc_ratio > 1)
 	{
-		printf("[WARNING] RunPlnJoint: Invalid acc_ratio %d (valid range: 0~1), set acc_ratio to 1\n", acc_ratio);
+		printf("[WARNING] RunPlnJoint: Invalid acc_ratio %lf (valid range: 0~1), set acc_ratio to 1\n", acc_ratio);
 		acc_ratio = 1.0;
 	}
 	int get_vel = 0;
@@ -3052,7 +3055,7 @@ long GetChData(FX_CHAR arm, unsigned char data_ptr[256], long *ret_ch)
 	}
 	if (*ret_ch != 1 && *ret_ch != 2 && *ret_ch != 3)
 	{
-		printf("[ERROR] GetChData: arm '%c' Invalid ret_ch number %d (valid range: 1~3)\n", arm, ret_ch);
+		printf("[ERROR] GetChData: arm '%c' Invalid ret_ch number %ld (valid range: 1~3)\n", arm, *ret_ch);
 		return false;
 	}
 	if (arm == 'A')
@@ -3079,7 +3082,7 @@ long SetChData(FX_CHAR arm, unsigned char data_ptr[256], long size_int, long set
 	}
 	if (set_ch != 1 && set_ch != 2 && set_ch != 3)
 	{
-		printf("[ERROR] SetChData: Invalid set_ch number %d (valid range: 1~3)\n", set_ch);
+		printf("[ERROR] SetChData: Invalid set_ch number %ld (valid range: 1~3)\n", set_ch);
 		return false;
 	}
 	if (arm == 'A')

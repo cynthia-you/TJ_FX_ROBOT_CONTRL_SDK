@@ -5,8 +5,9 @@
 #ifdef _WIN32
 #define FX_DLL_EXPORT __declspec(dllexport)
 #elif defined(__linux__)
-#define FX_DLL_EXPORT
+#define FX_DLL_EXPORT __attribute__((visibility("default")))
 #endif
+
 #ifdef __cplusplus
 extern "C"
 {
