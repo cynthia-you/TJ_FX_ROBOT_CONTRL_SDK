@@ -1249,6 +1249,8 @@ bool Connect(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_swt
 	}
 	else
 	{
+		std::cout << "Please check if the ctrlsys version is greater than 100341 first.\n"
+				  << std::endl;
 		std::cerr << "[ERROR]:robot connection failed\n"
 				  << std::endl;
 		return false;
