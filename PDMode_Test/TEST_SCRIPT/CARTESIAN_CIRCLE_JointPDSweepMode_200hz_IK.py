@@ -12,6 +12,23 @@ Requested workflow implemented by this script:
 8) Solve IK for points and execute at 200Hz, 18s(default), 4s per lap (joint-impedance mode)
 9) MOVLA to first circle point, execute circle, MOVLA back to default
 10) Finally servo-off and release robot connection
+
+
+
+
+To use sweep_kd mode,
+Terminal
+python CARTESIAN_CIRCLE_JointPDSweepMode_200hz_IK.py --sweep_kd
+Only statics csv and json are given in this mode
+
+if
+python CARTESIAN_CIRCLE_JointPDSweepMode_200hz_IK.py
+Then the program will run default K D test and generate analyzing plots.
+
+
+
+Suggestion:
+K under 20 is recommended, performance will be better if D is tuned together with K, and D around 0.2 seems good starting point for most joints. But optimal values may vary based on specific robot and task requirements, so experimentation is key.
 """
 
 import argparse
@@ -1520,6 +1537,7 @@ def enter_joint_impedance_mode(
     acc_ratio: int,
     joint_k: List[float],
     joint_d: List[float],
+    ctrl_hz: int,
 ) -> None:
     robot.clear_set()
     robot.set_vel_acc(arm=arm, velRatio=int(vel_ratio), AccRatio=int(acc_ratio))
@@ -1540,6 +1558,25 @@ def enter_joint_impedance_mode(
                 robot.set_impedance_type(arm, 1)
             except Exception:
                 pass
+
+    vel_est_step_ms = max(1, int(round(1000.0 / max(float(ctrl_hz), 1.0))))
+    if hasattr(robot, "set_vel_est_step"):
+        vel_est_ok = True
+        try:
+            vel_est_ok = bool(robot.set_vel_est_step(arm=arm, time=vel_est_step_ms))
+        except TypeError:
+            try:
+                vel_est_ok = bool(robot.set_vel_est_step(arm, vel_est_step_ms))
+            except Exception:
+                vel_est_ok = False
+        except Exception:
+            vel_est_ok = False
+
+        if not vel_est_ok:
+            print(f"[warn] set_vel_est_step failed (arm={arm}, time_ms={vel_est_step_ms})")
+    else:
+        print("[warn] set_vel_est_step not available in current SDK wrapper")
+
     robot.send_cmd()
     time.sleep(0.2)
 
@@ -2251,6 +2288,7 @@ def run_one_kd_trial(
             acc_ratio=args.acc_ratio,
             joint_k=[float(v) for v in joint_k],
             joint_d=[float(v) for v in joint_d],
+            ctrl_hz=int(args.ctrl_hz),
         )
 
         runtime_result = execute_timed_joint_trajectory(
@@ -2787,6 +2825,7 @@ def main() -> int:
                 acc_ratio=args.acc_ratio,
                 joint_k=single_run_k,
                 joint_d=single_run_d,
+                ctrl_hz=int(args.ctrl_hz),
             )
 
             print("[step6+8] high precision timer + sleep-until + 200Hz control")
