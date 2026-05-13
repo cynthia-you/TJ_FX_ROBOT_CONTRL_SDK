@@ -847,6 +847,14 @@ class Marvin_Robot:
             raise RuntimeError("setPln_Cart failed")
         return success
 
+    def set_vel_est_step(self,arm:str, time:int):
+        '''设置PD控制速度前馈 轨迹发送周期  输入单位： ms   小于1 则不添加速度前馈'''
+        self.robot.FX_OnSetVelEstStep.argtypes = [ctypes.c_char,ctypes.c_long]
+        self.robot.FX_OnSetVelEstStep.restype = ctypes.c_bool
+        time_long = ctypes.c_long(time)
+        return self.robot.FX_OnSetVelEstStep(arm.encode('ascii'),time_long)
+
+
     def clear_485_cache(self,arm:str):
         '''清空发送缓存
         :param arm: 机械手臂ID “A” OR “B”
@@ -2021,6 +2029,13 @@ class Concise_Marvin_Robot:
         time.sleep(1)
         tool_result = read_csv_file_to_float_strict(local_path, expected_columns=16)
         return tool_result
+
+    def set_vel_est_step(self,arm:str, time:int):
+        '''设置PD控制速度前馈 轨迹发送周期  输入单位： ms   小于1 则不添加速度前馈'''
+        self.robot.FX_OnSetVelEstStep.argtypes = [ctypes.c_char,ctypes.c_long]
+        self.robot.FX_OnSetVelEstStep.restype = ctypes.c_bool
+        time_long = ctypes.c_long(time)
+        return self.robot.FX_OnSetVelEstStep(arm.encode('ascii'),time_long)
 
     def help(self, method_name: str = None) -> None:
         """
