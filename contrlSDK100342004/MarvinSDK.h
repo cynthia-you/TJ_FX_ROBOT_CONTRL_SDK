@@ -192,6 +192,7 @@ extern "C"
 	FX_DLL_EXPORT long OnSetSendWaitResponse(long time_out);
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 	// pln
 	// 关节空间PLN方式发送指令
 	FX_DLL_EXPORT bool OnInitPlnLmt(char *path);
@@ -301,6 +302,7 @@ extern "C"
 	// 设置指定手臂的力值：arm:"A" "B"  两种字符是许可值; force: 力，单位：牛
 	FX_DLL_EXPORT bool SetForceCmd(FX_CHAR arm, double force);
 
+
 	// 关节空间规划初始化，只需初始化一次
 	FX_DLL_EXPORT bool PlnInit(char *path);
 	// 关节空间下从当前点规划方式运行到目标点
@@ -341,11 +343,12 @@ extern "C"
 	// 设置指定手臂下使能/复位。arm:"A" "B"  两种字符是许可值
 	FX_DLL_EXPORT bool Disable(FX_CHAR arm);
 
+	// 设置PD控制速度前馈 轨迹发送周期  输入单位： ms   小于1 则不添加速度前馈
+	FX_DLL_EXPORT bool FX_OnSetVelEstStep(FX_CHAR arm, long step);
+
 	// 接口内部检查用
 	bool ValidateArm(char arm);
 
-	//设置PD控制速度前馈 轨迹发送周期  输入单位： ms   小于1 则不添加速度前馈  
-	FX_DLL_EXPORT bool FX_OnSetVelEstStep(FX_CHAR arm, long step);
 #ifdef __cplusplus
 }
 #endif
