@@ -1063,6 +1063,14 @@ class Concise_Marvin_Robot:
         self.robot.OnGetBuf.argtypes = [ctypes.POINTER(DCSS)]
         self.robot.OnGetBuf.restype = ctypes.c_bool
 
+        # CheckArmError
+        self.robot.CheckArmError.argtypes = []
+        self.robot.CheckArmError.restype = ctypes.c_bool
+
+        # CheckServoError
+        self.robot.CheckServoError.argtypes = []
+        self.robot.CheckServoError.restype = ctypes.c_bool
+
         # ServoReset
         self.robot.ServoReset.argtypes = [ctypes.c_char, ctypes.c_int]
         self.robot.ServoReset.restype = None
@@ -1261,9 +1269,15 @@ class Concise_Marvin_Robot:
             print(f"[ERROR] subscribe failed: {e}")
             return None
 
+    def check_arms_error(self)->bool:
+        return self.robot.CheckArmError()
+
+    def check_servo_error(self)->bool:
+        return self.robot.CheckServoError()
+
     def check_error_and_clear(self):
         '''检查是否有机械臂错误和伺服错，有错则清错 ，一般用于连接机器人时检查使用，以及切换状态不成功时使用'''
-        if not self.robot.CheckArmError() and not self.robot.CheckServoError():
+        if not self.check_arms_error() and not self.check_servo_error():
             return False
         else:
             return False
