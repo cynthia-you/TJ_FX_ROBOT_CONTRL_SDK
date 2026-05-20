@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "MarvinSDK.h"
 
 static bool local_log_tag = true;

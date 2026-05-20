@@ -151,6 +151,9 @@ protected:
 	FX_BOOL m_LinkTag;
 	FX_BOOL old_serial_tag;
 
+	long       m_Arm0PosCmdSendSerial;
+	long       m_Arm1PosCmdSendSerial;
+
 
 #ifdef CMPL_WIN
 	MMRESULT m_TimeEventID;

@@ -285,6 +285,8 @@ bool CRobot::OnOpenShareCh(char *shm_name)
 }
 CRobot::CRobot()
 {
+	m_Arm0PosCmdSendSerial = 7;
+	m_Arm1PosCmdSendSerial = 7;
 	m_share_ch_tag = false;
 	m_send_lock = false;
 	m_ch_send_a_tag = false;
@@ -845,7 +847,7 @@ long CRobot::OnWriteIntFloat(unsigned char ins,int intvalue, int size, double *d
 
 	FX_INT32 *ipdata = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen + 5];
 	*ipdata = intvalue;
-	FX_FLOAT *pdata = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen + 5+4];
+	FX_FLOAT *pdata = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen + 5+sizeof(FX_INT32)];
 
 	long i;
 	for (i = 0; i < size; i++)
@@ -1794,7 +1796,14 @@ bool CRobot::OnSetJointCmdPos_A(double joint[7])
 	data[4] = joint[4];
 	data[5] = joint[5];
 	data[6] = joint[6];
-	long ret = OnWriteFloat(108, 7, data);
+
+	m_InsRobot->m_Arm0PosCmdSendSerial++;
+	if (m_InsRobot->m_Arm0PosCmdSendSerial > 9999)
+	{
+		m_InsRobot->m_Arm0PosCmdSendSerial = 7;
+	}
+	//long ret = OnWriteFloat(108, 7, data);
+	long ret = OnWriteIntFloat(108, m_InsRobot->m_Arm0PosCmdSendSerial,7, data);
 	return (ret == 0);
 }
 
@@ -2354,7 +2363,13 @@ bool CRobot::OnSetJointCmdPos_B(double joint[7])
 	data[4] = joint[4];
 	data[5] = joint[5];
 	data[6] = joint[6];
-	long ret = OnWriteFloat(208, 7, data);
+	m_InsRobot->m_Arm1PosCmdSendSerial++;
+	if (m_InsRobot->m_Arm1PosCmdSendSerial > 9999)
+	{
+		m_InsRobot->m_Arm1PosCmdSendSerial = 7;
+	}
+	//long ret = OnWriteFloat(208, 7, data);
+	long ret = OnWriteIntFloat(208, m_InsRobot->m_Arm1PosCmdSendSerial, 7, data);
 	return (ret == 0);
 }
 

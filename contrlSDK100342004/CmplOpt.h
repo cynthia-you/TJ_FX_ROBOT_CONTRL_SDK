@@ -9,6 +9,7 @@
     #define LOOPHANDLE HANDLE
     #define socklen_t int
     #define SLEEP(ms) Sleep(ms)
+    #define CMPL_WIN
 #endif
 
 #ifdef _MSC_VER
