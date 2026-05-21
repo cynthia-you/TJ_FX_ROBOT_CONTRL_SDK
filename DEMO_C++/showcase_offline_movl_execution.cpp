@@ -164,7 +164,7 @@ int main()
     double K[7] = {8000,8000,8000, 600, 600, 600, 20};//预设参考。
     double D[7] = {0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 1};//预设参考。
     OnClearSet();
-    OnSetJointKD_A(K, D) ;
+    OnSetCartKD_A(K, D) ;
     OnSetSend();
     SLEEP(200);
 
