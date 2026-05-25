@@ -113,7 +113,7 @@
 	2.1.3 编译python调用的dll动态库
     1)linux下编译dll动态库:
         控制SDK(contrlSDK):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
-        运动学SDK(kinematicsSDK): g++ *.cpp -Wall -w -O2 -fPIC -shared -o libKine.dll 
+        运动学SDK(kinematicsSDK): g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.dll 
 
 	2）windows下使用MinGW编译dll动态库：
 			控制SDK（contrlSDK）：g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
