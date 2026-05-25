@@ -56,7 +56,7 @@ long CRobot::OnGetChDataA(unsigned char data_ptr[256], long *ret_ch)
 	memcpy(data_ptr, t.m_Data, t.m_Size);
 	if (m_InsRobot->m_LocalLogTag == true)
 	{
-		printf("[Marvin SDK]: Get 485 of A arm: \nchannel =%d\n", *ret_ch);
+		printf("[Marvin SDK]: Get 485 of A arm: \nchannel =%ld\n", *ret_ch);
 		printf("data:\n");
 		for (int i = 0; i < 256; ++i)
 		{
@@ -95,7 +95,7 @@ bool CRobot::OnSetChDataA(unsigned char *data_ptr, long size_int, long set_ch)
 	sendto(m_InsRobot->_tosock_, (char *)m_InsRobot->m_SendBuf1, sizeof(DDSS) + 2, 0, (struct sockaddr *)&m_InsRobot->_to, sizeof(m_InsRobot->_to));
 	if (m_InsRobot->m_LocalLogTag == true)
 	{
-		printf("[Marvin SDK]: Set 485 of A arm: \nchannel =%d\n", set_ch);
+		printf("[Marvin SDK]: Set 485 of A arm: \nchannel =%ld\n", set_ch);
 		printf("data:\n");
 		for (int i = 0; i < 256; ++i)
 		{
@@ -111,7 +111,7 @@ bool CRobot::OnSetChDataA(unsigned char *data_ptr, long size_int, long set_ch)
 				printf("\n");
 			}
 		}
-		printf("\ndata size=%d \n", size_int);
+		printf("\ndata size=%ld \n", size_int);
 	}
 	return true;
 }
@@ -135,7 +135,7 @@ long CRobot::OnGetChDataB(unsigned char data_ptr[256], long *ret_ch)
 	memcpy(data_ptr, t.m_Data, t.m_Size);
 	if (m_InsRobot->m_LocalLogTag == true)
 	{
-		printf("[Marvin SDK]: Get 485 of B arm: \nchannel =%d\n", *ret_ch);
+		printf("[Marvin SDK]: Get 485 of B arm: \nchannel =%ld\n", *ret_ch);
 		printf("data:\n");
 		for (int i = 0; i < 256; ++i)
 		{
@@ -173,7 +173,7 @@ bool CRobot::OnSetChDataB(unsigned char *data_ptr, long size_int, long set_ch)
 	sendto(m_InsRobot->_tosock_, (char *)m_InsRobot->m_SendBuf2, sizeof(DDSS) + 2, 0, (struct sockaddr *)&m_InsRobot->_to, sizeof(m_InsRobot->_to));
 	if (m_InsRobot->m_LocalLogTag == true)
 	{
-		printf("[Marvin SDK]: Set 485 of B arm: channel =%d\n", set_ch);
+		printf("[Marvin SDK]: Set 485 of B arm: channel =%ld\n", set_ch);
 		printf("data:\n");
 		for (int i = 0; i < 256; ++i)
 		{
@@ -189,7 +189,7 @@ bool CRobot::OnSetChDataB(unsigned char *data_ptr, long size_int, long set_ch)
 				printf("\n");
 			}
 		}
-		printf("\ndata size=%d \n", size_int);
+		printf("\ndata size=%ld \n", size_int);
 	}
 	return true;
 }
@@ -209,9 +209,9 @@ bool CRobot::OnSendPVT_A(char *local_file, long serial)
 	}
 	char remote[256];
 	memset(remote, 0, 256);
-	sprintf(remote, "\/home\/FUSION\/Config\/pvt\/user0\/%d.txt", serial);
+	sprintf(remote, "/home/FUSION/Config/pvt/user0/%ld.txt", serial);
 	if (m_InsRobot->m_LocalLogTag == true)
-		printf("[Marvin SDK]: Send A arm pvt of serial=%d to local=%s\n ", serial, local_file);
+		printf("[Marvin SDK]: Send A arm pvt of serial=%ld to local=%s\n ", serial, local_file);
 	return OnSendFile(local_file, remote);
 }
 
@@ -223,9 +223,9 @@ bool CRobot::OnSendPVT_B(char *local_file, long serial)
 	}
 	char remote[256];
 	memset(remote, 0, 256);
-	sprintf(remote, "\/home\/FUSION\/Config\/pvt\/user1\/%d.txt", serial);
+	sprintf(remote, "/home/FUSION/Config/pvt/user1/%ld.txt", serial);
 	if (m_InsRobot->m_LocalLogTag == true)
-		printf("[Marvin SDK]: Send B arm pvt of serial=%d to local=%s\n ", serial, local_file);
+		printf("[Marvin SDK]: Send B arm pvt of serial=%ld to local=%s\n ", serial, local_file);
 	return OnSendFile(local_file, remote);
 }
 
@@ -310,12 +310,12 @@ CRobot::CRobot()
 	pDDSS2->m_Serial = 1;
 	pDDSS2->m_CH = 2;
 #ifdef _WIN32
-	char *shm_name = "AAA"; // Windows
+	char shm_name[] = "AAA";
 #else
-	char *shm_name = "/var/tmp/AAA_shm"; // 在/var/tmp创建文件（重启后保留）
+	char shm_name[] = "/var/tmp/AAA_shm";
 #endif
 	ShmOnInit(&m_ShMem);
-// Windows 下检查共享内存是否存在
+
 #ifdef _WIN32
 	printf("Checking Windows shared memory: %s\n", shm_name);
 	HANDLE hMapFile = OpenFileMappingA(
@@ -339,7 +339,6 @@ CRobot::CRobot()
 		}
 	}
 #else
-	// Linux下使用传统文件方式创建共享内存
 	printf("Checking Linux file-based shared memory: %s\n", shm_name);
 	FILE *fp = fopen(shm_name, "rb");
 	if (fp != NULL)
@@ -377,13 +376,11 @@ CRobot::CRobot()
 	printf("  /var/tmp/ directory permissions:\n");
 	system("ls -ld /var/tmp/");
 #endif
-	int master_result = m_ShMem.OnMapMster(&m_ShMem, shm_name, 102400);
 	m_psm = m_ShMem.OnGetMem(&m_ShMem);
 	if (m_psm == NULL)
 	{
 		printf("Map Master Err - m_psm is NULL\n");
 #ifdef _WIN32
-		DWORD err = GetLastError();
 #else
 		char cmd[256];
 		snprintf(cmd, sizeof(cmd), "ls -la %s 2>/dev/null || echo '  File not found'", shm_name);
@@ -407,7 +404,6 @@ CRobot::CRobot()
 			printf("    Failed to open file, errno: %d (%s)\n", errno, strerror(errno));
 		}
 #endif
-		int slave_result = m_ShMem.OnMapSlave(&m_ShMem, shm_name);
 		m_psm = m_ShMem.OnGetMem(&m_ShMem);
 		if (m_psm == NULL)
 		{
@@ -1145,7 +1141,6 @@ void CRobot::DoSend()
 {
 	if (m_SendTag == 100)
 	{
-		int tt = sendto(_tosock_, (char *)m_SendBuf, m_Slen, 0, (struct sockaddr *)&_to, sizeof(_to));
 		m_SendTag = 0;
 		m_Slen = 0;
 	}
@@ -1216,14 +1211,14 @@ bool CRobot::OnStartGather(long targetNum, long targetID[35], long recordNum)
 	if (m_InsRobot->m_LocalLogTag == true)
 	{
 		printf("[Marvin SDK]: Collect data settings\n");
-		printf("targetNum=%d\n", targetNum);
-		printf("targetID= [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d]\n",
+		printf("targetNum=%ld\n", targetNum);
+		printf("targetID= [%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld]\n",
 			   targetID[0], targetID[1], targetID[2], targetID[3], targetID[4], targetID[5], targetID[6],
 			   targetID[7], targetID[8], targetID[9], targetID[10], targetID[11], targetID[12], targetID[13],
 			   targetID[14], targetID[15], targetID[16], targetID[17], targetID[18], targetID[19], targetID[20],
 			   targetID[21], targetID[22], targetID[23], targetID[24], targetID[25], targetID[26], targetID[27],
 			   targetID[28], targetID[29], targetID[30], targetID[31], targetID[32], targetID[33], targetID[34]);
-		printf("recordNum=%d\n", recordNum);
+		printf("recordNum=%ld\n", recordNum);
 	}
 	if (m_InsRobot->m_LinkTag == false)
 	{
@@ -1367,13 +1362,14 @@ bool CRobot::OnStartGather(long targetNum, long targetID[35], long recordNum)
 	if (m_InsRobot->m_LocalLogTag == true)
 	{
 		printf("[Marvin SDK]: Data collected, targetNum=%ld, recordNum=%ld\n", targetNum, recordNum);
-		printf("targetID= [%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d]\n",
+		printf("targetID= [%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld,%ld]\n",
 			   targetID[0], targetID[1], targetID[2], targetID[3], targetID[4], targetID[5], targetID[6],
 			   targetID[7], targetID[8], targetID[9], targetID[10], targetID[11], targetID[12], targetID[13],
 			   targetID[14], targetID[15], targetID[16], targetID[17], targetID[18], targetID[19], targetID[20],
 			   targetID[21], targetID[22], targetID[23], targetID[24], targetID[25], targetID[26], targetID[27],
 			   targetID[28], targetID[29], targetID[30], targetID[31], targetID[32], targetID[33], targetID[34]);
 	}
+
 	m_InsRobot->m_GatherTag = true;
 	return true;
 }
