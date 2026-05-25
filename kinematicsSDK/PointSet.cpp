@@ -154,7 +154,6 @@ bool CPointSet::OnGetSubAVG(long serial, long start, long end, double& ret_avg)
 	double tv = 0;
 
 	long i;
-	long tp = 0;
 	for (i = start; i <= end; i++)
 	{
 		double* v = this->OnGetPoint(i);
@@ -728,17 +727,17 @@ bool CPointSet::OnSave(FILE* fp)
 	char r = 0x0a;
 	if (strlen(m_Tag) == 0)
 	{
-		fprintf(fp, "PoinType=%d@%d%c", m_PointType, num, r);
+		fprintf(fp, "PoinType=%d@%ld%c", m_PointType, num, r);
 	}
 	else
 	{
 		if (strlen(m_SubTag) == 0)
 		{
-			fprintf(fp, "PoinType=%d@%dT%d%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
 		}
 		else
 		{
-			fprintf(fp, "PoinType=%d@%dT%d%sST%d%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%sST%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
 		}
 	}
 
@@ -750,33 +749,33 @@ bool CPointSet::OnSave(FILE* fp)
 		{
 			if (j < 3)
 			{
-				fprintf(fp, "%c %lf$", 'X' + j, tmp[j]);
+				fprintf(fp, "%c %lf$", 'X' + static_cast<int>(j), tmp[j]);
 			}
 			if (j >= 3 && j < 6)
 			{
-				fprintf(fp, "%c %lf$", 'A' + j - 3, tmp[j]);
+				fprintf(fp, "%c %lf$", 'A' + static_cast<int>(j) - 3, tmp[j]);
 			}
 			if (j >= 6 && j < 9)
 			{
-				fprintf(fp, "%c %lf$", 'U' + j - 6, tmp[j]);
+				fprintf(fp, "%c %lf$", 'U' + static_cast<int>(j) - 6, tmp[j]);
 			}
 			if (j >= 9 && j < 12)
 			{
-				fprintf(fp, "%c %lf$", 'O' + j - 9, tmp[j]);
+				fprintf(fp, "%c %lf$", 'O' + static_cast<int>(j) - 9, tmp[j]);
 			}
 			if (j >= 12 && j < 15)
 			{
-				fprintf(fp, "%c %lf$", 'I' + j - 12, tmp[j]);
+				fprintf(fp, "%c %lf$", 'I' + static_cast<int>(j) - 12, tmp[j]);
 			}
 
 			if (j >= 15 && j < 18)
 			{
-				fprintf(fp, "%c %lf$", 'L' + j - 15, tmp[j]);
+				fprintf(fp, "%c %lf$", 'L' + static_cast<int>(j) - 15, tmp[j]);
 			}
 
 			if (j >= 18 && j < 21)
 			{
-				fprintf(fp, "%c %lf$", 'R' + j - 18, tmp[j]);
+				fprintf(fp, "%c %lf$", 'R' + static_cast<int>(j) - 18, tmp[j]);
 			}
 
 			if (j >= 21)
@@ -815,17 +814,17 @@ bool CPointSet::OnSave(char* path)
 	char r = 0x0a;
 	if (strlen(m_Tag) == 0)
 	{
-		fprintf(fp, "PoinType=%d@%d%c", m_PointType, num, r);
+		fprintf(fp, "PoinType=%d@%ld%c", m_PointType, num, r);
 	}
 	else
 	{
 		if (strlen(m_SubTag) == 0)
 		{
-			fprintf(fp, "PoinType=%d@%dT%d%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
 		}
 		else
 		{
-			fprintf(fp, "PoinType=%d@%dT%d%sST%d%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%sST%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
 		}
 	}
 
@@ -837,33 +836,33 @@ bool CPointSet::OnSave(char* path)
 		{
 			if (j < 3)
 			{
-				fprintf(fp, "%c %lf$", 'X' + j, tmp[j]);
+				fprintf(fp, "%c %lf$", 'X' + static_cast<int>(j), tmp[j]);
 			}
 			if (j >= 3 && j < 6)
 			{
-				fprintf(fp, "%c %lf$", 'A' + j - 3, tmp[j]);
+				fprintf(fp, "%c %lf$", 'A' + static_cast<int>(j) - 3, tmp[j]);
 			}
 			if (j >= 6 && j < 9)
 			{
-				fprintf(fp, "%c %lf$", 'U' + j - 6, tmp[j]);
+				fprintf(fp, "%c %lf$", 'U' + static_cast<int>(j) - 6, tmp[j]);
 			}
 			if (j >= 9 && j < 12)
 			{
-				fprintf(fp, "%c %lf$", 'O' + j - 9, tmp[j]);
+				fprintf(fp, "%c %lf$", 'O' + static_cast<int>(j) - 9, tmp[j]);
 			}
 			if (j >= 12 && j < 15)
 			{
-				fprintf(fp, "%c %lf$", 'I' + j - 12, tmp[j]);
+				fprintf(fp, "%c %lf$", 'I' + static_cast<int>(j) - 12, tmp[j]);
 			}
 
 			if (j >= 15 && j < 18)
 			{
-				fprintf(fp, "%c %lf$", 'L' + j - 15, tmp[j]);
+				fprintf(fp, "%c %lf$", 'L' + static_cast<int>(j) - 15, tmp[j]);
 			}
 
 			if (j >= 18 && j < 21)
 			{
-				fprintf(fp, "%c %lf$", 'R' + j - 18, tmp[j]);
+				fprintf(fp, "%c %lf$", 'R' + static_cast<int>(j) - 18, tmp[j]);
 			}
 
 			if (j >= 21)
@@ -904,17 +903,17 @@ bool CPointSet::OnSaveHL(char* path)
 	char r = 0x0a;
 	if (strlen(m_Tag) == 0)
 	{
-		fprintf(fp, "PoinType=%d@%d%c", m_PointType, num, r);
+		fprintf(fp, "PoinType=%d@%ld%c", m_PointType, num, r);
 	}
 	else
 	{
 		if (strlen(m_SubTag) == 0)
 		{
-			fprintf(fp, "PoinType=%d@%dT%d%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
 		}
 		else
 		{
-			fprintf(fp, "PoinType=%d@%dT%d%sST%d%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%sST%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
 		}
 	}
 
@@ -926,33 +925,33 @@ bool CPointSet::OnSaveHL(char* path)
 		{
 			if (j < 3)
 			{
-				fprintf(fp, "%c %.15lf$", 'X' + j, tmp[j]);
+				fprintf(fp, "%c %.15lf$", 'X' + static_cast<int>(j), tmp[j]);
 			}
 			if (j >= 3 && j < 6)
 			{
-				fprintf(fp, "%c %.15lf$", 'A' + j - 3, tmp[j]);
+				fprintf(fp, "%c %.15lf$", 'A' + static_cast<int>(j) - 3, tmp[j]);
 			}
 			if (j >= 6 && j < 9)
 			{
-				fprintf(fp, "%c %.15lf$", 'U' + j - 6, tmp[j]);
+				fprintf(fp, "%c %.15lf$", 'U' + static_cast<int>(j) - 6, tmp[j]);
 			}
 			if (j >= 9 && j < 12)
 			{
-				fprintf(fp, "%c %.15lf$", 'O' + j - 9, tmp[j]);
+				fprintf(fp, "%c %.15lf$", 'O' + static_cast<int>(j) - 9, tmp[j]);
 			}
 			if (j >= 12 && j < 15)
 			{
-				fprintf(fp, "%c %.15lf$", 'I' + j - 12, tmp[j]);
+				fprintf(fp, "%c %.15lf$", 'I' + static_cast<int>(j) - 12, tmp[j]);
 			}
 
 			if (j >= 15 && j < 18)
 			{
-				fprintf(fp, "%c %.15lf$", 'L' + j - 15, tmp[j]);
+				fprintf(fp, "%c %.15lf$", 'L' + static_cast<int>(j) - 15, tmp[j]);
 			}
 
 			if (j >= 18 && j < 21)
 			{
-				fprintf(fp, "%c %.15lf$", 'R' + j - 18, tmp[j]);
+				fprintf(fp, "%c %.15lf$", 'R' + static_cast<int>(j) - 18, tmp[j]);
 			}
 
 			if (j >= 21)
@@ -1781,7 +1780,6 @@ bool CPointSet::OnLoadXFile(char* path, long load_col_num, long exp_col_num)
 	char buf[1024];
 	double xy[50];
 	long rnum;
-	bool ctag = false;
 	while (OnGetLine(fp, buf))
 	{
 		if (OnGetValue(buf, xy, rnum) == false)
@@ -1827,7 +1825,7 @@ bool CPointSet::OnLoad(FILE* fp)
 	char r = 0x0a;
 	long lt;
 	long num;
-	if (fscanf(fp, "PoinType=%d@%d%c", &lt, &num, &r) != 3)
+	if (fscanf(fp, "PoinType=%ld@%ld%c", &lt, &num, &r) != 3)
 	{
 		fclose(fp);
 		return false;
@@ -1836,7 +1834,7 @@ bool CPointSet::OnLoad(FILE* fp)
 	if (r == 'T')
 	{
 		long tlen;
-		if (fscanf(fp, "%d", &tlen) != 1)
+		if (fscanf(fp, "%ld", &tlen) != 1)
 		{
 			fclose(fp);
 			return false;
@@ -1868,7 +1866,7 @@ bool CPointSet::OnLoad(FILE* fp)
 				fclose(fp);
 				return false;
 			}
-			if (fscanf(fp, "T%d", &tlen) != 1)
+			if (fscanf(fp, "T%ld", &tlen) != 1)
 			{
 				fclose(fp);
 				return false;
@@ -2025,7 +2023,7 @@ bool CPointSet::OnLoadFast(char* path)
 	char r = 0x0a;
 	long lt;
 	long num;
-	if (fscanf(fp, "PoinType=%d@%d%c", &lt, &num, &r) != 3)
+	if (fscanf(fp, "PoinType=%ld@%ld%c", &lt, &num, &r) != 3)
 	{
 		fclose(fp);
 		return false;
@@ -2035,7 +2033,7 @@ bool CPointSet::OnLoadFast(char* path)
 	if (r == 'T')
 	{
 		long tlen;
-		if (fscanf(fp, "%d", &tlen) != 1)
+		if (fscanf(fp, "%ld", &tlen) != 1)
 		{
 			fclose(fp);
 			return false;
@@ -2067,7 +2065,7 @@ bool CPointSet::OnLoadFast(char* path)
 				fclose(fp);
 				return false;
 			}
-			if (fscanf(fp, "T%d", &tlen) != 1)
+			if (fscanf(fp, "T%ld", &tlen) != 1)
 			{
 				fclose(fp);
 				return false;
@@ -2181,7 +2179,7 @@ bool CPointSet::OnLoad(char* path)
 	char r = 0x0a;
 	long lt;
 	long num;
-	if (fscanf(fp, "PoinType=%d@%d%c", &lt, &num, &r) != 3)
+	if (fscanf(fp, "PoinType=%ld@%ld%c", &lt, &num, &r) != 3)
 	{
 		fclose(fp);
 		return false;
@@ -2190,7 +2188,7 @@ bool CPointSet::OnLoad(char* path)
 	if (r == 'T')
 	{
 		long tlen;
-		if (fscanf(fp, "%d", &tlen) != 1)
+		if (fscanf(fp, "%ld", &tlen) != 1)
 		{
 			fclose(fp);
 			return false;
@@ -2222,7 +2220,7 @@ bool CPointSet::OnLoad(char* path)
 				fclose(fp);
 				return false;
 			}
-			if (fscanf(fp, "T%d", &tlen) != 1)
+			if (fscanf(fp, "T%ld", &tlen) != 1)
 			{
 				fclose(fp);
 				return false;

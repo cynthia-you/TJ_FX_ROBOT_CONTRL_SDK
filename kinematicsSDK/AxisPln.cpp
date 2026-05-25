@@ -20,7 +20,7 @@ CAxisPln::~CAxisPln()
 
 void CAxisPln::OnSetFreq(long freq)
 {
-	const double base_freq = 1000.0; // 1msÏµÍ³
+	const double base_freq = 1000.0; // 1ms base frequency
 	double ratio = base_freq / (double)freq;
 	double rounded = round(ratio);
 
@@ -81,7 +81,7 @@ bool CAxisPln::OnPln(double start_pos, double end_pos, double vel, double acc, d
 	long num = OnGetPlnNum();
 	double rp = 0.0;
 	double rv = 0.0; 
-	double temp = 0.0;
+	
 	for (i = 0; i < num; i++)
 	{
 		rp = OnGetPln(&rv);
@@ -195,7 +195,7 @@ bool CAxisPln::OnPlnAcc(double start_pos, double end_pos, double vel, double acc
 	long num = OnGetPlnNum();
 	double rp = 0.0;
 	double rv = 0.0; 
-	double temp = 0.0;
+
 	for (i = 0; i < num; i++)
 	{
 		rp = OnGetPln(&rv);
@@ -322,7 +322,7 @@ bool CAxisPln::OnPlnAccNew(double start_pos, double end_pos, double vel, double 
 	long num = OnGetPlnNum();
 	double rp = 0.0;
 	double rv = 0.0; 
-	double temp = 0.0;
+
 	for (i = 0; i < num; i++)
 	{
 		rp = OnGetPln(&rv);
@@ -939,7 +939,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 	CPointSet out;
 	out.OnInit(PotT_9d);
 	double tmp[9] = { 0 };
-	double ttmp[2] = { 0 };
+
 	for (i = 0; i < max_num; i++)
 	{
 		double* p = ret[max_num_axis].OnGetPoint(i);
@@ -1182,7 +1182,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 
 
 		// Error feedback
-		for (long kk = 0; kk < 7; kk++)
+		for (int kk = 0; kk < 7; kk++)
 		{
 			if (sp.m_Output_JntExdTags[kk] == FX_TRUE)
 			{
@@ -1453,8 +1453,6 @@ bool CAxisPln::OnMovL_KeepJ_Cut(long RobotSerial, double startjoints[7], double 
 		sp.m_Output_RetJoint[i] = startjoints[i];
 	}
 
-	bool _jext = false;
-
 	for (i = 0; i < num; i++)
 	{
 		double* p = pset.OnGetPoint(i);
@@ -1483,10 +1481,7 @@ bool CAxisPln::OnMovL_KeepJ_Cut(long RobotSerial, double startjoints[7], double 
 
 		if (sp.m_Output_IsJntExd == FX_TRUE)
 		{
-			_jext = true;
 			double cur_ext = sp.m_Output_JntExdABS;
-
-			double old_ext = cur_ext;
 			long dir = 1;
 			sp.m_Input_ZSP_Angle = 0.01;
 			FX_Robot_Kine_IK_NSP(RobotSerial, &sp);
@@ -1502,7 +1497,6 @@ bool CAxisPln::OnMovL_KeepJ_Cut(long RobotSerial, double startjoints[7], double 
 					return false;
 				}
 				dir = -1;
-				old_ext = cur_ext;
 			}
 			else
 			{
@@ -1536,8 +1530,6 @@ bool CAxisPln::OnMovL_KeepJ_Cut(long RobotSerial, double startjoints[7], double 
 
 		retJoints.OnSetPoint(&p[19]);
 	}
-	long final_num = retJoints.OnGetPointNum();
-	char* pp = path;
 	retJoints.OnSave(path);
 
 	return true;
@@ -1778,8 +1770,6 @@ bool CAxisPln::OnMovL_KeepJ_CutA(long RobotSerial, double startjoints[7], double
 		sp.m_Output_RetJoint[i] = startjoints[i];
 	}
 
-	bool _jext = false;
-
 	for (i = 0; i < num; i++)
 	{
 		double* p = pset.OnGetPoint(i);
@@ -1808,10 +1798,7 @@ bool CAxisPln::OnMovL_KeepJ_CutA(long RobotSerial, double startjoints[7], double
 
 		if (sp.m_Output_IsJntExd == FX_TRUE)
 		{
-			_jext = true;
 			double cur_ext = sp.m_Output_JntExdABS;
-
-			double old_ext = cur_ext;
 			long dir = 1;
 			sp.m_Input_ZSP_Angle = 0.01;
 			FX_Robot_Kine_IK_NSP(RobotSerial, &sp);
@@ -1827,7 +1814,6 @@ bool CAxisPln::OnMovL_KeepJ_CutA(long RobotSerial, double startjoints[7], double
 					return false;
 				}
 				dir = -1;
-				old_ext = cur_ext;
 			}
 			else
 			{
@@ -1884,7 +1870,6 @@ bool CAxisPln::OnMovJ(long RobotSetial, double start_joint[7], double end_joint[
 	CPointSet ret[7];
 	long num[7] = { 0 };
 	long max_num = 0;
-	long max_axis = 0;
 	for (i = 0; i < 7; i++)
 	{
 		if (!same_tag[i])
@@ -1894,7 +1879,6 @@ bool CAxisPln::OnMovJ(long RobotSetial, double start_joint[7], double end_joint[
 			if (num[i] > max_num)
 			{
 				max_num = num[i];
-				max_axis = i;
 			}
 		}
 	}
@@ -1918,12 +1902,9 @@ bool CAxisPln::OnMovJ(long RobotSetial, double start_joint[7], double end_joint[
 		}
 		final_ret.OnSetPoint(out_joints);
 	}
-
-	long final_num = final_ret.OnGetPointNum();
-	char* pp = path;
 	if (final_ret.OnSave(path) == false)
 	{
-		printf("num= %d false\n",final_num);
+		printf("num= %ld false\n", final_ret.OnGetPointNum());
 	}
 
 	return true;
@@ -1951,8 +1932,7 @@ bool CMovingAverageFilter::FilterPointSet(CPointSet* input, CPointSet* output)
 	long point_count = input->OnGetPointNum();
 	if (point_count < WINDOW_SIZE)
 	{
-		// 如果点数少于窗口大小，直接复制
-		output->OnEmpty();
+		// 如果点数少于窗口大小，直接复�?		output->OnEmpty();
 		for (long i = 0; i < point_count; i++)
 		{
 			double* p = input->OnGetPoint(i);
@@ -2006,8 +1986,7 @@ bool CMovingAverageFilter::FilterPointSet(CPointSet* input, CPointSet* output)
 		double filtered[7] = { 0 };
 		long window_count = end_idx - start_idx + 1;  // 实际窗口大小
 
-		long dim = 7;  // 默认为7维（关节）
-
+		long dim = 7;  // 默认�?维（关节�?
 		for (long d = 0; d < dim; d++)
 		{
 			double sum = 0.0;
@@ -2058,7 +2037,7 @@ bool CMovingAverageFilter::FilterSinglePoint(double** points, long index,
 
 	long window_count = end_idx - start_idx + 1;
 
-	// 对每个维度进行均值滤波
+	// dimensions moving-average filter
 	for (long d = 0; d < point_dim; d++)
 	{
 		double sum = 0.0;

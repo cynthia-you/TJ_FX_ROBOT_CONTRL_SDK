@@ -2723,7 +2723,7 @@ FX_BOOL FX_Matrix2ZYZ(Matrix3 m, Vect3  ret)
 
 FX_VOID  FX_MMV3(Matrix3 L, Vect3 R, Vect3 Result)
 {
-	FX_INT32L i, j, k;
+	FX_INT32L i, k;
 	for (i = 0; i < 3; i++)
 	{
 		Result[i] = 0;
@@ -2901,7 +2901,7 @@ int Cholesky(double A[6][6], double L[6][6], int n)
 void eig(Matrix6 a, Matrix6 v, double eps)
 {
 	int n = 6;
-	int i, j, p, q, u, w, t, s;
+	int i, j, p, q;
 	double ff, fm, cn, sn, omega, x, y, d;
 	for (i = 0; i <= n - 1; i++)
 	{
@@ -2935,7 +2935,7 @@ loop1:
 		}
 	if (ff < eps) return;
 	goto loop0;
-loop: u = p * n + q; w = p * n + p; t = q * n + p; s = q * n + q;
+loop:
 	x = -a[p][q]; y = (a[q][q] - a[p][p]) / 2.0;
 	omega = x / FX_Sqrt(x * x + y * y);
 	if (y < 0.0) omega = -omega;
@@ -2949,7 +2949,7 @@ loop: u = p * n + q; w = p * n + p; t = q * n + p; s = q * n + q;
 	for (j = 0; j <= n - 1; j++)
 		if ((j != p) && (j != q))
 		{
-			u = p * n + j; w = q * n + j;
+			
 			fm = a[p][j];
 			a[p][j] = fm * cn + a[q][j] * sn;
 			a[q][j] = -fm * sn + a[q][j] * cn;
@@ -2957,14 +2957,14 @@ loop: u = p * n + q; w = p * n + p; t = q * n + p; s = q * n + q;
 	for (i = 0; i <= n - 1; i++)
 		if ((i != p) && (i != q))
 		{
-			u = i * n + p; w = i * n + q;
+			
 			fm = a[i][p];
 			a[i][p] = fm * cn + a[i][q] * sn;
 			a[i][q] = -fm * sn + a[i][q] * cn;
 		}
 	for (i = 0; i <= n - 1; i++)
 	{
-		u = i * n + p; w = i * n + q;
+		
 		fm = v[i][p];
 		v[i][p] = fm * cn + v[i][q] * sn;
 		v[i][q] = -fm * sn + v[i][q] * cn;
@@ -2974,17 +2974,14 @@ loop: u = p * n + q; w = p * n + p; t = q * n + p; s = q * n + q;
 
 FX_BOOL generalized_eig(double eps, double A[6][6], double B[6][6], double V[6][6], double D[6])
 {
-	FX_INT32 i, j, tret;
+	FX_INT32 i, tret;
 	Matrix6 G = { 0 };
 	Matrix6 GInv = { 0 };
 	Matrix6 GInvT = { 0 };
 	Matrix6 S = { 0 };
 	Matrix6 temp = { 0 };
 	Matrix6 y = { 0 };
-	if (Cholesky(B, G, 6) != 0)
-	{
-		int a = 0;
-	}
+	Cholesky(B, G, 6);
 	tret = MatrixInv66(G, GInv);
 
 	if (tret == 0) {

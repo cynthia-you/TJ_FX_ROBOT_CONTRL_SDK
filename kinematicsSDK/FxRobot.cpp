@@ -114,7 +114,7 @@ FX_BOOL  LOADMvCfg(FX_CHAR* path, FX_INT32L TYPE[2], FX_DOUBLE GRV[2][3], FX_DOU
 	fclose(fp);
 
 	{
-		if(FX_LOG_TAG) printf("TYPE=[%d %d]\n", TYPE[0], TYPE[1]);
+		if(FX_LOG_TAG) printf("TYPE=[%ld %ld]\n", TYPE[0], TYPE[1]);
 
 	}
 	return FX_TRUE;
@@ -1991,14 +1991,10 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 			anga = FX_Fabs(anga);
 			angb = FX_Fabs(angb);
 			{
-				Vect3 p1 = { 0 };
-				Vect3 p2 = { 0 };
 				FX_DOUBLE v1x = 0.0;
 				FX_DOUBLE v1y = 0.0;
 				FX_DOUBLE v2x = 0.0;
 				FX_DOUBLE v2y = 0.0;
-				p1[0] = 0; p1[1] = 0; p1[2] = 0;
-				p2[0] = ablen; p2[1] = 0; p2[2] = 0;
 				FX_SIN_COS_DEG(anga, &v1y, &v1x);
 				FX_SIN_COS_DEG(180 - angb, &v2y, &v2x);
 				/////  pt is axis_cross_eblow
@@ -2279,14 +2275,10 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 			angb += SPC->Ang2;
 
 			{
-				Vect3 p1 = { 0 };
-				Vect3 p2 = { 0 };
 				FX_DOUBLE v1x = 0.0;
 				FX_DOUBLE v1y = 0.0;
 				FX_DOUBLE v2x = 0.0;
 				FX_DOUBLE v2y = 0.0;
-				p1[0] = 0; p1[1] = 0; p1[2] = 0;
-				p2[0] = ablen; p2[1] = 0; p2[2] = 0;
 				FX_SIN_COS_DEG(anga, &v1y, &v1x);
 				FX_SIN_COS_DEG(180 - angb, &v2y, &v2x);
 				/////  pt is axis_cross_eblow
@@ -2607,14 +2599,10 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 			anga = FX_Fabs(anga);
 			angb = FX_Fabs(angb);
 			{
-				Vect3 p1 = { 0 };
-				Vect3 p2 = { 0 };
 				FX_DOUBLE v1x = 0.0;
 				FX_DOUBLE v1y = 0.0;
 				FX_DOUBLE v2x = 0.0;
 				FX_DOUBLE v2y = 0.0;
-				p1[0] = 0; p1[1] = 0; p1[2] = 0;
-				p2[0] = ablen; p2[1] = 0; p2[2] = 0;
 				FX_SIN_COS_DEG(anga, &v1y, &v1x);
 				FX_SIN_COS_DEG(180 - angb, &v2y, &v2x);
 				/////  pt is axis_cross_eblow
@@ -2969,8 +2957,6 @@ FX_BOOL  FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara * solve_par
 FX_BOOL  FX_InvKine_Pilot_SRS(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_para)
 {
 	FX_Robot* pRobot;
-	FX_KineSPC_Pilot* SPC;
-	NSPBase* NSP;
 	FX_INT32L i;
 	//////////////////
 	if (FX_InvKine_Pilot(RobotSerial, solve_para) == FX_FALSE)
@@ -2978,11 +2964,8 @@ FX_BOOL  FX_InvKine_Pilot_SRS(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_
 		return FX_FALSE;
 	}
 	pRobot = (FX_Robot*)&m_Robot[RobotSerial];
-	SPC = (FX_KineSPC_Pilot*)(pRobot->m_KineSPC);
-	NSP = &(SPC->m_nsp);
 
 	solve_para->m_Output_IsJntExd = FX_FALSE;
-	solve_para->m_Output_JntExdABS = 0;
 	FX_DOUBLE exdabs = 0;
 	for ( i = 0; i < 7; i++)
 	{
@@ -2991,7 +2974,6 @@ FX_BOOL  FX_InvKine_Pilot_SRS(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_
 		if (solve_para->m_Output_RetJoint[i] < solve_para->m_Output_RunLmtN[i] )
 		{
 			solve_para->m_Output_IsJntExd = FX_TRUE;
-			solve_para->m_Output_JntExdTags[i] = FX_TRUE;
 			exdabs = FX_Fabs(solve_para->m_Output_RetJoint[i] - solve_para->m_Output_RunLmtN[i]);
 			if (solve_para->m_Output_JntExdABS < exdabs)
 			{
@@ -3022,9 +3004,8 @@ FX_BOOL  FX_InvKine_Pilot_SRS(FX_INT32L RobotSerial, FX_InvKineSolvePara* solve_
 
 FX_BOOL  FX_InvKine_Pilot_CCS(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
 {
-	FX_Robot* pRobot;
 	FX_KineSPC_Pilot* SPC;
-	NSPBase* NSP;
+	FX_Robot* pRobot;
 	FX_INT32L i;
 	//////////////////
 	if (FX_InvKine_Pilot(RobotSerial, solve_para) == FX_FALSE)
@@ -3033,10 +3014,8 @@ FX_BOOL  FX_InvKine_Pilot_CCS(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
 	}
 	pRobot = (FX_Robot*)&m_Robot[RobotSerial];
 	SPC = (FX_KineSPC_Pilot*)(pRobot->m_KineSPC);
-	NSP = &(SPC->m_nsp);
 
 	solve_para->m_Output_IsJntExd = FX_FALSE;
-	solve_para->m_Output_JntExdABS = 0;
 	FX_DOUBLE exdabs = 0;
 	for (i = 0; i < 7; i++)
 	{
@@ -3045,7 +3024,6 @@ FX_BOOL  FX_InvKine_Pilot_CCS(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
 		if (solve_para->m_Output_RetJoint[i] < solve_para->m_Output_RunLmtN[i] )
 		{
 			solve_para->m_Output_IsJntExd = FX_TRUE;
-			solve_para->m_Output_JntExdTags[i] = FX_TRUE;
 
 			exdabs = FX_Fabs(solve_para->m_Output_RetJoint[i] - solve_para->m_Output_RunLmtN[i]);
 			if (solve_para->m_Output_JntExdABS < exdabs)
