@@ -183,7 +183,7 @@ bool CRobot::OnSendPVT_A(char *local_file, long serial)
 	}
 	char remote[256];
 	memset(remote, 0, 256);
-	sprintf(remote, "\/home\/FUSION\/Config\/pvt\/user0\/%ld.txt", serial);
+	sprintf(remote, "/home/FUSION/Config/pvt/user0/%ld.txt", serial);
 	if (m_InsRobot->m_LocalLogTag == true)
 		printf("[Marvin SDK]: Send A arm pvt of serial=%ld to local=%s\n ", serial, local_file);
 	return OnSendFile(local_file, remote);
@@ -197,7 +197,7 @@ bool CRobot::OnSendPVT_B(char *local_file, long serial)
 	}
 	char remote[256];
 	memset(remote, 0, 256);
-	sprintf(remote, "\/home\/FUSION\/Config\/pvt\/user1\/%ld.txt", serial);
+	sprintf(remote, "/home/FUSION/Config/pvt/user1/%ld.txt", serial);
 	if (m_InsRobot->m_LocalLogTag == true)
 		printf("[Marvin SDK]: Send B arm pvt of serial=%ld to local=%s\n ", serial, local_file);
 	return OnSendFile(local_file, remote);
@@ -758,8 +758,6 @@ long CRobot::OnWriteInt32(unsigned char ins, int size, int *data)
 	return 0;
 }
 
-
-
 long CRobot::OnWriteFloat(unsigned char ins, int size, double *data)
 {
 	if (size < 0)
@@ -818,9 +816,7 @@ long CRobot::OnWriteFloat(unsigned char ins, int size, double *data)
 	return 0;
 }
 
-
-
-long CRobot::OnWriteIntFloat(unsigned char ins,int intvalue, int size, double *data)
+long CRobot::OnWriteIntFloat(unsigned char ins, int intvalue, int size, double *data)
 {
 	if (size < 0)
 	{
@@ -847,7 +843,7 @@ long CRobot::OnWriteIntFloat(unsigned char ins,int intvalue, int size, double *d
 
 	FX_INT32 *ipdata = (FX_INT32 *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen + 5];
 	*ipdata = intvalue;
-	FX_FLOAT *pdata = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen + 5+sizeof(FX_INT32)];
+	FX_FLOAT *pdata = (FX_FLOAT *)&m_InsRobot->m_SendBuf[m_InsRobot->m_Slen + 5 + sizeof(FX_INT32)];
 
 	long i;
 	for (i = 0; i < size; i++)
@@ -1802,8 +1798,8 @@ bool CRobot::OnSetJointCmdPos_A(double joint[7])
 	{
 		m_InsRobot->m_Arm0PosCmdSendSerial = 7;
 	}
-	//long ret = OnWriteFloat(108, 7, data);
-	long ret = OnWriteIntFloat(108, m_InsRobot->m_Arm0PosCmdSendSerial,7, data);
+	// long ret = OnWriteFloat(108, 7, data);
+	long ret = OnWriteIntFloat(108, m_InsRobot->m_Arm0PosCmdSendSerial, 7, data);
 	return (ret == 0);
 }
 
@@ -1959,7 +1955,7 @@ bool CRobot::OnSetPlnCart_A(CPointSet *pset)
 		unsigned char buf[1500] = {0};
 		long buf_len = 1500;
 
-		if (CRobot::OnSetSendWaitResponse2(TIME_OUT,buf,buf_len) < 0)
+		if (CRobot::OnSetSendWaitResponse2(TIME_OUT, buf, buf_len) < 0)
 		{
 			return false;
 		}
@@ -2154,7 +2150,7 @@ bool CRobot::OnSetTrajSet_A(long serial, long pointNum, double *data)
 		return false;
 	}
 
-	long ret = OnWriteIntFloat(113, serial,pointNum * 7, data);
+	long ret = OnWriteIntFloat(113, serial, pointNum * 7, data);
 	return (ret == 0);
 }
 
@@ -2263,7 +2259,7 @@ bool CRobot::OnSetJointKD_A(double K[7], double D[7])
 }
 bool CRobot::OnSetVelEstStep_A(long step)
 {
-	double pv[20] = { 0 };
+	double pv[20] = {0};
 	pv[0] = step;
 	if (pv[0] < 0)
 	{
@@ -2274,7 +2270,7 @@ bool CRobot::OnSetVelEstStep_A(long step)
 		pv[0] = 1000;
 	}
 
-	long ret = OnWriteFloat(121,1,pv);
+	long ret = OnWriteFloat(121, 1, pv);
 	return (ret == 0);
 }
 bool CRobot::OnSetTool_A(double kinePara[6], double dynPara[10])
@@ -2368,7 +2364,7 @@ bool CRobot::OnSetJointCmdPos_B(double joint[7])
 	{
 		m_InsRobot->m_Arm1PosCmdSendSerial = 7;
 	}
-	//long ret = OnWriteFloat(208, 7, data);
+	// long ret = OnWriteFloat(208, 7, data);
 	long ret = OnWriteIntFloat(208, m_InsRobot->m_Arm1PosCmdSendSerial, 7, data);
 	return (ret == 0);
 }
@@ -2478,7 +2474,7 @@ bool CRobot::OnSetJointKD_B(double K[7], double D[7])
 
 bool CRobot::OnSetVelEstStep_B(long step)
 {
-	double pv[20] = { 0 };
+	double pv[20] = {0};
 	pv[0] = step;
 	if (pv[0] < 0)
 	{
@@ -2779,8 +2775,6 @@ bool CRobot::OnSetTrajSet_B(long serial, long pointNum, double *data)
 	return (ret == 0);
 }
 
-
-
 long CRobot::OnSetSendWaitResponse(long time_out)
 {
 	if (m_InsRobot->m_SendTag == 100)
@@ -2839,9 +2833,7 @@ long CRobot::OnSetSendWaitResponse(long time_out)
 	return -1;
 }
 
-
-
-long CRobot::OnSetSendWaitResponse2(long time_out,unsigned char ret_debug[1500],long & ret_debug_len)
+long CRobot::OnSetSendWaitResponse2(long time_out, unsigned char ret_debug[1500], long &ret_debug_len)
 {
 	if (m_InsRobot->m_SendTag == 100)
 	{
@@ -2866,14 +2858,10 @@ long CRobot::OnSetSendWaitResponse2(long time_out,unsigned char ret_debug[1500],
 		return -1;
 	}
 
-
-
-
-
 	ret_debug_len = m_InsRobot->m_Slen;
 	long copy_len = ret_debug_len;
 	if (copy_len > 1500)
-	{	
+	{
 		copy_len = 1500;
 	}
 	memcpy(ret_debug, m_InsRobot->m_SendBuf, copy_len);
@@ -2894,7 +2882,6 @@ long CRobot::OnSetSendWaitResponse2(long time_out,unsigned char ret_debug[1500],
 	{
 		return -1;
 	}
-
 
 	while (m_InsRobot->m_send_response_timeout_cnt > 0)
 	{
