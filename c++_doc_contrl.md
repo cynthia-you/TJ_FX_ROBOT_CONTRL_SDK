@@ -93,6 +93,36 @@
                 1. g++ *.cpp  -Wall -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
                 2./kinematicsSDK/makefile 生成libKine.so
         编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
+
+
+
+### 1.4 不使用动态库，源码调用
+
+    使用contrlSDK为例, 假设调用代码文件main.cpp在和 contrlSDK 同级目录文件夹workspace下， 
+    目录树为：
+    ...
+    |---contrlSDK
+    |---workspace
+        |--- main.cpp
+    ...
+
+
+    则编译指令为：
+    1）windows下编译指令：
+    g++ -Wall main.cpp../ contrlSDK/*.cpp -I../contrlSDK -o main.exe -lws2_32 -lwinmm -DCMPL_WIN
+
+    2）linux下编译指令：
+    g++ -Wall main.cpp ../contrlSDK/*.cpp -I../contrlSDK -o main -lpthread -lrt -DCMPL_LIN
+
+    编译完成后，会生成
+    ...
+    |---contrlSDK
+    |---workspace
+        |--- main.cpp
+        |--- main.exe or main
+    ...
+
+
     
 
 ## 1.4 控制机器人的主要逻辑

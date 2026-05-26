@@ -143,6 +143,34 @@
             ./DEMO_C++/readme.md
         PYTHON 代码跨平台, 参考DEMO_PYTHON/readme.md
 
+
+### 2.4 不使用动态库，源码调用
+
+    使用contrlSDK为例, 假设调用代码文件main.cpp在和 contrlSDK 同级目录文件夹workspace下， 
+    目录树为：
+    ...
+    |---contrlSDK
+    |---workspace
+        |--- main.cpp
+    ...
+
+
+    则编译指令为：
+    1）windows下编译指令：
+    g++ -Wall main.cpp../ contrlSDK/*.cpp -I../contrlSDK -o main.exe -lws2_32 -lwinmm -DCMPL_WIN
+
+    2）linux下编译指令：
+    g++ -Wall main.cpp ../contrlSDK/*.cpp -I../contrlSDK -o main -lpthread -lrt -DCMPL_LIN
+
+    编译完成后，会生成
+    ...
+    |---contrlSDK
+    |---workspace
+        |--- main.cpp
+        |--- main.exe or main
+    ...
+
+
                  
 ## 三、 SDK更新
 ### SDK100343版本
