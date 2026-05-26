@@ -157,7 +157,7 @@
 
     则编译指令为：
     1）windows下编译指令：
-    g++ -Wall main.cpp../ contrlSDK/*.cpp -I../contrlSDK -o main.exe -lws2_32 -lwinmm -DCMPL_WIN
+    g++ -Wall main.cpp ../contrlSDK/*.cpp -I../contrlSDK -o main.exe -lws2_32 -lwinmm -DCMPL_WIN
 
     2）linux下编译指令：
     g++ -Wall main.cpp ../contrlSDK/*.cpp -I../contrlSDK -o main -lpthread -lrt -DCMPL_LIN
