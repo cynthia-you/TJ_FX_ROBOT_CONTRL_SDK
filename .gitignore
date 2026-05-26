@@ -1,11 +1,15 @@
-# since each user need to compile to so or dll by their own, therefore, ignore them
+
+.vs/
+.idea/
+.vscode/
+*.pyc
+__pycache__/
 *.so
 *.dll
-*.pyc
-# ignore the tmp result txt
 kinematicsSDK/test.txt
 kinematicsSDK/testkj.txt
 test.txt
 testkj.txt
 DEMO_PYTHON/test.txt
 DEMO_PYTHON/testkj.txt
+debug/
