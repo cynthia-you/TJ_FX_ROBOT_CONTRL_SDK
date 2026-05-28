@@ -113,7 +113,7 @@
     kine.exe
     
     控制库和运动学库同时使用
-    g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj.exe -L. -lKine -lMarvinSDK -Wl,-rpath=.
+    g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj.exe -L. -lKine -lMarvinSDK
     offline_movl_keepj.exe 
 
 # 四. 计算showcases

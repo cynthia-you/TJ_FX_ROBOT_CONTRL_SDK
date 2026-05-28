@@ -164,7 +164,9 @@ def run_online():
 
 def run_offline():
     kk = Marvin_Kine()
-    tool_dynamic_parameters = kk.identify_tool_dyn(robot_type=1, ipath='DEMO_PYTHON/LoadData_ccs_right/LoadData/')
+    tool_dynamic_parameters = kk.identify_tool_dyn(robot_type=1, ipath='LoadData_ccs_right/LoadData/')
+    if type(tool_dynamic_parameters) == str:
+        print(f'iden error:{tool_dynamic_parameters}')
     print(tool_dynamic_parameters)
 
 if __name__=="__main__":
@@ -183,7 +185,7 @@ if __name__=="__main__":
 
     '''如果选择在线采集数据并辨识
      一定注意函数内部的提示,要三次流程分别反注释运行
-    
+
      '''
     # run_online()
 
