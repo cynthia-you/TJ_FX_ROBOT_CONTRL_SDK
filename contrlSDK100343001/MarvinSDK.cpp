@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include "MarvinSDK.h"
 
 static bool local_log_tag = true;
@@ -535,7 +534,7 @@ bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], doub
 	}
 	if (isnan(fcAdjLmt) || isinf(fcAdjLmt))
 	{
-		printf("[ERROR] OnSetForceCtrPara_A: fcAdjLmt %lf is invalid (NaN or Inf)\n",fcAdjLmt);
+		printf("[ERROR] OnSetForceCtrPara_A: fcAdjLmt %lf is invalid (NaN or Inf)\n", fcAdjLmt);
 		return false;
 	}
 	return CRobot::OnSetForceCtrPara_A(fcType, fxDir, fcCtrlPara, fcAdjLmt);
@@ -563,7 +562,7 @@ bool OnSetForceCmd_A(double force)
 {
 	if (isnan(force) || isinf(force))
 	{
-		printf("[ERROR] OnSetForceCmd_A: force %lf is invalid (NaN or Inf)\n",force);
+		printf("[ERROR] OnSetForceCmd_A: force %lf is invalid (NaN or Inf)\n", force);
 		return false;
 	}
 	return CRobot::OnSetForceCmd_A(force);
@@ -799,7 +798,7 @@ bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], doub
 	}
 	if (isnan(fcAdjLmt) || isinf(fcAdjLmt))
 	{
-		printf("[ERROR] OnSetForceCtrPara_B: fcAdjLmt %lf is invalid (NaN or Inf)\n",fcAdjLmt);
+		printf("[ERROR] OnSetForceCtrPara_B: fcAdjLmt %lf is invalid (NaN or Inf)\n", fcAdjLmt);
 		return false;
 	}
 	return CRobot::OnSetForceCtrPara_B(fcType, fxDir, fcCtrlPara, fcAdjLmt);
@@ -827,7 +826,7 @@ bool OnSetForceCmd_B(double force)
 {
 	if (isnan(force) || isinf(force))
 	{
-		printf("[ERROR] OnSetForceCmd_B: force %lf is invalid (NaN or Inf)\n",force);
+		printf("[ERROR] OnSetForceCmd_B: force %lf is invalid (NaN or Inf)\n", force);
 		return false;
 	}
 	return CRobot::OnSetForceCmd_B(force);
@@ -1211,10 +1210,12 @@ bool Connect(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_swt
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] Connect: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] Connect: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -1373,10 +1374,12 @@ bool RunPVT(FX_CHAR arm, int id)
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] RunPVT: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] RunPVT: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -1621,10 +1624,12 @@ bool SetJointMode(FX_CHAR arm, int velRatio, int AccRatio)
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] SetJointMode: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] SetJointMode: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -1807,10 +1812,12 @@ bool SetImpJointMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], doubl
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] SetImpJointMode: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] SetImpJointMode: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -2003,10 +2010,12 @@ bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] SetImpCartMode: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] SetImpCartMode: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -2187,10 +2196,12 @@ bool SetImpForceMode(FX_CHAR arm, double fxDir[6], double fcAdjLmt)
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] SetImpForceMode: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] SetImpForceMode: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -2308,10 +2319,12 @@ bool SetJointDrag(FX_CHAR arm)
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] SetJointDrag: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] SetJointDrag: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -2682,7 +2695,7 @@ bool SetForceCmd(FX_CHAR arm, double force)
 	}
 	if (isnan(force) || isinf(force))
 	{
-		printf("[ERROR] SetForceCmd: force %lf is invalid (NaN or Inf)\n",force);
+		printf("[ERROR] SetForceCmd: force %lf is invalid (NaN or Inf)\n", force);
 		return false;
 	}
 	if (arm == 'A')
@@ -2787,10 +2800,12 @@ bool RunPlnJoint(FX_CHAR arm, double start_joints[7], double stop_joints[7], dou
 		{
 			if (!CheckArmError())
 			{
+				printf("[ERROR] RunPlnJoint: arms in error state\n");
 				return false;
 			}
 			if (!CheckServoError())
 			{
+				printf("[ERROR] RunPlnJoint: servos in error state\n");
 				return false;
 			}
 			CRobot::OnClearSet();
@@ -2843,10 +2858,12 @@ bool RunPlnJoint(FX_CHAR arm, double start_joints[7], double stop_joints[7], dou
 		{
 			if (!CheckArmError())
 			{
+				printf("[ERROR] RunPlnJoint: arms in error state\n");
 				return false;
 			}
 			if (!CheckServoError())
 			{
+				printf("[ERROR] RunPlnJoint: servos in error state\n");
 				return false;
 			}
 			CRobot::OnClearSet();
@@ -2912,10 +2929,12 @@ bool RunPlnCart(FX_CHAR arm, void *pset)
 		{
 			if (!CheckArmError())
 			{
+				printf("[ERROR] RunPlnCart: arms in error state\n");
 				return false;
 			}
 			if (!CheckServoError())
 			{
+				printf("[ERROR] RunPlnCart: servos in error state\n");
 				return false;
 			}
 			CRobot::OnClearSet();
@@ -2968,10 +2987,12 @@ bool RunPlnCart(FX_CHAR arm, void *pset)
 		{
 			if (!CheckArmError())
 			{
+				printf("[ERROR] RunPlnCart: arms in error state\n");
 				return false;
 			}
 			if (!CheckServoError())
 			{
+				printf("[ERROR] RunPlnCart: servos in error state\n");
 				return false;
 			}
 			CRobot::OnClearSet();
@@ -3182,7 +3203,6 @@ bool Disable(FX_CHAR arm)
 		return true;
 	}
 }
-
 
 bool FX_OnSetVelEstStep(FX_CHAR arm, long step)
 {

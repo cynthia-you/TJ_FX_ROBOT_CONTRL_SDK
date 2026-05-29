@@ -1210,10 +1210,12 @@ bool Connect(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_swt
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] Connect: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] Connect: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -1370,10 +1372,12 @@ bool RunPVT(FX_CHAR arm, int id)
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] RunPVT: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] RunPVT: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -1618,10 +1622,12 @@ bool SetJointMode(FX_CHAR arm, int velRatio, int AccRatio)
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] SetJointMode: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] SetJointMode: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -1804,10 +1810,12 @@ bool SetImpJointMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], doubl
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] SetImpJointMode: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] SetImpJointMode: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -2000,10 +2008,12 @@ bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] SetImpCartMode: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] SetImpCartMode: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -2184,10 +2194,12 @@ bool SetImpForceMode(FX_CHAR arm, double fxDir[6], double fcAdjLmt)
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] SetImpForceMode: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] SetImpForceMode: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -2305,10 +2317,12 @@ bool SetJointDrag(FX_CHAR arm)
 	}
 	if (!CheckArmError())
 	{
+		printf("[ERROR] SetJointDrag: arms in error state\n");
 		return false;
 	}
 	if (!CheckServoError())
 	{
+		printf("[ERROR] SetJointDrag: servos in error state\n");
 		return false;
 	}
 	DCSS dcss;
@@ -2784,10 +2798,12 @@ bool RunPlnJoint(FX_CHAR arm, double start_joints[7], double stop_joints[7], dou
 		{
 			if (!CheckArmError())
 			{
+				printf("[ERROR] RunPlnJoint: arms in error state\n");
 				return false;
 			}
 			if (!CheckServoError())
 			{
+				printf("[ERROR] RunPlnJoint: servos in error state\n");
 				return false;
 			}
 			CRobot::OnClearSet();
@@ -2840,10 +2856,12 @@ bool RunPlnJoint(FX_CHAR arm, double start_joints[7], double stop_joints[7], dou
 		{
 			if (!CheckArmError())
 			{
+				printf("[ERROR] RunPlnJoint: arms in error state\n");
 				return false;
 			}
 			if (!CheckServoError())
 			{
+				printf("[ERROR] RunPlnJoint: servos in error state\n");
 				return false;
 			}
 			CRobot::OnClearSet();
@@ -2909,10 +2927,12 @@ bool RunPlnCart(FX_CHAR arm, void *pset)
 		{
 			if (!CheckArmError())
 			{
+				printf("[ERROR] RunPlnCart: arms in error state\n");
 				return false;
 			}
 			if (!CheckServoError())
 			{
+				printf("[ERROR] RunPlnCart: servos in error state\n");
 				return false;
 			}
 			CRobot::OnClearSet();
@@ -2965,10 +2985,12 @@ bool RunPlnCart(FX_CHAR arm, void *pset)
 		{
 			if (!CheckArmError())
 			{
+				printf("[ERROR] RunPlnCart: arms in error state\n");
 				return false;
 			}
 			if (!CheckServoError())
 			{
+				printf("[ERROR] RunPlnCart: servos in error state\n");
 				return false;
 			}
 			CRobot::OnClearSet();

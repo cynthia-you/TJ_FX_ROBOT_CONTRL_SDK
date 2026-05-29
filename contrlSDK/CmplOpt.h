@@ -2,13 +2,13 @@
 #define FX_CMPLOPT_H_
 
 #ifdef _WIN32
-#include <winsock2.h>
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#define LOOPHANDLE HANDLE
-#define socklen_t int
-#define SLEEP(ms) Sleep(ms)
+    #include <winsock2.h>
+    #include <windows.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #define LOOPHANDLE HANDLE
+    #define socklen_t int
+    #define SLEEP(ms) Sleep(ms)
 #endif
 
 #ifdef _MSC_VER
