@@ -562,8 +562,20 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	char name[30];
 	memset(name, 0, 30);
 	sprintf(name, "VERSION");
-	long ctrlSysVers;
-	ctrlSysVers = 0;
+	long ctrlSysVers = 0;
+    long int cnt = 5;
+	while (cnt > 0)
+	{
+		if(0 != OnGetIntPara(name, &ctrlSysVers) )
+		{
+			cnt--;
+			continue;
+		}
+		else
+		{
+			break;
+		}
+	}
 	OnGetIntPara(name, &ctrlSysVers);
 	m_InsRobot->m_ctrlSysVersion = ctrlSysVers;
 	int SDKVer = SDK_VERSION;
