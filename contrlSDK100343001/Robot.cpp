@@ -576,7 +576,6 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 			break;
 		}
 	}
-	OnGetIntPara(name, &ctrlSysVers);
 	m_InsRobot->m_ctrlSysVersion = ctrlSysVers;
 	int SDKVer = SDK_VERSION;
 	if ((ctrlSysVers / 1000) != (SDKVer / 1000))
