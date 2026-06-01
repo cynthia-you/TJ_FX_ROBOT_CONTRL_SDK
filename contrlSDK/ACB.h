@@ -1,5 +1,6 @@
 #ifndef FX_ACB_H_
 #define FX_ACB_H_
+#include <atomic>
 
 class CACB
 {
@@ -16,10 +17,10 @@ public:
 
 protected:
     bool init_tag_;
-    long write_pos_;
-    long read_pos_;
-    unsigned char write_lock_;
-    unsigned char read_lock_;
+    std::atomic<long> write_pos_;
+    std::atomic<long> read_pos_;
+    std::atomic<unsigned char> write_lock_;
+    std::atomic<unsigned char> read_lock_;
     unsigned long buf_serial_;
     unsigned char *base_;
     long size_;
@@ -51,5 +52,4 @@ protected:
     long size_;
     long item_num;
 };
-
 #endif

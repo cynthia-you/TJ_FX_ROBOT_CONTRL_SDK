@@ -192,7 +192,6 @@ extern "C"
 	FX_DLL_EXPORT long OnSetSendWaitResponse(long time_out);
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 	// pln
 	// 关节空间PLN方式发送指令
 	FX_DLL_EXPORT bool OnInitPlnLmt(char *path);
@@ -301,7 +300,6 @@ extern "C"
 	FX_DLL_EXPORT bool SetImpForceMode(FX_CHAR arm, double fxDir[6], double fcAdjLmt);
 	// 设置指定手臂的力值：arm:"A" "B"  两种字符是许可值; force: 力，单位：牛
 	FX_DLL_EXPORT bool SetForceCmd(FX_CHAR arm, double force);
-
 
 	// 关节空间规划初始化，只需初始化一次
 	FX_DLL_EXPORT bool PlnInit(char *path);

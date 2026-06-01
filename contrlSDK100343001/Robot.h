@@ -131,24 +131,24 @@ protected:
 
     bool m_send_lock;
 	CRobot();
-	static CRobot* GetIns();
-	unsigned char m_send_response_local_tag;
-	unsigned char m_send_response_recv_tag;
-	long       m_send_response_timeout_cnt;
-	long       m_last_response_timeout_cnt;
-	long       m_respones_time_cnt;
-	long       m_respones_time_tag;
+	static CRobot *GetIns();
+	std::atomic<unsigned char> m_send_response_local_tag;
+	std::atomic<unsigned char> m_send_response_recv_tag;
+	std::atomic<long> m_send_response_timeout_cnt;
+	std::atomic<long> m_last_response_timeout_cnt;
+	std::atomic<long> m_respones_time_cnt;
+	std::atomic<long> m_respones_time_tag;
 
 	long       m_ParaSerial;
-	long       m_GatherTag;
+	std::atomic<long> m_GatherTag;
 	FX_FLOAT * m_GatherItem[40];
 	long       m_GatherItemSize;
 	long       m_GatherRecordMaxNum;
-	long       m_GatherRecordNum;
+	std::atomic<long> m_GatherRecordNum;
 	CPointSet m_GatherSet;
 	FX_UINT32 miss_cnt;
 	FX_INT32 old_serial;
-	FX_BOOL m_LinkTag;
+	std::atomic<FX_BOOL> m_LinkTag;
 	FX_BOOL old_serial_tag;
 
 	FX_BOOL m_VersionMatchTag;
@@ -183,8 +183,8 @@ protected:
 	char recvbuf[2000];
 
 	unsigned char m_SendBuf[1500];
-	long m_Slen;
-	long m_SendTag;
+	std::atomic<long> m_Slen;
+	std::atomic<long> m_SendTag;
 	FX_BOOL SendFile(char* local_file, char* remote_file);
 	FX_BOOL RecvFile(char* local_file, char* remote_file);
 

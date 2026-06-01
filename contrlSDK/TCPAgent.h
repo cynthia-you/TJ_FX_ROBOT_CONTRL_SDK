@@ -14,6 +14,7 @@
 #include <iostream>
 #include "string.h"
 #include "netdef.h"
+#include <atomic>
 
 using namespace std;
 
@@ -90,12 +91,12 @@ protected:
      */ 
     bool OnInitNet();
     
-	bool m_bLinkTag;        /**< Flag to denote if the connection is built up.*/
+	std::atomic<bool> m_bLinkTag;        /**< Flag to denote if the connection is built up.*/
 	SOCKET m_iSocket;       /**< Socket file descriptor.*/
 	bool m_bNetInitTag;     /**< Flag to denote if the running enviroment is initialized.*/
 	LOOPHANDLE m_LoopThreadHandle; /**< Thread handler.*/
 	char * SrvUtText;       /**< Point to the socket receiving buffer.*/
-	bool m_quit_tag;        /**< Flag to denote if it is on quit.*/
+	std::atomic<bool> m_quit_tag;        /**< Flag to denote if it is on quit.*/
 	CParser * m_parser;     /**< Point to the object for handling TCP file protocal.*/
 };
 

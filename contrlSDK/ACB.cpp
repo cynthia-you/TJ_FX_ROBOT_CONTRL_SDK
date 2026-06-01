@@ -2,6 +2,16 @@
 #include <cstring>
 #include <string>
 
+// On Linux/ARM, shared memory accesses need explicit memory ordering.
+// x86's TSO model makes plain loads/stores safe on Windows.
+#ifdef __linux__
+#define CGACB_STORE(p, v) __atomic_store_n(p, v, __ATOMIC_SEQ_CST)
+#define CGACB_LOAD(p)     __atomic_load_n(p, __ATOMIC_SEQ_CST)
+#else
+#define CGACB_STORE(p, v) (*(p) = (v))
+#define CGACB_LOAD(p)     (*(p))
+#endif
+
 
 /////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -17,20 +27,16 @@ CGACB::CGACB()
 	base_ = NULL;
 
 	init_tag_ = true;
-	
+
 	buf_serial_ = 0;
 
 	item_num = 0;
-
-
-
 }
 
 CGACB::~CGACB()
 {
 	if (init_tag_ == true)
-	{
-		
+	{		
 	}
 }
 long CGACB::OnGetStoreNum()
@@ -44,8 +50,8 @@ void CGACB::OnSetBuf(unsigned char * buf,long size)
 	write_pos_ = (long * )&buf[0];
 	read_pos_ = (long * )&buf[sizeof(long)];
 
-	*write_pos_ = 1;
-	*read_pos_ = 0;
+	CGACB_STORE(write_pos_, 1);
+	CGACB_STORE(read_pos_, 0);
 }
 bool CGACB::WriteBuf(unsigned char* data_ptr, long size_int)
 {
@@ -55,8 +61,8 @@ bool CGACB::WriteBuf(unsigned char* data_ptr, long size_int)
 	}
 	
 	long emptysize;
-	long wpos = *write_pos_;
-	long rpos = *read_pos_;
+	long wpos = CGACB_LOAD(write_pos_);
+	long rpos = CGACB_LOAD(read_pos_);
 
 	unsigned long tmpserial = buf_serial_;
 	tmpserial++;
@@ -64,7 +70,6 @@ bool CGACB::WriteBuf(unsigned char* data_ptr, long size_int)
 	{
 		tmpserial = 0;
 	}
-
 
 	if (wpos < rpos)
 	{
@@ -81,11 +86,10 @@ bool CGACB::WriteBuf(unsigned char* data_ptr, long size_int)
 		base_[wpos + 4] = (unsigned char)((tmpserial % 0x10000) / 0x100);
 		base_[wpos + 5] = (unsigned char)((tmpserial % 0x100));
 
-
 		memcpy(&base_[wpos + 6], data_ptr, size_int);
 		wpos += 6;
 		wpos += size_int;
-		*write_pos_ = wpos;
+		CGACB_STORE(write_pos_, wpos);
 
 		buf_serial_ = tmpserial;
 
@@ -122,7 +126,6 @@ bool CGACB::WriteBuf(unsigned char* data_ptr, long size_int)
 		wpos++;
 		wpos %= size_;
 
-
 		epos -= 6;
 
 		if (epos <= size_int)
@@ -146,7 +149,7 @@ bool CGACB::WriteBuf(unsigned char* data_ptr, long size_int)
 		}
 		wpos += size_int;
 		wpos %= size_;
-		*write_pos_ = wpos;
+		CGACB_STORE(write_pos_, wpos);
 
 		buf_serial_ = tmpserial;
 		item_num++;
@@ -160,10 +163,9 @@ long CGACB::ReadBuf(unsigned char* data_ptr, long size_int)
 	{
 		return -1;
 	}
-	
 
-	long wpos = *write_pos_;
-	long rpos = *read_pos_;
+	long wpos = CGACB_LOAD(write_pos_);
+	long rpos = CGACB_LOAD(read_pos_);
 	rpos++;
 	rpos %= size_;
 	if (rpos == wpos)
@@ -183,7 +185,6 @@ long CGACB::ReadBuf(unsigned char* data_ptr, long size_int)
 
 	rpos++;
 	rpos %= size_;
-
 
 	rpos += 4;
 	rpos %= size_;
@@ -203,12 +204,11 @@ long CGACB::ReadBuf(unsigned char* data_ptr, long size_int)
 	}
 	rpos += (sizetmp - 1);
 	rpos %= size_;
-	*read_pos_ = rpos;
-	
+	CGACB_STORE(read_pos_, rpos);
+
 	item_num--;
 	return sizetmp;
 }
-
 
 long CGACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long& serial)
 {
@@ -217,9 +217,8 @@ long CGACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long
 		return -1;
 	}
 
-
-	long wpos = *write_pos_;
-	long rpos = *read_pos_;
+	long wpos = CGACB_LOAD(write_pos_);
+	long rpos = CGACB_LOAD(read_pos_);
 	rpos++;
 	rpos %= size_;
 	if (rpos == wpos)
@@ -239,7 +238,6 @@ long CGACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long
 
 	rpos++;
 	rpos %= size_;
-
 
 	unsigned long v1;
 	unsigned long v2;
@@ -261,7 +259,6 @@ long CGACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long
 
 	serial = v1 * 0x1000000 + v2 * 0x10000 + v3 * 0x100 + v4;
 
-
 	long explen = size_ - rpos;
 	if (explen <= sizetmp)
 	{
@@ -277,7 +274,7 @@ long CGACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long
 	}
 	rpos += (sizetmp - 1);
 	rpos %= size_;
-	*read_pos_ = rpos;
+	CGACB_STORE(read_pos_, rpos);
 	item_num--;
 	return sizetmp;
 }
@@ -291,8 +288,8 @@ long CGACB::PeekBuf(unsigned char* data_ptr, long size_int)
 
 	if (size_int == 0 || data_ptr == NULL)
 	{
-		long wpos = *write_pos_;
-		long rpos = *read_pos_;
+		long wpos = CGACB_LOAD(write_pos_);
+		long rpos = CGACB_LOAD(read_pos_);
 		rpos++;
 		rpos %= size_;
 		if (rpos == wpos)
@@ -302,8 +299,8 @@ long CGACB::PeekBuf(unsigned char* data_ptr, long size_int)
 		return 1;
 	}
 
-	long wpos = *write_pos_;
-	long rpos = *read_pos_;
+	long wpos = CGACB_LOAD(write_pos_);
+	long rpos = CGACB_LOAD(read_pos_);
 	rpos++;
 	rpos %= size_;
 	if (rpos == wpos)
@@ -350,8 +347,8 @@ long CGACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long
 	{
 		return -1;
 	}
-	long wpos = *write_pos_;
-	long rpos = *read_pos_;
+	long wpos = CGACB_LOAD(write_pos_);
+	long rpos = CGACB_LOAD(read_pos_);
 	rpos++;
 	rpos %= size_;
 	if (rpos == wpos)
@@ -371,7 +368,6 @@ long CGACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long
 
 	rpos++;
 	rpos %= size_;
-
 
 	unsigned long v1;
 	unsigned long v2;
@@ -393,7 +389,6 @@ long CGACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long
 
 	serial = v1 * 0x1000000 + v2 * 0x10000 + v3 * 0x100 + v4;
 
-
 	long explen = size_ - rpos;
 	if (explen <= sizetmp)
 	{
@@ -409,33 +404,25 @@ long CGACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long
 	}
 	rpos += (sizetmp - 1);
 	rpos %= size_;
-	*read_pos_ = rpos;
+	CGACB_STORE(read_pos_, rpos);
 	return sizetmp;
-
 }
-
-
-
 
 bool CGACB::Empty()
 {
 	if (init_tag_ == false)
 	{
 		return false;
-	}
-	
+	}	
 
-	*read_pos_ = 0;
-	*write_pos_ = 1;
+	CGACB_STORE(read_pos_, 0);
+	CGACB_STORE(write_pos_, 1);
 
 
 	item_num = 0;
 
 	return true;
 }
-
-
-
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -459,9 +446,6 @@ CACB::CACB()
 	buf_serial_ = 0;
 
 	item_num = 0;
-
-
-
 }
 
 CACB::~CACB()
@@ -499,7 +483,6 @@ bool CACB::WriteBuf(unsigned char* data_ptr, long size_int)
 		tmpserial = 0;
 	}
 
-
 	if (wpos < rpos)
 	{
 		emptysize = rpos - wpos - 1;
@@ -515,7 +498,6 @@ bool CACB::WriteBuf(unsigned char* data_ptr, long size_int)
 		base_[wpos + 3] = (unsigned char)((tmpserial % 0x1000000) / 0x10000);
 		base_[wpos + 4] = (unsigned char)((tmpserial % 0x10000) / 0x100);
 		base_[wpos + 5] = (unsigned char)((tmpserial % 0x100));
-
 
 		memcpy(&base_[wpos + 6], data_ptr, size_int);
 		wpos += 6;
@@ -557,7 +539,6 @@ bool CACB::WriteBuf(unsigned char* data_ptr, long size_int)
 		base_[wpos] = (unsigned char)((tmpserial % 0x100));
 		wpos++;
 		wpos %= size_;
-
 
 		epos -= 6;
 
@@ -627,7 +608,6 @@ long CACB::ReadBuf(unsigned char* data_ptr, long size_int)
 	rpos++;
 	rpos %= size_;
 
-
 	rpos += 4;
 	rpos %= size_;
 
@@ -652,7 +632,6 @@ long CACB::ReadBuf(unsigned char* data_ptr, long size_int)
 	item_num--;
 	return sizetmp;
 }
-
 
 long CACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long& serial)
 {
@@ -690,7 +669,6 @@ long CACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long&
 	rpos++;
 	rpos %= size_;
 
-
 	unsigned long v1;
 	unsigned long v2;
 	unsigned long v3;
@@ -710,7 +688,6 @@ long CACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long&
 	rpos %= size_;
 
 	serial = v1 * 0x1000000 + v2 * 0x10000 + v3 * 0x100 + v4;
-
 
 	long explen = size_ - rpos;
 	if (explen <= sizetmp)
@@ -840,7 +817,6 @@ long CACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long&
 	rpos++;
 	rpos %= size_;
 
-
 	unsigned long v1;
 	unsigned long v2;
 	unsigned long v3;
@@ -861,7 +837,6 @@ long CACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long&
 
 	serial = v1 * 0x1000000 + v2 * 0x10000 + v3 * 0x100 + v4;
 
-
 	long explen = size_ - rpos;
 	if (explen <= sizetmp)
 	{
@@ -880,11 +855,7 @@ long CACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long&
 	read_pos_ = rpos;
 	read_lock_ = 0;
 	return sizetmp;
-
 }
-
-
-
 
 bool CACB::Empty()
 {
@@ -905,7 +876,6 @@ bool CACB::Empty()
 
 	write_lock_ = 0;
 	read_lock_ = 0;
-
 
 	item_num = 0;
 

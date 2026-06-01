@@ -1030,7 +1030,7 @@ void CRobot::DoCnt()
 			m_respones_time_cnt = 0;
 		}
 		m_send_response_timeout_cnt--;
-		m_last_response_timeout_cnt = m_send_response_timeout_cnt;
+		m_last_response_timeout_cnt = m_send_response_timeout_cnt.load();
 		if (m_send_response_local_tag != m_send_response_recv_tag)
 		{
 			m_respones_time_cnt++;
