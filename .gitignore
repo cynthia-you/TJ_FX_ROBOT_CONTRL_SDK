@@ -4,8 +4,6 @@
 .vscode/
 *.pyc
 __pycache__/
-*.so
-*.dll
 kinematicsSDK/test.txt
 kinematicsSDK/testkj.txt
 test.txt
