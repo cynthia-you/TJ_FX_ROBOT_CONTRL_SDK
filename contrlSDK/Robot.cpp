@@ -316,46 +316,126 @@ CRobot::CRobot()
 #endif
 	ShmOnInit(&m_ShMem);
 
-#ifndef _WIN32
+#ifdef _WIN32
+	printf("Checking Windows shared memory: %s\n", shm_name);
+	HANDLE hMapFile = OpenFileMappingA(
+		FILE_MAP_ALL_ACCESS,
+		FALSE,
+		shm_name);
+	if (hMapFile != NULL)
 	{
-		FILE *fp = fopen(shm_name, "rb");
-		if (fp == NULL)
+		CloseHandle(hMapFile);
+	}
+	else
+	{
+		DWORD err = GetLastError();
+		if (err == ERROR_FILE_NOT_FOUND)
 		{
-			fp = fopen(shm_name, "wb");
-			if (fp != NULL)
+			printf("Shared memory %s does not exist (error: %lu), will be created\n", shm_name, err);
+		}
+		else
+		{
+			printf("Error checking shared memory %s, error code: %lu\n", shm_name, err);
+		}
+	}
+#else
+	printf("Checking Linux file-based shared memory: %s\n", shm_name);
+	FILE *fp = fopen(shm_name, "rb");
+	if (fp != NULL)
+	{
+		fclose(fp);
+		printf("Shared memory file %s already exists\n", shm_name);
+		struct stat st;
+		if (stat(shm_name, &st) == 0)
+		{
+			printf("  Size: %ld bytes\n", st.st_size);
+		}
+	}
+	else
+	{
+		printf("Shared memory file %s does not exist, will be created\n", shm_name);
+		fp = fopen(shm_name, "wb");
+		if (fp != NULL)
+		{
+			fseek(fp, 102399, SEEK_SET);
+			fputc(0, fp);
+			fclose(fp);
+			chmod(shm_name, 0666);
+			printf("  Created shared memory file with size 102400 bytes\n");
+			struct stat st;
+			if (stat(shm_name, &st) == 0)
 			{
-				fseek(fp, 102399, SEEK_SET);
-				fputc(0, fp);
-				fclose(fp);
-				chmod(shm_name, 0666);
+				printf("  File permissions: %o\n", st.st_mode & 0777);
 			}
 		}
 		else
 		{
-			fclose(fp);
+			printf("  Failed to create shared memory file, errno: %d (%s)\n", errno, strerror(errno));
 		}
 	}
+	printf("  /var/tmp/ directory permissions:\n");
+	system("ls -ld /var/tmp/");
 #endif
-
-	m_psm = NULL;
-	int master_result = m_ShMem.OnMapMster(&m_ShMem, shm_name, 102400);
-	if (FX_TRUE == master_result)
+	m_psm = m_ShMem.OnGetMem(&m_ShMem);
+	if (m_psm == NULL)
 	{
+		printf("Map Master Err - m_psm is NULL\n");
+#ifdef _WIN32
+#else
+		char cmd[256];
+		snprintf(cmd, sizeof(cmd), "ls -la %s 2>/dev/null || echo '  File not found'", shm_name);
+		system(cmd);
+		int fd = open(shm_name, O_RDWR);
+		if (fd != -1)
+		{
+			void *test_map = mmap(NULL, 102400, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+			if (test_map != MAP_FAILED)
+			{
+				munmap(test_map, 102400);
+			}
+			else
+			{
+				printf("    Direct mmap failed, errno: %d (%s)\n", errno, strerror(errno));
+			}
+			close(fd);
+		}
+		else
+		{
+			printf("    Failed to open file, errno: %d (%s)\n", errno, strerror(errno));
+		}
+#endif
 		m_psm = m_ShMem.OnGetMem(&m_ShMem);
+		if (m_psm == NULL)
+		{
+			printf("Map Slave Err - m_psm is NULL\n");
+#ifdef _WIN32
+			DWORD err = GetLastError();
+			printf("  Windows Error Code: %lu\n", err);
+			printf("  Checking if Global\\ path requires admin privileges\n");
+#else
+			printf("  errno: %d (%s)\n", errno, strerror(errno));
+			printf("  Checking file existence:\n");
+			char cmd[256];
+			snprintf(cmd, sizeof(cmd), "ls -la %s 2>/dev/null || echo '  File not found'", shm_name);
+			system(cmd);
+#endif
+		}
+		else
+		{
+			printf("Map Slave success - m_psm = %p\n", m_psm);
+		}
 	}
 	else
 	{
-		master_result = m_ShMem.OnMapSlave(&m_ShMem, shm_name);
-		if (FX_TRUE == master_result)
-		{
-			m_psm = m_ShMem.OnGetMem(&m_ShMem);
-		}
+		printf("Map Master success - m_psm = %p\n", m_psm);
 	}
-
 	if (m_psm != NULL)
 	{
 		m_ACB_ShMem.OnSetBuf(m_psm, 102400);
 		m_ACB_ShMem.Empty();
+	}
+	else
+	{
 	}
 }
 
