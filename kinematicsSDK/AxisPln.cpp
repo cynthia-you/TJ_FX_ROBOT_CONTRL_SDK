@@ -4,6 +4,311 @@
 #include "FxRobot.h"
 #include "FXMatrix.h"
 
+
+double _ratio301[301] = {
+		0.000000000,
+		0.000000200,
+		0.000001600,
+		0.000005400,
+		0.000012800,
+		0.000025000,
+		0.000043200,
+		0.000068600,
+		0.000102400,
+		0.000145800,
+		0.000200000,
+		0.000266200,
+		0.000345600,
+		0.000439400,
+		0.000548800,
+		0.000675000,
+		0.000819200,
+		0.000982600,
+		0.001166400,
+		0.001371800,
+		0.001600000,
+		0.001852200,
+		0.002129600,
+		0.002433400,
+		0.002764800,
+		0.003125000,
+		0.003515200,
+		0.003936600,
+		0.004390400,
+		0.004877800,
+		0.005400000,
+		0.005958200,
+		0.006553600,
+		0.007187400,
+		0.007860800,
+		0.008575000,
+		0.009331200,
+		0.010130600,
+		0.010974400,
+		0.011863800,
+		0.012800000,
+		0.013784200,
+		0.014817600,
+		0.015901400,
+		0.017036800,
+		0.018225000,
+		0.019467200,
+		0.020764600,
+		0.022118400,
+		0.023529800,
+		0.025000000,
+		0.026530200,
+		0.028121600,
+		0.029775400,
+		0.031492800,
+		0.033275000,
+		0.035123200,
+		0.037038600,
+		0.039022400,
+		0.041075800,
+		0.043200000,
+		0.045396200,
+		0.047665600,
+		0.050009400,
+		0.052428800,
+		0.054925000,
+		0.057499200,
+		0.060152593,
+		0.062885926,
+		0.065699259,
+		0.068592593,
+		0.071565926,
+		0.074619259,
+		0.077752593,
+		0.080965926,
+		0.084259259,
+		0.087632593,
+		0.091085926,
+		0.094619259,
+		0.098232593,
+		0.101925926,
+		0.105699259,
+		0.109552593,
+		0.113485926,
+		0.117499200,
+		0.121591667,
+		0.125762133,
+		0.130009400,
+		0.134332267,
+		0.138729533,
+		0.143200000,
+		0.147742467,
+		0.152355733,
+		0.157038600,
+		0.161789867,
+		0.166608333,
+		0.171492800,
+		0.176442067,
+		0.181454933,
+		0.186530200,
+		0.191666667,
+		0.196863133,
+		0.202118400,
+		0.207431267,
+		0.212800533,
+		0.218225000,
+		0.223703467,
+		0.229234733,
+		0.234817600,
+		0.240450867,
+		0.246133333,
+		0.251863800,
+		0.257641067,
+		0.263463933,
+		0.269331200,
+		0.275241667,
+		0.281194133,
+		0.287187400,
+		0.293220267,
+		0.299291533,
+		0.305400000,
+		0.311544467,
+		0.317723733,
+		0.323936600,
+		0.330181867,
+		0.336458333,
+		0.342764800,
+		0.349100067,
+		0.355462933,
+		0.361852200,
+		0.368266667,
+		0.374705133,
+		0.381166400,
+		0.387649267,
+		0.394152533,
+		0.400675000,
+		0.407215467,
+		0.413772733,
+		0.420345600,
+		0.426932867,
+		0.433533333,
+		0.440145800,
+		0.446769067,
+		0.453401933,
+		0.460043200,
+		0.466691667,
+		0.473346133,
+		0.480005400,
+		0.486668267,
+		0.493333533,
+		0.500000000,
+		0.506666467,
+		0.513331733,
+		0.519994600,
+		0.526653867,
+		0.533308333,
+		0.539956800,
+		0.546598067,
+		0.553230933,
+		0.559854200,
+		0.566466667,
+		0.573067133,
+		0.579654400,
+		0.586227267,
+		0.592784533,
+		0.599325000,
+		0.605847467,
+		0.612350733,
+		0.618833600,
+		0.625294867,
+		0.631733333,
+		0.638147800,
+		0.644537067,
+		0.650899933,
+		0.657235200,
+		0.663541667,
+		0.669818133,
+		0.676063400,
+		0.682276267,
+		0.688455533,
+		0.694600000,
+		0.700708467,
+		0.706779733,
+		0.712812600,
+		0.718805867,
+		0.724758333,
+		0.730668800,
+		0.736536067,
+		0.742358933,
+		0.748136200,
+		0.753866667,
+		0.759549133,
+		0.765182400,
+		0.770765267,
+		0.776296533,
+		0.781775000,
+		0.787199467,
+		0.792568733,
+		0.797881600,
+		0.803136867,
+		0.808333333,
+		0.813469800,
+		0.818545067,
+		0.823557933,
+		0.828507200,
+		0.833391667,
+		0.838210133,
+		0.842961400,
+		0.847644267,
+		0.852257533,
+		0.856800000,
+		0.861270467,
+		0.865667733,
+		0.869990600,
+		0.874237867,
+		0.878408333,
+		0.882500800,
+		0.886514074,
+		0.890447407,
+		0.894300741,
+		0.898074074,
+		0.901767407,
+		0.905380741,
+		0.908914074,
+		0.912367407,
+		0.915740741,
+		0.919034074,
+		0.922247407,
+		0.925380741,
+		0.928434074,
+		0.931407407,
+		0.934300741,
+		0.937114074,
+		0.939847407,
+		0.942500800,
+		0.945075000,
+		0.947571200,
+		0.949990600,
+		0.952334400,
+		0.954603800,
+		0.956800000,
+		0.958924200,
+		0.960977600,
+		0.962961400,
+		0.964876800,
+		0.966725000,
+		0.968507200,
+		0.970224600,
+		0.971878400,
+		0.973469800,
+		0.975000000,
+		0.976470200,
+		0.977881600,
+		0.979235400,
+		0.980532800,
+		0.981775000,
+		0.982963200,
+		0.984098600,
+		0.985182400,
+		0.986215800,
+		0.987200000,
+		0.988136200,
+		0.989025600,
+		0.989869400,
+		0.990668800,
+		0.991425000,
+		0.992139200,
+		0.992812600,
+		0.993446400,
+		0.994041800,
+		0.994600000,
+		0.995122200,
+		0.995609600,
+		0.996063400,
+		0.996484800,
+		0.996875000,
+		0.997235200,
+		0.997566600,
+		0.997870400,
+		0.998147800,
+		0.998400000,
+		0.998628200,
+		0.998833600,
+		0.999017400,
+		0.999180800,
+		0.999325000,
+		0.999451200,
+		0.999560600,
+		0.999654400,
+		0.999733800,
+		0.999800000,
+		0.999854200,
+		0.999897600,
+		0.999931400,
+		0.999956800,
+		0.999975000,
+		0.999987200,
+		0.999994600,
+		0.999998400,
+		0.999999800,
+		1.000000000
+};
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -1910,7 +2215,359 @@ bool CAxisPln::OnMovJ(long RobotSetial, double start_joint[7], double end_joint[
 	return true;
 }
 
+//Multi-Point Motion Planning
+bool CAxisPln::OnInit_MOVL_ZSP()
+{
+	//Intern Parameter Initialization
+	m_output_pset.OnEmpty();
+	m_output_pset.OnInit(PotT_7d);
 
+	Overlap_Tag = false;
+	Overlap_Num = 0;
+
+	for (long i = 0; i < 6; i++)
+	{
+		next_start_pos[i] = 0.0;
+		last_jv[i] = 0.0;
+	}
+	last_jv[6] = 0.0;
+	return true;
+}
+
+bool CAxisPln::OnGetRatioByCntScale(long total_cnt, long cur_cnt, double& ratio1, double& ratio2)
+{
+	long tcnt = total_cnt;
+	long ccnt = cur_cnt;
+	ratio1 = 0.5;
+	ratio2 = 0.5;
+	if (tcnt < 2)
+	{
+		return false;
+	}
+	if (ccnt < 0)
+	{
+		ccnt = 0;
+	}
+	if (ccnt > tcnt)
+	{
+		ccnt = tcnt;
+	}
+
+	double dcnt = ccnt;
+	double dtcnt = tcnt;
+
+	double r = dcnt / dtcnt;
+	r *= 300;
+	long   rl = r;
+	if (rl >= 300)
+	{
+		ratio1 = 0.0;
+		ratio2 = 1.0;
+		return true;
+	}
+
+	double relic = r - rl;
+
+	if (rl >= 300)
+	{
+		ratio1 = 0.0;
+		ratio2 = 1.0;
+		return true;
+	}
+
+	double t2 = relic;
+	double t1 = 1.0 - relic;
+	ratio2 = _ratio301[rl] * t1 + _ratio301[rl + 1] * t2;
+	ratio1 = 1.0 - ratio2;
+	return true;
+}
+
+bool CAxisPln::OnMovL_ZSP(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, long ZSP_type, double ZSP_para[6], double Allow_Range, long Point_State)
+{
+	///////Calculate composite axis motion length
+	long i = 0;
+	long j = 0;
+	CPointSet com_axis;
+
+	//XYZ Offset
+	double com_axis_len_ = 0.0;
+	double xyz_len_square_ = 0.0;
+	double xyz_len_ = 0.0;
+	double diff = 0.0;
+	
+	//Record the start point of current path, which is used to calculate the length of current path
+	if (Point_State != FX_MOVL_START)
+	{
+		for (i = 0; i < 6; i++)
+		{
+			start_pos[i] = next_start_pos[i];
+			ref_joints[i] = last_jv[i];
+		}
+		ref_joints[i] = last_jv[i];
+	}
+
+	// Record the end point for next path
+	for (i = 0; i < 6; i++)
+	{
+		next_start_pos[i] = end_pos[i];
+	}
+	printf("start:%f %f %f %f %f %f\n", start_pos[0], start_pos[1], start_pos[2], start_pos[3], start_pos[4], start_pos[5]);
+	printf("end:%f %f %f %f %f %f\n\\\\\\\\\\\\\\\n", end_pos[0], end_pos[1], end_pos[2], end_pos[3], end_pos[4], end_pos[5]);
+
+	for (i = 0; i < 3; i++)
+	{
+		diff = end_pos[i] - start_pos[i];
+		xyz_len_square_ += diff * diff;
+	}
+	xyz_len_ = sqrt(xyz_len_square_);
+
+	//Cuter Euler-Angle based on Base_Coordinate
+	double Q_start[4] = { 0 };
+	double Q_end[4] = { 0 };
+
+	FX_ABC2Quaternions(start_pos, Q_start);
+	FX_ABC2Quaternions(end_pos, Q_end);
+
+	//Calculate Quaternions Angle
+	double cosangle = Q_start[0] * Q_end[0] + Q_start[1] * Q_end[1] +
+		Q_start[2] * Q_end[2] + Q_start[3] * Q_end[3];
+	if (cosangle < 0.0)
+	{
+		cosangle = -cosangle;
+		Q_end[0] = -Q_end[0];
+		Q_end[1] = -Q_end[1];
+		Q_end[2] = -Q_end[2];
+		Q_end[3] = -Q_end[3];
+	}
+	double qangle = acos(cosangle)*2 * FXARM_R2D;
+
+	com_axis_len_ = sqrt(xyz_len_square_ + qangle * qangle);
+
+	OnPln(0, com_axis_len_, vel, acc, jerk, &com_axis);
+
+	long num_points = com_axis.OnGetPointNum();
+
+	//Cut Cartesian trajectory
+	CPointSet cartesian_traj;
+	long overlap_num = 0;
+	cartesian_traj.OnInit(PotT_8d); //Position & Quaternion
+	cartesian_traj.OnEmpty();
+
+	double pose[8] = { 0 };
+	for (i = 0; i < num_points; i++)
+	{
+		double* vel_data = com_axis.OnGetPoint(i);
+		double ratio = vel_data[0] / com_axis_len_;
+
+		//Record the number of overlap points & Overlap Tag
+		diff = fabs(vel_data[0] - xyz_len_);
+		if (diff < Allow_Range)
+		{
+			if (!Overlap_Tag)
+			{
+				Overlap_Tag = true;
+			}
+			pose[7] = 1.0;
+			overlap_num++;
+		}
+
+		for (j = 0; j < 3; j++)
+		{
+			pose[j] = start_pos[j] * (1 - ratio) + end_pos[j] * ratio;
+		}
+
+		FX_QuaternionSlerp(Q_start, Q_end, ratio, &pose[3]);
+		cartesian_traj.OnSetPoint(pose);
+	}
+
+	char op1[] = "D:\\cccc\\SPMOVL\\overlap_midxyzabc.csv";
+	char* path1 = op1;
+	cartesian_traj.OnSaveCSV(path1);
+
+	long final_num = cartesian_traj.OnGetPointNum();
+	////////////////////InvKine//////////////
+	FX_InvKineSolvePara sp;
+
+	sp.m_Input_IK_ZSPType = ZSP_type;
+	for (i = 0; i < 6; i++)
+	{
+		sp.m_Input_IK_ZSPPara[i] = ZSP_para[i];
+	}
+	for (i = 0; i < 7; i++)
+	{
+		sp.m_Input_IK_RefJoint[i] = ref_joints[i];
+	}
+	sp.m_Input_ZSP_Angle = 0.0;
+
+	////////////////////////////////////////
+	CPointSet output;
+	output.OnInit(PotT_8d);
+
+	CPointSet tmp_out;
+	tmp_out.OnInit(PotT_8d);
+
+	double tmppoints[8] = { 0 };
+	double TCP[4][4] = { {0} };
+	double ret_joints[9] = { 0 };
+	//initial 
+	for (i = 0; i < 4; i++)
+	{
+		for (j = 0; j < 4; j++)
+		{
+			TCP[i][j] = 0;
+		}
+	}
+
+	for (i = 0; i < final_num; i++)
+	{
+		double* pp = cartesian_traj.OnGetPoint(i);
+		tmppoints[0] = pp[0];
+		tmppoints[1] = pp[1];
+		tmppoints[2] = pp[2];
+		tmppoints[3] = pp[3];
+		tmppoints[4] = pp[4];
+		tmppoints[5] = pp[5];
+		tmppoints[6] = pp[6];
+		tmppoints[7] = pp[7];
+
+		FX_Quaternions2ABCMatrix(&tmppoints[3], &tmppoints[0], TCP);
+		for (long dof = 0; dof < 4; dof++)
+		{
+			for (j = 0; j < 4; j++)
+			{
+				sp.m_Input_IK_TargetTCP[dof][j] = TCP[dof][j];
+			}
+		}
+
+		if (i == 0)
+		{
+			for (j = 0; j < 7; j++)
+			{
+				sp.m_Input_IK_RefJoint[j] = ref_joints[j];
+			}
+		}
+		else
+		{
+			for (j = 0; j < 7; j++)
+			{
+				sp.m_Input_IK_RefJoint[j] = ret_joints[j];
+			}
+		}
+
+		if (FX_Robot_Kine_IK(RobotSetial, &sp) == false)
+		{
+			return FX_FALSE;
+		}
+
+
+		// Error feedback
+		for (long kk = 0; kk < 7; kk++)
+		{
+			if (sp.m_Output_JntExdTags[kk] == FX_TRUE)
+			{
+				printf("Joint %ld exceed limit \n", kk);
+				return FX_FALSE;
+			}
+		}
+
+		if (sp.m_Output_IsOutRange == FX_TRUE)
+		{
+			printf("Input Position over reachable space\n");
+			return FX_FALSE;
+		}
+
+		ret_joints[0] = sp.m_Output_RetJoint[0];
+		ret_joints[1] = sp.m_Output_RetJoint[1];
+		ret_joints[2] = sp.m_Output_RetJoint[2];
+		ret_joints[3] = sp.m_Output_RetJoint[3];
+		ret_joints[4] = sp.m_Output_RetJoint[4];
+		ret_joints[5] = sp.m_Output_RetJoint[5];
+		ret_joints[6] = sp.m_Output_RetJoint[6];
+
+
+		output.OnSetPoint(ret_joints);
+		CMovingAverageFilter filter;
+		if (!filter.FilterPointSet(&output, &tmp_out))
+		{
+			printf("failed\n");
+		}
+	}
+
+	long tmp_out_num = tmp_out.OnGetPointNum();
+
+	//Save last jv
+	double* last_jv_tmp = tmp_out.OnGetPoint(tmp_out_num - 1);
+	last_jv[0] = last_jv_tmp[0];
+	last_jv[1] = last_jv_tmp[1];
+	last_jv[2] = last_jv_tmp[2];
+	last_jv[3] = last_jv_tmp[3];
+	last_jv[4] = last_jv_tmp[4];
+	last_jv[5] = last_jv_tmp[5];
+	last_jv[6] = last_jv_tmp[6];
+
+	if(Point_State == FX_MOVL_START)
+	{
+		for (long ii = 0; ii < tmp_out_num; ii++)
+		{
+			double* p = tmp_out.OnGetPoint(ii);
+			m_output_pset.OnSetPoint(p);
+		}
+	}
+	else
+	{
+		if (Overlap_Tag && tmp_out_num > Overlap_Num)
+		{
+			//Deal with Overlap Part
+			double r1 = 0.0;
+			double r2 = 0.0;
+			long num1 = m_output_pset.OnGetPointNum();
+			for (i = 0; i <= Overlap_Num; i++)
+			{
+				OnGetRatioByCntScale(Overlap_Num, i, r1, r2);
+				double* p1 = m_output_pset.OnGetPoint(num1 + i - 1 - Overlap_Num);
+				double* p2 = tmp_out.OnGetPoint(i);
+				for (long kk = 0; kk < 7; kk++)
+				{
+					p1[kk] = p1[kk] * r1 + p2[kk] * r2;
+				}
+				//printf("r1=%f  r2=%f\n", r1, r2);
+			}
+			for (;i < tmp_out_num; i++)
+			{
+				double* p = tmp_out.OnGetPoint(i);
+				m_output_pset.OnSetPoint(p);
+			}
+		}
+		else
+		{
+			for (long ii = 0; ii < tmp_out_num; ii++)
+			{
+				double* p = tmp_out.OnGetPoint(ii);
+				m_output_pset.OnSetPoint(p);
+			}
+		}
+	}
+
+	Overlap_Num = overlap_num;
+	char op[] = "D:\\cccc\\SPMOVL\\overlap_0316.csv";
+	char* path = op;
+	m_output_pset.OnSaveCSV(path);
+	return true;
+}
+
+bool CAxisPln::OnSendPoints(CPointSet* out)
+{
+	long num = m_output_pset.OnGetPointNum();
+	out->OnEmpty();
+	out->OnInit(PotT_7d);
+
+	for(long i = 0; i < num; i++)
+	{
+		double* p = m_output_pset.OnGetPoint(i);
+		out->OnSetPoint(p);
+	}
+	return true;
+}
 
 /////////////////////////////////////////////
 

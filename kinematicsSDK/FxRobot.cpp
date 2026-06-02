@@ -124,7 +124,7 @@ FX_BOOL  LOADMvCfg(FX_CHAR* path, FX_INT32L TYPE[2], FX_DOUBLE GRV[2][3], FX_DOU
 static FX_Robot			m_Robot[MAX_RUN_ROBOT_NUM];
 static FX_KineSPC_Pilot	m_Robot_SPC_Pilot[MAX_RUN_ROBOT_NUM];
 static FX_KineSPC_DL       m_Robot_SPC_DL[MAX_RUN_ROBOT_NUM];
-
+static CAxisPln			m_AxisPln;
 
 FX_VOID FX_LOG_SWITCH(FX_INT32L log_tag_input)
 {
@@ -3831,6 +3831,85 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect
 	return FX_FALSE;
 }
 
+/////Multi-Point Motion Planning
+FX_BOOL  FX_Robot_PLN_Set_MOVL_Start(FX_INT32L RobotSerial, Vect7 Ref_Joints, Vect6 Start_XYZABC, Vect6 End_XYZABC, FX_DOUBLE Allow_Range, FX_INT32L ZSP_Type, Vect6 ZSP_Para, FX_DOUBLE Vel, FX_DOUBLE Acc ,FX_INT32L Freq)
+{
+	if (FX_LOG_TAG) FX_LOG_INFO("[FxRobot - FX_Robot_PLN_Set_MOVL_Start]\n");
+	Vect6 start_pos = { 0 };
+	Vect6 end_pos = { 0 };
+	Vect7 refJ = { 0 };
+	FX_INT32L i = 0;
+
+	for (i = 0; i < 6; i++)
+	{
+		start_pos[i] = Start_XYZABC[i];
+		end_pos[i] = End_XYZABC[i];
+		refJ[i] = Ref_Joints[i];
+	}
+	refJ[i] = Ref_Joints[i];
+
+	FX_DOUBLE jerk = Acc * 10;
+
+	//CAxisPln Spln;
+	m_AxisPln.OnInit_MOVL_ZSP();
+	m_AxisPln.OnSetFreq(Freq);
+	FX_BOOL result= m_AxisPln.OnMovL_ZSP(RobotSerial, refJ, start_pos, end_pos, Vel, Acc, jerk,ZSP_Type,ZSP_Para,Allow_Range, FX_MOVL_START);
+
+
+	if (result != FX_FALSE)
+	{
+		return FX_TRUE;
+	}
+	else
+	{
+		if (FX_LOG_TAG) FX_LOG_INFO("FX_Robot_PLN_Set_MOVL_Start: Joint Over Limit or Over Reachable Space. Check Parameters.\n");
+		return FX_FALSE;
+	}
+
+	return FX_FALSE;
+}
+
+FX_BOOL  FX_Robot_PLN_Set_MOVL_Next_Point(FX_INT32L RobotSerial, Vect6 Next_XYZABC, FX_DOUBLE Allow_Range, FX_INT32L ZSP_Type, Vect6 ZSP_Para, FX_DOUBLE Vel, FX_DOUBLE Acc)
+{
+	if (FX_LOG_TAG) FX_LOG_INFO("[FxRobot - FX_Robot_PLN_Set_MOVL_Next_Point]\n");
+	Vect6 start_pos = { 0 };
+	Vect6 end_pos = { 0 };
+	Vect7 refJ = { 0 };
+	FX_INT32L i = 0;
+
+	for (i = 0; i < 6; i++)
+	{
+		start_pos[i] = 0.0;
+		end_pos[i] = Next_XYZABC[i];
+		refJ[i] = 0.0;
+	}
+	refJ[i] = 0.0;
+
+	FX_DOUBLE jerk = Acc * 10;
+
+	FX_BOOL result = m_AxisPln.OnMovL_ZSP(RobotSerial, refJ, start_pos, end_pos, Vel, Acc, jerk, ZSP_Type, ZSP_Para, Allow_Range, FX_MOVL_NEXT);
+
+
+	if (result != FX_FALSE)
+	{
+		return FX_TRUE;
+	}
+	else
+	{
+		if (FX_LOG_TAG) FX_LOG_INFO("FX_Robot_PLN_Set_MOVL_Next_Point: Joint Over Limit or Over Reachable Space. Check Parameters.\n");
+		return FX_FALSE;
+	}
+	return FX_TRUE;
+}
+
+FX_BOOL  FX_Robot_PLN_Get_MOVL_Path(FX_INT32L RobotSerial, CPointSet* ret_Pset)
+{
+	if (FX_LOG_TAG) FX_LOG_INFO("[FxRobot - FX_Robot_PLN_Get_Total_Path]\n");
+
+	m_AxisPln.OnSendPoints(ret_Pset);
+
+	return FX_TRUE;
+}
 /////Joint Torque to EE Torque Mapping
 FX_BOOL  FX_Robot_Solve66_GaussJordan(const Matrix6 A, const Vect6 b, Vect6 x)
 {

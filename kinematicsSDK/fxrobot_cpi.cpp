@@ -57,4 +57,10 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJA_C(FX_INT32L RobotSerial, Vect7 startjoints, Ve
 
 }
 
+FX_BOOL  FX_Robot_PLN_Get_MOVL_Path_C(FX_INT32L RobotSerial, void* ret_Pset){
+    if (!ret_Pset) return FX_FALSE;
+    CPointSet* pointSet = static_cast<CPointSet*>(ret_Pset);
+    return FX_Robot_PLN_Get_MOVL_Path(RobotSerial, pointSet);
+}
+
 } // extern "C"

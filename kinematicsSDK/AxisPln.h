@@ -18,6 +18,16 @@ public:
 	bool OnMovL_KeepJ_Cut(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, double acc, char* path);
 	bool OnMovL_KeepJ_CutA(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, double acc, CPointSet * ret_pset);
 
+	//Multi-Point Motion Planning
+	bool OnInit_MOVL_ZSP();
+	bool OnMovL_ZSP(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, long ZSP_type, double ZSP_para[6], double Allow_Range, long Point_State);
+	bool OnSendPoints(CPointSet* out);
+
+	CPointSet m_output_pset;
+	bool Overlap_Tag;
+	long Overlap_Num;
+	double last_jv[7];
+	double next_start_pos[6];
 protected:
 	bool OnPln(double start_pos, double end_pos, double vel, double acc, double jerk, CPointSet* ret);
 	bool OnPlnAcc(double start_pos, double end_pos, double vel, double acc, double jerk, CPointSet* ret);
@@ -42,6 +52,8 @@ protected:
 	bool   m_Set_Freq;
 	double m_freq;
 	double m_cycle;  //frequency to cycle
+
+	bool OnGetRatioByCntScale(long total_cnt, long cur_cnt, double& ratio1, double& ratio2);
 };
 
 class CMovingAverageFilter
