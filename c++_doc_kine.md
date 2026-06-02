@@ -404,6 +404,88 @@ FX_BOOL  FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L R
 		3.FX_ROT_FIXED_xxx:固定角变换，基于基坐标系旋转    
     • 本接口输出的结束点位姿可以直接输入直线规划接口进行规划
 
+###    17. 多点MOVL连续规划
+该功能为组合使用接口，共包含三个接口：
+
+####
+FX_BOOL  FX_Robot_PLN_Set_MOVL_Start(FX_INT32L RobotSerial, Vect7 Ref_Joints, Vect6 Start_XYZABC, Vect6 End_XYZABC, 
+                                        FX_DOUBLE Allow_Range, FX_INT32L ZSP_Type, Vect6 ZSP_Para, 
+                                        FX_DOUBLE Vel, FX_DOUBLE Acc, FX_INT32L Freq);
+
+    • 输入当前位置参考关节角度、起始点位姿、结束点位姿、平滑过渡长度、逆运动学零空间约束类型、零空间约束相关参数、直线规划速度及直线规划加速度
+    输入：
+        1. FX_INT32L RobotSerial：0表示左臂，1表示右臂
+        2. Vect7 Ref_Joints:约束了规划的起始关节点信息。单位：度
+        3. Vect6 Start_XYZABC:起始点末端的位姿信息，六维信息，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
+        4. Vect6 End_XYZABC:终止点末端的位姿信息，六维信息，目标末端点的平移和欧拉旋转使用FX_Robot_CalEndXYZABC自定义输入，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为mm， 旋转为度）
+        5. FX_DOUBLE Allow_Range:两段路径之间的允许的平滑过渡长度(单位:mm)，Allow_Range=0时，该段路径的结束点位会运动到速度为0,即准确到达，Allow_Range不为0时，速度不会运动到0，而是会与下一段路径以设置的平滑过渡长度为参考，平滑运动到下一段路径。Allow_Range的数值越大，两段路径之间衔接越顺滑，衔接点的位置误差越大，反之Allow_Range的数值越小，衔接点位置误差越小。
+        6. FX_INT32 ZSP_Type:逆运动学零空间约束类型。
+            ZSP_Type=0:逆运动学选择策略为距离输入参考关节角欧式距离最小
+            ZSP_Type=1:逆运动学选解策略为接近参考角的肘平面参数，适用于肘平面需要保持一定姿态的运动过程
+        7. Vect6 ZSP_Para:零空间约束相关参数(详情请参考逆解结构体数据介绍)
+            ZSP_Type=0:ZSP_Para传入长度为6的全零数组，输入其他数值不会生效
+            ZSP_Type=1:ZSP_Para数组中前三位为肘平面切向量，后三位为0。例如：希望肘平面尽量与地面平行，可设置ZSP_para=[0,0,1,0,0,0]。具体选择输入向量可参考KinematicsSDK接口中计算正运动学和零空间(臂角平面)参数的接口说明
+        8. FX_DOUBLE Vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        9. FX_DOUBLE ACC:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        10. FX_INT32L Freq:设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
+    返回值：
+        成功：True/1; 失败：False/0
+
+    • 下发规划点位建议使用ControlSDK中的OnSetPlnCart_A/B接口，若使用该接口，请设置内部规划频率为50Hz（内部规划频率参考接口输入参数10）；
+    • 若使用周期下发，内部规划周期不强制要求为50Hz，但需要设置为基频的整数分频
+    • 该接口可作为单段规划使用，整体功能及输出与MOVLA接口相同，区别在于可以设置逆运动解算的零空间，及调用接口后需要使用FX_Robot_PLN_Get_MOVL_Path接口获取点位
+
+####
+FX_BOOL  FX_Robot_PLN_Set_MOVL_Next_Point(FX_INT32L RobotSerial, Vect6 Next_XYZABC, FX_DOUBLE Allow_Range, 
+                                            FX_INT32L ZSP_Type, Vect6 ZSP_Para, FX_DOUBLE Vel, FX_DOUBLE Acc);
+
+    • 输入下一目标点位姿、平滑过渡长度、逆运动学零空间约束类型、零空间约束相关参数、直线规划速度及直线规划加速度
+    输入：
+        1. FX_INT32L RobotSerial：0表示左臂，1表示右臂
+        2. Vect6 Next_XYZABC:下一目标点末端的位姿信息，六维信息，目标末端点的平移和欧拉旋转使用FX_Robot_CalEndXYZABC自定义输入，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为mm， 旋转为度）
+        3. FX_DOUBLE Allow_Range：参考上一接口说明
+        4. FX_INT32 ZSP_Type:参考上一接口说明
+        5. FVect6 ZSP_Para:参考上一接口说明
+        6. FX_DOUBLE Vel:参考上一接口说明
+        7.FX_DOUBLE ACC:参考上一接口说明
+    返回值：
+        成功：True/1; 失败：False/0
+
+    • 该接口中的起点位姿默认为上一运动段的结束点位姿，参考角度为上一运动段的结束点各关节角度
+    • 该接口中重点关注下个目标点的位姿信息、平滑过渡长度信息，以及运动过程中的速度、加速度和逆运动学选解策略
+    • 输出点位频率为50Hz
+
+####
+FX_BOOL  FX_Robot_PLN_Get_MOVL_Path(FX_INT32L RobotSerial, CPointSet* ret_Pset);
+
+    输入：
+        FX_INT32L RobotSerial：0表示左臂，1表示右臂
+    输出：
+        CPointSet* ret_pset:点位缓存类函数。获取全部规划点位。
+    返回值：
+        成功：True/1; 失败：False/0
+
+### 使用示例（仅包含规划接口的简单示例，不包含初始化、求解XYZABC的详细过程，具体使用方法以showcase为准）
+• 仅包含一个起始点，一个结束点，但是需要定义规划过程中逆运动学的零空间约束参数
+
+    CPointSet ret_pset;
+    FXPLN_Set_MovL_Start(0, refjoints, P1, P2, 0.0, 1, [0,0,1,0,0,0], 100, 200);
+    FXPLN_Get_MovL_Path(0, &ret_pset);
+    • 注意单段使用时，Allow_Range不生效
+    • ret_pset中保存该段路径点位
+
+• 包含一个起始点，后续输入多个点
+
+    CPointSet ret_pset;
+    FXPLN_Set_MovL_Start(0, refjoints, P1, P2, 5.0, 1, [0,0,1,0,0,0], 100, 200);
+    FX_Robot_PLN_Set_MOVL_Next_Point(0, P3, 10.0, 1, [0,0,1,0,0,0], 100, 200);
+    FX_Robot_PLN_Set_MOVL_Next_Point(0, P4, 0.0, 0, [0,0,0,0,0,0], 200, 200);
+    ...
+    FX_Robot_PLN_Set_MOVL_Next_Point(0, Pn, 0.0, , [0,0,0,0,0,0], 200, 200);
+    FX_Robot_PLN_Get_MOVL_Path(0, &ret_pset);
+    • 注意单段使用时，Allow_Range不生效
+    • ret_pset中包含全部运动过程中的点位
+
 # 二、案例脚本
 ## C++开发的使用编译见：
 [SDK使用](DEMO_C++/readme.md)
