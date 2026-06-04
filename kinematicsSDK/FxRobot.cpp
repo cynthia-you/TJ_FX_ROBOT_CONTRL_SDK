@@ -3595,6 +3595,7 @@ FX_BOOL FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L Ro
 
 	return FX_TRUE;
 }
+
 FX_BOOL FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, FX_CHAR *OutPutPath)
 {
 	if (FX_LOG_TAG)
