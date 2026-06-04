@@ -11,12 +11,12 @@ from SDK_PYTHON.fx_kine import Marvin_Kine,FX_InvKineSolvePara,convert_to_8x8_ma
 该DEMO 为机器人计算SDK 功能模块完整演示脚本
 
 使用可以全部运行。
-    注意 
+    注意
     实列化计算
     配置导入
     初始化动力学
     是前置操作，其余所有接口调用前必须这三个接口先调用以初始化信息到缓存
-     
+
 '''#################################################################
 
 '''实列化计算'''
@@ -30,11 +30,11 @@ kk.log_switch(0)#0 off, 1 on
 !!! 非常重要！！！
 使用前，请一定确认机型，导入正确的配置文件config_path，文件导错，计算会错误啊啊啊,甚至看起来运行正常，但是值错误！！！
     ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
-    ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg； 
+    ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg；
     srs机型为srs.MvKDCfg. 多个*.MvKDCfg会解析出错
 一定要确认arm_type是左臂0 还是右臂1
 '''
-ini_result=kk.load_config(arm_type=0,config_path=os.path.join(current_path,'ccs_m6_31.MvKDCfg'))
+ini_result=kk.load_config(arm_type=0,config_path=os.path.join(current_path,'ccs_m6_40.MvKDCfg'))
 print(ini_result)
 print('-'*50)
 
@@ -189,6 +189,38 @@ print(f"Got {len(points)} planning points")
 if points:
     print(f"First point: {points[0]}")
 print('-'*50)
+
+
+
+'''多点规划'''
+allow_range = 5
+zsp_type = 1
+zsp_params = [0, 0, -1, 0, 0, 0]
+pln_vel = 100
+pln_acc = 100
+pln_freq = 50
+arm0_multi_points = [[509.731, 233.614, 265.949, -169.144, 55.011, -146.752],
+                     [509.731, 233.614, 65.949, -169.144, 55.011, -146.752],
+                     [509.731, 33.614, 65.949, -169.144, 55.011, -146.752],
+                     [509.731, 33.614, 265.949, -169.144, 55.011, -146.752]]
+arm0_start_pos = [17.970, -35.197, 11.414, -73.344, -9.154, -17.035, 7.086]
+tag_multi_start=kk.multi_movL_set_start(arm0_start_pos, arm0_multi_points[0], arm0_multi_points[1],
+                                                    allow_range, zsp_type, zsp_params,
+                                                    pln_vel, pln_acc, pln_freq)
+if not tag_multi_start:
+    print('multi-segment planing: set start failed')
+
+for next_one in arm0_multi_points[2:]:
+    ret1 = kk.multi_movL_next_point(next_one, allow_range, zsp_type, zsp_params,  pln_vel, pln_acc, )
+    if not ret1 :
+        print(f"multi-segment planing: set next failed")
+
+points = kk.multi_movL_get_points()
+print(f"multi-segment planing:: Got {len(points)} planning points")
+if points:
+    print(f"First point: {points[0]}")
+print('-'*50)
+
 
 '''
 工具动力学参数辨识

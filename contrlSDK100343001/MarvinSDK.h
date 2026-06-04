@@ -197,14 +197,24 @@ extern "C"
 	FX_DLL_EXPORT bool OnInitPlnLmt(char *path);
 	FX_DLL_EXPORT bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
 	FX_DLL_EXPORT bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
-	FX_DLL_EXPORT bool OnStopPlnJoint_A();
-	FX_DLL_EXPORT bool OnStopPlnJoint_B();
 
 	// 笛卡尔空间PLN方式发送指令
 	FX_DLL_EXPORT void *FX_CPointSet_Create();
 	FX_DLL_EXPORT void FX_CPointSet_Destroy(void *pset);
 	FX_DLL_EXPORT bool OnSetPlnCart_A(void *pset);
 	FX_DLL_EXPORT bool OnSetPlnCart_B(void *pset);
+
+	// 中断规划运行，笛卡尔空间和关节空间都适用
+	FX_DLL_EXPORT bool OnStopPlnJoint_A();
+	FX_DLL_EXPORT bool OnStopPlnJoint_B();
+
+	//// collaboration
+	// 关节空间两个手臂同时规划运行，注意同时开始，不一定同时结束。
+	FX_DLL_EXPORT bool OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio);
+	// 笛卡尔空间两个手臂从当前点规划方式运行到目标点，规划点位pset由KinematicsSDK计算接口FX_Robot_PLN_MOVLA计算得出。
+	FX_DLL_EXPORT bool CoRunPlnCart(void *pset0, void *pset1);
+	// 同时中断两个手臂的规划运行，笛卡尔空间和关节空间都适用
+	FX_DLL_EXPORT bool CoStopPln();
 
 	// 末端工具通讯用接口//
 	// 清除左臂末端模块的缓存数据

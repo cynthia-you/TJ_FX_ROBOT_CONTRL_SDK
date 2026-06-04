@@ -949,14 +949,218 @@ bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_r
 	return CRobot::OnSetPlnJoint_B(start_joints, stop_joints, vel_ratio, acc_ratio);
 }
 
+bool OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio)
+{
+	if (start_joints_A == nullptr || stop_joints_A == nullptr || start_joints_B == nullptr || stop_joints_B == nullptr)
+	{
+		printf("[ERROR] OnSetPlnJoint_AB: Null pointer input\n");
+		return false;
+	}
+	for (int i = 0; i < 7; ++i)
+	{
+		if (isnan(start_joints_A[i]) || isinf(start_joints_A[i]) || isnan(start_joints_A[i]) || isinf(start_joints_A[i]))
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: start_joints_A[%d] is invalid (NaN or Inf)\n", i);
+			return false;
+		}
+		if (isnan(start_joints_B[i]) || isinf(start_joints_B[i]))
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: start_joints_B[%d] is invalid (NaN or Inf)\n", i);
+			return false;
+		}
+		if (isnan(stop_joints_A[i]) || isinf(stop_joints_A[i]))
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: stop_joints_A[%d] is invalid (NaN or Inf)\n", i);
+			return false;
+		}
+		if (isnan(stop_joints_B[i]) || isinf(stop_joints_B[i]))
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: stop_joints_B[%d] is invalid (NaN or Inf)\n", i);
+			return false;
+		}
+	}
+	if (vel_ratio < 0)
+	{
+		printf("[ERROR] OnSetPlnJoint_AB: Invalid vel_ratio %lf (valid range: 0~1)\n", vel_ratio);
+		return false;
+	}
+	if (vel_ratio > 1)
+	{
+		printf("[WARNING] OnSetPlnJoint_AB: Invalid vel_ratio %lf (valid range: 0~1), set vel_ratio to 1\n", vel_ratio);
+		vel_ratio = 1.0;
+	}
+	if (acc_ratio < 0)
+	{
+		printf("[ERROR] OnSetPlnJoint_AB: Invalid acc_ratio %lf (valid range: 0~1)\n", acc_ratio);
+		return false;
+	}
+	if (acc_ratio > 1)
+	{
+		printf("[WARNING] OnSetPlnJoint_AB: Invalid acc_ratio %lf (valid range: 0~1), set acc_ratio to 1\n", acc_ratio);
+		acc_ratio = 1.0;
+	}
+
+	return OnSetPlnJoint_AB(start_joints_A, stop_joints_A, start_joints_B, stop_joints_B, vel_ratio, acc_ratio);
+}
+
+bool CoRunPlnCart(void *pset0, void *pset1)
+{
+	DCSS t;
+	do
+	{
+		OnGetBuf(&t);
+		SLEEP(1);
+	} while (t.m_Out[0].m_TrajState != 0 && t.m_Out[1].m_TrajState != 0);
+
+	long num0 = static_cast<CPointSet *>(pset0)->OnGetPointNum();
+	long num1 = static_cast<CPointSet *>(pset1)->OnGetPointNum();
+	printf("num0:%ld, num1 :%ld \n", num0, num1);
+	if (num0 <= 5 || num1 <= 5)
+	{
+
+		return false;
+	}
+	CRobot::OnClearSet();
+	CRobot::OnSetTrajInit_A(num0);
+	CRobot::OnSetTrajInit_B(num1);
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+	{
+		printf("[ERROR] OnSetTrajInit_B: timeout.\n");
+		return false;
+	}
+	SLEEP(SLEEP_TIME);
+	if (CRobot::OnGetBuf(&t) == true)
+	{
+		if (t.m_Out[0].m_TrajState != 1 || t.m_Out[1].m_TrajState != 1)
+		{
+			printf("[ERROR] OnSetTrajInit_B: timeout.\n");
+			return false;
+		}
+	}
+
+	long send_g_num = num0 / 50;
+	long relic_num = num0 % 50;
+	long ii, jj, kk;
+	double SendData_A[350];
+	double SendData_B[350];
+	double *retp0, *retp1;
+	long spos;
+	long ipos0 = 0;
+	long ipos1 = 0;
+	for (ii = 0; ii < send_g_num; ii++)
+	{
+		spos = 0;
+		for (jj = 0; jj < 50; jj++)
+		{
+			retp0 = static_cast<CPointSet *>(pset0)->OnGetPoint(ipos0++);
+			for (kk = 0; kk < 7; kk++)
+				SendData_A[spos++] = retp0[kk];
+		}
+		spos = 0;
+		for (jj = 0; jj < 50; jj++)
+		{
+			retp1 = static_cast<CPointSet *>(pset1)->OnGetPoint(ipos1++);
+			for (kk = 0; kk < 7; kk++)
+				SendData_B[spos++] = retp1[kk];
+		}
+
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_A(ii, 50, SendData_A);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			return false;
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_B(ii, 50, SendData_B);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			return false;
+	}
+	if (relic_num != 0)
+	{
+		spos = 0;
+		for (jj = 0; jj < relic_num; jj++)
+		{
+			retp0 = static_cast<CPointSet *>(pset0)->OnGetPoint(ipos0++);
+			for (kk = 0; kk < 7; kk++)
+				SendData_A[spos++] = retp0[kk];
+		}
+		spos = 0;
+		for (jj = 0; jj < relic_num; jj++)
+		{
+			retp1 = static_cast<CPointSet *>(pset1)->OnGetPoint(ipos1++);
+			for (kk = 0; kk < 7; kk++)
+				SendData_B[spos++] = retp1[kk];
+		}
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_A(ii, 50, SendData_A);
+		if (CRobot::OnSetSendWaitResponse(5000) < 0)
+		{
+			printf("1\n");
+			return false;
+		}
+
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_B(ii, 50, SendData_B);
+		if (CRobot::OnSetSendWaitResponse(5000) < 0)
+		{
+			printf("11\n");
+			return false;
+		}
+	}
+	SLEEP(10);
+	CRobot::OnGetBuf(&t);
+	if (t.m_Out[0].m_TrajState != 2 || t.m_Out[1].m_TrajState != 2)
+	{
+
+		printf("3\n");
+		return false;
+	}
+
+	CRobot::OnClearSet();
+	CRobot::OnSetTrajRun_A();
+	CRobot::OnSetTrajRun_B();
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+	{
+		printf("2\n");
+		return false;
+	}
+
+	return true;
+}
+
 bool OnStopPlnJoint_B()
 {
-	return CRobot::OnStopPlnJoint_B();
+	CRobot::OnClearSet();
+	CRobot::OnStopPlnJoint_interB();
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+	{
+		printf("[ERROR] OnStopPlnJoint_B: OnSetSendWaitResponse timeout");
+		return false;
+	}
+	return true;
 }
 
 bool OnStopPlnJoint_A()
 {
-	return CRobot::OnStopPlnJoint_A();
+	CRobot::OnClearSet();
+	CRobot::OnStopPlnJoint_interA();
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+	{
+		printf("[ERROR] OnStopPlnJoint_A: OnSetSendWaitResponse timeout");
+		return false;
+	}
+	return true;
+}
+
+bool CoStopPln()
+{
+	CRobot::OnClearSet();
+	CRobot::OnStopPlnJoint_interA();
+	CRobot::OnStopPlnJoint_interB();
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+	{
+		printf("[ERROR] CoStopPln: A&B arm stop run Planning Trajectory failed, timeout.\n");
+		return false;
+	}
+	return true;
 }
 
 bool OnSetPlnCart_A(void *pset)

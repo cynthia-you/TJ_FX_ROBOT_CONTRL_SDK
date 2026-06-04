@@ -1,4 +1,4 @@
-#ifndef _POINTSET_H_ 
+#ifndef _POINTSET_H_
 #define _POINTSET_H_
 #include "FXDG.h"
 #include "stdio.h"
@@ -115,12 +115,6 @@ protected:
 	char     m_SubTag[256];
 
 	PoinType m_L_Type[41];
-
-
-
-
-
-
 };
 
-#endif 
+#endif

@@ -563,10 +563,10 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	memset(name, 0, 30);
 	sprintf(name, "VERSION");
 	long ctrlSysVers = 0;
-    long int cnt = 5;
+	long int cnt = 5;
 	while (cnt > 0)
 	{
-		if(0 != OnGetIntPara(name, &ctrlSysVers) )
+		if (0 != OnGetIntPara(name, &ctrlSysVers))
 		{
 			cnt--;
 			continue;
@@ -1360,7 +1360,7 @@ void CRobot::DoCnt()
 		}
 		m_send_response_timeout_cnt--;
 		m_last_response_timeout_cnt = m_send_response_timeout_cnt.load();
-		if (m_send_response_local_tag != m_send_response_recv_tag)
+		if (m_send_response_local_tag != m_send_response_recv_tag.load())
 		{
 			m_respones_time_cnt++;
 		}
@@ -2057,10 +2057,7 @@ bool CRobot::OnSetPlnCart_A(CPointSet *pset)
 		CRobot::OnClearSet();
 		CRobot::OnSetTrajSet_A(ii, 50, SendData);
 
-		unsigned char buf[1500] = {0};
-		long buf_len = 1500;
-
-		if (CRobot::OnSetSendWaitResponse2(TIME_OUT, buf, buf_len) < 0)
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 		{
 			printf("[ERROR] OnSetTrajSet_A: OnSetSendWaitResponse timeout\n");
 			return false;
@@ -2293,17 +2290,16 @@ bool CRobot::OnStopPlnJoint_A()
 
 bool CRobot::OnStopPlnJoint_interA()
 {
-	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
+	long add_size = 1 + sizeof(FX_FLOAT) * 1;
+	if (add_size + m_InsRobot->m_Slen >= 1400)
 	{
-		if (m_InsRobot->m_LocalLogTag == true)
-		{
-			printf("[Marvin SDK %s]: Warning: Version mismatch between control system %d and SDK %d\n", __FUNCTION__, m_InsRobot->m_ctrlSysVersion, SDK_VERSION);
-		}
 		return false;
 	}
-	int data[10] = {0};
-	long ret = OnWriteInt32(115, 0, data);
-	return (ret == 0);
+	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 115;
+	m_InsRobot->m_Slen++;
+	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
+	(*pnum)++;
+	return true;
 }
 
 bool CRobot::OnSetTrajSet_A(long serial, long pointNum, double *data)
@@ -3115,7 +3111,7 @@ long CRobot::OnSetSendWaitResponse(long time_out)
 	m_InsRobot->m_send_response_local_tag++;
 
 	unsigned char pv[10] = {0};
-	pv[0] = m_InsRobot->m_send_response_local_tag;
+	pv[0] = m_InsRobot->m_send_response_local_tag.load();
 	long ret = OnWriteRaw(251, 1, pv);
 	if (ret != 0)
 	{
@@ -3147,77 +3143,9 @@ long CRobot::OnSetSendWaitResponse(long time_out)
 		m_InsRobot->m_respones_time_tag = 0;
 		if (m_InsRobot->m_LocalLogTag == true)
 			printf("[Marvin SDK]: OnSetSendWaitResponse\n");
-		return m_InsRobot->m_respones_time_cnt;
+		return m_InsRobot->m_respones_time_cnt.load();
 	}
-	if (m_InsRobot->m_send_response_recv_tag == m_InsRobot->m_send_response_local_tag)
-	{
-		return 1;
-	}
-	return -1;
-}
-
-long CRobot::OnSetSendWaitResponse2(long time_out, unsigned char ret_debug[1500], long &ret_debug_len)
-{
-	if (m_InsRobot->m_SendTag == 100)
-	{
-		return -1;
-	}
-	if (m_InsRobot->m_send_response_local_tag < 7)
-	{
-		m_InsRobot->m_send_response_local_tag = 7;
-	}
-	if (m_InsRobot->m_send_response_local_tag > 100)
-	{
-		m_InsRobot->m_send_response_local_tag = 7;
-	}
-	m_InsRobot->m_send_response_local_tag++;
-
-	unsigned char pv[10] = {0};
-	pv[0] = m_InsRobot->m_send_response_local_tag;
-
-	long ret = OnWriteRaw(251, 1, pv);
-	if (ret != 0)
-	{
-		return -1;
-	}
-
-	ret_debug_len = m_InsRobot->m_Slen;
-	long copy_len = ret_debug_len;
-	if (copy_len > 1500)
-	{
-		copy_len = 1500;
-	}
-	memcpy(ret_debug, m_InsRobot->m_SendBuf, copy_len);
-
-	long tmp_time_out = time_out;
-	if (tmp_time_out < 20)
-	{
-		tmp_time_out = 20;
-	}
-	if (tmp_time_out > 1000)
-	{
-		tmp_time_out = 1000;
-	}
-	m_InsRobot->m_respones_time_tag = 0;
-	m_InsRobot->m_send_response_timeout_cnt = tmp_time_out;
-
-	if (OnSetSend() == false)
-	{
-		return -1;
-	}
-
-	while (m_InsRobot->m_send_response_timeout_cnt > 0)
-	{
-		SLEEP(1);
-	}
-	if (m_InsRobot->m_respones_time_tag == 1)
-	{
-		m_InsRobot->m_respones_time_tag = 0;
-		if (m_InsRobot->m_LocalLogTag == true)
-			printf("[Marvin SDK]: OnSetSendWaitResponse\n");
-		return m_InsRobot->m_respones_time_cnt;
-	}
-	return -1;
+	return 0;
 }
 
 bool CRobot::OnSetSend()

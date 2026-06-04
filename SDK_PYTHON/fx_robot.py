@@ -781,6 +781,80 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
+    def setPln_joint_AB(self,
+                            start_joints_A: List[float],  # 7个关节角度
+                            stop_joints_A: List[float],
+                            start_joints_B: List[float],
+                            stop_joints_B: List[float],
+                            vel_ratio: float,
+                            acc_ratio: float) -> bool:
+        """
+        关节空间两个手臂同时规划运行（同时开始，不一定同时结束）
+        :param start_joints_A: A臂起始关节角度（7个）
+        :param stop_joints_A: A臂目标关节角度（7个）
+        :param start_joints_B: B臂起始关节角度（7个）
+        :param stop_joints_B: B臂目标关节角度（7个）
+        :param vel_ratio: 速度比例（0~1? 具体由SDK定义）
+        :param acc_ratio: 加速度比例
+        :return: 成功返回True，失败返回False
+        """
+        if len(start_joints_A) != 7 or len(stop_joints_A) != 7 or \
+            len(start_joints_B) != 7 or len(stop_joints_B) != 7:
+            raise ValueError("All joint arrays must have exactly 7 elements")
+
+        # 转换为ctypes数组
+        start_A = (ctypes.c_double * 7)(*start_joints_A)
+        stop_A = (ctypes.c_double * 7)(*stop_joints_A)
+        start_B = (ctypes.c_double * 7)(*start_joints_B)
+        stop_B = (ctypes.c_double * 7)(*stop_joints_B)
+
+
+        self.robot.OnSetPlnJoint_AB.argtypes = [
+            ctypes.POINTER(ctypes.c_double),  # start_joints_A (7)
+            ctypes.POINTER(ctypes.c_double),  # stop_joints_A (7)
+            ctypes.POINTER(ctypes.c_double),  # start_joints_B (7)
+            ctypes.POINTER(ctypes.c_double),  # stop_joints_B (7)
+            ctypes.c_double,  # vel_ratio
+            ctypes.c_double  # acc_ratio
+        ]
+        self.robot.OnSetPlnJoint_AB.restype = ctypes.c_bool
+
+        ret = self.robot.OnSetPlnJoint_AB(
+            ctypes.cast(start_A, ctypes.POINTER(ctypes.c_double)),
+            ctypes.cast(stop_A, ctypes.POINTER(ctypes.c_double)),
+            ctypes.cast(start_B, ctypes.POINTER(ctypes.c_double)),
+            ctypes.cast(stop_B, ctypes.POINTER(ctypes.c_double)),
+            ctypes.c_double(vel_ratio),
+            ctypes.c_double(acc_ratio)
+        )
+        return ret
+
+    def setPln_Cart_AB(self, pset0, pset1) -> bool:
+        """
+        笛卡尔空间两个手臂从当前点规划方式运行到目标点，
+        规划点位pset由KinematicsSDK计算接口FX_Robot_PLN_MOVLA计算得出。
+        :param pset0: 手臂0的点集对象
+        :param pset1: 手臂1的点集对象
+        :return: 成功返回True，失败返回False
+        """
+        ptr0 = ctypes.c_void_p(pset0) if isinstance(pset0, int) else ctypes.addressof(pset0)
+        ptr1 = ctypes.c_void_p(pset1) if isinstance(pset1, int) else ctypes.addressof(pset1)
+        self.robot.CoRunPlnCart.argtypes = [
+            ctypes.c_void_p,  # pset0
+            ctypes.c_void_p  # pset1
+        ]
+        self.robot.CoRunPlnCart.restype = ctypes.c_bool
+        return self.robot.CoRunPlnCart(ptr0, ptr1)
+
+    def stopPln_AB(self) -> bool:
+        """
+        同时中断两个手臂的规划运行（笛卡尔空间和关节空间都适用）
+        :return: 成功返回True，失败返回False
+        """
+        self.robot.CoStopPln.argtypes = []
+        self.robot.CoStopPln.restype = ctypes.c_bool
+        return self.robot.CoStopPln()
+
     def setPln_joint(self,arm:str,start_joints:list, target_joints:list, velRatio:float,accRatio:float):
         '''位置模式下使用该接口传输目标关节点位，防止通信抖动
         :param arm: 机械手臂ID “A” OR “B”
@@ -853,7 +927,6 @@ class Marvin_Robot:
         self.robot.FX_OnSetVelEstStep.restype = ctypes.c_bool
         time_long = ctypes.c_long(time)
         return self.robot.FX_OnSetVelEstStep(arm.encode('ascii'),time_long)
-
 
     def clear_485_cache(self,arm:str):
         '''清空发送缓存

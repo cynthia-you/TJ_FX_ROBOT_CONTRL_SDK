@@ -3,10 +3,8 @@
 
 #include "FxType.h"
 
-
 #define MAX_ROWS 7
 #define MAX_COLS 50
-
 
 typedef enum
 {
@@ -115,8 +113,6 @@ typedef struct
 	FX_INT16 m_ParaRetSerial; // working: 0; finish: cmd serial; error cmd_serial + 100
 } DCSS;
 
-
-
 typedef struct
 {
 	FX_INT32 m_CH;
@@ -125,7 +121,6 @@ typedef struct
 	FX_INT32 m_Size;
 	FX_UCHAR m_Data[256]; // original 256
 } DDSS;
-
 
 typedef enum
 {
@@ -174,16 +169,14 @@ typedef enum
 	DCSS_CFG_OP_SAVE = 105,
 } DCSSCfgOperationType;
 
-
 typedef enum
 {
 	SLEEP_TIME = 10, // sleep time after sendCmd
-	TIME_OUT = 1000,	 /// internal time_out, for api:OnSetSendWaitResponse
+	TIME_OUT = 1000, /// internal time_out, for api:OnSetSendWaitResponse
 	ARM_IMP_JOINT = 1,
 	ARM_IMP_CART = 2,
 	ARM_IMP_FORCE = 3,
 } InterCMD;
-
 
 typedef enum
 {
@@ -204,5 +197,3 @@ typedef enum
 } ArmError;
 
 #endif
-
-

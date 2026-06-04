@@ -1,9 +1,9 @@
-#ifndef FX_ROBOT_SDK_H_ 
+#ifndef FX_ROBOT_SDK_H_
 #define FX_ROBOT_SDK_H_
 #include "CmplOpt.h"
 #include "FxRtCSDef.h"
 #include "FxType.h"
-#include  "ACB.h"
+#include "ACB.h"
 #include "ShMem.h"
 #include "TCPFileClient.h"
 #include "CAxisSpPln.h"
@@ -14,46 +14,43 @@
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
-#include <math.h> 
+#include <math.h>
 #include "PointSet.h"
-#define    SDK_VERSION   100343001
+#define SDK_VERSION 100343001
 
-class  CRobot
+class CRobot
 {
 
 public:
-
-	static long OnSetSendWaitResponse2(long time_out,unsigned char ret_debug[1500],long & ret_debug_len);
-	static bool OnOpenShareCh(char* shm_name);
-    static void OnLocalLogOn();
-    static void OnLocalLogOff();
+	static bool OnOpenShareCh(char *shm_name);
+	static void OnLocalLogOn();
+	static void OnLocalLogOff();
 	virtual ~CRobot();
 
 	static bool OnClearChDataA();
 	static bool OnClearChDataB();
 
-	static long OnGetChDataA(unsigned char data_ptr[256], long* ret_ch);
-	static bool OnSetChDataA(unsigned char data_ptr[256], long size_int,long set_ch);
-	static long OnGetChDataB(unsigned char data_ptr[256], long* ret_ch);
+	static long OnGetChDataA(unsigned char data_ptr[256], long *ret_ch);
+	static bool OnSetChDataA(unsigned char data_ptr[256], long size_int, long set_ch);
+	static long OnGetChDataB(unsigned char data_ptr[256], long *ret_ch);
 	static bool OnSetChDataB(unsigned char data_ptr[256], long size_int, long set_ch);
 
-
-	static bool OnSendPVT_A(char* local_file, long serial);
-	static bool OnSendPVT_B(char* local_file, long serial);
+	static bool OnSendPVT_A(char *local_file, long serial);
+	static bool OnSendPVT_B(char *local_file, long serial);
 	static long OnGetSDKVersion();
-	static bool OnSendFile(char* local_file, char* remote_file);
-	static bool OnRecvFile(char* local_file, char* remote_file);
-	static long OnSetIntPara(char paraName[30],long setValue);
+	static bool OnSendFile(char *local_file, char *remote_file);
+	static bool OnRecvFile(char *local_file, char *remote_file);
+	static long OnSetIntPara(char paraName[30], long setValue);
 	static long OnSetFloatPara(char paraName[30], double setValue);
-	static long OnGetIntPara(char paraName[30],long * retValue);
-	static long OnGetFloatPara(char paraName[30],double * retValue);
+	static long OnGetIntPara(char paraName[30], long *retValue);
+	static long OnGetFloatPara(char paraName[30], double *retValue);
 	static long OnSavePara();
-	static bool OnGetBuf(DCSS * ret);
+	static bool OnGetBuf(DCSS *ret);
 
 	static bool OnStartGather(long targetNum, long targetID[35], long recordNum);
 	static bool OnStopGather();
-	static bool OnSaveGatherData(char * path);
-	static bool OnSaveGatherDataCSV(char* path);
+	static bool OnSaveGatherData(char *path);
+	static bool OnSaveGatherDataCSV(char *path);
 
 	static bool OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4);
 	static bool OnRelease();
@@ -61,7 +58,6 @@ public:
 	void ReadPendingData();
 
 	static bool OnClearSet();
-
 
 	static bool OnSetVelEstStep_A(long step);
 	static bool OnSetTargetState_A(int state);
@@ -81,7 +77,7 @@ public:
 	static bool OnSetTool_B(double kinePara[6], double dynPara[10]);
 	static bool OnSetJointLmt_B(int velRatio, int AccRatio);
 	static bool OnSetJointKD_B(double K[7], double D[7]);
-	static bool OnSetCartKD_B(double K[7], double D[7],int type);
+	static bool OnSetCartKD_B(double K[7], double D[7], int type);
 	static bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	static bool OnSetDragSpace_B(int zsType);
 	static bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
@@ -90,18 +86,18 @@ public:
 	static bool OnSetImpType_B(int type);
 	static bool OnSetPVT_B(int id);
 
-	static bool OnInitPlnLmt(char * path);
-	static bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
-	static bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+	static bool OnInitPlnLmt(char *path);
+	static bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
+	static bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
 
-	static bool OnSetPlnCart_A(CPointSet* pset);
-	static bool OnSetPlnCart_B(CPointSet* pset);
+	static bool OnSetPlnCart_A(CPointSet *pset);
+	static bool OnSetPlnCart_B(CPointSet *pset);
 
 	static bool OnSetTrajInit_A(int pointNum);
 	static bool OnSetTrajInit_B(int pointNum);
 
-	static bool OnSetTrajSet_A(long serial,long pointNum, double* data);
-	static bool OnSetTrajSet_B(long serial,long pointNum, double* data);
+	static bool OnSetTrajSet_A(long serial, long pointNum, double *data);
+	static bool OnSetTrajSet_B(long serial, long pointNum, double *data);
 
 	static bool OnSetTrajRun_A();
 	static bool OnSetTrajRun_B();
@@ -114,22 +110,20 @@ public:
 
 	static bool OnSetSend();
 	static long OnSetSendWaitResponse(long time_out);
-	static bool OnUpdateSystem(char* local_path);
-	static bool OnDownloadLog(char* local_path);
-
+	static bool OnUpdateSystem(char *local_path);
+	static bool OnDownloadLog(char *local_path);
 
 	void DoRecv();
 	void DoSend();
 	void DoCnt();
 
-    bool       m_LocalLogTag;
+	bool m_LocalLogTag;
 
 protected:
+	bool m_ch_send_a_tag;
+	bool m_ch_send_b_tag;
 
-    bool m_ch_send_a_tag;
-    bool m_ch_send_b_tag;
-
-    bool m_send_lock;
+	bool m_send_lock;
 	CRobot();
 	static CRobot *GetIns();
 	std::atomic<unsigned char> m_send_response_local_tag;
@@ -139,11 +133,11 @@ protected:
 	std::atomic<long> m_respones_time_cnt;
 	std::atomic<long> m_respones_time_tag;
 
-	long       m_ParaSerial;
+	long m_ParaSerial;
 	std::atomic<long> m_GatherTag;
-	FX_FLOAT * m_GatherItem[40];
-	long       m_GatherItemSize;
-	long       m_GatherRecordMaxNum;
+	FX_FLOAT *m_GatherItem[40];
+	long m_GatherItemSize;
+	long m_GatherRecordMaxNum;
 	std::atomic<long> m_GatherRecordNum;
 	CPointSet m_GatherSet;
 	FX_UINT32 miss_cnt;
@@ -154,9 +148,8 @@ protected:
 	FX_BOOL m_VersionMatchTag;
 	FX_INT32 m_ctrlSysVersion;
 
-	long       m_Arm0PosCmdSendSerial;
-	long       m_Arm1PosCmdSendSerial;
-
+	long m_Arm0PosCmdSendSerial;
+	long m_Arm1PosCmdSendSerial;
 
 #ifdef CMPL_WIN
 	MMRESULT m_TimeEventID;
@@ -164,19 +157,19 @@ protected:
 	FX_BOOL m_LastGatherTag;
 #ifdef CMPL_LIN
 	timer_t robot_timer;
-#endif	
-	DCSS    m_DCSS;
+#endif
+	DCSS m_DCSS;
 
-	DCSS    m_DCSS_Send;
+	DCSS m_DCSS_Send;
 	FX_UCHAR m_RunState;
 
 	SOCKET _local_sock;
 	SOCKET _tosock_;
 	struct sockaddr_in _to;
-	int    _toLen;
+	int _toLen;
 	struct sockaddr_in _local;
-	int		_localLen;
-	int    _from_valid = 0;
+	int _localLen;
+	int _from_valid = 0;
 
 	int server_sockaddr_in_len_;
 
@@ -185,43 +178,36 @@ protected:
 	unsigned char m_SendBuf[1500];
 	std::atomic<long> m_Slen;
 	std::atomic<long> m_SendTag;
-	FX_BOOL SendFile(char* local_file, char* remote_file);
-	FX_BOOL RecvFile(char* local_file, char* remote_file);
+	FX_BOOL SendFile(char *local_file, char *remote_file);
+	FX_BOOL RecvFile(char *local_file, char *remote_file);
 
 	unsigned char m_ip1;
 	unsigned char m_ip2;
 	unsigned char m_ip3;
 	unsigned char m_ip4;
 
-
-	CACB  m_ACB1;
-	CACB  m_ACB2;
+	CACB m_ACB1;
+	CACB m_ACB2;
 	char m_SendBuf1[600];
 	char m_SendBuf2[600];
-	DDSS* pDDSS1;
-	DDSS* pDDSS2;
-
-	
+	DDSS *pDDSS1;
+	DDSS *pDDSS2;
 
 	bool m_share_ch_tag;
-	unsigned char * m_psm;
-	CGACB  m_ACB_ShMem;
+	unsigned char *m_psm;
+	CGACB m_ACB_ShMem;
 	ShMem m_ShMem;
 
+	static long OnWriteRaw(unsigned char ins, int size, unsigned char *buf);
+	static long OnWriteInt16(unsigned char ins, int size, int *data);
+	static long OnWriteFloat(unsigned char ins, int size, double *data);
+	static long OnWriteIntFloat(unsigned char ins, int intvalue, int size, double *data);
+	static long OnWriteInt32(unsigned char ins, int size, int *data);
 
-	static long OnWriteRaw(unsigned char ins,int size,unsigned char * buf);
-	static long OnWriteInt16(unsigned char ins,int size,int * data);
-	static long OnWriteFloat(unsigned char ins,int size,double * data);
-	static long OnWriteIntFloat(unsigned char ins,int intvalue, int size, double *data);
-	static long OnWriteInt32(unsigned char ins,int size, int * data);
+	static long OnDealData(char paraName[30], unsigned char type, unsigned char dins, float *fdata, int *idata, long &serial);
 
-	static long OnDealData(char paraName[30],unsigned char type,unsigned char dins,float * fdata,int * idata,long & serial);
-
-	static long OnWriteInt32Float(unsigned char ins,int size_i,int * idata,int size_f,double * fdata);
-	static long OnWriteFloatInt32(unsigned char ins,int size_f,double * fdata,int size_i,int * idata);
-
+	static long OnWriteInt32Float(unsigned char ins, int size_i, int *idata, int size_f, double *fdata);
+	static long OnWriteFloatInt32(unsigned char ins, int size_f, double *fdata, int size_i, int *idata);
 };
 
 #endif
-
-

@@ -1,4 +1,4 @@
-#ifndef _POINTSET_H_ 
+#ifndef _POINTSET_H_
 #define _POINTSET_H_
 #include "FXDG.h"
 #include "stdio.h"
@@ -53,7 +53,6 @@ enum PoinType
 class CPointSet
 {
 public:
-
 	CPointSet();
 	virtual ~CPointSet();
 	bool OnInit(PoinType ptype);
@@ -61,38 +60,38 @@ public:
 	bool OnEmpty();
 	PoinType OnGetType();
 	long OnGetPointNum();
-	double* OnGetPoint(long pos);
+	double *OnGetPoint(long pos);
 	bool OnSetPoint(double point_value[]);
-	bool OnSave(char* path);
-	bool OnSaveHL(char* path);
-	bool OnSaveCSV(char* path);
-	bool OnLoadXFile(char* path, long load_col_num, long exp_col_num);
-	bool OnLoadExp(char* path, long exp_col_num);
-	bool OnLoad(char* path);
-	bool OnLoadFast(char* path);
-	bool OnSave(FILE* fp);
-	bool OnSaveRaw(char* path);
-	bool OnLoad(FILE* fp);
-	bool OnSetTag(char* tag);
-	bool OnSetSubTag(char* subtag);
-	char* OnGetTag();
-	bool OnCheckTag(char* c);
-	bool OnCheckSubTag(char* c);
+	bool OnSave(char *path);
+	bool OnSaveHL(char *path);
+	bool OnSaveCSV(char *path);
+	bool OnLoadXFile(char *path, long load_col_num, long exp_col_num);
+	bool OnLoadExp(char *path, long exp_col_num);
+	bool OnLoad(char *path);
+	bool OnLoadFast(char *path);
+	bool OnSave(FILE *fp);
+	bool OnSaveRaw(char *path);
+	bool OnLoad(FILE *fp);
+	bool OnSetTag(char *tag);
+	bool OnSetSubTag(char *subtag);
+	char *OnGetTag();
+	bool OnCheckTag(char *c);
+	bool OnCheckSubTag(char *c);
 	bool OnSetNum(long num);
 	bool OnMovCloToTail(long col_serial);
 	bool OnMult(long col_serial, double mult_value);
 	bool OnAdd(long col_serial, double add_value);
 	bool OnAdd(long src_col_serial1, long src_col_serial2, long tgt_col_serial);
 	bool OnCalDif(long src_col_serial, long tgt_col_serial, long skip_num);
-	bool OnSubAtValue(long serial, double target_v, double eps, CPointSet* ret);
+	bool OnSubAtValue(long serial, double target_v, double eps, CPointSet *ret);
 	bool OnCpyC2C(long target_c, long src_c);
-	bool OnCpyC2C(long target_c, long src_c, CPointSet* src);
-	bool OnCpyFrm(CPointSet* src);
-	bool OnSubNoEmpty(long serial, double target_v, double eps, CPointSet* ret);
-	bool OnSub(long serial, bool in_or_de, CPointSet* ret);
-	bool OnSubZone(long serial, double min_v, double max_v, CPointSet* ret);
+	bool OnCpyC2C(long target_c, long src_c, CPointSet *src);
+	bool OnCpyFrm(CPointSet *src);
+	bool OnSubNoEmpty(long serial, double target_v, double eps, CPointSet *ret);
+	bool OnSub(long serial, bool in_or_de, CPointSet *ret);
+	bool OnSubZone(long serial, double min_v, double max_v, CPointSet *ret);
 	bool OnMakeZeroData(PoinType ptype, long num);
-	bool OnDifferenceO12(long serial, double ts, CPointSet* pva);
+	bool OnDifferenceO12(long serial, double ts, CPointSet *pva);
 
 	bool OnSub(long head_size, long head_repeatnum, long tail_size, long tail_repeatnum);
 
@@ -102,25 +101,20 @@ public:
 	bool OnFltCln3(long serial, long time);
 	bool OnSubSmp(long skp_num);
 
-	bool OnFindByTag(long serial, double tag, long startpos, long& ret_start, long& ret_end);
-	bool OnGetSubAVG(long serial,  long start, long end,double & ret_avg);
+	bool OnFindByTag(long serial, double tag, long startpos, long &ret_start, long &ret_end);
+	bool OnGetSubAVG(long serial, long start, long end, double &ret_avg);
 
-	bool OnFindByTagGetAvg(long serial, double tag, long startpos, long& ret_start, long& ret_end, long a_serial, double & ret_avg);
+	bool OnFindByTagGetAvg(long serial, double tag, long startpos, long &ret_start, long &ret_end, long a_serial, double &ret_avg);
+
 protected:
-	bool OnGetLine(FILE* fp, char* buf);
-	bool OnGetValue(char* buf, double* retv, long& retn);
+	bool OnGetLine(FILE *fp, char *buf);
+	bool OnGetValue(char *buf, double *retv, long &retn);
 	PoinType m_PointType;
-	CFXDG    m_Points;
-	char     m_Tag[256];
-	char     m_SubTag[256];
+	CFXDG m_Points;
+	char m_Tag[256];
+	char m_SubTag[256];
 
 	PoinType m_L_Type[41];
-
-
-
-
-
-
 };
 
-#endif 
+#endif
