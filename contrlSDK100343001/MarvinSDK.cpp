@@ -1000,7 +1000,7 @@ bool OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7], double 
 		acc_ratio = 1.0;
 	}
 
-	return OnSetPlnJoint_AB(start_joints_A, stop_joints_A, start_joints_B, stop_joints_B, vel_ratio, acc_ratio);
+	return CRobot::OnSetPlnJoint_AB(start_joints_A, stop_joints_A, start_joints_B, stop_joints_B, vel_ratio, acc_ratio);
 }
 
 bool CoRunPlnCart(void *pset0, void *pset1)

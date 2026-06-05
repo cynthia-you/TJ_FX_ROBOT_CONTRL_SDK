@@ -89,6 +89,7 @@ public:
 	static bool OnInitPlnLmt(char *path);
 	static bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
 	static bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
+	static bool OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio);
 
 	static bool OnSetPlnCart_A(CPointSet *pset);
 	static bool OnSetPlnCart_B(CPointSet *pset);

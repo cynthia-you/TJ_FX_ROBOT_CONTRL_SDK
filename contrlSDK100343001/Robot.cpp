@@ -2997,6 +2997,191 @@ bool CRobot::OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], doub
 	return true;
 }
 
+bool CRobot::OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio)
+{
+	DCSS t;
+	double vr = vel_ratio;
+	double ar = acc_ratio;
+	if (vr < 0.01)
+		vr = 0.01;
+	if (vr > 1.0)
+		vr = 1.0;
+	if (ar < 0.01)
+		ar = 0.01;
+	if (ar > 1.0)
+		ar = 1.0;
+	long i = 0;
+	double sta0[8] = {0};
+	double sto0[8] = {0};
+	double sta1[8] = {0};
+	double sto1[8] = {0};
+	for (i = 0; i < 7; i++)
+	{
+		sta0[i] = start_joints_A[i];
+		sto0[i] = stop_joints_A[i];
+		sta1[i] = start_joints_B[i];
+		sto1[i] = stop_joints_B[i];
+	}
+	long num0 = pln_A.OnPln(sta0, sto0, vr, ar);
+	if (num0 <= 0)
+	{
+		printf("[ERROR] OnSetPlnJoint_AB: A planning failed, please check start joints and end joints\n");
+		return false;
+	}
+	CRobot::OnClearSet();
+	CRobot::OnSetTrajInit_A(num0);
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+	{
+		printf("[ERROR] OnSetPlnJoint_AB: A OnSetSendWaitResponse timeout");
+		return false;
+	}
+
+	long num1 = pln_B.OnPln(sta1, sto1, vr, ar);
+	if (num1 <= 0)
+	{
+		printf("[ERROR] OnSetPlnJoint_AB: B planning failed, please check start joints and end joints\n");
+		return false;
+	}
+	CRobot::OnClearSet();
+	CRobot::OnSetTrajInit_B(num1);
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+	{
+		printf("[ERROR] OnSetPlnJoint_AB: B OnSetSendWaitResponse timeout\n");
+		return false;
+	}
+
+	SLEEP(100);
+	if (CRobot::OnGetBuf(&t) == true)
+	{
+		if (t.m_Out[0].m_TrajState != 1)
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: The controller has not entered planning mode\n");
+			return false;
+		}
+		if (t.m_Out[1].m_TrajState != 1)
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: The controller has not entered planning mode\n");
+			return false;
+		}
+	}
+	long send_g_num = num0 / 50;
+	long relic_num = num0 % 50;
+	long ii, jj, kk;
+	double SendData[350];
+	double retp[8];
+	long spos;
+	for (ii = 0; ii < send_g_num; ii++)
+	{
+		spos = 0;
+		for (jj = 0; jj < 50; jj++)
+		{
+			pln_A.OnCut(retp);
+			for (kk = 0; kk < 7; kk++)
+			{
+				SendData[spos] = retp[kk];
+				spos++;
+			}
+		}
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_A(ii, 50, SendData);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: A OnSetSendWaitResponse timeout");
+			return false;
+		}
+	}
+	if (relic_num != 0)
+	{
+		spos = 0;
+		for (jj = 0; jj < relic_num; jj++)
+		{
+			pln_A.OnCut(retp);
+			for (kk = 0; kk < 7; kk++)
+			{
+				SendData[spos] = retp[kk];
+				spos++;
+			}
+		}
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_A(send_g_num, relic_num, SendData);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: A OnSetSendWaitResponse timeout");
+			return false;
+		}
+	}
+
+	long send_g_num1 = num1 / 50;
+	long relic_num1 = num1 % 50;
+	long ii1, jj1, kk1;
+
+	double SendData1[350];
+	double retp1[8];
+	long spos1;
+	for (ii1 = 0; ii1 < send_g_num1; ii1++)
+	{
+		spos1 = 0;
+		for (jj1 = 0; jj1 < 50; jj1++)
+		{
+			pln_B.OnCut(retp1);
+			for (kk1 = 0; kk1 < 7; kk1++)
+			{
+				SendData1[spos1] = retp1[kk1];
+				spos1++;
+			}
+		}
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_B(ii, 50, SendData);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: B OnSetSendWaitResponse timeout\n");
+			return false;
+		}
+	}
+	if (relic_num1 != 0)
+	{
+		spos1 = 0;
+		for (jj1 = 0; jj1 < relic_num1; jj1++)
+		{
+			pln_B.OnCut(retp1);
+			for (kk1 = 0; kk1 < 7; kk1++)
+			{
+				SendData1[spos1] = retp1[kk1];
+				spos1++;
+			}
+		}
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_B(send_g_num1, relic_num1, SendData1);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: B OnSetSendWaitResponse timeout\n");
+			return false;
+		}
+	}
+	if (CRobot::OnGetBuf(&t) == true)
+	{
+		if (t.m_Out[0].m_TrajState != 2)
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: The controller did not receive the sent trajectory of A\n");
+			return false;
+		}
+		if (t.m_Out[1].m_TrajState != 2)
+		{
+			printf("[ERROR] OnSetPlnJoint_AB: The controller did not receive the sent trajectory of B\n");
+			return false;
+		}
+	}
+	CRobot::OnClearSet();
+	CRobot::OnSetTrajRun_A();
+	CRobot::OnSetTrajRun_B();
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+	{
+		printf("[ERROR] OnSetPlnJoint_AB: AB OnSetSendWaitResponse timeout\n");
+		return false;
+	}
+	return true;
+}
+
 bool CRobot::OnSetTrajInit_B(int pointNum)
 {
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)

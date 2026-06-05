@@ -1,4 +1,4 @@
-#include "MarvinSDK.h" 
+#include "MarvinSDK.h"
 #include "FxRobot.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -88,7 +88,7 @@ int main()
         OnClearErr_B();
         OnSetSend();
         SLEEP(20);
-    } 
+    }
 
     //获取伺服错误，有错误清错
     long ErrCode_A[7]={};
@@ -97,14 +97,14 @@ int main()
     OnGetServoErr_B(ErrCode_B);
     bool allZero_a = true;
     bool allZero_b = true;
-    for (int i = 0; i < 7; ++i) 
+    for (int i = 0; i < 7; ++i)
     {
         if (ErrCode_A[i] != 0) {
             allZero_a = false;
             break;
         }
     }
-    for (int i = 0; i < 7; ++i) 
+    for (int i = 0; i < 7; ++i)
     {
         if (ErrCode_B[i] != 0) {
             allZero_b = false;
@@ -119,7 +119,7 @@ int main()
         OnClearErr_A();
         OnSetSend();
         SLEEP(20);
-    } 
+    }
     if (allZero_b)
     {
         std::cout << "arm B: srvo error exists, clear error\n" << std::endl;
@@ -129,7 +129,7 @@ int main()
         OnSetSend();
         SLEEP(20);
     }
-    
+
     //通过确认freame数据的刷新，确认UDP数据通道连接成功（防火墙等可能不能正常收到数据）
     int motion_tag = 0;
     int frame_update = 0;
@@ -156,7 +156,7 @@ int main()
     //控制日志开
     OnLogOn();
 	OnLocalLogOn();
-    
+
     //控制日志关
     // OnLogOff();
     // OnLocalLogOff();
@@ -205,7 +205,7 @@ int main()
     OnGetBuf(&dcss);
     print_array(dcss.m_In[0].m_Joint_CMD_Pos, 7, "CMD joints of arm A");
     print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "current joints of arm A");
-    
+
 
     //MOVL_KEEPJ约束起点和终点构型的离线直线规划步骤：
     //1. 计算初始化
@@ -251,7 +251,7 @@ int main()
         return -1;
     }
 
-    
+
     //2. 定义起点和终点的构型
     FX_DOUBLE angle1[7] = { -5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995 };
     FX_DOUBLE angle2[7] = { -26.908 ,-91.109, 74.502 ,-88.083, -93.599 ,17.151, -13.602 };
@@ -294,12 +294,12 @@ int main()
             OnClearSet();
             OnSetJointCmdPos_A(joints_);
             OnSetSend();
-            SLEEP(2);//2ms
+            SLEEP(20);//20ms
         }
     }
 
 
-    //任务完成,下使能，释放内存使别的程序或者用户可以连接机器人   
+    //任务完成,下使能，释放内存使别的程序或者用户可以连接机器人
     SLEEP(2000);
     OnClearSet();
     OnSetTargetState_A(0) ;

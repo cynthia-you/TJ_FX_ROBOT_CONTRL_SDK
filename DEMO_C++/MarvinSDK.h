@@ -335,6 +335,7 @@ extern "C"
 	bool OnInitPlnLmt(char *path);
 	bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
 	bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
+	bool OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio);
 
 	// 笛卡尔空间PLN方式发送指令
 	bool OnSetPlnCart_A(CPointSet *pset);

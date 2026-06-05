@@ -24,7 +24,7 @@
     特别说明：
             1.为了您更流畅操控我们的机器人，请您务必先查阅文档和案列，
             2.使用操作上位机软件后再根据您的控制需求开发业务和生产脚本。
-[上位机软件MarvinPlatform](https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/tree/UI-MarvinPlatform)
+[上位机软件MarvinPlatform](./MarvinPlatform_EN/天机Marvin系列MarvinPlatform软件使用说明2601.pptx)
 
 
      机器人控制的主逻辑为:

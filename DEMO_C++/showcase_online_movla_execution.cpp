@@ -1,4 +1,4 @@
-#include "MarvinSDK.h" 
+#include "MarvinSDK.h"
 #include "FxRobot.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -89,7 +89,7 @@ int main()
         OnClearErr_B();
         OnSetSend();
         SLEEP(20);
-    } 
+    }
 
     //获取伺服错误，有错误清错
     long ErrCode_A[7]={};
@@ -98,14 +98,14 @@ int main()
     OnGetServoErr_B(ErrCode_B);
     bool allZero_a = true;
     bool allZero_b = true;
-    for (int i = 0; i < 7; ++i) 
+    for (int i = 0; i < 7; ++i)
     {
         if (ErrCode_A[i] != 0) {
             allZero_a = false;
             break;
         }
     }
-    for (int i = 0; i < 7; ++i) 
+    for (int i = 0; i < 7; ++i)
     {
         if (ErrCode_B[i] != 0) {
             allZero_b = false;
@@ -120,7 +120,7 @@ int main()
         OnClearErr_A();
         OnSetSend();
         SLEEP(20);
-    } 
+    }
     if (allZero_b)
     {
         std::cout << "arm B: srvo error exists, clear error\n" << std::endl;
@@ -130,7 +130,7 @@ int main()
         OnSetSend();
         SLEEP(20);
     }
-    
+
     //通过确认freame数据的刷新，确认UDP数据通道连接成功（防火墙等可能不能正常收到数据）
     int motion_tag = 0;
     int frame_update = 0;
@@ -157,7 +157,7 @@ int main()
     //控制日志开
     OnLogOn();
 	OnLocalLogOn();
-    
+
     //控制日志关
     // OnLogOff();
     // OnLocalLogOff();
@@ -318,12 +318,12 @@ int main()
             OnClearSet();
             OnSetJointCmdPos_A(joints_);
             OnSetSend();
-            SLEEP(200);
+            SLEEP(20);
         }
     }
 
 
-    //任务完成,下使能，释放内存使别的程序或者用户可以连接机器人   
+    //任务完成,下使能，释放内存使别的程序或者用户可以连接机器人
     SLEEP(200);
     OnClearSet();
     OnSetTargetState_A(0) ;
