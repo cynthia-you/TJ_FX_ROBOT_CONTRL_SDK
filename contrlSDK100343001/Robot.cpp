@@ -2084,6 +2084,7 @@ bool CRobot::OnSetPlnCart_A(CPointSet *pset)
 			return false;
 		}
 	}
+	SLEEP(20);
 	if (CRobot::OnGetBuf(&t) == true)
 	{
 		if (t.m_Out[0].m_TrajState != 2)
@@ -2145,7 +2146,7 @@ bool CRobot::OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], doub
 		printf("[ERROR] OnSetPlnJoint_A: OnSetSendWaitResponse timeout");
 		return false;
 	}
-	SLEEP(1000);
+	SLEEP(20);
 	if (CRobot::OnGetBuf(&t) == true)
 	{
 		if (t.m_Out[0].m_TrajState != 1)
@@ -2200,6 +2201,7 @@ bool CRobot::OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], doub
 			return false;
 		}
 	}
+	SLEEP(20);
 	if (CRobot::OnGetBuf(&t) == true)
 	{
 		if (t.m_Out[0].m_TrajState != 2)
@@ -2806,6 +2808,7 @@ bool CRobot::OnSetPlnCart_B(CPointSet *pset)
 		printf("[ERROR] OnSetTrajInit_B: OnSetSendWaitResponse timeout\n");
 		return false;
 	}
+	SLEEP(20);
 	if (CRobot::OnGetBuf(&t) == true)
 	{
 		if (t.m_Out[1].m_TrajState != 1)
@@ -2863,6 +2866,7 @@ bool CRobot::OnSetPlnCart_B(CPointSet *pset)
 			return false;
 		}
 	}
+	SLEEP(20);
 	if (CRobot::OnGetBuf(&t) == true)
 	{
 		if (t.m_Out[1].m_TrajState != 2)
@@ -2924,6 +2928,7 @@ bool CRobot::OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], doub
 		printf("[ERROR] OnSetPlnJoint_B: OnSetSendWaitResponse timeout\n");
 		return false;
 	}
+	SLEEP(20);
 	if (CRobot::OnGetBuf(&t) == true)
 	{
 		if (t.m_Out[1].m_TrajState != 1)
@@ -2979,6 +2984,7 @@ bool CRobot::OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], doub
 			return false;
 		}
 	}
+	SLEEP(20);
 	if (CRobot::OnGetBuf(&t) == true)
 	{
 		if (t.m_Out[1].m_TrajState != 2)
