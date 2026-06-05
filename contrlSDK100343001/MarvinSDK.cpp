@@ -1090,7 +1090,7 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 				SendData_B[spos++] = retp1[kk];
 		}
 		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_A(ii, 50, SendData_A);
+		CRobot::OnSetTrajSet_A(ii, relic_num, SendData_A);
 		if (CRobot::OnSetSendWaitResponse(5000) < 0)
 		{
 			printf("1\n");
@@ -1098,7 +1098,7 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 		}
 
 		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_B(ii, 50, SendData_B);
+		CRobot::OnSetTrajSet_B(ii, relic_num, SendData_B);
 		if (CRobot::OnSetSendWaitResponse(5000) < 0)
 		{
 			printf("11\n");
