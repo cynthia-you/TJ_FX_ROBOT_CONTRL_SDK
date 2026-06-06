@@ -138,7 +138,7 @@ kk.log_switch(0)  # 0 off, 1 on
 使用前，请一定确认机型，导入正确的配置文件config_path，文件导错，计算会错误啊啊啊,甚至看起来运行正常，但是值错误！！！
 一定要确认arm_type是左臂0 还是右臂1
 '''
-ini_result = kk.load_config(arm_type=0, config_path=os.path.join(current_path, 'ccs_m6.MvKDCfg'))
+ini_result = kk.load_config(arm_type=0, config_path=os.path.join(current_path, 'ccs_m6_40.MvKDCfg'))
 print(ini_result)
 
 '''
@@ -159,7 +159,7 @@ initial_kine_tag = kk.initial_kine(
     运行在线规划,规划点位为50HZ执行
 '''
 # ONLINE
-points = kk.movL_KeepJA(start_joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995],
+points,pset = kk.movL_KeepJA(start_joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995],
                         end_joints=[-26.908, -91.109, 74.502, -88.083, -93.599, 17.151, -13.602], vel=100, acc=100,freq_hz=50)
 print(f"Got {len(points)} planning points")
 if points:

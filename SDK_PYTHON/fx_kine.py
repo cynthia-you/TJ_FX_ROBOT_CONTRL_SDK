@@ -11,8 +11,9 @@ current_path = os.path.dirname(current_file_path)
 
 logging.basicConfig(format='%(message)s')
 logger = logging.getLogger('debug_printer')
-logger.setLevel(logging.INFO)
-logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.INFO)
+# logger.setLevel(logging.DEBUG)
+logger.setLevel(100)
 
 class Marvin_Kine:
     def __init__(self):
@@ -936,7 +937,7 @@ class Marvin_Kine:
             raise e
 
 
-    def movL_KeepJ(self,start_joints:list, end_joints:list,vel:float,acc:float,freq_hz:int,save_path):
+    def movL_KeepJ(self,start_joints:list, end_joints:list,vel:float,acc:float,freq_hz:int,save_path)->bool:
         '''直线规划保持关节构型, 规划文件的点位频率50Hz，即每20ms执行一行
 
         :param start_joints:起始点各个关节位置（单位：角度）
@@ -958,16 +959,23 @@ class Marvin_Kine:
         path_char = ctypes.c_char_p(path)
 
         s0,s1,s2,s3,s4,s5,s6=start_joints
-        start= (ctypes.c_double * 7)( s0,s1,s2,s3,s4,s5,s6)
+        start_array= (ctypes.c_double * 7)( s0,s1,s2,s3,s4,s5,s6)
 
         e0,e1,e2,e3,e4,e5,e6=end_joints
-        end= (ctypes.c_double * 7)(e0,e1,e2,e3,e4,e5,e6)
+        end_array= (ctypes.c_double * 7)(e0,e1,e2,e3,e4,e5,e6)
 
         vel_value=c_double(vel)
         acc_value = c_double(acc)
 
-        success1=self.kine.FX_Robot_PLN_MOVL_KeepJ(Serial,start,end,vel_value,acc_value,freq,path_char)
-        if success1:
+        success =  self.kine.FX_Robot_PLN_MOVL_KeepJ(
+            Serial,
+            ctypes.cast(start_array, ctypes.POINTER(ctypes.c_double)),
+            ctypes.cast(end_array, ctypes.POINTER(ctypes.c_double)),
+            vel_value,
+            acc_value,
+            freq,
+            path_char)
+        if success:
             if os.path.exists(save_path):
                 logger.info(f'Plan MOVL KeepJ successful, PATH saved as :{save_path}')
                 return True
@@ -977,7 +985,7 @@ class Marvin_Kine:
 
     def movL_KeepJA(self, start_joints: List[float], end_joints: List[float],
               vel: float, acc: float,freq_hz:int,
-              dimension: int = 7) -> List[List[float]]:
+              dimension: int = 7)-> tuple[List[List[float]], ctypes.c_void_p]:
         '''直线规划，执行movL_KeepJA规划并返回点集数据
 
                :param start_joints:起始点各个关节位置（单位：角度）
@@ -994,13 +1002,11 @@ class Marvin_Kine:
 
         Serial = ctypes.c_long(self.robot_tag)
         freq = ctypes.c_long(freq_hz)
-        s0, s1, s2, s3, s4, s5, s6 = start_joints
-        start = (ctypes.c_double * 7)(s0, s1, s2, s3, s4, s5, s6)
-        e0, e1, e2, e3, e4, e5, e6 = end_joints
-        end = (ctypes.c_double * 7)(e0, e1, e2, e3, e4, e5, e6)
+        start_array = (ctypes.c_double * 7)(*start_joints)
+        end_array = (ctypes.c_double * 7)(*end_joints)
         vel_value = c_double(vel)
         acc_value = c_double(acc)
-        # 创建CPointSet对象
+
         pset = self.create_point_set(dimension)
         if not pset:
             raise RuntimeError("Failed to create CPointSet object")
@@ -1008,23 +1014,23 @@ class Marvin_Kine:
         try:
             success = self.kine.FX_Robot_PLN_MOVL_KeepJA_C(
                 Serial,
-                ctypes.cast(start, ctypes.POINTER(ctypes.c_double)),
-                ctypes.cast(end, ctypes.POINTER(ctypes.c_double)),
+                ctypes.cast(start_array, ctypes.POINTER(ctypes.c_double)),
+                ctypes.cast(end_array, ctypes.POINTER(ctypes.c_double)),
                 vel_value,
                 acc_value,
                 freq,
                 pset
             )
 
-            if success:
-                data = self.get_point_set_data(pset, dimension)
-                print(f'Plan MOVL_KeepJA successful, got {len(data)} points')
-                return data
-            else:
-                print('Plan MOVL_KeepJA failed!')
-                return []
-        finally:
+            if not success:
+                self.destroy_point_set(pset)
+                return [], None
+            data = self.get_point_set_data(pset, dimension)
+            print(f'Plan movL_KeepJA successful, got {len(data)} points')
+            return data, pset
+        except Exception as e:
             self.destroy_point_set(pset)
+            raise e
 
 
 
@@ -1044,16 +1050,12 @@ class Marvin_Kine:
         :return: 成功返回True，失败返回False
         """
         serial = ctypes.c_long(self.robot_tag)
-        # 转换关节数组 (7个)
         ref_arr = (ctypes.c_double * 7)(*ref_joints)
-        # 转换起始位姿 (6个)
         start_arr = (ctypes.c_double * 6)(*start_xyzabc)
-        # 转换终点位姿 (6个)
         end_arr = (ctypes.c_double * 6)(*end_xyzabc)
-        # 过渡参数数组 (6个)
         zsp_arr = (ctypes.c_double * 6)(*zsp_para)
 
-        success = self.kine.FX_Robot_PLN_Set_MOVL_Start(
+        return self.kine.FX_Robot_PLN_Set_MOVL_Start(
             serial,
             ctypes.cast(ref_arr, ctypes.POINTER(ctypes.c_double)),
             ctypes.cast(start_arr, ctypes.POINTER(ctypes.c_double)),
@@ -1065,7 +1067,6 @@ class Marvin_Kine:
             ctypes.c_double(acc),
             ctypes.c_int32(freq)
         )
-        return success
 
     def multi_movL_next_point(self,
                                 next_xyzabc: List[float],  # 下一个途经点位姿 [6个]

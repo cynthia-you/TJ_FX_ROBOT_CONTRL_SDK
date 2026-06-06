@@ -6,12 +6,319 @@ import re
 import time
 from ctypes import *
 from textwrap import dedent
-from typing import Union
+from typing import Union, List
 
 current_file_path = os.path.abspath(__file__)
 current_path = os.path.dirname(current_file_path)
 
-'''######################################## Original SDK ########################################################'''
+def update_text_file_simple(mode, data_list, filename):
+    """
+    简化版的文件更新函数
+    """
+    if mode not in ['A', 'B'] or len(data_list) != 16:
+        return False
+    try:
+        # 如果文件存在，读取内容；否则创建默认内容
+        if os.path.exists(filename):
+            with open(filename, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+        # 更新对应行
+        line_index = 0 if mode == 'A' else 1
+        lines[line_index] = ','.join(str(x) for x in data_list) + '\n'
+
+        # 写回文件
+        with open(filename, 'w', encoding='utf-8') as file:
+            file.writelines(lines)
+        return True
+    except Exception as e:
+        print(f"更新文件时出错: {e}")
+        return False
+
+def read_csv_file_to_float_strict(filename, expected_columns=16):
+    """
+    读取CSV格式的文件内容并转换为float，严格验证每列数量
+    参数:
+        filename: 文件名
+        expected_columns: 期望的列数（默认16）
+
+    返回:
+        如果文件为空: 返回0
+        如果文件有一行: 返回0
+        如果文件有两行且其中一行全为0:
+            - 返回 ('line1', [第一行数据])  # 如果第二行全为0
+            - 返回 ('line2', [第二行数据])  # 如果第一行全为0
+        如果文件有两行且都不为0: 返回 [[第一行数据], [第二行数据]]
+        如果文件有两行且都全为0: 返回0
+        如果文件不存在或转换失败: 返回-1
+    """
+    if not os.path.exists(filename):
+        print(f"文件不存在: {filename}")
+        return -1
+
+    if os.path.getsize(filename) == 0:
+        return 0
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+
+        non_empty_lines = [line.strip() for line in lines if line.strip()]
+
+        if len(non_empty_lines) == 0:
+            return 0
+
+        all_float_data = []
+        for line_num, line in enumerate(non_empty_lines, 1):
+            values = line.split(',')
+            # 过滤空值并去除空格
+            cleaned_values = [v.strip() for v in values if v.strip()]
+
+            # 验证列数
+            if len(cleaned_values) != expected_columns:
+                print(f"第{line_num}行: 期望{expected_columns}列，实际找到{len(cleaned_values)}列")
+                return -1
+
+            float_values = []
+            for value in cleaned_values:
+                try:
+                    float_value = float(value)
+                    float_values.append(float_value)
+                except ValueError:
+                    print(f"第{line_num}行: 无法将内容 '{value}' 转换为float")
+                    return -1
+
+            all_float_data.append(float_values)
+
+        # 根据行数处理
+        if len(all_float_data) == 1:
+            # 文件只有一行，返回0
+            return 0
+
+        elif len(all_float_data) == 2:
+            # 检查两行是否全为0
+            line1_all_zero = all(x == 0.0 for x in all_float_data[0])
+            line2_all_zero = all(x == 0.0 for x in all_float_data[1])
+
+            if line1_all_zero and line2_all_zero:
+                # 两行都全为0
+                return 0
+            elif line1_all_zero and not line2_all_zero:
+                # 第一行全为0，第二行不为0
+                return ('line2', all_float_data[1])
+            elif not line1_all_zero and line2_all_zero:
+                # 第一行不为0，第二行全为0
+                return ('line1', all_float_data[0])
+            else:
+                # 两行都不为0
+                return all_float_data
+        else:
+            print(f"文件包含{len(all_float_data)}行，只支持1-2行")
+            return -1
+    except Exception as e:
+        print(f"读取文件时出错: {e}")
+        return -1
+
+def decimal_to_hex(number, prefix=False, upper=True, float_precision=8):
+    """
+    将十进制数转换为十六进制表示
+
+    参数:
+        number: 要转换的十进制数，可以是整数或浮点数
+        prefix: 是否添加"0x"前缀，默认为False
+        upper: 是否使用大写字母，默认为True
+        float_precision: 浮点数转换时的精度（小数位数），默认为8
+
+    返回:
+        str: 十六进制表示的字符串
+
+    异常:
+        TypeError: 当输入不是数字时抛出
+    """
+    # 检查输入是否为数字
+    if not isinstance(number, (int, float)):
+        raise TypeError("输入必须是整数或浮点数")
+
+    # 处理整数
+    if isinstance(number, int):
+        hex_str = hex(number)
+    # 处理浮点数
+    else:
+        # 使用float.hex()方法获取浮点数的十六进制表示
+        hex_str = float(number).hex()
+
+        # 如果需要，可以限制小数部分的精度
+        if float_precision is not None:
+            parts = hex_str.split('.')
+            if len(parts) > 1:
+                exponent_part = parts[1].split('p')
+                if len(exponent_part) > 1:
+                    hex_str = f"{parts[0]}.{exponent_part[0][:float_precision]}p{exponent_part[1]}"
+
+    # 移除或保留前缀
+    if not prefix and hex_str.startswith('0x'):
+        hex_str = hex_str[2:]
+    elif prefix and not hex_str.startswith('0x'):
+        hex_str = '0x' + hex_str
+
+    # 处理大小写
+    if upper:
+        hex_str = hex_str.upper()
+    else:
+        hex_str = hex_str.lower()
+
+    return hex_str
+
+def identify_and_calculate_length(input_data: Union[str, bytes]) -> dict:
+    result = {
+        "input": input_data,
+        "type": None,
+        "length_bytes": None,
+        "bytes_representation": None
+    }
+
+    # 处理字节串输入
+    if isinstance(input_data, bytes):
+        result["type"] = "bytes"
+        result["length_bytes"] = len(input_data)
+        result["bytes_representation"] = input_data
+        return result
+
+    # 处理字符串输入
+    if isinstance(input_data, str):
+        # 检查是否是十六进制字符串（可能包含空格和0x前缀）
+        # 移除所有空格和0x前缀
+        clean_input = re.sub(r'\s+', '', input_data.lower())
+
+        if clean_input.startswith('0x'):
+            clean_input = clean_input[2:]
+
+        # 检查是否为有效的十六进制字符串
+        hex_pattern = re.compile(r'^[0-9a-f]+$')
+        if hex_pattern.match(clean_input):
+            # 确保长度为偶数
+            if len(clean_input) % 2 != 0:
+                clean_input = '0' + clean_input
+
+            try:
+                bytes_rep = bytes.fromhex(clean_input)
+                result["type"] = "hex string"
+                result["length_bytes"] = len(bytes_rep)
+                result["bytes_representation"] = bytes_rep
+                return result
+            except ValueError:
+                pass  # 如果不是有效的十六进制，继续尝试其他解释
+
+        # 检查是否已经是字节串表示形式（如b"\x06\x01\xe3\x08"）
+        if input_data.startswith('b"') and input_data.endswith('"'):
+            try:
+                # 使用eval安全地转换（注意：在实际应用中可能需要更安全的方法）
+                bytes_rep = eval(input_data)
+                if isinstance(bytes_rep, bytes):
+                    result["type"] = "bytes representation string"
+                    result["length_bytes"] = len(bytes_rep)
+                    result["bytes_representation"] = bytes_rep
+                    return result
+            except:
+                pass
+
+        # 如果不是上述任何类型，将其视为普通字符串
+        try:
+            bytes_rep = input_data.encode('utf-8')
+            result["type"] = "regular string"
+            result["length_bytes"] = len(bytes_rep)
+            result["bytes_representation"] = bytes_rep
+            return result
+        except UnicodeEncodeError:
+            raise ValueError("输入不是有效的十六进制字符串，也无法编码为UTF-8字节串")
+
+    # 如果既不是字符串也不是字节串，抛出异常
+    raise TypeError("输入必须是字符串或字节串")
+
+def structure2dict(dcss):
+    result = {
+        "para_name": ['Marvin_sub_data'],
+        "states": [
+            {
+                "cur_state": dcss.m_State[0].m_CurState,
+                "cmd_state": dcss.m_State[0].m_CmdState,
+                "err_code": dcss.m_State[0].m_ERRCode
+            },
+            {
+                "cur_state": dcss.m_State[1].m_CurState,
+                "cmd_state": dcss.m_State[1].m_CmdState,
+                "err_code": dcss.m_State[1].m_ERRCode
+            }
+        ]
+    }
+    # 3. 处理实时输出数组
+    result["outputs"] = [
+        {
+            "frame_serial": rt_out.m_OutFrameSerial,
+            "tip_di": rt_out.m_TipDI,
+            "low_speed_flag": rt_out.m_LowSpdFlag,
+            "fb_joint_pos": [round(rt_out.m_FB_Joint_Pos[j], 4) for j in range(7)],
+            "fb_joint_vel": [round(rt_out.m_FB_Joint_Vel[j], 4) for j in range(7)],
+            "fb_joint_posE": [round(rt_out.m_FB_Joint_PosE[j], 4) for j in range(7)],
+            "fb_joint_cmd": [round(rt_out.m_FB_Joint_Cmd[j], 4) for j in range(7)],
+            "fb_joint_cToq": [round(rt_out.m_FB_Joint_CToq[j], 4) for j in range(7)],
+            "fb_joint_sToq": [round(rt_out.m_FB_Joint_SToq[j], 4) for j in range(7)],
+            "fb_joint_them": [round(rt_out.m_FB_Joint_Them[j], 4) for j in range(7)],
+            "est_joint_firc": [round(rt_out.m_EST_Joint_Firc[j], 4) for j in range(7)],
+            "est_joint_firc_dot": [round(rt_out.m_EST_Joint_Firc_Dot[j], 4) for j in range(7)],
+            "est_joint_force": [round(rt_out.m_EST_Joint_Force[j], 4) for j in range(7)],
+            "est_cart_fn": [round(rt_out.m_EST_Cart_FN[j], 4) for j in range(6)]
+        } for rt_out in dcss.m_Out
+    ]
+
+    # 4. 处理实时输入数组 (RT_IN)
+    result["inputs"] = [
+        {
+            "rt_in_switch": rt_in.m_RtInSwitch,
+            "imp_type": rt_in.m_ImpType,
+            "in_frame_serial": rt_in.m_InFrameSerial,
+            "frame_miss_cnt": rt_in.m_FrameMissCnt,
+            "max_frame_miss_cnt": rt_in.m_MaxFrameMissCnt,
+            "sys_cyc": rt_in.m_SysCyc,
+            "sys_cyc_miss_cnt": rt_in.m_SysCycMissCnt,
+            "max_sys_cyc_miss_cnt": rt_in.m_MaxSysCycMissCnt,
+            "tool_kine": [round(rt_in.m_ToolKine[j], 4) for j in range(6)],
+            "tool_dyn": [round(rt_in.m_ToolDyn[j], 4) for j in range(10)],
+            "joint_cmd_pos": [round(rt_in.m_Joint_CMD_Pos[j], 4) for j in range(7)],
+            "joint_vel_ratio": rt_in.m_Joint_Vel_Ratio,
+            "joint_acc_ratio": rt_in.m_Joint_Acc_Ratio,
+            "joint_k": [round(rt_in.m_Joint_K[j], 4) for j in range(7)],
+            "joint_d": [round(rt_in.m_Joint_D[j], 4) for j in range(7)],
+            "drag_sp_type": rt_in.m_DragSpType,
+            "drag_sp_para": [round(rt_in.m_DragSpPara[j], 4) for j in range(6)],
+            "cart_kd_type": rt_in.m_Cart_KD_Type,
+            "cart_k": [round(rt_in.m_Cart_K[j], 4) for j in range(6)],
+            "cart_d": [round(rt_in.m_Cart_D[j], 4) for j in range(6)],
+            "cart_kn": round(rt_in.m_Cart_KN, 4),
+            "cart_dn": round(rt_in.m_Cart_DN, 4),
+            "force_fb_type": rt_in.m_Force_FB_Type,
+            "force_type": rt_in.m_Force_Type,
+            "force_dir": [round(rt_in.m_Force_Dir[j], 4) for j in range(6)],
+            "force_pidul": [round(rt_in.m_Force_PIDUL[j], 4) for j in range(7)],
+            "force_adj_lmt": round(rt_in.m_Force_AdjLmt, 4),
+            "force_cmd": round(rt_in.m_Force_Cmd, 4),
+            "set_tags": list(rt_in.m_SET_Tags),
+            "update_tags": list(rt_in.m_Update_Tags),
+            "pvt_id": rt_in.m_PvtID,
+            "pvt_id_update": rt_in.m_PvtID_Update,
+            "pvt_run_id": rt_in.m_Pvt_RunID,
+            "pvt_run_state": rt_in.m_Pvt_RunState
+        } for rt_in in dcss.m_In
+    ]
+
+    result["ParaName"]=[list(dcss.m_ParaName)]
+    result["ParaType"]=[dcss.m_ParaType]
+    result["ParaIns"]=[dcss.m_ParaIns]
+    result["ParaValueI"]=[dcss.m_ParaValueI]
+    result["ParaValueF"]=[dcss.m_ParaValueF]
+    result["ParaCmdSerial"]=[dcss.m_ParaCmdSerial]
+    result["ParaRetSerial"]=[dcss.m_ParaRetSerial]
+
+    return result
+
 class Marvin_Robot:
     def __init__(self):
         """初始化机器人控制类"""
@@ -809,7 +1116,7 @@ class Marvin_Robot:
         stop_B = (ctypes.c_double * 7)(*stop_joints_B)
 
 
-        self.robot.OnSetPlnJoint_AB.argtypes = [
+        self.robot.CoRunPlnJoint.argtypes = [
             ctypes.POINTER(ctypes.c_double),  # start_joints_A (7)
             ctypes.POINTER(ctypes.c_double),  # stop_joints_A (7)
             ctypes.POINTER(ctypes.c_double),  # start_joints_B (7)
@@ -817,9 +1124,9 @@ class Marvin_Robot:
             ctypes.c_double,  # vel_ratio
             ctypes.c_double  # acc_ratio
         ]
-        self.robot.OnSetPlnJoint_AB.restype = ctypes.c_bool
+        self.robot.CoRunPlnJoint.restype = ctypes.c_bool
 
-        ret = self.robot.OnSetPlnJoint_AB(
+        ret = self.robot.CoRunPlnJoint(
             ctypes.cast(start_A, ctypes.POINTER(ctypes.c_double)),
             ctypes.cast(stop_A, ctypes.POINTER(ctypes.c_double)),
             ctypes.cast(start_B, ctypes.POINTER(ctypes.c_double)),
@@ -829,7 +1136,7 @@ class Marvin_Robot:
         )
         return ret
 
-    def setPln_Cart_AB(self, pset0, pset1) -> bool:
+    def setPln_Cart_AB(self, pset0:ctypes.c_void_p, pset1:ctypes.c_void_p) -> bool:
         """
         笛卡尔空间两个手臂从当前点规划方式运行到目标点，
         规划点位pset由KinematicsSDK计算接口FX_Robot_PLN_MOVLA计算得出。
@@ -837,14 +1144,12 @@ class Marvin_Robot:
         :param pset1: 手臂1的点集对象
         :return: 成功返回True，失败返回False
         """
-        ptr0 = ctypes.c_void_p(pset0) if isinstance(pset0, int) else ctypes.addressof(pset0)
-        ptr1 = ctypes.c_void_p(pset1) if isinstance(pset1, int) else ctypes.addressof(pset1)
         self.robot.CoRunPlnCart.argtypes = [
             ctypes.c_void_p,  # pset0
             ctypes.c_void_p  # pset1
         ]
         self.robot.CoRunPlnCart.restype = ctypes.c_bool
-        return self.robot.CoRunPlnCart(ptr0, ptr1)
+        return self.robot.CoRunPlnCart(pset0, pset1)
 
     def stopPln_AB(self) -> bool:
         """
@@ -1000,7 +1305,6 @@ class Marvin_Robot:
         :return: int, 长度size
         '''
         try:
-            # 创建 256 字节缓冲区
             data_buffer = (ctypes.c_ubyte * 256)()
             ret_ch = ctypes.c_long(com)
             if arm == 'A':
@@ -1008,7 +1312,6 @@ class Marvin_Robot:
                 byte_data = bytes(data_buffer)  # 或 bytearray(data_buffer)
                 hex_list = []
                 for byte in byte_data:
-                    # 将每个字节转换为两位十六进制
                     hex_value = hex(byte)[2:].upper().zfill(2)
                     hex_list.append(hex_value)
 
@@ -2244,7 +2547,7 @@ class RT_OUT(Structure):
         ("m_FB_Joint_PosE", c_float * 7),  # 关节位置(外编)
         ("m_FB_Joint_Cmd", c_float * 7),  # 位置关节指令
         ("m_FB_Joint_CToq", c_float * 7),  # 关节电流
-        ("m_FB_Joint_SToq", c_float * 7),  # 关节扭矩
+        ("m_FB_Joint_SToq", c_float * 7),  # 关节实际扭矩
         ("m_FB_Joint_Them", c_float * 7),  # 关节温度
         ("m_EST_Joint_Firc", c_float * 7),  # 关节摩擦估计
         ("m_EST_Joint_Firc_Dot", c_float * 7),  # 关节力扰动估计值微分
@@ -2748,6 +3051,7 @@ fault_code_dict_CN = {
     "0xFF91": "驱动器内部异常2",
 }
 
+
 fault_code_dict_EN = {
     "0x2280": "Drive short circuit",
     "0x2310": "U-phase output overcurrent",
@@ -2865,6 +3169,50 @@ fault_code_dict_EN = {
     "0xFF90": "2nd speed following error too large",
     "0xFF91": "Drive internal error 2",
 }
+
+def get_fault_descriptions(fault_codes_list,lang='CN'):
+    """
+    根据故障代码列表和故障字典，返回故障描述的字符串
+    支持多个关节的错误信息显示
+    Args:
+        fault_codes_list: 各关节故障代码列表
+        fault_dict: 故障代码与名称的字典
+
+    Returns:
+        包含所有关节故障描述的字符串
+    """
+    fault_dict=fault_code_dict_CN
+    if lang=='EN':
+        fault_dict=fault_code_dict_EN
+    if not fault_codes_list:
+        return "None fault codes list"
+    all_descriptions = []
+    for joint_idx, code in enumerate(fault_codes_list, 1):
+        code_str = str(code)
+        if isinstance(code, int):
+            code_str = hex(code)
+        code_str_lower = code_str.lower()
+        if code_str in ["0x0000", "0000", "0", "0x0", "0X0", ""]:
+            continue
+        fault_name = None
+        if code_str in fault_dict:
+            fault_name = fault_dict[code_str]
+        elif code_str_lower in fault_dict:
+            fault_name = fault_dict[code_str_lower]
+        else:
+            fault_name = f"unknown error({code_str})"
+        if fault_name:
+            all_descriptions.append(f"joint {joint_idx}: {code_str} - {fault_name}")
+
+    if not all_descriptions:
+        return "None"
+    elif len(all_descriptions) == 1:
+        return all_descriptions[0]
+    else:
+        result = "Fault information for each joint:\n"
+        for i, desc in enumerate(all_descriptions, 1):
+            result += f"{i}. {desc}\n"
+        return result.strip()
 
 tools_cfg={
     "arm0": {

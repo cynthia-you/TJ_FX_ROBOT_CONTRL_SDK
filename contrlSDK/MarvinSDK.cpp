@@ -949,7 +949,7 @@ bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_r
 	return CRobot::OnSetPlnJoint_B(start_joints, stop_joints, vel_ratio, acc_ratio);
 }
 
-bool OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio)
+bool CoRunPlnJoint(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio)
 {
 	if (start_joints_A == nullptr || stop_joints_A == nullptr || start_joints_B == nullptr || stop_joints_B == nullptr)
 	{
@@ -999,30 +999,23 @@ bool OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7], double 
 		printf("[WARNING] OnSetPlnJoint_AB: Invalid acc_ratio %lf (valid range: 0~1), set acc_ratio to 1\n", acc_ratio);
 		acc_ratio = 1.0;
 	}
-
 	return CRobot::OnSetPlnJoint_AB(start_joints_A, stop_joints_A, start_joints_B, stop_joints_B, vel_ratio, acc_ratio);
 }
 
 bool CoRunPlnCart(void *pset0, void *pset1)
 {
 	DCSS t;
-	do
-	{
-		OnGetBuf(&t);
-		SLEEP(1);
-	} while (t.m_Out[0].m_TrajState != 0 && t.m_Out[1].m_TrajState != 0);
-
 	long num0 = static_cast<CPointSet *>(pset0)->OnGetPointNum();
 	long num1 = static_cast<CPointSet *>(pset1)->OnGetPointNum();
 	printf("num0:%ld, num1 :%ld \n", num0, num1);
 	if (num0 <= 5 || num1 <= 5)
 	{
-
+		printf("[ERROR] CoRunPlnCart: planning points to less!");
 		return false;
 	}
+
 	CRobot::OnClearSet();
 	CRobot::OnSetTrajInit_A(num0);
-	CRobot::OnSetTrajInit_B(num1);
 	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
 		printf("[ERROR] OnSetTrajInit_B: timeout.\n");
@@ -1031,22 +1024,19 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 	SLEEP(SLEEP_TIME);
 	if (CRobot::OnGetBuf(&t) == true)
 	{
-		if (t.m_Out[0].m_TrajState != 1 || t.m_Out[1].m_TrajState != 1)
+		if (t.m_Out[0].m_TrajState != 1)
 		{
-			printf("[ERROR] OnSetTrajInit_B: timeout.\n");
+			printf("[ERROR] CoRunPlnCart: controller did not enter in run planning mode.\n");
 			return false;
 		}
 	}
-
 	long send_g_num = num0 / 50;
 	long relic_num = num0 % 50;
 	long ii, jj, kk;
 	double SendData_A[350];
-	double SendData_B[350];
-	double *retp0, *retp1;
+	double *retp0;
 	long spos;
 	long ipos0 = 0;
-	long ipos1 = 0;
 	for (ii = 0; ii < send_g_num; ii++)
 	{
 		spos = 0;
@@ -1056,22 +1046,13 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 			for (kk = 0; kk < 7; kk++)
 				SendData_A[spos++] = retp0[kk];
 		}
-		spos = 0;
-		for (jj = 0; jj < 50; jj++)
-		{
-			retp1 = static_cast<CPointSet *>(pset1)->OnGetPoint(ipos1++);
-			for (kk = 0; kk < 7; kk++)
-				SendData_B[spos++] = retp1[kk];
-		}
-
 		CRobot::OnClearSet();
 		CRobot::OnSetTrajSet_A(ii, 50, SendData_A);
 		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		{
+			printf("[ERROR] CoRunPlnCart: OnSetTrajSet_A timeout.\n");
 			return false;
-		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_B(ii, 50, SendData_B);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
-			return false;
+		}
 	}
 	if (relic_num != 0)
 	{
@@ -1082,6 +1063,63 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 			for (kk = 0; kk < 7; kk++)
 				SendData_A[spos++] = retp0[kk];
 		}
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_A(ii, relic_num, SendData_A);
+		if (CRobot::OnSetSendWaitResponse(5000) < 0)
+		{
+			printf("[ERROR] CoRunPlnCart: OnSetTrajSet_A timeout.\n");
+			return false;
+		}
+	}
+	SLEEP(20);
+	CRobot::OnGetBuf(&t);
+	if (t.m_Out[0].m_TrajState != 2)
+	{
+		printf("[ERROR] CoRunPlnCart: controller did not receive trajectory of A.\n");
+		return false;
+	}
+
+	CRobot::OnClearSet();
+	CRobot::OnSetTrajInit_B(num1);
+	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+	{
+		printf("[ERROR] OnSetTrajInit_B: timeout.\n");
+		return false;
+	}
+	SLEEP(SLEEP_TIME);
+	if (CRobot::OnGetBuf(&t) == true)
+	{
+		if (t.m_Out[1].m_TrajState != 1)
+		{
+			printf("[ERROR] CoRunPlnCart: controller did not enter in run planning mode.\n");
+			return false;
+		}
+	}
+	send_g_num = num1 / 50;
+	relic_num = num1 % 50;
+	double SendData_B[350];
+	double *retp1;
+	long ipos1 = 0;
+	for (ii = 0; ii < send_g_num; ii++)
+	{
+		spos = 0;
+		for (jj = 0; jj < 50; jj++)
+		{
+			retp1 = static_cast<CPointSet *>(pset1)->OnGetPoint(ipos1++);
+			for (kk = 0; kk < 7; kk++)
+				SendData_B[spos++] = retp1[kk];
+		}
+
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_B(ii, 50, SendData_B);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		{
+			printf("[ERROR] CoRunPlnCart: OnSetTrajSet_B timeout.\n");
+			return false;
+		}
+	}
+	if (relic_num != 0)
+	{
 		spos = 0;
 		for (jj = 0; jj < relic_num; jj++)
 		{
@@ -1090,27 +1128,18 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 				SendData_B[spos++] = retp1[kk];
 		}
 		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_A(ii, relic_num, SendData_A);
-		if (CRobot::OnSetSendWaitResponse(5000) < 0)
-		{
-			printf("1\n");
-			return false;
-		}
-
-		CRobot::OnClearSet();
 		CRobot::OnSetTrajSet_B(ii, relic_num, SendData_B);
 		if (CRobot::OnSetSendWaitResponse(5000) < 0)
 		{
-			printf("11\n");
+			printf("[ERROR] CoRunPlnCart: OnSetTrajSet_B timeout.\n");
 			return false;
 		}
 	}
-	SLEEP(10);
+	SLEEP(20);
 	CRobot::OnGetBuf(&t);
-	if (t.m_Out[0].m_TrajState != 2 || t.m_Out[1].m_TrajState != 2)
+	if (t.m_Out[1].m_TrajState != 2)
 	{
-
-		printf("3\n");
+		printf("[ERROR] CoRunPlnCart: controller did not receive trajectory of B.\n");
 		return false;
 	}
 
@@ -1119,7 +1148,7 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 	CRobot::OnSetTrajRun_B();
 	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
-		printf("2\n");
+		printf("[ERROR] CoRunPlnCart: set run trajectory timeout.\n");
 		return false;
 	}
 

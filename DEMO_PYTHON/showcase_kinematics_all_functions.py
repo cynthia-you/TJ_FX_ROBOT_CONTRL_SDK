@@ -183,7 +183,7 @@ if tag_movlkj:
 print('-'*50)
 
 #ONLINE
-points=kk.movL_KeepJA(start_joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995],
+points,pset=kk.movL_KeepJA(start_joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995],
                        end_joints=[-26.908 ,-91.109, 74.502 ,-88.083, -93.599 ,17.151, -13.602],vel=100,acc=100,freq_hz=500)
 print(f"Got {len(points)} planning points")
 if points:

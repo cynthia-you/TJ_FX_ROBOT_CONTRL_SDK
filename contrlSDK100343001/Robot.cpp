@@ -2025,7 +2025,7 @@ bool CRobot::OnSetPlnCart_A(CPointSet *pset)
 		printf("[ERROR] OnSetTrajInit_A: OnSetSendWaitResponse timeout\n");
 		return false;
 	}
-	SLEEP(SLEEP_TIME);
+	SLEEP(20);
 	if (CRobot::OnGetBuf(&t) == true)
 	{
 		if (t.m_Out[0].m_TrajState != 1)
