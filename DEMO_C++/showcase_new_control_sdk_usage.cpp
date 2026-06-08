@@ -341,8 +341,10 @@ bool force_impedance()
     // define parameters: which arm, vel and acc and k and d, target joints, force control
     char arm = 'A';
     int log_switch = 1;
-    double k[7] = {10, 10, 10, 1.6, 1, 1, 1};
+    double k[7] = {3000, 3000, 3000, 300, 300, 300, 1};
     double d[7] = {0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 0.4};
+    int RotType = 0;
+    double CartCtrlPara[7] = {0};
     int run_vel = 50;
     int run_acc = 50;
     double target_joint[7] = {69.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35};
@@ -362,13 +364,13 @@ bool force_impedance()
         return false;
     }
 
-    // switch to joint impedance state
-    if (!SetImpJointMode(arm, run_vel, run_acc, k, d))
+    // switch to cartesian impedance state
+    if (!SetImpCartMode(arm, run_vel, run_acc, k, d, RotType, CartCtrlPara))
     {
-        printf("---set joint impedance state failed---");
+        printf("---set cart impedance state failed---");
         return false;
     }
-    SLEEP(500); // reserve time for switch to joint impedance state
+    SLEEP(500); // reserve time for switch to cartesian impedance state
 
     // send targe joints
     if (!SetJointPostionCmd(arm, target_joint))
@@ -524,7 +526,7 @@ bool cart_z_drag_and_save_data(char *save_path)
     }
 
     // switch to cartesian impedance state
-    if (!SetImpCartMode(arm, run_vel, run_acc, k, d, RotType = 0, CartCtrlPara))
+    if (!SetImpCartMode(arm, run_vel, run_acc, k, d, RotType, CartCtrlPara))
     {
         printf("---set cart impedance state failed---");
         return false;
