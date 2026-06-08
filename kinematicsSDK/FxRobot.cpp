@@ -3786,7 +3786,6 @@ FX_BOOL FX_Robot_PLN_Set_MOVL_Start(FX_INT32L RobotSerial, Vect7 Ref_Joints, Vec
 	m_AxisPln.OnInit_MOVL_ZSP();
 	m_AxisPln.OnSetFreq(Freq);
 	FX_BOOL result = m_AxisPln.OnMovL_ZSP(RobotSerial, refJ, start_pos, end_pos, Vel, Acc, jerk, ZSP_Type, ZSP_Para, Allow_Range, FX_MOVL_START);
-
 	if (result != FX_FALSE)
 	{
 		return FX_TRUE;

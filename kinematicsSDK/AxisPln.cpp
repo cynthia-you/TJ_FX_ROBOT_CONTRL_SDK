@@ -2297,8 +2297,6 @@ bool CAxisPln::OnMovL_ZSP(long RobotSetial, double ref_joints[7], double start_p
 	{
 		next_start_pos[i] = end_pos[i];
 	}
-	printf("start:%f %f %f %f %f %f\n", start_pos[0], start_pos[1], start_pos[2], start_pos[3], start_pos[4], start_pos[5]);
-	printf("end:%f %f %f %f %f %f\n\\\\\\\\\\\\\\\n", end_pos[0], end_pos[1], end_pos[2], end_pos[3], end_pos[4], end_pos[5]);
 
 	for (i = 0; i < 3; i++)
 	{
@@ -2324,6 +2322,11 @@ bool CAxisPln::OnMovL_ZSP(long RobotSetial, double ref_joints[7], double start_p
 		Q_end[1] = -Q_end[1];
 		Q_end[2] = -Q_end[2];
 		Q_end[3] = -Q_end[3];
+	}
+
+	if (fabs(cosangle) > 1.0)
+	{
+		cosangle /= fabs(cosangle);
 	}
 	double qangle = acos(cosangle) * 2 * FXARM_R2D;
 

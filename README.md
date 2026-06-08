@@ -388,10 +388,12 @@
              ARM_ERR_SensorModeOK = 7,//"进扭矩失败" 			原因同4、5
              ARM_ERR_RequestEnableServo = 8,//"请求上伺服失败" 	原因同4、5
              ARM_ERR_EnableServoOK = 9,//"上伺服失败" 			原因同4、5
+
              ARM_ERR_RequestDisableServo = 10, //"请求下伺服失败 原因同4、5
              ARM_ERR_DisableServoOK = 11, //"下伺服失败" 		原因同4、5
              ARM_ERR_InvalidSubState = 12, //"内部错" 			1) 操作系统内存错误，调度错误，2) 变量值计算错误，3) 某些内存指针为空
              ARM_ERR_Emcy = 13, //"急停"
+             ARM_DYNA_FLOAT_NO_GYRO = 14,//"配置文件选择了浮动基座选项，但是实际没有IMU硬件接入控制器"
              ARM_DYNA_FLOAT_NO_GYRO = 14,//"配置文件选择了浮动基座选项，但是实际没有IMU硬件接入控制器"
 
 

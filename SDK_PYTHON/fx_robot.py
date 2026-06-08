@@ -1139,7 +1139,7 @@ class Marvin_Robot:
     def setPln_Cart_AB(self, pset0:ctypes.c_void_p, pset1:ctypes.c_void_p) -> bool:
         """
         笛卡尔空间两个手臂从当前点规划方式运行到目标点，
-        规划点位pset由KinematicsSDK计算接口FX_Robot_PLN_MOVLA计算得出。
+        规划点位pset由KinematicsSDK计算接口计算得出。
         :param pset0: 手臂0的点集对象
         :param pset1: 手臂1的点集对象
         :return: 成功返回True，失败返回False

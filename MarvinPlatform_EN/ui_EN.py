@@ -4597,9 +4597,9 @@ class App:
             messagebox.showerror('error', 'Please connect robot')
 
     def planning_dialog(self):
-        # if not self.connected:
-        #     messagebox.showerror('Error', "Please connect robot first!")
-        #     return
+        if not self.connected:
+            messagebox.showerror('Error', "Please connect robot first!")
+            return
         if not messagebox.askyesno("Yes", "Motion planning must under position state, \nand the speed of position state must be 100!"):
             return
 
@@ -5696,7 +5696,9 @@ class App:
             if pset2 == None:
                 messagebox.showerror("Error", f"right arm planning failed.")
                 return
-
+            print(f"====pset1 = {pset1}, pset2 = {pset2}")
+            if not pset1 or not pset2:
+                raise ValueError("Point set pointer is null")
             ret = robot.setPln_Cart_AB(pset1, pset2)
             if not ret:
                 messagebox.showerror("Failed!",

@@ -16,101 +16,126 @@ if not os.path.exists(sdk_dir):
     sys.exit(1)
 
 
+# ============================================================
+# 工具函数
+# ============================================================
 
 def move_executable():
-    """将生成的可执行文件从 dist 移动到项目根目录"""
+    """将可执行文件从 dist 拷贝到 MarvinPlatform_EN 目录下"""
     dist_dir = os.path.join(base_dir, 'dist')
     if not os.path.exists(dist_dir):
-        print("警告: dist 文件夹不存在，无法移动可执行文件")
+        print("Warning: dist folder not found, nothing to move")
         return
 
-    # 根据平台查找生成的可执行文件
     if sys.platform == 'win32':
         pattern = '*.exe'
     else:
-        pattern = '*'  # Linux 下可执行文件无后缀，且只有一个文件
+        pattern = '*'
 
-    # 获取 dist 目录下的所有匹配文件
     candidates = glob.glob(os.path.join(dist_dir, pattern))
-    # 过滤掉目录，只保留文件
     exec_files = [f for f in candidates if os.path.isfile(f)]
 
     if not exec_files:
-        print("警告: dist 目录中没有找到可执行文件")
+        print("Warning: no executable found in dist/")
         return
 
-    # 如果有多个，取第一个（通常只有一个）
-    src_path = exec_files[0]
-    filename = os.path.basename(src_path)
-    dst_path = os.path.join(project_root, filename)
+    for src_path in exec_files:
+        filename = os.path.basename(src_path)
+        dst_path = os.path.join(base_dir, filename)
+        print(f"Copying {src_path} -> {dst_path}")
+        shutil.copy2(src_path, dst_path)
 
-    print(f"移动 {src_path} -> {dst_path}")
-    shutil.move(src_path, dst_path)
-    print("移动完成")
-
-    # 移动完成后删除整个 dist 文件夹
-    print("删除 dist 文件夹...")
-    shutil.rmtree(dist_dir, ignore_errors=True)
+    print("Executable(s) copied to MarvinPlatform_EN/")
 
 
-# ========== 开始打包 ==========
-if sys.platform == 'win32':
-    pack_args = [
-        'ui_EN.py',
-        '--onefile',
-        # '--windowed',          # 需要控制台则取消注释
-        '--icon', os.path.join('src', 'logo.ico'),
-        '--name', 'MarvinPlatform_win',
-        '--add-binary', os.path.join(sdk_dir, 'libMarvinSDK.dll') + ';.',
-        '--paths', sdk_dir,
-        '--hidden-import', 'ctypes',
+def clean_build_artifacts():
+    """清理所有编译生成的垃圾：build / dist / spec / __pycache__"""
+    print("\nCleaning build artifacts ...")
+
+    dirs_to_remove = [
+        os.path.join(base_dir, 'build'),
+        os.path.join(base_dir, 'dist'),
     ]
-    pack_args.extend(['--add-binary', os.path.join(sdk_dir, '*.dll') + ';.'])
-    pack_args.extend(['--add-data', os.path.join(sdk_dir, '*.py') + ';SDK_PYTHON'])
-    pack_args.extend(['--add-data', os.path.join(src_dir, 'logo.ico') + ';src'])
+    for d in dirs_to_remove:
+        if os.path.exists(d):
+            print(f"  Removing {d}")
+            shutil.rmtree(d, ignore_errors=True)
 
-else:  # Linux / macOS
-    pack_args = [
-        'ui_EN.py',
-        '--onefile',
-        '--windowed',  # 无控制台
-        '--icon', os.path.join('src', 'logo.png'),
-        '--name', 'MarvinPlatform_linux',
-        '--add-binary', os.path.join(sdk_dir, 'libMarvinSDK.so') + ':.',
-        '--paths', sdk_dir,
-        '--hidden-import', 'ctypes',
-        '--hidden-import', 'ctypes',
+    for spec in glob.glob(os.path.join(base_dir, '*.spec')):
+        print(f"  Removing {spec}")
+        os.remove(spec)
+
+    pycache_dirs = glob.glob(os.path.join(base_dir, '**', '__pycache__'), recursive=True)
+    pycache_dirs.append(os.path.join(sdk_dir, '__pycache__'))
+    for pc in pycache_dirs:
+        if os.path.exists(pc):
+            print(f"  Removing {pc}")
+            shutil.rmtree(pc, ignore_errors=True)
+
+    print("Cleanup done.")
+
+
+# ============================================================
+# 打包参数 — 双平台自适应
+# ============================================================
+
+# PyInstaller 的路径分隔符：Windows 用 ;  Linux/macOS 用 :
+path_sep = ';' if sys.platform == 'win32' else ':'
+
+# 可执行文件名 / 图标
+if sys.platform == 'win32':
+    exe_name = 'MarvinPlatform_win_100341'
+    icon_ext = 'ico'
+    bin_exts = ('.dll',)
+else:
+    exe_name = 'MarvinPlatform_linux_100341'
+    icon_ext = 'png'
+    bin_exts = ('.so',)
+
+pack_args = [
+    'ui_EN.py',
+    '--onefile',
+    '--icon', os.path.join('src', f'logo.{icon_ext}'),
+    '--name', exe_name,
+    '--paths', sdk_dir,
+    '--hidden-import', 'ctypes',
+]
+
+# Linux 额外依赖
+if sys.platform != 'win32':
+    pack_args.extend([
         '--hidden-import', 'PIL._tkinter_finder',
         '--hidden-import', 'PIL.Image',
         '--hidden-import', 'PIL.ImageTk',
-    ]
-    pack_args.extend(['--add-binary', os.path.join(sdk_dir, '*.so') + ':.'])
-    pack_args.extend(['--add-data', os.path.join(sdk_dir, '*.py') + ':PYTHON_SDK'])
-    pack_args.extend(['--add-data', os.path.join(src_dir, 'logo.png') + ':src'])
-# 执行打包
+    ])
+
+# ---------- 添加 SDK 的 .py 文件 (add-data) ----------
+for py_file in glob.glob(os.path.join(sdk_dir, '*.py')):
+    dest = py_file + path_sep + 'SDK_PYTHON'
+    pack_args.extend(['--add-data', dest])
+    print(f"  add-data: {py_file}")
+
+# ---------- 添加 SDK 的二进制文件 (add-binary) ----------
+for ext in bin_exts:
+    for bin_file in glob.glob(os.path.join(sdk_dir, '*' + ext)):
+        dest = bin_file + path_sep + '.'
+        pack_args.extend(['--add-binary', dest])
+        print(f"  add-binary: {bin_file}")
+
+# ---------- 添加资源文件 ----------
+icon_src = os.path.join(src_dir, f'logo.{icon_ext}')
+dest = icon_src + path_sep + 'src'
+pack_args.extend(['--add-data', dest])
+print(f"  add-data: {icon_src}")
+
+# ============================================================
+# 执行
+# ============================================================
+
+print(f"\nBuilding for platform: {sys.platform} ...")
 PyInstaller.__main__.run(pack_args)
 
-print("Cleaning temporary files...")
-shutil.rmtree(os.path.join(base_dir, 'build'), ignore_errors=True)
-shutil.rmtree(os.path.join(base_dir, '__pycache__'), ignore_errors=True)
-sdk_pycache = os.path.join(sdk_dir, '__pycache__')
-shutil.rmtree(sdk_pycache, ignore_errors=True)
+move_executable()
+clean_build_artifacts()
 
-exe_files = glob.glob(os.path.join(base_dir, 'dist', '*.exe'))
-if exe_files:
-    exe_path = exe_files[0]
-    target_path = os.path.join(base_dir, os.path.basename(exe_path))
-    print(f"Moving {exe_path} -> {target_path}")
-    shutil.move(exe_path, target_path)
-else:
-    print("Warning: No .exe file found in dist directory")
-
-print("Deleting dist folder...")
-shutil.rmtree(os.path.join(base_dir, 'dist'), ignore_errors=True)
-
-spec_files = glob.glob(os.path.join(base_dir, '*.spec'))
-for spec_file in spec_files:
-    print(f"Deleting {spec_file}")
-    os.remove(spec_file)
-
-print("Packaging completed! Executable file is in the project root directory.")
+print("\n=== Packaging completed! Executable is in MarvinPlatform_EN/ ===")

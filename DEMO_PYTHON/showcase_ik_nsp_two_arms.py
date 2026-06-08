@@ -9,7 +9,7 @@ from SDK_PYTHON.fx_kine import Marvin_Kine,FX_InvKineSolvePara,convert_to_8x8_ma
 
 '''
 #################################################################
-该DEMO 为机器人在约束工作构型下的逆解和调整构型的演示脚本   
+该DEMO 为机器人在约束工作构型下的逆解和调整构型的演示脚本
 #################################################################
 '''
 print('-'*50)
@@ -23,7 +23,7 @@ kk=Marvin_Kine() # LEFT ARM
 使用前，请一定确认机型，导入正确的配置文件config_path，文件导错，计算会错误啊啊啊,甚至看起来运行正常，但是值错误！！！
 一定要确认arm_type是左臂0 还是右臂1
 '''
-ini_result1=kk.load_config(arm_type=0,config_path=os.path.join(current_path,'ccs_m6.MvKDCfg'))
+ini_result1=kk.load_config(arm_type=0,config_path=os.path.join(current_path,'ccs_m6_40.MvKDCfg'))
 print(ini_result1)
 
 '''
@@ -98,7 +98,7 @@ kk1=Marvin_Kine() # RIGHT ARM
 使用前，请一定确认机型，导入正确的配置文件config_path，文件导错，计算会错误啊啊啊,甚至看起来运行正常，但是值错误！！！
 一定要确认arm_type是左臂0 还是右臂1
 '''
-ini_result1=kk1.load_config(arm_type=1,config_path=os.path.join(current_path,'ccs_m6.MvKDCfg'))
+ini_result1=kk1.load_config(arm_type=1,config_path=os.path.join(current_path,'ccs_m6_40.MvKDCfg'))
 print(ini_result1)
 
 '''
