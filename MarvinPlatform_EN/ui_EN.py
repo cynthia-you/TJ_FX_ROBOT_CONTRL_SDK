@@ -4869,123 +4869,123 @@ class App:
         tk.Button(cart_btn_row, text="Break", width=10, font=("Arial", 11, "bold"), bg="#FFF68F",
                   command=self.stop_motion).pack(side="left", padx=10)
 
-        # # Linear (multi-segment)
-        # multi_seg_frame = ttk.LabelFrame(cartesian_frame, text="Linear (multi-segment)", padding=10,
-        #                                  relief=tk.GROOVE, borderwidth=2, style="MyCustom.TLabelframe")
-        # multi_seg_frame.pack(fill="x", padx=5, pady=(10, 5))
-        #
-        # # ---------- Arm0 ----------
-        # arm0_multi_row = tk.Frame(multi_seg_frame, bg="white")
-        # arm0_multi_row.pack(fill="x", pady=2)
-        # tk.Label(arm0_multi_row, text="LeftArm", bg="#D8F4F3", width=8).pack(side="left", padx=2)
-        # tk.Label(arm0_multi_row, text="start joints", bg="white", width=10).pack(side="left", padx=(5, 0))
-        # self.multi_start_joints_arm0_entry = tk.Entry(arm0_multi_row, width=50)
-        # self.multi_start_joints_arm0_entry.pack(side="left", padx=2)
-        # self.multi_start_joints_arm0_entry.insert(0, "17.970, -35.197, 11.414, -73.344, -9.154, -17.035, 7.086")
-        # tk.Button(arm0_multi_row, text="GetCur",
-        #           command=lambda: self.pln_get_cur_joints_as_ref('Arm0')).pack(side="left",
-        #                                                                        padx=2)
-        #
-        # tk.Label(arm0_multi_row, text="Add XYZABC", bg="white", width=10).pack(side="left", padx=(10, 0))
-        # self.multi_add_xyzabc_arm0_entry = tk.Entry(arm0_multi_row, width=50)
-        # self.multi_add_xyzabc_arm0_entry.pack(side="left", padx=2)
-        # self.multi_add_xyzabc_arm0_entry.insert(0, "0,0,0,0,0,0")
-        # tk.Button(arm0_multi_row, text="Add",
-        #           command=lambda: self.add_multi_seg_point('Arm0')).pack(side="left", padx=2)
-        #
-        # arm0_multi_row1 = tk.Frame(multi_seg_frame, bg="white")
-        # arm0_multi_row1.pack(fill="x", pady=(2, 10))
-        # tk.Label(arm0_multi_row1, text="All points", bg="white", width=10).pack(side="left", padx=(50, 0))
-        # self.multi_points_arm0_combo = ttk.Combobox(arm0_multi_row1, width=50, state="readonly")
-        # self.multi_points_arm0_combo.pack(side="left", padx=2)
-        # default_points0 = [
-        #     "509.731, 233.614, 265.949, -169.144, 55.011, -146.752",
-        #     "509.731, 233.614, 65.949, -169.144, 55.011, -146.752",
-        #     "509.731, 33.614, 65.949, -169.144, 55.011, -146.752",
-        #     "509.731, 33.614, 265.949, -169.144, 55.011, -146.752"
-        # ]
-        # self.multi_points_arm0_list = default_points0.copy()
-        # self.multi_points_arm0_combo['values'] = tuple(self.multi_points_arm0_list)
-        # if self.multi_points_arm0_list:
-        #     self.multi_points_arm0_combo.current(0)
-        #
-        #     # ---------- Arm1 ----------
-        # arm1_multi_row = tk.Frame(multi_seg_frame, bg="white")
-        # arm1_multi_row.pack(fill="x", pady=2)
-        # tk.Label(arm1_multi_row, text="RightArm", bg="#F4E4D8", width=8).pack(side="left", padx=2)
-        # tk.Label(arm1_multi_row, text="start joints", bg="white", width=10).pack(side="left", padx=(5, 0))
-        # self.multi_start_joints_arm1_entry = tk.Entry(arm1_multi_row, width=50)
-        # self.multi_start_joints_arm1_entry.pack(side="left", padx=2)
-        # self.multi_start_joints_arm1_entry.insert(0, "-17.970, -35.197, -11.414, -73.344, 9.154, -17.035, -7.086")
-        # tk.Button(arm1_multi_row, text="GetCur",
-        #           command=lambda: self.pln_get_cur_joints_as_ref('Arm1')).pack(side="left",
-        #                                                                        padx=2)
-        #
-        # tk.Label(arm1_multi_row, text="Add XYZABC", bg="white", width=10).pack(side="left", padx=(10, 0))
-        # self.multi_add_xyzabc_arm1_entry = tk.Entry(arm1_multi_row, width=50)
-        # self.multi_add_xyzabc_arm1_entry.pack(side="left", padx=2)
-        # self.multi_add_xyzabc_arm1_entry.insert(0, "0,0,0,0,0,0")
-        # tk.Button(arm1_multi_row, text="Add",
-        #           command=lambda: self.add_multi_seg_point('Arm1')).pack(side="left", padx=2)
-        # arm1_multi_row1 = tk.Frame(multi_seg_frame, bg="white")
-        # arm1_multi_row1.pack(fill="x", pady=(2, 10))
-        # tk.Label(arm1_multi_row1, text="All points", bg="white", width=10).pack(side="left", padx=(50, 0))
-        # self.multi_points_arm1_combo = ttk.Combobox(arm1_multi_row1, width=50, state="readonly")
-        # self.multi_points_arm1_combo.pack(side="left", padx=2)
-        # default_points1 = [
-        #     "509.731, -233.614, 265.949, 169.144, 55.011, 146.752",
-        #     "509.731, -233.614, 65.949, 169.144, 55.011, 146.752",
-        #     "509.731, -33.614, 65.949, 169.144, 55.011, 146.752",
-        #     "509.731, -33.614, 265.949, 169.144, 55.011, 146.752"
-        # ]
-        # self.multi_points_arm1_list = default_points1.copy()
-        # self.multi_points_arm1_combo['values'] = tuple(self.multi_points_arm1_list)
-        # if self.multi_points_arm1_list:
-        #     self.multi_points_arm1_combo.current(0)
-        #
-        # multi_params_row = tk.Frame(multi_seg_frame, bg="white")
-        # multi_params_row.pack(fill="x", pady=5)
-        # tk.Label(multi_params_row, text="Common Parameters:", bg="white", font=("Arial", 9, "bold")).pack(side="left",
-        #                                                                                                   padx=10)
-        # tk.Label(multi_params_row, text="Freq:", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
-        # self.multi_cart_freq_entry = tk.Entry(multi_params_row, width=6)
-        # self.multi_cart_freq_entry.pack(side="left", padx=2)
-        # self.multi_cart_freq_entry.insert(0, "50")
-        # tk.Label(multi_params_row, text="((1000%freq==0))", bg="white", fg="gray", font=("Arial", 7)).pack(side="left",
-        #                                                                                                    padx=(0, 5))
-        # tk.Label(multi_params_row, text="Vel", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
-        # self.multi_cart_vel_entry = tk.Entry(multi_params_row, width=6)
-        # self.multi_cart_vel_entry.pack(side="left", padx=2)
-        # self.multi_cart_vel_entry.insert(0, "100")
-        # tk.Label(multi_params_row, text="(1-1000)", bg="white", fg="gray", font=("Arial", 7)).pack(side="left",
-        #                                                                                            padx=(0, 5))
-        #
-        # tk.Label(multi_params_row, text="Acc", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
-        # self.multi_cart_acc_entry = tk.Entry(multi_params_row, width=6)
-        # self.multi_cart_acc_entry.pack(side="left", padx=2)
-        # self.multi_cart_acc_entry.insert(0, "100")
-        # tk.Label(multi_params_row, text="(1-1000)", bg="white", fg="gray", font=("Arial", 7)).pack(side="left", padx=2)
-        # tk.Label(multi_params_row, text="Allow Range", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
-        # self.multi_allow_range_entry = tk.Entry(multi_params_row, width=3)
-        # self.multi_allow_range_entry.pack(side="left", padx=2)
-        # self.multi_allow_range_entry.insert(0, "5")
-        # tk.Label(multi_params_row, text="ZSP Type", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
-        # self.multi_zsp_type_entry = tk.Entry(multi_params_row, width=3)
-        # self.multi_zsp_type_entry.pack(side="left", padx=2)
-        # self.multi_zsp_type_entry.insert(0, "1")
-        # tk.Label(multi_params_row, text="ZSP Params", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
-        # self.multi_zsp_params_entry = tk.Entry(multi_params_row, width=20)
-        # self.multi_zsp_params_entry.pack(side="left", padx=2)
-        # self.multi_zsp_params_entry.insert(0, "0, 0, -1, 0, 0, 0")
-        #
-        # multi_btn_row = tk.Frame(multi_seg_frame, bg="white")
-        # multi_btn_row.pack(pady=5, anchor="center")
-        # tk.Button(multi_btn_row, text="Clear params", width=10, font=("Arial", 11, "bold"), bg="#E6E6FA",
-        #           command=self.clear_multi_segment_inputs).pack(side="left", padx=10)
-        # tk.Button(multi_btn_row, text="Run", width=10, font=("Arial", 11, "bold"), bg="#A2CD5A",
-        #           command=self.pln_run_multi_segment_linear).pack(side="left", padx=10)
-        # tk.Button(multi_btn_row, text="Break", width=10, font=("Arial", 11, "bold"), bg="#FFF68F",
-        #           command=self.stop_motion).pack(side="left", padx=10)
+        # Linear (multi-segment)
+        multi_seg_frame = ttk.LabelFrame(cartesian_frame, text="Linear (multi-segment)", padding=10,
+                                         relief=tk.GROOVE, borderwidth=2, style="MyCustom.TLabelframe")
+        multi_seg_frame.pack(fill="x", padx=5, pady=(10, 5))
+
+        # ---------- Arm0 ----------
+        arm0_multi_row = tk.Frame(multi_seg_frame, bg="white")
+        arm0_multi_row.pack(fill="x", pady=2)
+        tk.Label(arm0_multi_row, text="LeftArm", bg="#D8F4F3", width=8).pack(side="left", padx=2)
+        tk.Label(arm0_multi_row, text="start joints", bg="white", width=10).pack(side="left", padx=(5, 0))
+        self.multi_start_joints_arm0_entry = tk.Entry(arm0_multi_row, width=50)
+        self.multi_start_joints_arm0_entry.pack(side="left", padx=2)
+        self.multi_start_joints_arm0_entry.insert(0, "17.970, -35.197, 11.414, -73.344, -9.154, -17.035, 7.086")
+        tk.Button(arm0_multi_row, text="GetCur",
+                  command=lambda: self.pln_get_cur_joints_as_ref('Arm0')).pack(side="left",
+                                                                               padx=2)
+
+        tk.Label(arm0_multi_row, text="Add XYZABC", bg="white", width=10).pack(side="left", padx=(10, 0))
+        self.multi_add_xyzabc_arm0_entry = tk.Entry(arm0_multi_row, width=50)
+        self.multi_add_xyzabc_arm0_entry.pack(side="left", padx=2)
+        self.multi_add_xyzabc_arm0_entry.insert(0, "0,0,0,0,0,0")
+        tk.Button(arm0_multi_row, text="Add",
+                  command=lambda: self.add_multi_seg_point('Arm0')).pack(side="left", padx=2)
+
+        arm0_multi_row1 = tk.Frame(multi_seg_frame, bg="white")
+        arm0_multi_row1.pack(fill="x", pady=(2, 10))
+        tk.Label(arm0_multi_row1, text="All points", bg="white", width=10).pack(side="left", padx=(50, 0))
+        self.multi_points_arm0_combo = ttk.Combobox(arm0_multi_row1, width=50, state="readonly")
+        self.multi_points_arm0_combo.pack(side="left", padx=2)
+        default_points0 = [
+            "509.731, 233.614, 265.949, -169.144, 55.011, -146.752",
+            "509.731, 233.614, 65.949, -169.144, 55.011, -146.752",
+            "509.731, 33.614, 65.949, -169.144, 55.011, -146.752",
+            "509.731, 33.614, 265.949, -169.144, 55.011, -146.752"
+        ]
+        self.multi_points_arm0_list = default_points0.copy()
+        self.multi_points_arm0_combo['values'] = tuple(self.multi_points_arm0_list)
+        if self.multi_points_arm0_list:
+            self.multi_points_arm0_combo.current(0)
+
+            # ---------- Arm1 ----------
+        arm1_multi_row = tk.Frame(multi_seg_frame, bg="white")
+        arm1_multi_row.pack(fill="x", pady=2)
+        tk.Label(arm1_multi_row, text="RightArm", bg="#F4E4D8", width=8).pack(side="left", padx=2)
+        tk.Label(arm1_multi_row, text="start joints", bg="white", width=10).pack(side="left", padx=(5, 0))
+        self.multi_start_joints_arm1_entry = tk.Entry(arm1_multi_row, width=50)
+        self.multi_start_joints_arm1_entry.pack(side="left", padx=2)
+        self.multi_start_joints_arm1_entry.insert(0, "-17.970, -35.197, -11.414, -73.344, 9.154, -17.035, -7.086")
+        tk.Button(arm1_multi_row, text="GetCur",
+                  command=lambda: self.pln_get_cur_joints_as_ref('Arm1')).pack(side="left",
+                                                                               padx=2)
+
+        tk.Label(arm1_multi_row, text="Add XYZABC", bg="white", width=10).pack(side="left", padx=(10, 0))
+        self.multi_add_xyzabc_arm1_entry = tk.Entry(arm1_multi_row, width=50)
+        self.multi_add_xyzabc_arm1_entry.pack(side="left", padx=2)
+        self.multi_add_xyzabc_arm1_entry.insert(0, "0,0,0,0,0,0")
+        tk.Button(arm1_multi_row, text="Add",
+                  command=lambda: self.add_multi_seg_point('Arm1')).pack(side="left", padx=2)
+        arm1_multi_row1 = tk.Frame(multi_seg_frame, bg="white")
+        arm1_multi_row1.pack(fill="x", pady=(2, 10))
+        tk.Label(arm1_multi_row1, text="All points", bg="white", width=10).pack(side="left", padx=(50, 0))
+        self.multi_points_arm1_combo = ttk.Combobox(arm1_multi_row1, width=50, state="readonly")
+        self.multi_points_arm1_combo.pack(side="left", padx=2)
+        default_points1 = [
+            "509.731, -233.614, 265.949, 169.144, 55.011, 146.752",
+            "509.731, -233.614, 65.949, 169.144, 55.011, 146.752",
+            "509.731, -33.614, 65.949, 169.144, 55.011, 146.752",
+            "509.731, -33.614, 265.949, 169.144, 55.011, 146.752"
+        ]
+        self.multi_points_arm1_list = default_points1.copy()
+        self.multi_points_arm1_combo['values'] = tuple(self.multi_points_arm1_list)
+        if self.multi_points_arm1_list:
+            self.multi_points_arm1_combo.current(0)
+
+        multi_params_row = tk.Frame(multi_seg_frame, bg="white")
+        multi_params_row.pack(fill="x", pady=5)
+        tk.Label(multi_params_row, text="Common Parameters:", bg="white", font=("Arial", 9, "bold")).pack(side="left",
+                                                                                                          padx=10)
+        tk.Label(multi_params_row, text="Freq:", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
+        self.multi_cart_freq_entry = tk.Entry(multi_params_row, width=6)
+        self.multi_cart_freq_entry.pack(side="left", padx=2)
+        self.multi_cart_freq_entry.insert(0, "50")
+        tk.Label(multi_params_row, text="((1000%freq==0))", bg="white", fg="gray", font=("Arial", 7)).pack(side="left",
+                                                                                                           padx=(0, 5))
+        tk.Label(multi_params_row, text="Vel", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
+        self.multi_cart_vel_entry = tk.Entry(multi_params_row, width=6)
+        self.multi_cart_vel_entry.pack(side="left", padx=2)
+        self.multi_cart_vel_entry.insert(0, "100")
+        tk.Label(multi_params_row, text="(1-1000)", bg="white", fg="gray", font=("Arial", 7)).pack(side="left",
+                                                                                                   padx=(0, 5))
+
+        tk.Label(multi_params_row, text="Acc", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
+        self.multi_cart_acc_entry = tk.Entry(multi_params_row, width=6)
+        self.multi_cart_acc_entry.pack(side="left", padx=2)
+        self.multi_cart_acc_entry.insert(0, "100")
+        tk.Label(multi_params_row, text="(1-1000)", bg="white", fg="gray", font=("Arial", 7)).pack(side="left", padx=2)
+        tk.Label(multi_params_row, text="Allow Range", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
+        self.multi_allow_range_entry = tk.Entry(multi_params_row, width=3)
+        self.multi_allow_range_entry.pack(side="left", padx=2)
+        self.multi_allow_range_entry.insert(0, "5")
+        tk.Label(multi_params_row, text="ZSP Type", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
+        self.multi_zsp_type_entry = tk.Entry(multi_params_row, width=3)
+        self.multi_zsp_type_entry.pack(side="left", padx=2)
+        self.multi_zsp_type_entry.insert(0, "1")
+        tk.Label(multi_params_row, text="ZSP Params", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
+        self.multi_zsp_params_entry = tk.Entry(multi_params_row, width=20)
+        self.multi_zsp_params_entry.pack(side="left", padx=2)
+        self.multi_zsp_params_entry.insert(0, "0, 0, -1, 0, 0, 0")
+
+        multi_btn_row = tk.Frame(multi_seg_frame, bg="white")
+        multi_btn_row.pack(pady=5, anchor="center")
+        tk.Button(multi_btn_row, text="Clear params", width=10, font=("Arial", 11, "bold"), bg="#E6E6FA",
+                  command=self.clear_multi_segment_inputs).pack(side="left", padx=10)
+        tk.Button(multi_btn_row, text="Run", width=10, font=("Arial", 11, "bold"), bg="#A2CD5A",
+                  command=self.pln_run_multi_segment_linear).pack(side="left", padx=10)
+        tk.Button(multi_btn_row, text="Break", width=10, font=("Arial", 11, "bold"), bg="#FFF68F",
+                  command=self.stop_motion).pack(side="left", padx=10)
 
     def pln_get_cur_joints(self, obj):
         try:

@@ -76,6 +76,9 @@ time.sleep(0.5)
 
 '''阻抗参数'''
 robot.clear_set()
+# #高刚度
+# K=[10,10,10,10, 10, 10, 10]
+# D7=[1,1,1,1,1,1,1]
 robot.set_joint_kd_params(arm='A',K=[2,2,2,1.6, 1, 1, 1], D=[0.3,0.3,0.3,0.2,0.2,0.2,0.2])#预设参考。
 robot.send_cmd()
 time.sleep(0.5)

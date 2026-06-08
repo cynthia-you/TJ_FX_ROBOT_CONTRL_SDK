@@ -275,8 +275,8 @@ extern "C"
 	bool OnSetJointKD_A(double K[7], double D[7]);
 	bool OnSetJointKD_B(double K[7], double D[7]);
 	// 3 设置指定手臂的迪卡尔阻抗参数, 在扭矩模式迪卡尔阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(2) 下参数才有意义(以左臂为例)
-	bool OnSetCartKD_A(double K[7], double D[7], int type);
-	bool OnSetCartKD_B(double K[7], double D[7], int type);
+	bool OnSetCartKD_A(double K[7], double D[7], int type = 2);
+	bool OnSetCartKD_B(double K[7], double D[7], int type = 2);
 
 	// 3 设置指定手臂的迪卡尔阻抗参数, 在扭矩模式迪卡尔阻抗模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(2) 下参数才有意义(以左臂为例)
 	// 3.1 设置笛卡尔阻抗的刚度和阻尼参数
