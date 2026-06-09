@@ -55,6 +55,8 @@ def clean_build_artifacts():
     dirs_to_remove = [
         os.path.join(base_dir, 'build'),
         os.path.join(base_dir, 'dist'),
+        os.path.join(project_root, 'build'),
+        os.path.join(project_root, 'dist'),
     ]
     for d in dirs_to_remove:
         if os.path.exists(d):
@@ -62,6 +64,9 @@ def clean_build_artifacts():
             shutil.rmtree(d, ignore_errors=True)
 
     for spec in glob.glob(os.path.join(base_dir, '*.spec')):
+        print(f"  Removing {spec}")
+        os.remove(spec)
+    for spec in glob.glob(os.path.join(project_root, '*.spec')):
         print(f"  Removing {spec}")
         os.remove(spec)
 
