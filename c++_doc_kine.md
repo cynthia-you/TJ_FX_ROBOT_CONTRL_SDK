@@ -184,7 +184,7 @@ FX_BOOL  FX_Robot_Kine_FK(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pg
 ###   5.计算正运动学和零空间(臂角平面)参数
 FX_BOOL  FX_Robot_Kine_FK_NSP(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos, Matrix3 nspg);
 
-  • 输入七关节角度及RobotSerial（参数含义参考初始化参数部分），输出为4*4的法兰末端位姿矩阵,并得到基于该角度下的零空间参数
+    • 输入七关节角度及RobotSerial（参数含义参考初始化参数部分），输出为4*4的法兰末端位姿矩阵,并得到基于该角度下的零空间参数
     输入：
         1. FX_INT32L RobotSerial：0，左臂；1，右臂
         2. FX_DOUBLE joints[7]:需要得到末端齐次变换矩阵的输入关节角度，单位：度
@@ -193,9 +193,9 @@ FX_BOOL  FX_Robot_Kine_FK_NSP(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix
     输出：
         成功：True/1; 失败：False/0
         
- • 特别提示:零空间参数矩阵 nspg(3,3), 其中第一列可以作为逆解结构体里面m_Input_IK_ZSPPara的x y z的输入值。
+    • 特别提示:零空间参数矩阵 nspg(3,3), 其中第一列可以作为逆解结构体里面m_Input_IK_ZSPPara的x y z的输入值。
 
-    
+        
 
 ###    6. 计算逆运动学
 FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
@@ -405,9 +405,9 @@ FX_BOOL  FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L R
     • 本接口输出的结束点位姿可以直接输入直线规划接口进行规划
 
 ###    17. 多点MOVL连续规划
-该功能为组合使用接口，共包含三个接口：
+该功能为组合使用接口，共包含三个接口
 
-####
+#### 设置多段规划的起点信息
 FX_BOOL  FX_Robot_PLN_Set_MOVL_Start(FX_INT32L RobotSerial, Vect7 Ref_Joints, Vect6 Start_XYZABC, Vect6 End_XYZABC, 
                                         FX_DOUBLE Allow_Range, FX_INT32L ZSP_Type, Vect6 ZSP_Para, 
                                         FX_DOUBLE Vel, FX_DOUBLE Acc, FX_INT32L Freq);
@@ -435,7 +435,7 @@ FX_BOOL  FX_Robot_PLN_Set_MOVL_Start(FX_INT32L RobotSerial, Vect7 Ref_Joints, Ve
     • 若使用周期下发，内部规划周期不强制要求为50Hz，但需要设置为基频的整数分频
     • 该接口可作为单段规划使用，整体功能及输出与MOVLA接口相同，区别在于可以设置逆运动解算的零空间，及调用接口后需要使用FX_Robot_PLN_Get_MOVL_Path接口获取点位
 
-####
+#### 加点
 FX_BOOL  FX_Robot_PLN_Set_MOVL_Next_Point(FX_INT32L RobotSerial, Vect6 Next_XYZABC, FX_DOUBLE Allow_Range, 
                                             FX_INT32L ZSP_Type, Vect6 ZSP_Para, FX_DOUBLE Vel, FX_DOUBLE Acc);
 
@@ -455,7 +455,7 @@ FX_BOOL  FX_Robot_PLN_Set_MOVL_Next_Point(FX_INT32L RobotSerial, Vect6 Next_XYZA
     • 该接口中重点关注下个目标点的位姿信息、平滑过渡长度信息，以及运动过程中的速度、加速度和逆运动学选解策略
     • 输出点位频率为50Hz
 
-####
+#### 得到规划轨迹的点集
 FX_BOOL  FX_Robot_PLN_Get_MOVL_Path(FX_INT32L RobotSerial, CPointSet* ret_Pset);
 
     输入：

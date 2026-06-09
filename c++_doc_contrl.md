@@ -869,7 +869,7 @@ bool OnSetDragSpace_B(int dgType);
     bool OnSetPlnCart_A(void *pset);
     bool OnSetPlnCart_B(void *pset);
 
-    pset：使用计算库kinematicsSDK 的规划接口FX_Robot_PLN_MOVLA 得到的点集作为输入
+    pset：由KinematicsSDK的规划接口得到的点集
 
 ### 中断规划运行，笛卡尔空间和关节空间都适用
 	bool OnStopPlnJoint_A();
