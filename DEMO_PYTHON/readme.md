@@ -129,6 +129,14 @@
         showcase_pln_cart_positionMode_with_break.py
 ### 28. 关节力矩转末端六维力
         showcase_jointsTorque2EefTorque.py
+### 29. 双臂协作关节空间同步规划运动（setPln_joint_AB）
+        showcase_pln_joint_to_joint_two_arms.py
+### 30. 双臂协作关节空间直线规划同步运动（movL_KeepJA + setPln_Cart_AB）
+        showcase_pln_joint_to_joints_linear_two_arms.py
+### 31. 双臂协作笛卡尔空间直线规划同步运动（movLA + setPln_Cart_AB）
+        showcase_pln_cartesian_linear_two_arms.py
+### 32. 双臂协作多点直线规划同步运动（multi_movL + setPln_Cart_AB）
+        showcase_pln_multi_segment_linear_two_arms.py
 
 ## 五. 计算showcases
 

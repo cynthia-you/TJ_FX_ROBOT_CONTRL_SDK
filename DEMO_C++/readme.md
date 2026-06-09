@@ -202,6 +202,9 @@
 
 ## 18. 笛卡尔空间以规划方式下发指令，中断规划运行
             showcase_pln_cartSpace_PositionMode_with_break.cpp
+
+## 19. 工具笛卡尔阻抗控制案列
+            showcase_torque_EefCart_impedance.cpp
     
 # 六、 控制SDK简明式接口案例
             showcase_new_control_sdk_usage.cpp

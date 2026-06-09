@@ -124,7 +124,7 @@ int main()
             break;
         }
     }
-    if (allZero_a)
+    if (!allZero_a)
     {
         std::cout << "arm A: srvo error exists, clear error\n"
                   << std::endl;
@@ -134,7 +134,7 @@ int main()
         OnSetSend();
         SLEEP(20);
     }
-    if (allZero_b)
+    if (!allZero_b)
     {
         std::cout << "arm B: srvo error exists, clear error\n"
                   << std::endl;

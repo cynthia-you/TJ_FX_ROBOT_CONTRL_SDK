@@ -4571,18 +4571,7 @@ class App:
                     com = 2
                 elif com_ == 'COM2':
                     com = 3
-                # self.eef_thread = threading.Thread(target=read_data, args=(robot_id, com), daemon=True)
-                # self.eef_thread.start()
-                # received_count, received_data = get_received_data()
-                # if received_count > 0:
-                #     if len(received_data) > 0:
-                #         print(f'received_count:{received_count},  eef received:{received_data[0]}')
-                #         if robot_id == 'A':
-                #             self.recv_text1.delete('1.0', tk.END)
-                #             self.recv_text1.insert(tk.END, received_data[0])
-                #         if robot_id == 'B':
-                #             self.recv_text2.delete('1.0', tk.END)
-                #             self.recv_text2.insert(tk.END, received_data[0])
+
                 tag, receive_hex_data = robot.get_485_data(robot_id, com)
                 if tag >= 1:
                     if robot_id == 'A':
@@ -4597,9 +4586,6 @@ class App:
             messagebox.showerror('error', 'Please connect robot')
 
     def planning_dialog(self):
-        if not self.connected:
-            messagebox.showerror('Error', "Please connect robot first!")
-            return
         if not messagebox.askyesno("Yes", "Motion planning must under position state, \nand the speed of position state must be 100!"):
             return
 
@@ -5127,10 +5113,15 @@ class App:
             messagebox.showerror("value error", "start and end in same pose, can not run planning")
             return
 
-        ret = robot.pln_init(config_path=glob.glob('config/*.MvKDCfg')[0])
+        _script_dir = os.path.dirname(os.path.abspath(__file__))
+        _cfg_files = glob.glob(os.path.join(_script_dir, 'config', '*.MvKDCfg'))
+        if not _cfg_files:
+            messagebox.showerror("Failed!", f"No .MvKDCfg files found in {os.path.join(_script_dir, 'config')}")
+            return
+        ret = robot.pln_init(config_path=_cfg_files[0])
         if not ret:
             messagebox.showerror("Failed!",
-                                 f"load calculate config failed: {glob.glob('config/*.MvKDCfg')[0]}")
+                                 f"load calculate config failed: {_cfg_files[0]}")
             return
 
         if not is_zero0 and is_zero1:
@@ -7201,6 +7192,13 @@ if __name__ == "__main__":
     ini sdk
     '''
     crr_pth = os.getcwd()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_pattern = os.path.join(script_dir, 'config', '*.MvKDCfg')
+    config_files = glob.glob(config_pattern)
+    if not config_files:
+        print(f"ERROR: No .MvKDCfg files found in {os.path.join(script_dir, 'config')}")
+        sys.exit(1)
+    config_path = config_files[0]
     dcss = DCSS()
     robot = Marvin_Robot()
 
@@ -7208,13 +7206,13 @@ if __name__ == "__main__":
     kk2 = Marvin_Kine()
     kk1.log_switch(0)
     kk2.log_switch(0)
-    ini_result1 = kk1.load_config(arm_type=0, config_path=glob.glob('config/*.MvKDCfg')[0])
+    ini_result1 = kk1.load_config(arm_type=0, config_path=config_path)
     initial_kine_tag1 = kk1.initial_kine(robot_type=ini_result1['TYPE'][0],
                                          dh=ini_result1['DH'][0],
                                          pnva=ini_result1['PNVA'][0],
                                          j67=ini_result1['BD'][0])
 
-    ini_result2 = kk2.load_config(arm_type=1, config_path=glob.glob('config/*.MvKDCfg')[0])
+    ini_result2 = kk2.load_config(arm_type=1, config_path=config_path)
     initial_kine_tag2 = kk2.initial_kine(robot_type=ini_result2['TYPE'][0],
                                          dh=ini_result2['DH'][0],
                                          pnva=ini_result2['PNVA'][0],
