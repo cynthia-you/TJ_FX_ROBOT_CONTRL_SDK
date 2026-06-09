@@ -7,7 +7,7 @@ sys.path.insert(0, parent_dir)
 current_file_path = os.path.abspath(__file__)
 current_path = os.path.dirname(current_file_path)
 from SDK_PYTHON.fx_kine import Marvin_Kine, FX_InvKineSolvePara, convert_to_8x8_matrix
-from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS
+from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS,check_joints_accuracy_with_tolerance
 import time
 import logging
 
@@ -87,15 +87,22 @@ logger.info('-----------\nB arm:')
 logger.info(f'current state{sub_data["states"][1]["cur_state"]}')
 logger.info(f'arm error code:{sub_data["states"][1]["err_code"]}')
 
-start_joints_A = [19.597, -32.480, 10.050, -58.939, -8.863, -33.821, 4.772]
-start_joints_B = [-19.597, -32.480, -10.050, -58.939, 8.863, -33.821, -4.772]
+start_joints_A = [17.470, -43.308, 11.804, -79.761, -10.700, -2.874, 9.134]
+start_joints_B = [-17.470, -43.308, -11.804, -79.761, 10.700, -2.874, -9.134]
 
 robot.clear_set()
 robot.set_joint_cmd_pose(arm='A', joints=start_joints_A)
 robot.set_joint_cmd_pose(arm='B', joints=start_joints_B)
-timeout = robot.send_cmd_wait_response(100)
-logger.info(f'set A&B arm initial pos, 100ms timeout: {timeout} ms')
-time.sleep(3)
+robot.send_cmd()
+logger.info(f'set A&B arm initial pos')
+
+i=0
+while i<1000:
+    i+=0
+    time.sleep(0.2)
+    data = robot.subscribe(dcss)
+    if check_joints_accuracy_with_tolerance(data['outputs'][0]['fb_joint_pos'], start_joints_A) and check_joints_accuracy_with_tolerance(data['outputs'][1]['fb_joint_pos'], start_joints_B):
+        break
 
 kk1 = Marvin_Kine()
 kk2 = Marvin_Kine()
@@ -118,8 +125,8 @@ initial_kine_tag2 = kk2.initial_kine(
     pnva=ini_result1['PNVA'][1],
     j67=ini_result1['BD'][1])
 
-end_joints_A = [9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35]
-end_joints_B = [-9.22, -40.58, 43.89, -102.09, -128.44, 17.55, 28.35]
+end_joints_A = [19.597, -32.480, 10.050, -58.939, -8.863, -33.821, 4.772]
+end_joints_B = [-19.597,-32.480,-10.050,-58.939,8.863,-33.821,-4.772]
 
 vel = 100
 acc = 100
@@ -148,7 +155,7 @@ logger.info('Dual-arm movL_KeepJA planning started')
 i=0
 while i<1000:
     i+=1
-    time.sleep(0.001)
+    time.sleep(0.2)
     data = robot.subscribe(dcss)
     if data['outputs'][0]['traj_state'] == b'\x00' and data['outputs'][1]['traj_state'] == b'\x00':
         break

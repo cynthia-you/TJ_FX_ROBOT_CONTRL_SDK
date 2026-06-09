@@ -1,12 +1,12 @@
 import os
 import sys
-import glob
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 current_file_path = os.path.abspath(__file__)
 current_path = os.path.dirname(current_file_path)
-from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS
+from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS,check_joints_accuracy_with_tolerance
 import time
 import logging
 
@@ -82,23 +82,28 @@ logger.info('-----------\nB arm:')
 logger.info(f'current state{sub_data["states"][1]["cur_state"]}')
 logger.info(f'arm error code:{sub_data["states"][1]["err_code"]}')
 
-start_joints_A = [19.597, -32.480, 10.050, -58.939, -8.863, -33.821, 4.772]
-start_joints_B = [-19.597, -32.480, -10.050, -58.939, 8.863, -33.821, -4.772]
+start_joints_A = [0]*7
+start_joints_B = [0]*7
 
 robot.clear_set()
 robot.set_joint_cmd_pose(arm='A', joints=start_joints_A)
 robot.set_joint_cmd_pose(arm='B', joints=start_joints_B)
-timeout = robot.send_cmd_wait_response(100)
-logger.info(f'set A&B arm initial pos, 100ms timeout: {timeout} ms')
-time.sleep(3)
+robot.send_cmd()
+logger.info(f'set A&B arm initial pos')
 
-_script_dir = os.path.dirname(os.path.abspath(__file__))
-_cfg_files = glob.glob(os.path.join(_script_dir, 'config', '*.MvKDCfg'))
-if not _cfg_files:
-    print(f"Failed! No .MvKDCfg files found in {os.path.join(_script_dir, 'config')}")
+i=0
+while i<1000:
+    i+=0
+    time.sleep(0.2)
+    data = robot.subscribe(dcss)
+    if check_joints_accuracy_with_tolerance(data['outputs'][0]['fb_joint_pos'], start_joints_A) and check_joints_accuracy_with_tolerance(data['outputs'][1]['fb_joint_pos'], start_joints_B):
+        break
+
+_cfg_files = os.path.join(current_path, 'ccs_m6_40.MvKDCfg')
+if not os.path.exists(_cfg_files):
+    print("Failed!", f"no {_cfg_files} files found.")
     exit(-1)
-ret = robot.pln_init(config_path=_cfg_files[0])
-ret = robot.pln_init(config_path='ccs_m6_40.MvKDCfg')
+ret = robot.pln_init(config_path=_cfg_files)
 if not ret:
     logger.error('load calculate config failed')
     exit(-1)
@@ -108,8 +113,8 @@ else:
 vel_ratio = 0.2
 acc_ratio = 0.2
 
-target_joints_A = [9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35]
-target_joints_B = [-9.22, -40.58, 43.89, -102.09, -128.44, 17.55, 28.35]
+target_joints_A = [17.470, -43.308, 11.804, -79.761, -10.700, -2.874, 9.134]
+target_joints_B = [-17.470, -43.308, -11.804, -79.761, 10.700, -2.874, -9.134]
 
 i=0
 while i<1000:
@@ -130,7 +135,7 @@ logger.info('Dual-arm joint planning started')
 i=0
 while i<1000:
     i+=1
-    time.sleep(0.001)
+    time.sleep(0.2)
     data = robot.subscribe(dcss)
     if data['outputs'][0]['traj_state'] == b'\x00' and data['outputs'][1]['traj_state'] == b'\x00':
         break

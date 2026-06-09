@@ -7,7 +7,7 @@ sys.path.insert(0, parent_dir)
 current_file_path = os.path.abspath(__file__)
 current_path = os.path.dirname(current_file_path)
 from SDK_PYTHON.fx_kine import Marvin_Kine, FX_InvKineSolvePara, convert_to_8x8_matrix
-from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS
+from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS,check_joints_accuracy_with_tolerance
 import time
 import logging
 
@@ -95,9 +95,15 @@ start_joints_B = [-17.970, -35.197, -11.414, -73.344, 9.154, -17.035, -7.086]
 robot.clear_set()
 robot.set_joint_cmd_pose(arm='A', joints=start_joints_A)
 robot.set_joint_cmd_pose(arm='B', joints=start_joints_B)
-timeout = robot.send_cmd_wait_response(100)
-logger.info(f'set A&B arm initial pos, 100ms timeout: {timeout} ms')
-time.sleep(3)
+robot.send_cmd()
+logger.info(f'set A&B arm initial pos')
+i=0
+while i<1000:
+    i+=0
+    time.sleep(0.2)
+    data = robot.subscribe(dcss)
+    if check_joints_accuracy_with_tolerance(data['outputs'][0]['fb_joint_pos'], start_joints_A) and check_joints_accuracy_with_tolerance(data['outputs'][1]['fb_joint_pos'], start_joints_B):
+        break
 
 kk1 = Marvin_Kine()
 kk2 = Marvin_Kine()
@@ -121,18 +127,19 @@ initial_kine_tag2 = kk2.initial_kine(
     j67=ini_result1['BD'][1])
 
 points_arm0 = [
-    [509.731, 233.614, 265.949, -169.144, 55.011, -146.752],
-    [509.731, 233.614, 65.949, -169.144, 55.011, -146.752],
-    [509.731, 33.614, 65.949, -169.144, 55.011, -146.752],
-    [509.731, 33.614, 265.949, -169.144, 55.011, -146.752]
-]
+            [509.731, 233.614, 265.949, -169.144, 55.011, -146.752],
+            [509.731, 233.614, 65.949, -169.144, 55.011, -146.752],
+            [509.731, 33.614, 65.949, -169.144, 55.011, -146.752],
+            [509.731, 33.614, 265.949, -169.144, 55.011, -146.752]
+        ]
 
 points_arm1 = [
-    [509.731, -233.614, 265.949, 169.144, 55.011, 146.752],
-    [509.731, -233.614, 65.949, 169.144, 55.011, 146.752],
-    [509.731, -33.614, 65.949, 169.144, 55.011, 146.752],
-    [509.731, -33.614, 265.949, 169.144, 55.011, 146.752]
-]
+            [509.731, -233.614, 265.949, 169.144, 55.011, 146.752],
+            [509.731, -233.614, 65.949, 169.144, 55.011, 146.752],
+            [509.731, -33.614, 65.949, 169.144, 55.011, 146.752],
+            [509.731, -33.614, 265.949, 169.144, 55.011, 146.752]
+        ]
+
 
 allow_range = 5
 zsp_type = 1
@@ -186,7 +193,7 @@ logger.info('Dual-arm multi-segment planning started')
 i=0
 while i<1000:
     i+=1
-    time.sleep(0.001)
+    time.sleep(0.2)
     data = robot.subscribe(dcss)
     if data['outputs'][0]['traj_state'] == b'\x00' and data['outputs'][1]['traj_state'] == b'\x00':
         break

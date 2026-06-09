@@ -2483,6 +2483,11 @@ class Concise_Marvin_Robot:
         print(f"{'=' * 50}")
 
 '''######################################## Assistive Funcs ####################################################'''
+def check_joints_accuracy_with_tolerance(joint1, joint2, tolerance=0.01):
+    if not (joint1 and joint2 and len(joint1) == 7 and len(joint2) == 7):
+        return False
+    return all(abs(j1 - j2) < tolerance for j1, j2 in zip(joint1, joint2))
+
 class StateCtr(Structure):
     _fields_ = [
         ("m_CurState", c_int),  # * 当前状态 */ ArmState
