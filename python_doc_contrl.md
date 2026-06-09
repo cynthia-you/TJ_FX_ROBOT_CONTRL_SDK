@@ -252,27 +252,39 @@
                 }
 
         注意，返回字典包括双臂的数据，A索引0，B索引1 
-        如 读取当前双臂臂的状态和历史关节命令以及获取当前关节角度demo：
-            from fx_robot import Marvin_Robot
-            from structure_data import DCSS
-            import time
-            dcss=DCSS()
-            robot=Marvin_Robot()
-            robot.connect('192.168.1.190')
-            robot.log_switch('1') #全局日志开关
-            robot.local_log_switch('1') # 主要日志
-            time.sleep(1)
+        如：
+            1. 读取当前双臂臂的状态和历史关节命令以及获取当前关节角度demo：
+                from fx_robot import Marvin_Robot
+                from structure_data import DCSS
+                import time
+                dcss=DCSS()
+                robot=Marvin_Robot()
+                robot.connect('192.168.1.190')
+                robot.log_switch('1') #全局日志开关
+                robot.local_log_switch('1') # 主要日志
+                time.sleep(1)
+            
+                sub_data=robot.subscribe(dcss)
+            
+                a_state=sub_data["states"][0]["cur_state"]
+                b_state=sub_data["states"][1]["cur_state"]
+            
+                a_joints_cmd=sub_data["inputs"][0]["joint_cmd_pos"]
+                b_joints_cmd=sub_data["inputs"][1]["joint_cmd_pos"]
+            
+                a_current_joints=sub_data["outputs"][0]["fb_joint_pos"]
+                b_current_joints=sub_data["outputs"][1]["fb_joint_pos"]
+
+            2. 读取当前手臂状态：["states"][0]["cur_state"]的值可以看到左臂：
+                0, //下伺服
+                1, // 位置跟随状态
+                2, // PVT状态
+                3, // 扭矩状态
         
-            sub_data=robot.subscribe(dcss)
-        
-            a_state=sub_data["states"][0]["cur_state"]
-            b_state=sub_data["states"][1]["cur_state"]
-        
-            a_joints_cmd=sub_data["inputs"][0]["joint_cmd_pos"]
-            b_joints_cmd=sub_data["inputs"][1]["joint_cmd_pos"]
-        
-            a_current_joints=sub_data["outputs"][0]["fb_joint_pos"]
-            b_current_joints=sub_data["outputs"][1]["fb_joint_pos"]
+                100, //报错了，请清错
+                101, //正常，切换位置状态瞬间
+                102,//正常，切换pvt状态瞬间
+                103,//正常，切换扭矩状态瞬间
 
 
 ### (7) 配置机器人参数相关(参数名见robot.ini文件)
@@ -625,7 +637,6 @@
 ### (20) 位置模式下规划当前点到目标点功能
 
 #### 关节空间规划初始化
-
     pln_init(self,config_path):
         '''关节空间规划初始化
         :param config_path: 本地机械臂配置文件*.MvKDCfg, 可相对路径.

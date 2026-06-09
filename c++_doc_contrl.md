@@ -830,49 +830,60 @@ bool OnSetDragSpace_B(int dgType);
         3.切换不同拖动模式前需要退出拖动模式再切换，否则控制效果是叠加混乱的。
 
 ## （21）设置末端笛卡尔方向的旋转
-//自定义设置末端笛卡尔方向的旋转
-//自定义设置左臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
-//自定义设置右臂臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
+### 自定义设置末端笛卡尔方向的旋转
+    自定义设置左臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+    bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
+    
+    自定义设置右臂臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+    bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
-//实时末端笛卡尔方向的旋转
-//设置左臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
-bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
-//设置右臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
-bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
+### 实时末端笛卡尔方向的旋转
+    设置左臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
+    bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
+    
+    设置右臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
+    bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 
 ## （22）规划功能
- //关节空间PLN方式发送指令
- bool OnInitPlnLmt(char * path);
- bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
- bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+### 关节空间PLN方式发送指令
+    关节空间规划初始化
+    bool OnInitPlnLmt(char * path);
     
-    path： 机器人配置参数文件*.MvKDCfg，请确认参数与使用机型是否对应
-    start_joints： 起点各关节位置/当前点关节位置， 单位：度
-    stop_joints： 目标点关节位置， 单位：度
-    vel_ratio：规划器速度比例：范围0~1
-    acc_ratio：规划器加速度比例：范围0~1
+    手臂关节规划
+    bool OnSetPlnJoint_A(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+    bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7],double vel_ratio,double acc_ratio);
+        path： 机器人配置参数文件*.MvKDCfg，请确认参数与使用机型是否对应
+        start_joints： 起点各关节位置/当前点关节位置， 单位：度
+        stop_joints： 目标点关节位置， 单位：度
+        vel_ratio：规划器速度比例：范围0~1
+        acc_ratio：规划器加速度比例：范围0~1
 
-// 笛卡尔空间PLN方式发送指令
-void *FX_CPointSet_Create();
-void FX_CPointSet_Destroy(void *pset);
-bool OnSetPlnCart_A(void *pset);
-bool OnSetPlnCart_B(void *pset);
+### 笛卡尔空间PLN方式发送指令
+    创建点集
+    void *FX_CPointSet_Create();
+
+    销毁点集
+    void FX_CPointSet_Destroy(void *pset);
+
+    计算接口规划的点集下发给控制器以50HZ执行规   
+    bool OnSetPlnCart_A(void *pset);
+    bool OnSetPlnCart_B(void *pset);
 
     pset：使用计算库kinematicsSDK 的规划接口FX_Robot_PLN_MOVLA 得到的点集作为输入
 
-// 中断规划运行，笛卡尔空间和关节空间都适用
+### 中断规划运行，笛卡尔空间和关节空间都适用
 	bool OnStopPlnJoint_A();
 	bool OnStopPlnJoint_B();
 
-// 协同运行，同时开始，只有路径长度速度相同，才会同时结束
-// 关节空间两个手臂同时规划运行，注意同时开始，不一定同时结束。
-bool CoRunPlnJoint(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio);
-// 笛卡尔空间两个手臂从当前点规划方式运行到目标点，规划点位pset由KinematicsSDK的规划计算得出。
-bool CoRunPlnCart(void *pset0, void *pset1);
-// 同时中断两个手臂的规划运行，笛卡尔空间和关节空间都适用
-bool CoStopPln();
+## 协同运行，同时开始，只有路径长度速度相同，才会同时结束
+    关节空间两个手臂同时规划运行，注意同时开始，不一定同时结束。
+    bool CoRunPlnJoint(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio);
+
+    笛卡尔空间两个手臂从当前点规划方式运行到目标点，规划点位pset由KinematicsSDK的规划计算得出。
+    bool CoRunPlnCart(void *pset0, void *pset1);
+    
+    同时中断两个手臂的规划运行，笛卡尔空间和关节空间都适用
+    bool CoStopPln();
 
 # 三、简明式接口介绍
     /////////////////////////////////////简明式接口Concise SDK API//////////////////////////////////////////////
