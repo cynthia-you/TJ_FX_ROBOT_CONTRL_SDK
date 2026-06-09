@@ -93,9 +93,12 @@ else:
     bin_exts = ('.so',)
 
 pack_args = [
-    'ui_EN.py',
+    ui_entry,
     '--onefile',
-    '--icon', os.path.join('src', f'logo.{icon_ext}'),
+    '--workpath', os.path.join(base_dir, 'build'),
+    '--distpath', os.path.join(base_dir, 'dist'),
+    '--specpath', base_dir,
+    '--icon', os.path.join(src_dir, f'logo.{icon_ext}'),
     '--name', exe_name,
     '--paths', sdk_dir,
     '--hidden-import', 'ctypes',

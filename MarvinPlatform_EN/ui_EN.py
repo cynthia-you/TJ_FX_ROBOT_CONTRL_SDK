@@ -14,11 +14,17 @@ import difflib
 import re
 import json
 from typing import Optional
-root_dir = Path(__file__).parent.parent
-if str(root_dir) not in sys.path:
-    sys.path.insert(0, str(root_dir))
+if not getattr(sys, 'frozen', False):
+    root_dir = Path(__file__).parent.parent
+    if str(root_dir) not in sys.path:
+        sys.path.insert(0, str(root_dir))
 from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS, arm_err_code,arm_err_code_EN,tools_cfg
 from SDK_PYTHON.fx_kine import Marvin_Kine
+
+def get_app_dir():
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
 
 class DataSubscriber:
     def __init__(self, callback):
@@ -454,7 +460,7 @@ class App:
         status_title_frame.pack(fill="x", pady=(0, 10))
 
         try:
-            img_left = Image.open('src/left.png')
+            img_left = Image.open(os.path.join(get_app_dir(), 'src', 'left.png'))
             img_left = img_left.resize((45, 75), Image.Resampling.LANCZOS)
             arm_image_left = ImageTk.PhotoImage(img_left)
             self.left_arm_image = arm_image_left
@@ -958,7 +964,7 @@ class App:
 
         # 右臂图标
         try:
-            img_right = Image.open('src/right.png')
+            img_right = Image.open(os.path.join(get_app_dir(), 'src', 'right.png'))
             img_right = img_right.resize((45, 75), Image.Resampling.LANCZOS)
             arm_image_right = ImageTk.PhotoImage(img_right)
             self.right_arm_image = arm_image_right
@@ -5113,7 +5119,7 @@ class App:
             messagebox.showerror("value error", "start and end in same pose, can not run planning")
             return
 
-        _script_dir = os.path.dirname(os.path.abspath(__file__))
+        _script_dir = get_app_dir()
         _cfg_files = glob.glob(os.path.join(_script_dir, 'config', '*.MvKDCfg'))
         if not _cfg_files:
             messagebox.showerror("Failed!", f"No .MvKDCfg files found in {os.path.join(_script_dir, 'config')}")
@@ -6923,7 +6929,7 @@ def preview_text_file_1():
 
 def preview_text_file():
     """在新窗口中预览文本文件"""
-    file_path = os.path.join(crr_pth, "config/python_doc_contrl.md")
+    file_path = os.path.join(get_app_dir(), "config", "python_doc_contrl.md")
     # 创建新窗口
     preview_window = tk.Toplevel(root)
     preview_window.title(f"预览文档: {file_path.split('/')[-1]}")
@@ -7192,7 +7198,7 @@ if __name__ == "__main__":
     ini sdk
     '''
     crr_pth = os.getcwd()
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    script_dir = get_app_dir()
     config_pattern = os.path.join(script_dir, 'config', '*.MvKDCfg')
     config_files = glob.glob(config_pattern)
     if not config_files:
