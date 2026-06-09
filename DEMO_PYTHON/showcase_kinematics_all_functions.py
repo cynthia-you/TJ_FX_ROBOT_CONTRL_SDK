@@ -215,7 +215,7 @@ for next_one in arm0_multi_points[2:]:
     if not ret1 :
         print(f"multi-segment planing: set next failed")
 
-points = kk.multi_movL_get_points()
+points, pset= kk.multi_movL_get_points()
 print(f"multi-segment planing:: Got {len(points)} planning points")
 if points:
     print(f"First point: {points[0]}")

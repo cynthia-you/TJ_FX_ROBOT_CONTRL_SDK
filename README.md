@@ -394,7 +394,7 @@
              ARM_ERR_InvalidSubState = 12, //"内部错" 			1) 操作系统内存错误，调度错误，2) 变量值计算错误，3) 某些内存指针为空
              ARM_ERR_Emcy = 13, //"急停"
              ARM_DYNA_FLOAT_NO_GYRO = 14,//"配置文件选择了浮动基座选项，但是实际没有IMU硬件接入控制器"
-             ARM_DYNA_FLOAT_NO_GYRO = 14,//"配置文件选择了浮动基座选项，但是实际没有IMU硬件接入控制器"
+             ARM_ERR_PdoAbnormal = 15, //"PDO工作不正常"
 
 
     python：订阅数据a_state=sub_data["states"][0]["cur_state"]的值可以看到当前伺服状态：

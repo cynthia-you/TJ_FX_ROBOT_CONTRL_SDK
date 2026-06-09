@@ -1097,7 +1097,7 @@ class Marvin_Kine:
         )
         return success
 
-    def multi_movL_get_points(self, dimension: int = 7):
+    def multi_movL_get_points(self, dimension: int = 7)-> tuple[List[List[float]], ctypes.c_void_p]:
         """
         获取已设置的多段MOVL规划路径点集（需先调用multi_movL_set_start和若干multi_movL_next_point）
         :param dimension: 点集维度，默认为7（关节角度）

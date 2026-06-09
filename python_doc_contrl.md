@@ -624,13 +624,15 @@
 
 ### (20) 位置模式下规划当前点到目标点功能
 
+#### 关节空间规划初始化
+
     pln_init(self,config_path):
         '''关节空间规划初始化
         :param config_path: 本地机械臂配置文件*.MvKDCfg, 可相对路径.
         :return:
             ture or false
         '''
-
+#### 控制器以规划方式运动到目标关节
     setPln_joint(arm:str,start_joints:list, target_joints:list, velRatio:float,accRatio:float):
         '''位置模式下使用该接口传输目标关节点位，防止通信抖动
         :param arm: 机械手臂ID “A” OR “B”
@@ -641,7 +643,7 @@
         :return:
             ture or false
         '''
-
+#### 控制器以规划方式运动到目标坐标空间
     setPln_Cart(self,arm:str, pset: ctypes.c_void_p) -> bool:
         """位置模式下使用该接口传输目标笛卡尔坐标，防止通信抖动
         :param arm: 机械手臂ID “A” OR “B”
@@ -652,10 +654,46 @@
             ture or false
         """   
 
+#### 中断规划运动，关节空间和笛卡尔空间都适用
     stopRunPln_joint(arm: str):
-        '''停止之前的规划运动，关节空间和笛卡尔空间都适用t
+        '''停止之前的规划运动，关节空间和笛卡尔空间都适用
         :param arm: 机械手臂ID “A” OR “B”
         '''
+#### 协同规划：关节空间两个手臂同时规划运行
+     setPln_joint_AB(self,
+                            start_joints_A: List[float],  # 7个关节角度
+                            stop_joints_A: List[float],
+                            start_joints_B: List[float],
+                            stop_joints_B: List[float],
+                            vel_ratio: float,
+                            acc_ratio: float) -> bool:
+        """
+        关节空间两个手臂同时规划运行（同时开始，不一定同时结束）
+        :param start_joints_A: A臂起始关节角度（7个）
+        :param stop_joints_A: A臂目标关节角度（7个）
+        :param start_joints_B: B臂起始关节角度（7个）
+        :param stop_joints_B: B臂目标关节角度（7个）
+        :param vel_ratio: 速度比例（0~1? 具体由SDK定义）
+        :param acc_ratio: 加速度比例
+        :return: 成功返回True，失败返回False
+        """
+       
+#### 协同规划：坐标空间两个手臂同时规划运行
+    setPln_Cart_AB(self, pset0:ctypes.c_void_p, pset1:ctypes.c_void_p) -> bool:
+        """
+        笛卡尔空间两个手臂从当前点规划方式运行到目标点，
+        规划点位pset由KinematicsSDK计算接口计算得出。
+        :param pset0: 手臂0的点集对象
+        :param pset1: 手臂1的点集对象
+        :return: 成功返回True，失败返回False
+        """
+       
+#### 协同中断规划：同时中断规划运动，关节空间和笛卡尔空间都适用
+    stopPln_AB(self) -> bool:
+        """
+        同时中断两个手臂的规划运行（笛卡尔空间和关节空间都适用）
+        :return: 成功返回True，失败返回False
+        """
 
 # 三、简明式接口介绍
     简明式接口，省略了使用SDK的繁琐用法：必须放在clear_set() 和 send_cmd()之间； 用户连接、切换状态需要自己判断等

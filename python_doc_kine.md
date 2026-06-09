@@ -412,12 +412,55 @@ xyzabc_to_mat4x4(xyzabc:list)
         
 ### （17）位姿矩阵展开表示
 mat4x4_to_mat1x16(self,pose_mat):
-        matrix_data=[]
-        for i in range(4):
-            for j in range(4):
-                matrix_data.append(pose_mat[i][j])
-        return matrix_data
 
+
+### （18）多点规划
+multi_movL_set_start(self, ref_joints: List[float], start_xyzabc: List[float],
+                             end_xyzabc: List[float], allow_range: float, zsp_type: int,
+                             zsp_para: List[float], vel: float, acc: float, freq: int) -> bool
+        
+        """设置MOVL直线规划起始段（含起始点、目标点、过渡参数等）
+        :param ref_joints:起始点各个关节位置（单位：角度）
+        :param start_xyzabc:坐标空间的起点
+        :param end_joints:坐标空间的起点终点
+        :param allow_range: 允许改变臂焦的范围
+        :param zsp_type: 是否改变臂角度
+        :param zsp_para: 臂角参数
+        :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        :param freq_hz:设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
+        :return: 成功返回True，失败返回False
+        """
+
+multi_movL_next_point(self,
+                                next_xyzabc: List[float], 
+                                allow_range: float,
+                                zsp_type: int,
+                                zsp_para: List[float], 
+                                vel: float,
+                                acc: float
+                                ) -> bool
+        
+        """
+        设置MOVL直线规划的中间途经点（需先调用multi_movL_set_start）
+        :param next_xyzabc:坐标空间加点
+        :param allow_range: 允许改变臂焦的范围
+        :param zsp_type: 是否改变臂角度
+        :param zsp_para: 臂角参数
+        :param vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
+        :return: 成功返回True，失败返回False
+        """
+
+multi_movL_get_points(self, dimension: int = 7)-> tuple[List[List[float]], ctypes.c_void_p]
+        
+        """
+        获取已设置的多段MOVL规划路径点集（需先调用multi_movL_set_start和若干multi_movL_next_point）
+        :param dimension: 点集维度，默认为7（关节角度）
+        :return: (data_list, pset) 其中pset是点集句柄（ctypes.c_void_p），
+                 调用者必须在使用完毕后调用 self.destroy_point_set(pset) 释放。
+                 失败时返回 ([], None)
+        """
 
 
 ## 三、案例脚本

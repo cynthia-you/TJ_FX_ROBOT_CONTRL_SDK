@@ -855,17 +855,24 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
     acc_ratio：规划器加速度比例：范围0~1
 
 // 笛卡尔空间PLN方式发送指令
- bool OnSetPlnCart_A(CPointSet* pset);
- bool OnSetPlnCart_B(CPointSet* pset);
-    
-    CPointSet：使用计算库kinematicsSDK 的规划接口FX_Robot_PLN_MOVLA 得到的点集作为输入
-   
- 
-//中断规划运行
- bool OnStopPlnJoint_A();
- bool OnStopPlnJoint_B();
+void *FX_CPointSet_Create();
+void FX_CPointSet_Destroy(void *pset);
+bool OnSetPlnCart_A(void *pset);
+bool OnSetPlnCart_B(void *pset);
 
+    pset：使用计算库kinematicsSDK 的规划接口FX_Robot_PLN_MOVLA 得到的点集作为输入
 
+// 中断规划运行，笛卡尔空间和关节空间都适用
+	bool OnStopPlnJoint_A();
+	bool OnStopPlnJoint_B();
+
+// 协同运行，同时开始，只有路径长度速度相同，才会同时结束
+// 关节空间两个手臂同时规划运行，注意同时开始，不一定同时结束。
+bool CoRunPlnJoint(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio);
+// 笛卡尔空间两个手臂从当前点规划方式运行到目标点，规划点位pset由KinematicsSDK的规划计算得出。
+bool CoRunPlnCart(void *pset0, void *pset1);
+// 同时中断两个手臂的规划运行，笛卡尔空间和关节空间都适用
+bool CoStopPln();
 
 # 三、简明式接口介绍
     /////////////////////////////////////简明式接口Concise SDK API//////////////////////////////////////////////

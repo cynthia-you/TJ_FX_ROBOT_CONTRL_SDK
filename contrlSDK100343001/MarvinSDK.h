@@ -209,7 +209,7 @@ extern "C"
 	//// collaboration
 	// 关节空间两个手臂同时规划运行，注意同时开始，不一定同时结束。
 	FX_DLL_EXPORT bool OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio);
-	// 笛卡尔空间两个手臂从当前点规划方式运行到目标点，规划点位pset由KinematicsSDK计算接口FX_Robot_PLN_MOVLA计算得出。
+	// 笛卡尔空间两个手臂从当前点规划方式运行到目标点，规划点位pset由KinematicsSDK计算接口计算得出。
 	FX_DLL_EXPORT bool CoRunPlnCart(void *pset0, void *pset1);
 	// 同时中断两个手臂的规划运行，笛卡尔空间和关节空间都适用
 	FX_DLL_EXPORT bool CoStopPln();
