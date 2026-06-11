@@ -15,16 +15,18 @@ public:
 	virtual ~CAxisPln();
 
 	void OnSetFreq(long freq);
+	void OnSetPNVA(double joint_pos[7], double joint_neg[7], double vel_lmt[7], double acc_lmt[7]);
 
-	bool OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, char *path);
-	bool OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, CPointSet *ret_pset);
-	bool OnMovJ(long RobotSetial, double start_joint[7], double end_joint[7], double vel, double acc, double jerk, char *path);
+	bool OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, char *path);
+	bool OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, CPointSet *ret_pset);
+	bool OnMovJ(long RobotSerial, double start_joint[7], double end_joint[7], double vel, double acc, double jerk, char *path);
 	bool OnMovL_KeepJ_Cut(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, double acc, char *path);
 	bool OnMovL_KeepJ_CutA(long RobotSerial, double startjoints[7], double stopjoints[7], double vel, double acc, CPointSet *ret_pset);
+	bool OnMovTarget(long RobotSerial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, CPointSet *ret_pset);
 
 	// Multi-Point Motion Planning
 	bool OnInit_MOVL_ZSP();
-	bool OnMovL_ZSP(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, long ZSP_type, double ZSP_para[6], double Allow_Range, long Point_State);
+	bool OnMovL_ZSP(long RobotSerial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, long ZSP_type, double ZSP_para[6], double Allow_Range, long Point_State);
 	bool OnSendPoints(CPointSet *out);
 
 	CPointSet m_output_pset;
@@ -58,7 +60,52 @@ protected:
 	double m_freq;
 	double m_cycle; // frequency to cycle
 
+	double m_Joint_Pos_Neg[7];
+	double m_Joint_Pos_Pos[7];
+	double m_Joint_Vel_Lmt[7];
+	double m_Joint_Acc_Lmt[7];
+
 	bool OnGetRatioByCntScale(long total_cnt, long cur_cnt, double &ratio1, double &ratio2);
+};
+
+class CAxisJointPln
+{
+public:
+	CAxisJointPln();
+	virtual ~CAxisJointPln();
+	FX_BOOL OnMovJoint(FX_INT32 RobotSerial, Vect7 start_joint, Vect7 end_joint, FX_DOUBLE vel_ratio, FX_DOUBLE acc_ratio, CPointSet *ret_pset);
+
+	FX_BOOL OnSetLmt(FX_INT32 dof, Vect8 PosNeg, Vect8 PosPos, Vect8 VelLmt, Vect8 AccLmt);
+	FX_VOID OnSetFreq(FX_INT32 freq);
+	FX_INT32 OnPln(Vect8 startp, Vect8 stopp, FX_DOUBLE vel_ratio, FX_DOUBLE acc_ratio);
+	FX_BOOL OnCut(Vect8 retp);
+
+protected:
+	FX_INT32 m_dof;
+	Vect8 m_PosNeg;
+	Vect8 m_PosPos;
+	Vect8 m_VelLmt;
+	Vect8 m_AccLmt;
+
+	Vect8 m_start;
+	Vect8 m_stop;
+	FX_INT32 m_Pln_Type[8];
+	Vect8 m_Pln_Len;
+	Vect8 m_Pln_TRatio;
+	Vect8 m_Pln_T;
+	FX_DOUBLE m_Pln_P1[8][6]; // start_pos vel acc len t r
+	FX_DOUBLE m_Pln_P2[8][6];
+	FX_DOUBLE m_Pln_P3[8][6];
+
+	FX_DOUBLE m_totl_t;
+	FX_DOUBLE m_cur_t;
+
+	FX_DOUBLE m_value[8][10];
+	FX_INT32 m_wpos;
+	FX_BOOL m_FristTag;
+
+	FX_DOUBLE m_ts;
+	FX_INT32 m_LastError;
 };
 
 class CMovingAverageFilter

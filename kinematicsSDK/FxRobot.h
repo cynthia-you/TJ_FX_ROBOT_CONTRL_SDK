@@ -64,6 +64,8 @@ extern "C"
 								 Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, void *ret_pset);
 	FX_BOOL FX_Robot_PLN_MOVL_KeepJA_C(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints,
 									   FX_DOUBLE vel, FX_DOUBLE acc, FX_INT32L Freq, void *ret_pset);
+	FX_BOOL FX_Robot_PLN_MOV_Target_C(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC,
+									  Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, void *ret_pset);
 	FX_BOOL FX_Robot_PLN_Get_MOVL_Path_C(FX_INT32L RobotSerial, void *ret_Pset);
 
 #ifdef __cplusplus
@@ -73,6 +75,8 @@ FX_BOOL FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
 						   Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, CPointSet *ret_pset);
 FX_BOOL FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints,
 								 FX_DOUBLE vel, FX_DOUBLE acc, FX_INT32L Freq, CPointSet *ret_pset);
+FX_BOOL FX_Robot_PLN_MOV_Target(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC,
+								Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, CPointSet *ret_pset);
 #endif
 
 #endif

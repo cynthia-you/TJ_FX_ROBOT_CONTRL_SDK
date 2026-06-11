@@ -10,7 +10,6 @@
 
 #define FX_CHAR char
 #define FX_UCHAR unsigned char
-#define FX_INT8 char
 #define FX_INT16 short
 #define FX_INT32 int
 #define FX_INT32L long

@@ -65,17 +65,6 @@ class Marvin_Kine:
         ]
         self.kine.FX_Robot_PLN_MOVLA_C.restype = ctypes.c_bool
 
-        # MOVL_KEEPJA
-        self.kine.FX_Robot_PLN_MOVL_KeepJA_C.argtypes = [
-            ctypes.c_long,  # RobotSerial
-            ctypes.POINTER(ctypes.c_double),  # startjoints
-            ctypes.POINTER(ctypes.c_double),  # stopjoints
-            ctypes.c_double,  # Vel
-            ctypes.c_double,  # ACC
-            ctypes.c_void_p  # ret_pset
-        ]
-        self.kine.FX_Robot_PLN_MOVL_KeepJA_C.restype = ctypes.c_bool
-
         #Multi-Point Motion Planning
         self.kine.FX_Robot_PLN_Set_MOVL_Start.argtypes = [
             ctypes.c_int32,  # RobotSerial
@@ -198,6 +187,18 @@ class Marvin_Kine:
             POINTER(c_double * 6)
         ]
         self.kine.FX_Robot_Iden_LoadDyn.restype = c_int
+
+        self.kine.FX_Robot_PLN_MOV_Target_C.argtypes = [
+        ctypes.c_int32,                     # RobotSerial
+        ctypes.POINTER(ctypes.c_double),    # Start_XYZABC (6个double)
+        ctypes.POINTER(ctypes.c_double),    # End_XYZABC (6个double)
+        ctypes.POINTER(ctypes.c_double),    # Ref_Joints (7个double)
+        ctypes.c_double,                    # Vel
+        ctypes.c_double,                    # ACC
+        ctypes.c_int32,                     # Freq
+        ctypes.c_void_p                     # ret_pset
+        ]
+        self.kine.FX_Robot_PLN_MOV_Target_C.restype = ctypes.c_bool
 
     def create_point_set(self, point_type: int = 6) -> ctypes.c_void_p:
         """创建CPointSet对象"""
@@ -1017,6 +1018,64 @@ class Marvin_Kine:
             self.destroy_point_set(pset)
             raise e
 
+    def mov_target(self,
+                start_xyzabc: List[float],   # 6个元素
+                end_xyzabc: List[float],     # 6个元素
+                ref_joints: List[float],     # 7个元素
+                vel: float,
+                acc: float,
+                freq_hz: int,
+                dimension: int = 7) -> tuple[List[List[float]], ctypes.c_void_p]:
+        """点到点规划（直线优先、关节兜底），规划后返回点集数据
+
+        :param start_xyzabc: 起始点位姿 (X, Y, Z, A, B, C) 单位：mm 和 度
+        :param end_xyzabc:   终点位姿 (X, Y, Z, A, B, C)
+        :param ref_joints:   参考关节角 (7个关节，单位：度)
+        :param vel:          速度，单位 mm/s，范围 0.1~1000
+        :param acc:          加速度，单位 mm/s²，范围 0.1~10000
+        :param freq_hz:      规划频率（基频1000Hz，下发频率可能被调整）
+        :return: (点集列表, pset指针) 维度根据实际规划确定
+        """
+        if len(start_xyzabc) != 6 or len(end_xyzabc) != 6 or len(ref_joints) != 7:
+            raise ValueError("start_xyzabc and end_xyzabc must have 6 elements, ref_joints must have 7 elements")
+
+        serial = ctypes.c_int32(self.robot_tag)   
+        freq = ctypes.c_int32(freq_hz)
+
+        start_arr = (ctypes.c_double * 6)(*start_xyzabc)
+        end_arr   = (ctypes.c_double * 6)(*end_xyzabc)
+        ref_arr   = (ctypes.c_double * 7)(*ref_joints)
+
+        vel_val = ctypes.c_double(vel)
+        acc_val = ctypes.c_double(acc)
+
+        pset = self.create_point_set(dimension)   
+        if not pset:
+            raise RuntimeError("Failed to create CPointSet object")
+
+        try:
+            success = self.kine.FX_Robot_PLN_MOV_Target_C(
+                serial,
+                start_arr,
+                end_arr,
+                ref_arr,
+                vel_val,
+                acc_val,
+                freq,
+                pset
+            )
+
+            if not success:
+                self.destroy_point_set(pset)
+                return [], None
+
+            data = self.get_point_set_data(pset, dimension)
+            print(f'Plan MOV_TargetA successful, got {len(data)} points')
+            return data, pset
+
+        except Exception as e:
+            self.destroy_point_set(pset)
+            raise e
 
     def multi_movL_set_start(self, ref_joints: List[float], start_xyzabc: List[float],
                              end_xyzabc: List[float], allow_range: float, zsp_type: int,

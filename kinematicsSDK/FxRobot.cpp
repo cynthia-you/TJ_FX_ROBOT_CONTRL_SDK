@@ -3762,6 +3762,45 @@ FX_BOOL FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
 	return FX_FALSE;
 }
 
+FX_BOOL FX_Robot_PLN_MOV_Target(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, CPointSet *ret_pset)
+{
+	if (FX_LOG_TAG)
+		FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOV_Target]\n");
+
+	Vect6 start_pos = {0};
+	Vect6 end_pos = {0};
+	Vect7 refJ = {0};
+	FX_INT32L i = 0;
+
+	for (i = 0; i < 6; i++)
+	{
+		start_pos[i] = Start_XYZABC[i];
+		end_pos[i] = End_XYZABC[i];
+		refJ[i] = Ref_Joints[i];
+	}
+	refJ[i] = Ref_Joints[i];
+
+	FX_DOUBLE jerk = ACC * 10;
+
+	FX_Robot *pRobot = (FX_Robot *)&m_Robot[RobotSerial];
+	CAxisPln Spln;
+	Spln.OnSetFreq(Freq);
+	Spln.OnSetPNVA(pRobot->m_Lmt.m_JLmtPos_P, pRobot->m_Lmt.m_JLmtPos_N, pRobot->m_Lmt.m_JLmtVel, pRobot->m_Lmt.m_JLmtAcc);
+	FX_BOOL result = Spln.OnMovTarget(RobotSerial, refJ, start_pos, end_pos, Vel, ACC, jerk, ret_pset);
+
+	if (result != FX_FALSE)
+	{
+		return FX_TRUE;
+	}
+	else
+	{
+		if (FX_LOG_TAG)
+			FX_LOG_INFO("FX_Robot_PLN_MOV_Target: Joint Over Limit or Over Reachable Space. Check Parameters.\n");
+		return FX_FALSE;
+	}
+
+	return FX_FALSE;
+}
 /////Multi-Point Motion Planning
 FX_BOOL FX_Robot_PLN_Set_MOVL_Start(FX_INT32L RobotSerial, Vect7 Ref_Joints, Vect6 Start_XYZABC, Vect6 End_XYZABC, FX_DOUBLE Allow_Range, FX_INT32L ZSP_Type, Vect6 ZSP_Para, FX_DOUBLE Vel, FX_DOUBLE Acc, FX_INT32L Freq)
 {

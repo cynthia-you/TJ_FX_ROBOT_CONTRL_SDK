@@ -340,6 +340,17 @@ void CAxisPln::OnSetFreq(long freq)
 	m_Set_Freq = FX_TRUE;
 }
 
+void CAxisPln::OnSetPNVA(double joint_pos[7], double joint_neg[7], double vel_lmt[7], double acc_lmt[7])
+{
+	for (int i = 0; i < 7; i++)
+	{
+		m_Joint_Pos_Pos[i] = joint_pos[i];
+		m_Joint_Pos_Neg[i] = joint_neg[i];
+		m_Joint_Vel_Lmt[i] = vel_lmt[i];
+		m_Joint_Acc_Lmt[i] = acc_lmt[i];
+	}
+}
+
 bool CAxisPln::OnPln(double start_pos, double end_pos, double vel, double acc, double jerk, CPointSet *ret)
 {
 	ret->OnInit(PotT_2d);
@@ -833,7 +844,7 @@ double CAxisPln::OnGetPln(double *ret_v)
 	return m_s;
 }
 
-bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, char *path)
+bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, char *path)
 {
 	///////determine same points
 	long i = 0;
@@ -1129,7 +1140,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 			}
 		}
 
-		if (FX_Robot_Kine_IK(RobotSetial, &sp) == false)
+		if (FX_Robot_Kine_IK(RobotSerial, &sp) == false)
 		{
 			return FX_FALSE;
 		}
@@ -1173,7 +1184,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 	return true;
 }
 
-bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, CPointSet *ret_pset)
+bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, CPointSet *ret_pset)
 {
 	///////determine same points
 	long i = 0;
@@ -1473,7 +1484,7 @@ bool CAxisPln::OnMovL(long RobotSetial, double ref_joints[7], double start_pos[6
 			}
 		}
 
-		if (FX_Robot_Kine_IK(RobotSetial, &sp) == false)
+		if (FX_Robot_Kine_IK(RobotSerial, &sp) == false)
 		{
 			return FX_FALSE;
 		}
@@ -2143,7 +2154,7 @@ bool CAxisPln::OnMovL_KeepJ_CutA(long RobotSerial, double startjoints[7], double
 	return true;
 }
 
-bool CAxisPln::OnMovJ(long RobotSetial, double start_joint[7], double end_joint[7], double vel, double acc, double jerk, char *path)
+bool CAxisPln::OnMovJ(long RobotSerial, double start_joint[7], double end_joint[7], double vel, double acc, double jerk, char *path)
 {
 	///////determine same joints
 	long i = 0;
@@ -2199,6 +2210,181 @@ bool CAxisPln::OnMovJ(long RobotSetial, double start_joint[7], double end_joint[
 	}
 
 	return true;
+}
+
+static bool OnPointSetCopy(CPointSet *src, CPointSet *dst)
+{
+	if (src == NULL || dst == NULL)
+	{
+		return false;
+	}
+
+	dst->OnInit(PotT_7d);
+	dst->OnEmpty();
+	long point_num = src->OnGetPointNum();
+	for (long i = 0; i < point_num; i++)
+	{
+		double *src_point = src->OnGetPoint(i);
+		double point[7] = {0};
+		if (src_point == NULL)
+		{
+			return false;
+		}
+		for (long j = 0; j < 7; j++)
+		{
+			point[j] = src_point[j];
+		}
+		dst->OnSetPoint(point);
+	}
+
+	return point_num > 0;
+}
+
+static bool OnMovCheckVA(CPointSet *pset, double cycle, double joint_acc_lmt[7], double joint_vel_lmt[7])
+{
+	if (pset == NULL || joint_vel_lmt == NULL || joint_acc_lmt == NULL)
+	{
+		printf("invalid VA limit\n");
+		return false;
+	}
+
+	long point_num = pset->OnGetPointNum();
+	if (point_num < 2 || cycle <= 0.000001)
+	{
+		return false;
+	}
+
+	double inv_cycle = 1.0 / cycle;
+	double inv_cycle2 = inv_cycle * inv_cycle;
+	double prev_vel[7] = {0};
+
+	for (long i = 1; i < point_num; i++)
+	{
+		double *prev_point = pset->OnGetPoint(i - 1);
+		double *cur_point = pset->OnGetPoint(i);
+		if (prev_point == NULL || cur_point == NULL)
+		{
+			return false;
+		}
+
+		for (long j = 0; j < 7; j++)
+		{
+			double delta = cur_point[j] - prev_point[j];
+			double cur_vel = FX_Fabs(delta) * inv_cycle;
+
+			if (joint_vel_lmt[j] > 0.000001 && cur_vel > joint_vel_lmt[j] + 0.000001)
+			{
+				printf("velocity exceed limit at point %ld joint %ld: cur_vel= %lf, limit= %lf\n", i, j, cur_vel, joint_vel_lmt[j]);
+				return false;
+			}
+
+			if (i >= 2 && joint_acc_lmt[j] > 0.000001)
+			{
+				double cur_acc = FX_Fabs(delta * inv_cycle2 - prev_vel[j] * inv_cycle);
+				if (cur_acc > joint_acc_lmt[j] + 0.000001)
+				{
+					printf("acceleration exceed limit at point %ld joint %ld: cur_acc= %lf, limit= %lf\n", i, j, cur_acc, joint_acc_lmt[j]);
+					return false;
+				}
+			}
+			prev_vel[j] = delta * inv_cycle;
+		}
+	}
+
+	return true;
+}
+
+static double OnMapLiner2ratio(double value)
+{
+	if (value <= 0.0) return 0.0;
+    if (value >= 1000.0) return 1.0;
+    return value * 0.001;
+}
+
+bool CAxisPln::OnMovTarget(long RobotSerial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, CPointSet *ret_pset)
+{
+	if (ref_joints == NULL || start_pos == NULL || end_pos == NULL || ret_pset == NULL)
+	{
+		return false;
+	}
+
+	if (!m_Set_Freq)
+	{
+		OnSetFreq(500);
+	}
+
+	ret_pset->OnInit(PotT_7d);
+	ret_pset->OnEmpty();
+
+	// Stage 1: Try to solve MOVL directly, if it works, return the result
+	CPointSet movl_pset;
+	if (OnMovL(RobotSerial, ref_joints, start_pos, end_pos, vel, acc, jerk, &movl_pset) && OnMovCheckVA(&movl_pset, m_cycle, m_Joint_Acc_Lmt, m_Joint_Vel_Lmt))
+	{
+		return OnPointSetCopy(&movl_pset, ret_pset);
+	}
+	else
+	{
+		printf("[warning]OnMovL failed, try another method.\n");
+	}
+
+	// Stage 2: Try to solve MOVL-KeppJ, if it works, return the result
+	// Solve End_Joints according to end_pos
+	Vect7 end_joint = {0};
+	FX_InvKineSolvePara sp_ = {0};
+
+	sp_.m_DGR1 = 0.5;
+	sp_.m_Input_IK_ZSPType = 0;
+	for (long i = 0; i < 6; i++)
+	{
+		sp_.m_Input_IK_ZSPPara[i] = 0.0;
+	}
+	for (long i = 0; i < 7; i++)
+	{
+		sp_.m_Input_IK_RefJoint[i] = ref_joints[i];
+	}
+	FX_XYZABC2Matrix4DEG(end_pos, sp_.m_Input_IK_TargetTCP);
+
+	if (FX_Robot_Kine_IK(RobotSerial, &sp_) == FX_FALSE)
+	{
+		printf("End Posture is out of robot's workspace. Please check the input.\n");
+		return false;
+	}
+	if (sp_.m_Output_IsJntExd == FX_TRUE)
+	{
+		printf("Invalid Input. No solution for MOVL. \n");
+		return false;
+	}
+
+	for (long i = 0; i < 7; i++)
+	{
+		end_joint[i] = sp_.m_Output_RetJoint[i];
+	}
+
+	// try Movl-keepJ
+	CPointSet keepj_raw;
+	CPointSet keepj_pset;
+	if (OnMovL_KeepJ_CutA(RobotSerial, ref_joints, end_joint, vel, acc, &keepj_raw) && OnMovCheckVA(&keepj_raw, m_cycle, m_Joint_Acc_Lmt, m_Joint_Vel_Lmt))
+	{
+		return OnPointSetCopy(&keepj_raw, ret_pset);
+	}
+	else
+	{
+		printf("[warning]OnMovL_KeepJ_CutA failed, motion palnning in joint space and can not keep linear plan.\n");
+	}
+
+	// Stage 3: Motion Planning in Joint Space
+	CAxisJointPln joint_pln;
+	double vel_ratio = OnMapLiner2ratio(vel);
+	double acc_ratio = OnMapLiner2ratio(acc);
+
+	if (joint_pln.OnSetLmt(7, m_Joint_Pos_Neg, m_Joint_Pos_Pos, m_Joint_Vel_Lmt, m_Joint_Acc_Lmt) == FX_FALSE)
+	{
+		return false;
+	}
+
+	joint_pln.OnSetFreq((FX_INT32)(m_freq + 0.5));
+
+	return joint_pln.OnMovJoint((FX_INT32)RobotSerial, ref_joints, end_joint, vel_ratio, acc_ratio, ret_pset) == FX_TRUE;
 }
 
 // Multi-Point Motion Planning
@@ -2268,7 +2454,7 @@ bool CAxisPln::OnGetRatioByCntScale(long total_cnt, long cur_cnt, double &ratio1
 	return true;
 }
 
-bool CAxisPln::OnMovL_ZSP(long RobotSetial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, long ZSP_type, double ZSP_para[6], double Allow_Range, long Point_State)
+bool CAxisPln::OnMovL_ZSP(long RobotSerial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, long ZSP_type, double ZSP_para[6], double Allow_Range, long Point_State)
 {
 	///////Calculate composite axis motion length
 	long i = 0;
@@ -2443,7 +2629,7 @@ bool CAxisPln::OnMovL_ZSP(long RobotSetial, double ref_joints[7], double start_p
 			}
 		}
 
-		if (FX_Robot_Kine_IK(RobotSetial, &sp) == false)
+		if (FX_Robot_Kine_IK(RobotSerial, &sp) == false)
 		{
 			return FX_FALSE;
 		}
@@ -2554,6 +2740,355 @@ bool CAxisPln::OnSendPoints(CPointSet *out)
 		out->OnSetPoint(p);
 	}
 	return true;
+}
+
+/////////////////////////////////////////////
+CAxisJointPln::CAxisJointPln()
+{
+	m_dof = 0;
+	m_ts = 0.02;
+}
+
+CAxisJointPln::~CAxisJointPln()
+{
+}
+
+FX_BOOL CAxisJointPln::OnMovJoint(FX_INT32 RobotSerial, Vect7 start_joint, Vect7 end_joint, FX_DOUBLE vel_ratio, FX_DOUBLE acc_ratio, CPointSet *ret_pset)
+{
+	FX_INT32 i = 0;
+	FX_DOUBLE vr = vel_ratio;
+	FX_DOUBLE ar = acc_ratio;
+	if (vr < 0.01)
+		vr = 0.01;
+	if (vr > 1.0)
+		vr = 1.0;
+	if (ar < 0.01)
+		ar = 0.01;
+	if (ar > 1.0)
+		ar = 1.0;
+
+	Vect8 sta = {0};
+	Vect8 sto = {0};
+	for (i = 0; i < 7; i++)
+	{
+		sta[i] = start_joint[i];
+		sto[i] = end_joint[i];
+	}
+	FX_INT32 num = OnPln(sta, sto, vr, ar);
+	if (num <= 0)
+	{
+		return FX_FALSE;
+	}
+
+	Vect8 retp = {0};
+	ret_pset->OnInit(PotT_7d);
+	ret_pset->OnEmpty();
+
+	for (i = 0; i < num; i++)
+	{
+		OnCut(retp);
+		// Joint Limit Check
+		for (FX_INT32 j = 0; j < 7; j++)
+		{
+			if (retp[j] < m_PosNeg[j] || retp[j] > m_PosPos[j])
+			{
+				printf("OnMovJoint: Joint %d exceeds limit", j + 1);
+				return FX_FALSE;
+			}
+		}
+		ret_pset->OnSetPoint(retp);
+	}
+	return FX_TRUE;
+}
+
+FX_BOOL CAxisJointPln::OnSetLmt(FX_INT32 dof, Vect8 PosNeg, Vect8 PosPos, Vect8 VelLmt, Vect8 AccLmt)
+{
+	if (dof <= 0 || m_dof > 8)
+	{
+		printf("OnSetLmt: Invalid DOF value: %d", dof);
+		return FX_FALSE;
+	}
+	m_dof = dof;
+	for (FX_INT32 i = 0; i < dof; i++)
+	{
+		m_PosNeg[i] = PosNeg[i];
+		m_PosPos[i] = PosPos[i];
+		m_VelLmt[i] = VelLmt[i];
+		m_AccLmt[i] = AccLmt[i];
+	}
+
+	return FX_TRUE;
+}
+
+FX_VOID CAxisJointPln::OnSetFreq(FX_INT32 freq)
+{
+	const FX_DOUBLE base_freq = 1000.0;
+	FX_DOUBLE ratio = base_freq / (FX_DOUBLE)freq;
+	FX_DOUBLE rounded = round(ratio);
+
+	// An improperly set frequency will lead to uneven performance in each control cycle.
+	if (fabs(ratio - rounded) < 1e-3)
+	{
+		FX_DOUBLE freq_double_ = (FX_DOUBLE)freq;
+		m_ts = 1 / freq_double_;
+	}
+	else
+	{
+		// default 500Hz
+		m_ts = 0.02;
+	}
+}
+
+FX_INT32 CAxisJointPln::OnPln(Vect8 startp, Vect8 stopp, FX_DOUBLE vel_ratio, FX_DOUBLE acc_ratio)
+{
+	if (m_dof <= 0)
+	{
+		return -1;
+	}
+	{
+		FX_INT32 i;
+		for (i = 0; i < m_dof; i++)
+		{
+			if (startp[i] < m_PosNeg[i] || startp[i] > m_PosPos[i])
+			{
+				return -1;
+			}
+			if (stopp[i] < m_PosNeg[i] || stopp[i] > m_PosPos[i])
+			{
+				return -1;
+			}
+		}
+	}
+	FX_INT32 i;
+
+	FX_DOUBLE vr = vel_ratio;
+	if (vr < 0.01)
+	{
+		vr = 0.01;
+	}
+	if (vr > 1)
+	{
+		vr = 1;
+	}
+
+	FX_DOUBLE ar = vel_ratio;
+	if (acc_ratio < 0.01)
+	{
+		acc_ratio = 0.01;
+	}
+	if (acc_ratio > 1)
+	{
+		acc_ratio = 1;
+	}
+
+	FX_DOUBLE t_max = 0;
+	FX_INT32 t_max_axis_num = -1;
+	for (i = 0; i < m_dof; i++)
+	{
+		m_start[i] = startp[i];
+		m_stop[i] = stopp[i];
+		FX_DOUBLE dsp = startp[i] - stopp[i];
+
+		if (dsp < 0)
+		{
+			dsp = -dsp;
+		}
+		m_Pln_Len[i] = dsp;
+		if (dsp < 0.1)
+		{
+			m_Pln_Type[i] = 0;
+		}
+		else
+		{
+			FX_DOUBLE v = m_VelLmt[i] * vr;
+			FX_DOUBLE a = m_AccLmt[i] * ar;
+			FX_DOUBLE sa = 0.5 * v * v / a;
+
+			if (sa * 2.0 >= dsp)
+			{
+				m_Pln_Type[i] = 1;
+				FX_DOUBLE t1 = sqrt(dsp / a);
+				FX_DOUBLE t = 2 * t1;
+
+				m_Pln_T[i] = t;
+				FX_DOUBLE v = t1 * a;
+				m_Pln_P1[i][0] = 0;
+				m_Pln_P1[i][1] = 0;
+				m_Pln_P1[i][2] = a;
+				m_Pln_P1[i][3] = t1;
+
+				m_Pln_P3[i][0] = dsp * 0.5;
+				m_Pln_P3[i][1] = v;
+				m_Pln_P3[i][2] = -a;
+				m_Pln_P3[i][3] = t;
+
+				if (t >= t_max)
+				{
+					t_max = t;
+					t_max_axis_num = i;
+				}
+			}
+			else
+			{
+				m_Pln_Type[i] = 2;
+				FX_DOUBLE t1 = v / a;
+				FX_DOUBLE t2 = (dsp - 2 * sa) / v;
+				FX_DOUBLE t = 2 * t1 + t2;
+
+				m_Pln_T[i] = t;
+				m_Pln_P1[i][0] = 0;
+				m_Pln_P1[i][1] = 0;
+				m_Pln_P1[i][2] = a;
+				m_Pln_P1[i][3] = t1;
+
+				m_Pln_P2[i][0] = sa;
+				m_Pln_P2[i][1] = v;
+				m_Pln_P2[i][2] = 0;
+				m_Pln_P2[i][3] = t1 + t2;
+
+				m_Pln_P3[i][0] = dsp - sa;
+				m_Pln_P3[i][1] = v;
+				m_Pln_P3[i][2] = -a;
+				m_Pln_P3[i][3] = t;
+
+				if (t >= t_max)
+				{
+					t_max = t;
+					t_max_axis_num = i;
+				}
+			}
+		}
+	}
+
+	if (t_max_axis_num == -1)
+	{
+		return 0;
+	}
+
+	for (i = 0; i < m_dof; i++)
+	{
+		if (i == t_max_axis_num)
+		{
+			m_Pln_TRatio[i] = 1;
+		}
+		else
+		{
+			if (m_Pln_Type[i] != 0)
+			{
+				m_Pln_TRatio[i] = m_Pln_T[i] / t_max;
+			}
+		}
+	}
+	m_totl_t = t_max;
+	m_cur_t = 0;
+
+	m_FristTag = FX_TRUE;
+	return t_max / m_ts + 6;
+}
+
+FX_BOOL CAxisJointPln::OnCut(Vect8 retp)
+{
+	FX_INT32 i;
+	FX_INT32 j;
+	for (i = 0; i < m_dof; i++)
+	{
+		FX_DOUBLE cut_t = m_cur_t;
+		if (m_Pln_Type[i] == 0)
+		{
+			FX_DOUBLE r = cut_t / m_totl_t;
+			retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
+		}
+		if (m_Pln_Type[i] == 1)
+		{
+			cut_t *= m_Pln_TRatio[i];
+
+			if (cut_t < m_Pln_P1[i][3])
+			{
+				FX_DOUBLE len = 0.5 * m_Pln_P1[i][2] * cut_t * cut_t;
+				FX_DOUBLE r = len / m_Pln_Len[i];
+				retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
+			}
+			else
+			{
+				cut_t -= m_Pln_P1[i][3];
+				FX_DOUBLE len = m_Pln_P3[i][0] + m_Pln_P3[i][1] * cut_t + 0.5 * m_Pln_P3[i][2] * cut_t * cut_t;
+
+				FX_DOUBLE r = len / m_Pln_Len[i];
+				retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
+			}
+		}
+		if (m_Pln_Type[i] == 2)
+		{
+			cut_t *= m_Pln_TRatio[i];
+
+			if (cut_t < m_Pln_P1[i][3])
+			{
+				FX_DOUBLE len = 0.5 * m_Pln_P1[i][2] * cut_t * cut_t;
+				FX_DOUBLE r = len / m_Pln_Len[i];
+				retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
+				// printf("r1 %lf ",r);
+			}
+			else
+			{
+				if (cut_t < m_Pln_P2[i][3])
+				{
+					cut_t -= m_Pln_P1[i][3];
+					FX_DOUBLE len = m_Pln_P2[i][0] + m_Pln_P2[i][1] * cut_t;
+					FX_DOUBLE r = len / m_Pln_Len[i];
+					retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
+					// printf("r2 %lf ", r);
+				}
+				else
+				{
+					cut_t -= m_Pln_P2[i][3];
+					FX_DOUBLE len = m_Pln_P3[i][0] + m_Pln_P3[i][1] * cut_t + 0.5 * m_Pln_P3[i][2] * cut_t * cut_t;
+					FX_DOUBLE r = len / m_Pln_Len[i];
+					retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
+					// printf("r3 %lf ", r);
+				}
+			}
+		}
+	}
+
+	m_cur_t += m_ts;
+	if (m_cur_t >= m_totl_t)
+	{
+		m_cur_t = m_totl_t;
+	}
+
+	if (m_FristTag == FX_TRUE)
+	{
+		m_FristTag = FX_FALSE;
+		m_wpos = 0;
+		for (i = 0; i < m_dof; i++)
+		{
+			for (j = 0; j < 5; j++)
+			{
+				m_value[i][j] = retp[i];
+			}
+		}
+		return FX_TRUE;
+	}
+	else
+	{
+		for (i = 0; i < m_dof; i++)
+		{
+			m_value[i][m_wpos] = retp[i];
+			retp[i] = 0;
+			for (j = 0; j < 5; j++)
+			{
+				retp[i] += m_value[i][j];
+			}
+			retp[i] *= 0.2;
+		}
+		m_wpos++;
+		if (m_wpos >= 5)
+		{
+			m_wpos = 0;
+		}
+	}
+
+	return FX_TRUE;
 }
 
 /////////////////////////////////////////////

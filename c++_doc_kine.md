@@ -65,7 +65,7 @@
     	Matrix4					m_Input_IK_TargetTCP; //末端位置姿态4x4列表，可通过正解接口获取，或者指定末端的位置和旋转
     	Vect7					m_Input_IK_RefJoint; //参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。该构型的肩、肘、腕组成初始臂角平面，以肩到腕方向为Z向量，参考角第四关节不能为零。
     	FX_INT32L				m_Input_IK_ZSPType; //零空间约束类型（0：使求解结果与参考关节角的欧式距离最小适用于一般冗余优化；1：与参考臂角平面最近，需要额外提供平面参数zsp_para）
-    	FX_DOUBLE				m_Input_IK_ZSPPara[6]; //若选择零空间约束类型zsp_type为1，则需额外输入参考角平面参数，目前仅支持平移方向的参数约束，即[x,y,z,a,b,c]=[0,0,0,0,0,0],可选择x,y,z其中一个方向调整
+    	FX_DOUBLE				m_Input_IK_ZSPPara[6]; //若选择零空间约束类型zsp_type为1，则需额外输入肘平面向量（肘点向肩腕连线的垂线向量，该向量表达基于机械臂基坐标系下）
     	FX_DOUBLE				m_Input_ZSP_Angle; //末端位姿不变的情况下，零空间臂角相对于参考平面的旋转角度（单位：度）,可正向调节也可逆向调节. 在ref_joints为初始臂角平面情况下，使用右手法则，绕Z向量正向旋转为臂角增加方向，绕Z向量负向旋转为臂角减少方向
     	FX_DOUBLE               m_DGR1; //(仅在IK_NSP接口中设置起效)判断第二关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
     	FX_DOUBLE               m_DGR2; //(仅在IK_NSP接口中设置起效)判断第六关节发生奇异的角度范围，数值范围为0.05-10(单位：度)，不设置情况下默认0.05度
@@ -207,6 +207,8 @@ FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para
             • 输入项
                 • Matrix4 m_Input_IK_TargetTCP ：4*4的目标点末端的位姿矩阵
                 • Vect7   m_Input_IK_RefJoint  ：逆运动学的各关节参考角（单位：度）
+                • FX_INT32L m_Input_IK_ZSPType ：零空间约束类型（0：使求解结果与参考关节角的欧式距离最小适用于一般冗余优化；1：与参考臂角平面最近，需要额外提供平面参数zsp_para）
+    	        • FX_DOUBLE m_Input_IK_ZSPPara[6] ：若选择零空间约束类型zsp_type为1，则需额外输入肘平面向量（肘点向肩腕连线的垂线向量，该向量表达基于机械臂基坐标系下）
             • 输出项
                 • Vect7   m_Output_RetJoint      ：逆运动学解出的关节角度（选解策略为与参考关节角最近）（单位：度）
                 • Matrix8 m_OutPut_AllJoint      ：逆运动学的全部解（每一行代表一组解,分别存放1-7关节的角度值）（单位：度）
@@ -292,8 +294,6 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
     输出：
         成功：True/1; 失败：False/0
 
-
-    • 输出点位频率为500Hz
     • FX_Robot_PLN_MOVL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
     
 
@@ -312,11 +312,9 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
     输出：
         成功：True/1; 失败：False/0
         
-    • 输出点位频率为500Hz
     • 函数规划成功会保存规划的PVT文件，无文件保存则规划失败；或者读函数返回。
     • 该接口是不同于FX_Robot_PLN_MOVL的规划接口，FX_Robot_PLN_MOVL_KeepJ根据起始关节和结束关节规划一条直线路径。
-    
-    
+ 
 
 ###    11. 工具动力学参数辨识
 FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 Type,FX_CHAR* path,FX_DOUBLE* mass, Vect3 mr, Vect6 I);
@@ -364,7 +362,6 @@ FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End
     输出：
         成功：True/1; 失败：False/0
 
-    • 输出点位频率为500Hz。
     • FX_Robot_PLN_MOVLA的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
 
 ###    15.直线规划，约束机器人气势和结束的各个关节角度（MOVLJA）
@@ -382,7 +379,6 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect
     输出：
         成功：True/1; 失败：False/0
         
-    • 输出点位频率为500Hz
     • 该接口是不同于FX_Robot_PLN_MOVLA的规划接口，FX_Robot_PLN_MOVL_KeepJA根据起始关节和结束关节规划一条直线路径。
 
 ###    16.MOVL终点位姿处理
@@ -485,6 +481,25 @@ FX_BOOL  FX_Robot_PLN_Get_MOVL_Path(FX_INT32L RobotSerial, CPointSet* ret_Pset);
     FX_Robot_PLN_Get_MOVL_Path(0, &ret_pset);
     • 注意单段使用时，Allow_Range不生效
     • ret_pset中包含全部运动过程中的点位
+
+###     18. 直线优先规划
+FX_BOOL FX_Robot_PLN_MOV_TargetA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC,
+						            Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, CPointSet *ret_pset);
+
+    • 采用“直线优先、关节兜底”的运动规划策略。规划器首先尝试生成笛卡尔空间直线轨迹，若因关节限位、逆解不可达或关节速度超限导致直线规划失败，则自动退化为关节空间规划，保证机器人能够到达目标点位
+
+    • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为点位缓存类函数
+    输入：
+        1. FX_INT32L RobotSerial：0，左臂；1，右臂
+        2. Start_XYZABC起始点末端的位姿信息，六维信息，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
+        3. End_XYZABC终止点末端的位姿信息，六维信息，目标末端点的平移和欧拉旋转使用FX_Robot_CalEndXYZABC自定义输入，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
+        4. Ref_Joints约束了规划的起始关节点信息。单位：度。 
+        5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
+        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        7. Freq 设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
+        8. CPointSet* ret_pset 点位缓存类函数
+    输出：
+        成功：True/1; 失败：False/0 
 
 # 二、案例脚本
 ## C++开发的使用编译见：
