@@ -483,7 +483,7 @@ FX_BOOL  FX_Robot_PLN_Get_MOVL_Path(FX_INT32L RobotSerial, CPointSet* ret_Pset);
     • ret_pset中包含全部运动过程中的点位
 
 ###     18. 直线优先规划
-FX_BOOL FX_Robot_PLN_MOV_TargetA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC,
+FX_BOOL FX_Robot_PLN_MOV_Target(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC,
 						            Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, CPointSet *ret_pset);
 
     • 采用“直线优先、关节兜底”的运动规划策略。规划器首先尝试生成笛卡尔空间直线轨迹，若因关节限位、逆解不可达或关节速度超限导致直线规划失败，则自动退化为关节空间规划，保证机器人能够到达目标点位

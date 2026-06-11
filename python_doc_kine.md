@@ -462,6 +462,26 @@ multi_movL_get_points(self, dimension: int = 7)-> tuple[List[List[float]], ctype
                  失败时返回 ([], None)
         """
 
+### （19）直线优先规划
+mov_target(self,
+                start_xyzabc: List[float],   # 6个元素
+                end_xyzabc: List[float],     # 6个元素
+                ref_joints: List[float],     # 7个元素
+                vel: float,
+                acc: float,
+                freq_hz: int,
+                dimension: int = 7) -> tuple[List[List[float]], ctypes.c_void_p]
+        
+        """点到点规划（直线优先、关节兜底），规划后返回点集数据
+
+        :param start_xyzabc: 起始点位姿 (X, Y, Z, A, B, C) 单位：mm 和 度
+        :param end_xyzabc:   终点位姿 (X, Y, Z, A, B, C)
+        :param ref_joints:   参考关节角 (7个关节，单位：度)
+        :param vel:          速度，单位 mm/s，范围 0.1~1000
+        :param acc:          加速度，单位 mm/s²，范围 0.1~10000
+        :param freq_hz:      规划频率（基频1000Hz，下发频率可能被调整）
+        :return: (点集列表, pset指针) 维度根据实际规划确定
+        """
 
 ## 三、案例脚本
 [showcase for python](DEMO_PYTHON/readme.md)
