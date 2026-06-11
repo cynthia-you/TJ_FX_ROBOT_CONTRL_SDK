@@ -949,7 +949,7 @@ bool OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_r
 	return CRobot::OnSetPlnJoint_B(start_joints, stop_joints, vel_ratio, acc_ratio);
 }
 
-bool OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio)
+bool CoRunPlnJoint(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio)
 {
 	if (start_joints_A == nullptr || stop_joints_A == nullptr || start_joints_B == nullptr || stop_joints_B == nullptr)
 	{
