@@ -180,7 +180,7 @@ if pset:
 while True:
     data = robot.subscribe(dcss)
     time.sleep(0.001)
-    if data['outputs'][0]['traj_state'] ==  b'\x00':
+    if data['outputs'][1]['traj_state'] ==  b'\x00':
         break
 
 '''下使能'''
@@ -191,7 +191,6 @@ time.sleep(0.5)
 
 '''释放机器人内存'''
 robot.release_robot()
-
 
 
 
