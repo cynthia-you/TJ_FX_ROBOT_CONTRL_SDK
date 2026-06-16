@@ -486,9 +486,9 @@ bool OnSetEefRot_A(int fcType, double CartCtrlPara[7])
 			return false;
 		}
 	}
-	if (fcType != 1 && fcType != 2)
+	if (fcType != 1 && fcType != 2 && fcType != 3)
 	{
-		printf("[ERROR] OnSetEefRot_A: Invalid fcType number %d (valid range: 1~2)\n", fcType);
+		printf("[ERROR] OnSetEefRot_A: Invalid fcType number %d (valid range: 1~3)\n", fcType);
 		return false;
 	}
 	return CRobot::OnSetEefRot_A(fcType, CartCtrlPara);
@@ -527,10 +527,10 @@ bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], doub
 			return false;
 		}
 	}
-	if (fcType != 0)
+	if (fcType != 0 && fcType != 3)
 	{
-		printf("[WARNING] OnSetForceCtrPara_A: fcType set %d to 0\n", fcType);
-		fcType = 0;
+		printf("[ERROR] OnSetForceCtrPara_A: Invalid fcType number %d (valid value: 0 or 3)\n", fcType);
+		return false;
 	}
 	if (isnan(fcAdjLmt) || isinf(fcAdjLmt))
 	{
@@ -750,9 +750,9 @@ bool OnSetEefRot_B(int fcType, double CartCtrlPara[7])
 			return false;
 		}
 	}
-	if (fcType != 1 && fcType != 2)
+	if (fcType != 1 && fcType != 2 && fcType != 3)
 	{
-		printf("[ERROR] OnSetEefRot_B: Invalid fcType number %d (valid range: 1~2)\n", fcType);
+		printf("[ERROR] OnSetEefRot_B: Invalid fcType number %d (valid range: 1~3)\n", fcType);
 		return false;
 	}
 	return CRobot::OnSetEefRot_B(fcType, CartCtrlPara);
@@ -791,10 +791,10 @@ bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], doub
 			return false;
 		}
 	}
-	if (fcType != 0)
+	if (fcType != 0 && fcType != 3)
 	{
-		printf("[WARNING] OnSetForceCtrPara_B: fcType set %d to 0\n", fcType);
-		fcType = 0;
+		printf("[ERROR] OnSetForceCtrPara_B: Invalid fcType number %d (valid value: 0 or 3)\n", fcType);
+		return false;
 	}
 	if (isnan(fcAdjLmt) || isinf(fcAdjLmt))
 	{

@@ -42,20 +42,20 @@ class Marvin_Kine:
         self.kine.FX_CPointSet_Destroy.restype = None
 
         # CPointSet
-        self.kine.FX_CPointSet_OnInit.argtypes = [ctypes.c_void_p, ctypes.c_long]
+        self.kine.FX_CPointSet_OnInit.argtypes = [ctypes.c_void_p, ctypes.c_int32]
         self.kine.FX_CPointSet_OnInit.restype = ctypes.c_bool
 
         # CPointSet
         self.kine.FX_CPointSet_OnGetPointNum.argtypes = [ctypes.c_void_p]
-        self.kine.FX_CPointSet_OnGetPointNum.restype = ctypes.c_long
+        self.kine.FX_CPointSet_OnGetPointNum.restype = ctypes.c_int32
 
         # CPointSet
-        self.kine.FX_CPointSet_OnGetPoint.argtypes = [ctypes.c_void_p, ctypes.c_long]
+        self.kine.FX_CPointSet_OnGetPoint.argtypes = [ctypes.c_void_p, ctypes.c_int32]
         self.kine.FX_CPointSet_OnGetPoint.restype = ctypes.POINTER(ctypes.c_double)
 
         # MOVLA
         self.kine.FX_Robot_PLN_MOVLA_C.argtypes = [
-            ctypes.c_long,  # RobotSerial
+            ctypes.c_int32,  # RobotSerial
             ctypes.POINTER(ctypes.c_double),  # Start_XYZABC
             ctypes.POINTER(ctypes.c_double),  # End_XYZABC
             ctypes.POINTER(ctypes.c_double),  # Ref_Joints
@@ -81,7 +81,7 @@ class Marvin_Kine:
         self.kine.FX_Robot_PLN_Set_MOVL_Start.restype = ctypes.c_bool
 
         self.kine.FX_Robot_PLN_Set_MOVL_Next_Point.argtypes=[
-            ctypes.c_long,  # RobotSerial
+            ctypes.c_int32,  # RobotSerial
             ctypes.POINTER(ctypes.c_double),  # Next_XYZABC
             ctypes.c_double,  # Allow_Range
             ctypes.c_int32,  #ZSP_Type
@@ -92,16 +92,16 @@ class Marvin_Kine:
         self.kine.FX_Robot_PLN_Set_MOVL_Next_Point.restype = ctypes.c_bool
 
         self.kine.FX_Robot_PLN_Get_MOVL_Path_C.argtypes = [
-            ctypes.c_long,  # RobotSerial
+            ctypes.c_int32,  # RobotSerial
             ctypes.c_void_p  # ret_pset
         ]
         self.kine.FX_Robot_PLN_Get_MOVL_Path_C.restype = ctypes.c_bool
 
-        self.kine.FX_LOG_SWITCH.argtypes = [c_long]
+        self.kine.FX_LOG_SWITCH.argtypes = [c_int32]
 
         self.kine.LOADMvCfg.argtypes = [
             c_char_p,  # FX_CHAR* path
-            ctypes.POINTER(c_long * 2),  # FX_INT32L TYPE[2]
+            ctypes.POINTER(c_int32 * 2),  # FX_INT32L TYPE[2]
             ctypes.POINTER((c_double * 3) * 2),  # FX_DOUBLE GRV[2][3]
             ctypes.POINTER(((c_double * 4) * 8) * 2),  # FX_DOUBLE DH[2][8][4]
             ctypes.POINTER(((c_double * 4) * 7) * 2),  # FX_DOUBLE PNVA[2][7][4]
@@ -113,29 +113,29 @@ class Marvin_Kine:
         self.kine.LOADMvCfg.restype = c_bool  # 返回类型FX_BOOL
 
         ''' ini type kine lmt'''
-        self.kine.FX_Robot_Init_Type.argtypes = [c_long, c_long]
+        self.kine.FX_Robot_Init_Type.argtypes = [c_int32, c_int32]
         self.kine.FX_Robot_Init_Type.restype = c_bool
-        self.kine.FX_Robot_Init_Kine.argtypes = [c_long, (c_double * 4) * 8]
+        self.kine.FX_Robot_Init_Kine.argtypes = [c_int32, (c_double * 4) * 8]
         self.kine.FX_Robot_Init_Kine.restype = c_bool
-        self.kine.FX_Robot_Init_Lmt.argtypes = [c_long, (c_double * 4) * 7, (c_double * 3) * 4]
+        self.kine.FX_Robot_Init_Lmt.argtypes = [c_int32, (c_double * 4) * 7, (c_double * 3) * 4]
         self.kine.FX_Robot_Init_Lmt.restype = c_bool
 
-        self.kine.FX_Robot_Tool_Set.argtypes = [c_long, (c_double * 4) * 4]
+        self.kine.FX_Robot_Tool_Set.argtypes = [c_int32, (c_double * 4) * 4]
         self.kine.FX_Robot_Tool_Set.restype = c_bool
 
-        self.kine.FX_Robot_Kine_FK_NSP.argtypes = [c_long,
+        self.kine.FX_Robot_Kine_FK_NSP.argtypes = [c_int32,
                                                    ctypes.POINTER(ctypes.c_double * 7),
                                                    ctypes.POINTER((ctypes.c_double * 4) * 4),
                                                    ctypes.POINTER((ctypes.c_double * 3) * 3)]
         self.kine.FX_Robot_Kine_FK_NSP.restype = c_bool
 
-        self.kine.FX_Robot_Kine_IK.argtypes = [c_long, POINTER(FX_InvKineSolvePara)]
+        self.kine.FX_Robot_Kine_IK.argtypes = [c_int32, POINTER(FX_InvKineSolvePara)]
         self.kine.FX_Robot_Kine_IK.restype = c_bool
 
-        self.kine.FX_Robot_Kine_IK_NSP.argtypes = [c_long, POINTER(FX_InvKineSolvePara)]
+        self.kine.FX_Robot_Kine_IK_NSP.argtypes = [c_int32, POINTER(FX_InvKineSolvePara)]
         self.kine.FX_Robot_Kine_IK_NSP.restype = c_bool
 
-        self.kine.FX_Robot_Kine_Jacb.argtypes = [c_long, c_double * 7, POINTER(FX_Jacobi)]
+        self.kine.FX_Robot_Kine_Jacb.argtypes = [c_int32, c_double * 7, POINTER(FX_Jacobi)]
         self.kine.FX_Robot_Kine_Jacb.restype = c_bool
 
         self.kine.FX_Matrix42XYZABCDEG.argtypes = [(c_double * 4) * 4, c_double * 6]
@@ -144,7 +144,7 @@ class Marvin_Kine:
         self.kine.FX_XYZABC2Matrix4DEG.argtypes = [ctypes.POINTER(ctypes.c_double * 6),
                                      ctypes.POINTER((ctypes.c_double * 4) * 4)]
 
-        self.kine.FX_Robot_CalEndXYZABC.argtypes = [c_double * 6, c_double * 3,c_long, c_double * 3,c_double*6]
+        self.kine.FX_Robot_CalEndXYZABC.argtypes = [c_double * 6, c_double * 3,c_int32, c_double * 3,c_double*6]
         self.kine.FX_Robot_CalEndXYZABC.restype = c_bool
 
         self.kine.FX_Robot_PLN_MOVL.argtypes=[c_int32,
@@ -164,7 +164,7 @@ class Marvin_Kine:
         ]
         self.kine.FX_Robot_PLN_MOVLA_C.restype = ctypes.c_bool
 
-        self.kine.FX_Robot_PLN_MOVL_KeepJ.argtypes = [c_long, c_double * 7, c_double * 7, c_double, c_double, c_int32,
+        self.kine.FX_Robot_PLN_MOVL_KeepJ.argtypes = [c_int32, c_double * 7, c_double * 7, c_double, c_double, c_int32,
                                                       c_char_p]
         self.kine.FX_Robot_PLN_MOVL_KeepJ.restype = c_bool
 
@@ -303,7 +303,7 @@ class Marvin_Kine:
         '''
         :param switch: 打印日志开：1；打印日志关：0
         '''
-        switch_ = c_long(switch)
+        switch_ = c_int32(switch)
         self.kine.FX_LOG_SWITCH(switch_)
 
     def load_config(self, arm_type: int, config_path: str):
@@ -326,7 +326,7 @@ class Marvin_Kine:
             self.robot_tag=0
         if arm_type==1:
             self.robot_tag=1
-        TYPE = (c_long * 2)()
+        TYPE = (c_int32 * 2)()
         GRV = ((c_double * 3) * 2)()
         DH = (((c_double * 4) * 8) * 2)()
         PNVA = (((c_double * 4) * 7) * 2)()
@@ -394,8 +394,8 @@ class Marvin_Kine:
                 if len(j67[i]) != 3:
                     raise ValueError("j67  must be 3 columns")
 
-        Serial = ctypes.c_long(self.robot_tag)
-        robot_type_ = c_long(robot_type)
+        Serial = ctypes.c_int32(self.robot_tag)
+        robot_type_ = c_int32(robot_type)
 
         DH = ((c_double * 4) * 8)()
         for i in range(8):
@@ -445,7 +445,7 @@ class Marvin_Kine:
             for i in range(len(tool_mat)):
                 if len(tool_mat[i]) != 4:
                     raise ValueError("tool_mat  must be 4 columns")
-        Serial = ctypes.c_long(self.robot_tag)
+        Serial = ctypes.c_int32(self.robot_tag)
 
         TOOL = ((c_double * 4) * 4)()
         for i in range(4):
@@ -465,9 +465,9 @@ class Marvin_Kine:
         '''移除工具运动学设置
         :return:bool
         '''
-        Serial = ctypes.c_long(self.robot_tag)
+        Serial = ctypes.c_int32(self.robot_tag)
         '''remove tool'''
-        self.kine.FX_Robot_Tool_Rmv.argtypes = [c_long]
+        self.kine.FX_Robot_Tool_Rmv.argtypes = [c_int32]
         self.kine.FX_Robot_Tool_Rmv.restype = c_bool
         success1 = self.kine.FX_Robot_Tool_Rmv(Serial)
         if success1:
@@ -487,7 +487,7 @@ class Marvin_Kine:
         if len(joints) != 7:
             raise ValueError("shape error: fk input joints must be (7,)")
 
-        Serial = ctypes.c_long(self.robot_tag)
+        Serial = ctypes.c_int32(self.robot_tag)
         joints_double = (ctypes.c_double * 7)(*joints)
         Matrix4x4 = ((ctypes.c_double * 4) * 4)
         pg = Matrix4x4()
@@ -495,7 +495,7 @@ class Marvin_Kine:
             for j in range(4):
                 pg[i][j] = 1.0 if i == j else 0.0
 
-        self.kine.FX_Robot_Kine_FK.argtypes = [c_long,
+        self.kine.FX_Robot_Kine_FK.argtypes = [c_int32,
                                                ctypes.POINTER(ctypes.c_double * 7),
                                                ctypes.POINTER((ctypes.c_double * 4) * 4)]
         self.kine.FX_Robot_Kine_FK.restype = c_bool
@@ -520,7 +520,7 @@ class Marvin_Kine:
 
         if len(joints) != 7:
             raise ValueError("shape error: fk input joints must be (7,)")
-        Serial = ctypes.c_long(self.robot_tag)
+        Serial = ctypes.c_int32(self.robot_tag)
         joints_double = (ctypes.c_double * 7)(*joints)
         Matrix4x4 = ((ctypes.c_double * 4) * 4)
         pg = Matrix4x4()
@@ -599,7 +599,7 @@ class Marvin_Kine:
                                 第6关节的值为j6,此时使用公式j7=(a0^2)*j6+ a1*j6+a2  将得到第7个关节的最大限制位置
                                 如果选取的解里面的第7关节小于j7, 则不发生干涉, 本组解可被驱动到达.
         '''
-        Serial = ctypes.c_long(self.robot_tag)
+        Serial = ctypes.c_int32(self.robot_tag)
         self.sp=structure_data
         success = self.kine.FX_Robot_Kine_IK(Serial, byref(self.sp))
         if not success:
@@ -653,7 +653,7 @@ class Marvin_Kine:
         输出：
             成功：True/1; 失败：False/0
         '''
-        Serial = ctypes.c_long(self.robot_tag)
+        Serial = ctypes.c_int32(self.robot_tag)
         self.sp=sturcture_data
         success = self.kine.FX_Robot_Kine_IK_NSP(Serial, byref(self.sp))
         if not success:
@@ -672,7 +672,7 @@ class Marvin_Kine:
         if len(joints) != 7:
             raise ValueError("joints must be (7,)")
 
-        Serial = ctypes.c_long(self.robot_tag)
+        Serial = ctypes.c_int32(self.robot_tag)
         joints_value = (ctypes.c_double * 7)(*joints)
 
         example_matrix = [
@@ -816,7 +816,7 @@ class Marvin_Kine:
         pose_off=(ctypes.c_double * 3)(*pose_offset)
         angle0,angle1,angle2=angle_param
         angle=(ctypes.c_double * 3)(angle0,angle1,angle2)
-        rot = ctypes.c_long(rot_type)
+        rot = ctypes.c_int32(rot_type)
         end_xyzabc = (c_double * 6)(0, 0, 0, 0, 0, 0)
         success = self.kine.FX_Robot_CalEndXYZABC(start,pose_off,rot,angle,end_xyzabc)
 
@@ -884,8 +884,8 @@ class Marvin_Kine:
                 3 movL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
                 4 一段规划轨迹会分为加速段，匀速段和减速段， 当起点到终点的距离过短时，匀速段的速度和加速度可能达不到设置值，请知悉。
         '''
-        Serial = ctypes.c_long(self.robot_tag)
-        freq = ctypes.c_long(freq_hz)
+        Serial = ctypes.c_int32(self.robot_tag)
+        freq = ctypes.c_int32(freq_hz)
         if len(start_xyzabc) != 6:
             raise ValueError("start_xyzabc must have 6 elements")
         start_array = (ctypes.c_double * 6)(*start_xyzabc)
@@ -941,8 +941,8 @@ class Marvin_Kine:
                 4 一段规划轨迹会分为加速段，匀速段和减速段， 当起点到终点的距离过短时，匀速段的速度和加速度可能达不到设置值，请知悉。
         '''
 
-        Serial = ctypes.c_long(self.robot_tag)
-        freq = ctypes.c_long(freq_hz)
+        Serial = ctypes.c_int32(self.robot_tag)
+        freq = ctypes.c_int32(freq_hz)
         path = save_path.encode('utf-8')
         path_char = ctypes.c_char_p(path)
 
@@ -986,8 +986,8 @@ class Marvin_Kine:
                        4 一段规划轨迹会分为加速段，匀速段和减速段， 当起点到终点的距离过短时，匀速段的速度和加速度可能达不到设置值，请知悉。
                '''
 
-        Serial = ctypes.c_long(self.robot_tag)
-        freq = ctypes.c_long(freq_hz)
+        Serial = ctypes.c_int32(self.robot_tag)
+        freq = ctypes.c_int32(freq_hz)
         start_array = (ctypes.c_double * 7)(*start_joints)
         end_array = (ctypes.c_double * 7)(*end_joints)
         vel_arr = c_double(vel)
@@ -1137,7 +1137,7 @@ class Marvin_Kine:
         :param acc:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为10000 mm/s^2
         :return: 成功返回True，失败返回False
         """
-        serial = ctypes.c_long(self.robot_tag)
+        serial = ctypes.c_int32(self.robot_tag)
         next_arr = (ctypes.c_double * 6)(*next_xyzabc)
         zsp_arr = (ctypes.c_double * 6)(*zsp_para)
         zsp_type_arr = ctypes.c_int32(zsp_type)
@@ -1164,7 +1164,7 @@ class Marvin_Kine:
                  调用者必须在使用完毕后调用 self.destroy_point_set(pset) 释放。
                  失败时返回 ([], None)
         """
-        serial = ctypes.c_long(self.robot_tag)
+        serial = ctypes.c_int32(self.robot_tag)
         pset = self.create_point_set(dimension)
         if not pset:
             raise RuntimeError("Failed to create point set object")
@@ -1282,7 +1282,7 @@ def convert_to_8x8_matrix(flat_list):
 
     return matrix_8x8
 
-FX_INT32L = c_long
+FX_INT32L = c_int32
 FX_DOUBLE = c_double
 FX_BOOL = c_bool
 

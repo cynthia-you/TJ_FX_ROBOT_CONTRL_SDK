@@ -863,7 +863,7 @@ class Marvin_Robot:
     def set_force_control_params(self,arm:str, fcType: int, fxDirection: list, fcCtrlpara: list, fcAdjLmt: float):
         '''设置力控参数
         :param arm: 机械手臂ID “A” OR “B”
-        :param fcType: 力控类型 0:坐标空间力控;1:工具空间力控(暂未实现)
+        :param fcType: 力控类型 0:坐标空间力控;3:末端阻抗下力控
         :param fxDirection: list(6,1). 力控方向 需要控制方向设1，目前只支持 X,Y,Z控制方向.如力控方向为z,fxDirection=[0,0,1,0,0,0]
         :param fcCtrlpara: list(7,1). 控制参数 目前全0
         :param fcAdjLmt:毫米，允许的调节范围
@@ -896,8 +896,9 @@ class Marvin_Robot:
         '''设置末端笛卡尔阻抗参数
         :param arm: 机械手臂ID “A” OR “B”
         :param fcType:
-              fcType=1，为自定义末端旋转方向。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-              fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
+	            fcType=1，为自定义笛卡尔旋转方向，CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	            fcType=2，为系统自动计算末端笛卡尔旋转， CartCtrlPara全填0
+	            fcType=3，与末端力控接口set_force_control_params一起使用， CartCtrlPara全填0
         :param CartCtrlPara: list(7,1). 控制参数前三个为旋转信息，基于基座的XYZ旋转。
         :return:
             int : 1: True,  2: False
