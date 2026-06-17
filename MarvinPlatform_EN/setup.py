@@ -89,11 +89,11 @@ path_sep = ';' if sys.platform == 'win32' else ':'
 
 # 可执行文件名 / 图标
 if sys.platform == 'win32':
-    exe_name = 'MarvinPlatform_win_100341'
+    exe_name = 'MarvinPlatform_win_100343'
     icon_ext = 'ico'
     bin_exts = ('.dll',)
 else:
-    exe_name = 'MarvinPlatform_linux_100341'
+    exe_name = 'MarvinPlatform_linux_100343'
     icon_ext = 'png'
     bin_exts = ('.so',)
 

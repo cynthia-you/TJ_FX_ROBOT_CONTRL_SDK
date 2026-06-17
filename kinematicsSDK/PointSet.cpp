@@ -22,7 +22,6 @@ CPointSet::CPointSet()
 	m_L_Type[9] = PotT_9d;
 	m_L_Type[10] = PotT_10d;
 
-
 	m_L_Type[11] = PotT_11d;
 	m_L_Type[12] = PotT_12d;
 	m_L_Type[13] = PotT_13d;
@@ -33,7 +32,6 @@ CPointSet::CPointSet()
 	m_L_Type[18] = PotT_18d;
 	m_L_Type[19] = PotT_19d;
 	m_L_Type[20] = PotT_20d;
-
 
 	m_L_Type[21] = PotT_21d;
 	m_L_Type[22] = PotT_22d;
@@ -55,25 +53,22 @@ CPointSet::CPointSet()
 	m_L_Type[38] = PotT_38d;
 	m_L_Type[39] = PotT_39d;
 	m_L_Type[40] = PotT_40d;
-
 }
 
 CPointSet::~CPointSet()
 {
-
 }
 
 bool CPointSet::OnSetNum(long num)
 {
-	if (num<0 || num >OnGetPointNum())
+	if (num < 0 || num > OnGetPointNum())
 	{
 		return false;
 	}
 
 	return m_Points.OnSetNum(num);
-
 }
-bool CPointSet::OnSubNoEmpty(long serial, double target_v, double eps, CPointSet* ret)
+bool CPointSet::OnSubNoEmpty(long serial, double target_v, double eps, CPointSet *ret)
 {
 	if (this->m_PointType == PotT_BEGIN)
 	{
@@ -96,7 +91,7 @@ bool CPointSet::OnSubNoEmpty(long serial, double target_v, double eps, CPointSet
 	long i;
 	for (i = 0; i < num; i++)
 	{
-		double* p = this->OnGetPoint(i);
+		double *p = this->OnGetPoint(i);
 		if (fabs(p[serial] - target_v) < fabs(eps))
 		{
 			ret->OnSetPoint(p);
@@ -110,7 +105,7 @@ bool CPointSet::OnSubNoEmpty(long serial, double target_v, double eps, CPointSet
 	}
 	return true;
 }
-bool CPointSet::OnSubZone(long serial, double min_v, double max_v, CPointSet* ret)
+bool CPointSet::OnSubZone(long serial, double min_v, double max_v, CPointSet *ret)
 {
 	if (this->m_PointType == PotT_BEGIN)
 	{
@@ -133,13 +128,12 @@ bool CPointSet::OnSubZone(long serial, double min_v, double max_v, CPointSet* re
 
 	for (i = 0; i < num; i++)
 	{
-		double* p = this->OnGetPoint(i);
+		double *p = this->OnGetPoint(i);
 		if (p[serial] < max_v && p[serial] > min_v)
 		{
 			ret->OnSetPoint(p);
 		}
 	}
-
 
 	num = ret->OnGetPointNum();
 	if (num <= 0)
@@ -148,7 +142,7 @@ bool CPointSet::OnSubZone(long serial, double min_v, double max_v, CPointSet* re
 	}
 	return true;
 }
-bool CPointSet::OnGetSubAVG(long serial, long start, long end, double& ret_avg)
+bool CPointSet::OnGetSubAVG(long serial, long start, long end, double &ret_avg)
 {
 	double dnum = 0;
 	double tv = 0;
@@ -156,13 +150,12 @@ bool CPointSet::OnGetSubAVG(long serial, long start, long end, double& ret_avg)
 	long i;
 	for (i = start; i <= end; i++)
 	{
-		double* v = this->OnGetPoint(i);
+		double *v = this->OnGetPoint(i);
 		if (v != NULL)
 		{
 			tv += v[serial];
 			dnum += 1;
 		}
-
 	}
 
 	if (dnum < 0.5)
@@ -173,7 +166,7 @@ bool CPointSet::OnGetSubAVG(long serial, long start, long end, double& ret_avg)
 	return true;
 }
 
-bool CPointSet::OnFindByTagGetAvg(long serial, double tag, long startpos, long& ret_start, long& ret_end,long a_serial, double& ret_avg)
+bool CPointSet::OnFindByTagGetAvg(long serial, double tag, long startpos, long &ret_start, long &ret_end, long a_serial, double &ret_avg)
 {
 	long num = OnGetPointNum();
 	if (startpos < 0)
@@ -186,7 +179,7 @@ bool CPointSet::OnFindByTagGetAvg(long serial, double tag, long startpos, long& 
 	long tp = 0;
 	for (i = startpos; i < num; i++)
 	{
-		double* v = this->OnGetPoint(i);
+		double *v = this->OnGetPoint(i);
 		bool sm = false;
 		if (fabs(v[serial] - tag) < 0.00001)
 		{
@@ -208,7 +201,7 @@ bool CPointSet::OnFindByTagGetAvg(long serial, double tag, long startpos, long& 
 		{
 			if (sm == false)
 			{
-				
+
 				return true;
 			}
 			else
@@ -219,12 +212,11 @@ bool CPointSet::OnFindByTagGetAvg(long serial, double tag, long startpos, long& 
 				ret_avg = tv / tn;
 			}
 		}
-
 	}
 
 	return tp == 1;
 }
-bool CPointSet::OnFindByTag(long serial, double tag, long startpos, long& ret_start, long& ret_end)
+bool CPointSet::OnFindByTag(long serial, double tag, long startpos, long &ret_start, long &ret_end)
 {
 	long num = OnGetPointNum();
 	if (startpos < 0)
@@ -233,9 +225,9 @@ bool CPointSet::OnFindByTag(long serial, double tag, long startpos, long& ret_st
 	}
 	long i;
 	long tp = 0;
-	for ( i = startpos; i < num; i++)
+	for (i = startpos; i < num; i++)
 	{
-		double* v = this->OnGetPoint(i);
+		double *v = this->OnGetPoint(i);
 		bool sm = false;
 		if (fabs(v[serial] - tag) < 0.00001)
 		{
@@ -261,7 +253,6 @@ bool CPointSet::OnFindByTag(long serial, double tag, long startpos, long& ret_st
 				ret_end = i;
 			}
 		}
-		
 	}
 
 	return tp == 1;
@@ -278,12 +269,12 @@ bool CPointSet::OnSub(long head_size, long head_repeatnum, long tail_size, long 
 	pset.OnInit(this->OnGetType());
 
 	long i;
-	for ( i = head_size; i < num - tail_size; i++)
+	for (i = head_size; i < num - tail_size; i++)
 	{
-		double* v = OnGetPoint(i);
+		double *v = OnGetPoint(i);
 		if (i == head_size)
 		{
-			for (long j = 0; j < head_repeatnum-1; j++)
+			for (long j = 0; j < head_repeatnum - 1; j++)
 			{
 				pset.OnSetPoint(v);
 			}
@@ -300,9 +291,9 @@ bool CPointSet::OnSub(long head_size, long head_repeatnum, long tail_size, long 
 
 	this->OnEmpty();
 	num = pset.OnGetPointNum();
-	for ( i = 0; i < num; i++)
+	for (i = 0; i < num; i++)
 	{
-		double* v = pset.OnGetPoint(i);
+		double *v = pset.OnGetPoint(i);
 		OnSetPoint(v);
 	}
 	return true;
@@ -335,9 +326,8 @@ bool CPointSet::OnSubSmp(long skp_num)
 		this->OnSetPoint(tmp.OnGetPoint(i));
 	}
 	return true;
-
 }
-bool CPointSet::OnSub(long serial, bool in_or_de, CPointSet* ret)
+bool CPointSet::OnSub(long serial, bool in_or_de, CPointSet *ret)
 {
 	if (this->m_PointType == PotT_BEGIN)
 	{
@@ -361,8 +351,8 @@ bool CPointSet::OnSub(long serial, bool in_or_de, CPointSet* ret)
 	{
 		for (i = 0; i < num - 1; i++)
 		{
-			double* p = this->OnGetPoint(i);
-			double* n = this->OnGetPoint(i + 1);
+			double *p = this->OnGetPoint(i);
+			double *n = this->OnGetPoint(i + 1);
 			if (p[serial] < n[serial])
 			{
 				ret->OnSetPoint(p);
@@ -373,15 +363,14 @@ bool CPointSet::OnSub(long serial, bool in_or_de, CPointSet* ret)
 	{
 		for (i = 0; i < num + 1; i++)
 		{
-			double* p = this->OnGetPoint(i);
-			double* n = this->OnGetPoint(i + 1);
+			double *p = this->OnGetPoint(i);
+			double *n = this->OnGetPoint(i + 1);
 			if (p[serial] > n[serial])
 			{
 				ret->OnSetPoint(p);
 			}
 		}
 	}
-
 
 	num = ret->OnGetPointNum();
 	if (num <= 0)
@@ -390,7 +379,7 @@ bool CPointSet::OnSub(long serial, bool in_or_de, CPointSet* ret)
 	}
 	return true;
 }
-bool CPointSet::OnSubAtValue(long serial, double target_v, double eps, CPointSet* ret)
+bool CPointSet::OnSubAtValue(long serial, double target_v, double eps, CPointSet *ret)
 {
 	if (this->m_PointType == PotT_BEGIN)
 	{
@@ -412,7 +401,7 @@ bool CPointSet::OnSubAtValue(long serial, double target_v, double eps, CPointSet
 	long i;
 	for (i = 0; i < num; i++)
 	{
-		double* p = this->OnGetPoint(i);
+		double *p = this->OnGetPoint(i);
 		if (fabs(p[serial] - target_v) < fabs(eps))
 		{
 			ret->OnSetPoint(p);
@@ -460,13 +449,11 @@ bool CPointSet::OnInit(PoinType ptype, long start_cap)
 				memset(m_Tag, 0, 256);
 				return true;
 			}
-
 		}
 	}
 
 	memset(m_Tag, 0, 256);
 	return false;
-
 }
 
 bool CPointSet::OnInit(PoinType ptype)
@@ -497,7 +484,6 @@ bool CPointSet::OnInit(PoinType ptype)
 		}
 		else
 		{
-
 		}
 	}
 
@@ -519,8 +505,7 @@ bool CPointSet::OnEmpty()
 	return m_Points.OnEmpty();
 }
 
-
-bool CPointSet::OnSetSubTag(char* subtag)
+bool CPointSet::OnSetSubTag(char *subtag)
 {
 	if (subtag == NULL)
 	{
@@ -558,7 +543,6 @@ bool CPointSet::OnSetSubTag(char* subtag)
 		if (subtag[i] == '_' || subtag[i] == '#')
 		{
 			ok_tag = true;
-
 		}
 	}
 
@@ -574,10 +558,9 @@ bool CPointSet::OnSetSubTag(char* subtag)
 		m_SubTag[i] = subtag[i];
 	}
 	return true;
-
 }
 
-bool CPointSet::OnSetTag(char* tag)
+bool CPointSet::OnSetTag(char *tag)
 {
 	if (tag == NULL)
 	{
@@ -615,7 +598,6 @@ bool CPointSet::OnSetTag(char* tag)
 		if (tag[i] == '_' || tag[i] == '#')
 		{
 			ok_tag = true;
-
 		}
 	}
 
@@ -633,7 +615,7 @@ bool CPointSet::OnSetTag(char* tag)
 	return true;
 }
 
-char* CPointSet::OnGetTag()
+char *CPointSet::OnGetTag()
 {
 	if (strlen(m_Tag) == 0)
 	{
@@ -642,7 +624,7 @@ char* CPointSet::OnGetTag()
 	return m_Tag;
 }
 
-bool CPointSet::OnCheckSubTag(char* c)
+bool CPointSet::OnCheckSubTag(char *c)
 {
 	long len = strlen(m_SubTag);
 	if (len == 0)
@@ -669,7 +651,7 @@ bool CPointSet::OnCheckSubTag(char* c)
 	return true;
 }
 
-bool CPointSet::OnCheckTag(char* c)
+bool CPointSet::OnCheckTag(char *c)
 {
 	long len = strlen(m_Tag);
 	if (len == 0)
@@ -701,9 +683,9 @@ long CPointSet::OnGetPointNum()
 	return m_Points.OnGetNum();
 }
 
-double* CPointSet::OnGetPoint(long pos)
+double *CPointSet::OnGetPoint(long pos)
 {
-	return (double*)m_Points.OnGet(pos);
+	return (double *)m_Points.OnGet(pos);
 }
 
 bool CPointSet::OnSetPoint(double point_value[])
@@ -715,14 +697,13 @@ bool CPointSet::OnSetPoint(double point_value[])
 	return m_Points.OnAdd(point_value);
 }
 
-bool CPointSet::OnSave(FILE* fp)
+bool CPointSet::OnSave(FILE *fp)
 {
 	if (m_PointType == PotT_BEGIN)
 	{
 		return false;
 	}
 	long num = OnGetPointNum();
-
 
 	char r = 0x0a;
 	if (strlen(m_Tag) == 0)
@@ -741,7 +722,7 @@ bool CPointSet::OnSave(FILE* fp)
 		}
 	}
 
-	double* tmp;
+	double *tmp;
 	for (long i = 0; i < num; i++)
 	{
 		tmp = OnGetPoint(i);
@@ -749,33 +730,33 @@ bool CPointSet::OnSave(FILE* fp)
 		{
 			if (j < 3)
 			{
-				fprintf(fp, "%c %lf$", 'X' + static_cast<int>(j), tmp[j]);
+				fprintf(fp, "%ld %lf$", 'X' + j, tmp[j]);
 			}
 			if (j >= 3 && j < 6)
 			{
-				fprintf(fp, "%c %lf$", 'A' + static_cast<int>(j) - 3, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'A' + j - 3, tmp[j]);
 			}
 			if (j >= 6 && j < 9)
 			{
-				fprintf(fp, "%c %lf$", 'U' + static_cast<int>(j) - 6, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'U' + j - 6, tmp[j]);
 			}
 			if (j >= 9 && j < 12)
 			{
-				fprintf(fp, "%c %lf$", 'O' + static_cast<int>(j) - 9, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'O' + j - 9, tmp[j]);
 			}
 			if (j >= 12 && j < 15)
 			{
-				fprintf(fp, "%c %lf$", 'I' + static_cast<int>(j) - 12, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'I' + j - 12, tmp[j]);
 			}
 
 			if (j >= 15 && j < 18)
 			{
-				fprintf(fp, "%c %lf$", 'L' + static_cast<int>(j) - 15, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'L' + j - 15, tmp[j]);
 			}
 
 			if (j >= 18 && j < 21)
 			{
-				fprintf(fp, "%c %lf$", 'R' + static_cast<int>(j) - 18, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'R' + j - 18, tmp[j]);
 			}
 
 			if (j >= 21)
@@ -788,7 +769,7 @@ bool CPointSet::OnSave(FILE* fp)
 	return true;
 }
 
-bool CPointSet::OnSave(char* path)
+bool CPointSet::OnSave(char *path)
 {
 	if (m_PointType == PotT_BEGIN)
 	{
@@ -804,7 +785,7 @@ bool CPointSet::OnSave(char* path)
 	{
 		return false;
 	}
-	FILE* fp = fopen(path, "wb");
+	FILE *fp = fopen(path, "wb");
 	if (fp == NULL)
 	{
 		return false;
@@ -828,7 +809,7 @@ bool CPointSet::OnSave(char* path)
 		}
 	}
 
-	double* tmp;
+	double *tmp;
 	for (long i = 0; i < num; i++)
 	{
 		tmp = OnGetPoint(i);
@@ -836,33 +817,33 @@ bool CPointSet::OnSave(char* path)
 		{
 			if (j < 3)
 			{
-				fprintf(fp, "%c %lf$", 'X' + static_cast<int>(j), tmp[j]);
+				fprintf(fp, "%ld %lf$", 'X' + j, tmp[j]);
 			}
 			if (j >= 3 && j < 6)
 			{
-				fprintf(fp, "%c %lf$", 'A' + static_cast<int>(j) - 3, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'A' + j - 3, tmp[j]);
 			}
 			if (j >= 6 && j < 9)
 			{
-				fprintf(fp, "%c %lf$", 'U' + static_cast<int>(j) - 6, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'U' + j - 6, tmp[j]);
 			}
 			if (j >= 9 && j < 12)
 			{
-				fprintf(fp, "%c %lf$", 'O' + static_cast<int>(j) - 9, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'O' + j - 9, tmp[j]);
 			}
 			if (j >= 12 && j < 15)
 			{
-				fprintf(fp, "%c %lf$", 'I' + static_cast<int>(j) - 12, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'I' + j - 12, tmp[j]);
 			}
 
 			if (j >= 15 && j < 18)
 			{
-				fprintf(fp, "%c %lf$", 'L' + static_cast<int>(j) - 15, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'L' + j - 15, tmp[j]);
 			}
 
 			if (j >= 18 && j < 21)
 			{
-				fprintf(fp, "%c %lf$", 'R' + static_cast<int>(j) - 18, tmp[j]);
+				fprintf(fp, "%ld %lf$", 'R' + j - 18, tmp[j]);
 			}
 
 			if (j >= 21)
@@ -876,8 +857,7 @@ bool CPointSet::OnSave(char* path)
 	return true;
 }
 
-
-bool CPointSet::OnSaveHL(char* path)
+bool CPointSet::OnSaveHL(char *path)
 {
 	if (m_PointType == PotT_BEGIN)
 	{
@@ -893,7 +873,7 @@ bool CPointSet::OnSaveHL(char* path)
 	{
 		return false;
 	}
-	FILE* fp = fopen(path, "wb");
+	FILE *fp = fopen(path, "wb");
 	if (fp == NULL)
 	{
 		return false;
@@ -917,7 +897,7 @@ bool CPointSet::OnSaveHL(char* path)
 		}
 	}
 
-	double* tmp;
+	double *tmp;
 	for (long i = 0; i < num; i++)
 	{
 		tmp = OnGetPoint(i);
@@ -925,33 +905,33 @@ bool CPointSet::OnSaveHL(char* path)
 		{
 			if (j < 3)
 			{
-				fprintf(fp, "%c %.15lf$", 'X' + static_cast<int>(j), tmp[j]);
+				fprintf(fp, "%ld %.15lf$", 'X' + j, tmp[j]);
 			}
 			if (j >= 3 && j < 6)
 			{
-				fprintf(fp, "%c %.15lf$", 'A' + static_cast<int>(j) - 3, tmp[j]);
+				fprintf(fp, "%ld %.15lf$", 'A' + j - 3, tmp[j]);
 			}
 			if (j >= 6 && j < 9)
 			{
-				fprintf(fp, "%c %.15lf$", 'U' + static_cast<int>(j) - 6, tmp[j]);
+				fprintf(fp, "%ld %.15lf$", 'U' + j - 6, tmp[j]);
 			}
 			if (j >= 9 && j < 12)
 			{
-				fprintf(fp, "%c %.15lf$", 'O' + static_cast<int>(j) - 9, tmp[j]);
+				fprintf(fp, "%ld %.15lf$", 'O' + j - 9, tmp[j]);
 			}
 			if (j >= 12 && j < 15)
 			{
-				fprintf(fp, "%c %.15lf$", 'I' + static_cast<int>(j) - 12, tmp[j]);
+				fprintf(fp, "%ld %.15lf$", 'I' + j - 12, tmp[j]);
 			}
 
 			if (j >= 15 && j < 18)
 			{
-				fprintf(fp, "%c %.15lf$", 'L' + static_cast<int>(j) - 15, tmp[j]);
+				fprintf(fp, "%ld %.15lf$", 'L' + j - 15, tmp[j]);
 			}
 
 			if (j >= 18 && j < 21)
 			{
-				fprintf(fp, "%c %.15lf$", 'R' + static_cast<int>(j) - 18, tmp[j]);
+				fprintf(fp, "%ld %.15lf$", 'R' + j - 18, tmp[j]);
 			}
 
 			if (j >= 21)
@@ -965,8 +945,7 @@ bool CPointSet::OnSaveHL(char* path)
 	return true;
 }
 
-
-bool CPointSet::OnSaveCSV(char* path)
+bool CPointSet::OnSaveCSV(char *path)
 {
 	if (m_PointType == PotT_BEGIN)
 	{
@@ -982,7 +961,7 @@ bool CPointSet::OnSaveCSV(char* path)
 	{
 		return false;
 	}
-	FILE* fp = fopen(path, "wb");
+	FILE *fp = fopen(path, "wb");
 	if (fp == NULL)
 	{
 		return false;
@@ -991,8 +970,7 @@ bool CPointSet::OnSaveCSV(char* path)
 
 	char r = 0x0a;
 
-
-	double* tmp;
+	double *tmp;
 	for (long i = 0; i < num; i++)
 	{
 		tmp = OnGetPoint(i);
@@ -1006,9 +984,7 @@ bool CPointSet::OnSaveCSV(char* path)
 	return true;
 }
 
-
-
-bool CPointSet::OnSaveRaw(char* path)
+bool CPointSet::OnSaveRaw(char *path)
 {
 	if (m_PointType == PotT_BEGIN)
 	{
@@ -1024,7 +1000,7 @@ bool CPointSet::OnSaveRaw(char* path)
 	{
 		return false;
 	}
-	FILE* fp = fopen(path, "wb");
+	FILE *fp = fopen(path, "wb");
 	if (fp == NULL)
 	{
 		return false;
@@ -1033,8 +1009,7 @@ bool CPointSet::OnSaveRaw(char* path)
 
 	char r = 0x0a;
 
-
-	double* tmp;
+	double *tmp;
 	for (long i = 0; i < num; i++)
 	{
 		tmp = OnGetPoint(i);
@@ -1048,7 +1023,7 @@ bool CPointSet::OnSaveRaw(char* path)
 	return true;
 }
 
-bool CPointSet::OnGetLine(FILE* fp, char* buf)
+bool CPointSet::OnGetLine(FILE *fp, char *buf)
 {
 	if (fp == NULL || buf == NULL)
 	{
@@ -1057,7 +1032,10 @@ bool CPointSet::OnGetLine(FILE* fp, char* buf)
 
 	buf[0] = '\0';
 	char c = EOF;
-	fread(&c, 1, 1, fp);
+	if (fread(&c, 1, 1, fp) != 1)
+	{
+		return false;
+	}
 	long len = 0;
 	while (c != EOF)
 	{
@@ -1079,7 +1057,10 @@ bool CPointSet::OnGetLine(FILE* fp, char* buf)
 			}
 		}
 		c = EOF;
-		fread(&c, 1, 1, fp);
+		if (fread(&c, 1, 1, fp) != 1)
+		{
+			return false;
+		}
 		if (c == EOF)
 		{
 			if (len != 0)
@@ -1092,7 +1073,7 @@ bool CPointSet::OnGetLine(FILE* fp, char* buf)
 	return false;
 }
 
-bool CPointSet::OnGetValue(char* buf, double* retv, long& retn)
+bool CPointSet::OnGetValue(char *buf, double *retv, long &retn)
 {
 	long pos = 0;
 	double tmp = 0;
@@ -1154,7 +1135,6 @@ bool CPointSet::OnGetValue(char* buf, double* retv, long& retn)
 				}
 				value_tag = true;
 			}
-
 		}
 		else
 		{
@@ -1188,7 +1168,6 @@ bool CPointSet::OnGetValue(char* buf, double* retv, long& retn)
 
 	retn = pos;
 	return true;
-
 }
 
 bool CPointSet::OnMult(long col_serial, double mult_value)
@@ -1202,7 +1181,7 @@ bool CPointSet::OnMult(long col_serial, double mult_value)
 	long i;
 	for (i = 0; i < num; i++)
 	{
-		double* p = this->OnGetPoint(i);
+		double *p = this->OnGetPoint(i);
 		p[col_serial] *= mult_value;
 	}
 	return true;
@@ -1227,20 +1206,20 @@ bool CPointSet::OnAdd(long src_col_serial1, long src_col_serial2, long tgt_col_s
 	long i;
 	for (i = 0; i < num; i++)
 	{
-		double* p = this->OnGetPoint(i);
+		double *p = this->OnGetPoint(i);
 		p[tgt_col_serial] = p[src_col_serial1] + p[src_col_serial2];
 	}
 	return true;
 }
 
-long CPointSet::OnFindAvgZero(long serial, long ww, double eps ,bool is_inc )
+long CPointSet::OnFindAvgZero(long serial, long ww, double eps, bool is_inc)
 {
 	if (eps < 0.001)
 	{
 		eps = 0.001;
 	}
 	long w = ww;
-	if (w < 3 )
+	if (w < 3)
 	{
 		w = 3;
 	}
@@ -1267,7 +1246,7 @@ long CPointSet::OnFindAvgZero(long serial, long ww, double eps ,bool is_inc )
 		sp *= eps;
 		for (i = 0; i < w; i++)
 		{
-			double* v = this->OnGetPoint(i);
+			double *v = this->OnGetPoint(i);
 			totalv += v[serial];
 		}
 		if (totalv > sp || totalv < -sp)
@@ -1277,18 +1256,17 @@ long CPointSet::OnFindAvgZero(long serial, long ww, double eps ,bool is_inc )
 
 		for (i = 1; i + w < num; i++)
 		{
-			double* v = this->OnGetPoint(i-1);
+			double *v = this->OnGetPoint(i - 1);
 			totalv -= v[serial];
 			v = this->OnGetPoint(i + w);
 			totalv += v[serial];
-			if (totalv > sp || totalv < -sp )
+			if (totalv > sp || totalv < -sp)
 			{
 				return i;
 			}
-
 		}
 
-		return i-1;
+		return i - 1;
 	}
 	else
 	{
@@ -1298,7 +1276,7 @@ long CPointSet::OnFindAvgZero(long serial, long ww, double eps ,bool is_inc )
 		sp *= eps;
 		for (i = 0; i < w; i++)
 		{
-			double* v = this->OnGetPoint(num -1 - i);
+			double *v = this->OnGetPoint(num - 1 - i);
 			totalv += v[serial];
 		}
 		if (totalv > sp || totalv < -sp)
@@ -1308,20 +1286,20 @@ long CPointSet::OnFindAvgZero(long serial, long ww, double eps ,bool is_inc )
 
 		for (i = num - 2 - w; i >= 0; i--)
 		{
-			double* v = this->OnGetPoint(i);
+			double *v = this->OnGetPoint(i);
 			totalv += v[serial];
 			v = this->OnGetPoint(i + w + 1);
 			totalv -= v[serial];
 			if (totalv > sp || totalv < -sp)
 			{
-				return i+w;
+				return i + w;
 			}
 		}
 		return i + 1;
 	}
 }
 
-bool CPointSet::OnDifferenceO12(long serial, double ts, CPointSet* pva)
+bool CPointSet::OnDifferenceO12(long serial, double ts, CPointSet *pva)
 {
 	if (serial < 0 || serial >= m_PointType)
 	{
@@ -1330,25 +1308,25 @@ bool CPointSet::OnDifferenceO12(long serial, double ts, CPointSet* pva)
 
 	pva->OnInit(PotT_3d);
 	pva->OnEmpty();
-	long num = this->OnGetPointNum(); 
+	long num = this->OnGetPointNum();
 	long i;
 	double p[3];
 	p[0] = 0;
 	p[1] = 0;
 	p[2] = 0;
-	for ( i = 0; i < num; i++)
+	for (i = 0; i < num; i++)
 	{
-		double * pp = this->OnGetPoint(i);
+		double *pp = this->OnGetPoint(i);
 		p[0] = pp[serial];
 		pva->OnSetPoint(p);
 	}
 
-	for ( i = 1; i < num-1; i++)
+	for (i = 1; i < num - 1; i++)
 	{
-		double* pre = pva->OnGetPoint(i - 1);
-		double* cur = pva->OnGetPoint(i );
-		double* nex = pva->OnGetPoint(i + 1);
-		cur[1] = 2 *  (nex[0] - pre[0]) / ts;
+		double *pre = pva->OnGetPoint(i - 1);
+		double *cur = pva->OnGetPoint(i);
+		double *nex = pva->OnGetPoint(i + 1);
+		cur[1] = 2 * (nex[0] - pre[0]) / ts;
 		if (i == 1)
 		{
 			pre[1] = cur[1];
@@ -1359,12 +1337,11 @@ bool CPointSet::OnDifferenceO12(long serial, double ts, CPointSet* pva)
 		}
 	}
 
-
 	for (i = 1; i < num - 1; i++)
 	{
-		double* pre = pva->OnGetPoint(i - 1);
-		double* cur = pva->OnGetPoint(i);
-		double* nex = pva->OnGetPoint(i + 1);
+		double *pre = pva->OnGetPoint(i - 1);
+		double *cur = pva->OnGetPoint(i);
+		double *nex = pva->OnGetPoint(i + 1);
 		cur[2] = 2 * (nex[1] - pre[1]) / ts;
 		if (i == 1)
 		{
@@ -1377,7 +1354,6 @@ bool CPointSet::OnDifferenceO12(long serial, double ts, CPointSet* pva)
 	}
 
 	return true;
-
 }
 
 bool CPointSet::OnCalDif(long src_col_serial, long tgt_col_serial, long skip_num)
@@ -1396,26 +1372,25 @@ bool CPointSet::OnCalDif(long src_col_serial, long tgt_col_serial, long skip_num
 		return false;
 	}
 
-
 	long i;
 	for (i = skip_num; i < num - skip_num; i++)
 	{
-		double* pre = this->OnGetPoint(i - skip_num);
-		double* cur = this->OnGetPoint(i);
-		double* nex = this->OnGetPoint(i + skip_num);
+		double *pre = this->OnGetPoint(i - skip_num);
+		double *cur = this->OnGetPoint(i);
+		double *nex = this->OnGetPoint(i + skip_num);
 		cur[tgt_col_serial] = nex[src_col_serial] - pre[src_col_serial];
 	}
 
 	for (i = 0; i < skip_num; i++)
 	{
-		double* pre = this->OnGetPoint(i);
-		double* cur = this->OnGetPoint(skip_num);
+		double *pre = this->OnGetPoint(i);
+		double *cur = this->OnGetPoint(skip_num);
 		pre[tgt_col_serial] = cur[tgt_col_serial];
 	}
 	for (i = num - 1; i > num - skip_num - 1; i--)
 	{
-		double* cur = this->OnGetPoint(num - skip_num - 1);
-		double* nxt = this->OnGetPoint(i);
+		double *cur = this->OnGetPoint(num - skip_num - 1);
+		double *nxt = this->OnGetPoint(i);
 		nxt[tgt_col_serial] = cur[tgt_col_serial];
 	}
 
@@ -1438,7 +1413,7 @@ bool CPointSet::OnMakeZeroData(PoinType ptype, long num)
 	return true;
 }
 
-bool CPointSet::OnCpyFrm(CPointSet* src)
+bool CPointSet::OnCpyFrm(CPointSet *src)
 {
 	if (this->OnInit(src->OnGetType()) == false)
 	{
@@ -1463,7 +1438,7 @@ bool CPointSet::OnCpyFrm(CPointSet* src)
 	}
 	return true;
 }
-bool CPointSet::OnCpyC2C(long target_c, long src_c, CPointSet* src)
+bool CPointSet::OnCpyC2C(long target_c, long src_c, CPointSet *src)
 {
 	if (target_c < 0 || target_c >= m_PointType)
 	{
@@ -1484,14 +1459,12 @@ bool CPointSet::OnCpyC2C(long target_c, long src_c, CPointSet* src)
 	long i;
 	for (i = 0; i < nn; i++)
 	{
-		double* s = src->OnGetPoint(i);
-		double* t = OnGetPoint(i);
+		double *s = src->OnGetPoint(i);
+		double *t = OnGetPoint(i);
 		t[target_c] = s[src_c];
-
 	}
 	return true;
 }
-
 
 void PSlinearSmooth3(double in[], double out[], int size)
 {
@@ -1516,7 +1489,6 @@ void PSlinearSmooth3(double in[], double out[], int size)
 	}
 }
 
-
 void PSlinearSmooth7(double in[], double out[], int size)
 {
 	int i;
@@ -1529,30 +1501,22 @@ void PSlinearSmooth7(double in[], double out[], int size)
 	}
 	else
 	{
-		out[0] = (13.0 * in[0] + 10.0 * in[1] + 7.0 * in[2] + 4.0 * in[3]
-			+ in[4] - 2.0 * in[5] - 5.0 * in[6]) / 28.0;
+		out[0] = (13.0 * in[0] + 10.0 * in[1] + 7.0 * in[2] + 4.0 * in[3] + in[4] - 2.0 * in[5] - 5.0 * in[6]) / 28.0;
 
-		out[1] = (5.0 * in[0] + 4.0 * in[1] + 3 * in[2] + 2 * in[3]
-			+ in[4] - in[5]) / 14.0;
+		out[1] = (5.0 * in[0] + 4.0 * in[1] + 3 * in[2] + 2 * in[3] + in[4] - in[5]) / 14.0;
 
-		out[2] = (7.0 * in[0] + 6.0 * in[1] + 5.0 * in[2] + 4.0 * in[3]
-			+ 3.0 * in[4] + 2.0 * in[5] + in[6]) / 28.0;
+		out[2] = (7.0 * in[0] + 6.0 * in[1] + 5.0 * in[2] + 4.0 * in[3] + 3.0 * in[4] + 2.0 * in[5] + in[6]) / 28.0;
 
 		for (i = 3; i <= size - 4; i++)
 		{
-			out[i] = (in[i - 3] + in[i - 2] + in[i - 1] + in[i] + in[i + 1]
-				+ in[i + 2] + in[i + 3]) / 7.0;
+			out[i] = (in[i - 3] + in[i - 2] + in[i - 1] + in[i] + in[i + 1] + in[i + 2] + in[i + 3]) / 7.0;
 		}
 
-		out[size - 3] = (7.0 * in[size - 1] + 6.0 * in[size - 2] + 5.0 * in[size - 3]
-			+ 4.0 * in[size - 4] + 3.0 * in[size - 5] + 2.0 * in[size - 6]
-			+ in[size - 7]) / 28.0;
+		out[size - 3] = (7.0 * in[size - 1] + 6.0 * in[size - 2] + 5.0 * in[size - 3] + 4.0 * in[size - 4] + 3.0 * in[size - 5] + 2.0 * in[size - 6] + in[size - 7]) / 28.0;
 
-		out[size - 2] = (5.0 * in[size - 1] + 4.0 * in[size - 2] + 3.0 * in[size - 3]
-			+ 2.0 * in[size - 4] + in[size - 5] - in[size - 6]) / 14.0;
+		out[size - 2] = (5.0 * in[size - 1] + 4.0 * in[size - 2] + 3.0 * in[size - 3] + 2.0 * in[size - 4] + in[size - 5] - in[size - 6]) / 14.0;
 
-		out[size - 1] = (13.0 * in[size - 1] + 10.0 * in[size - 2] + 7.0 * in[size - 3]
-			+ 4.0 * in[size - 4] + in[size - 5] - 2.0 * in[size - 6] - 5.0 * in[size - 7]) / 28.0;
+		out[size - 1] = (13.0 * in[size - 1] + 10.0 * in[size - 2] + 7.0 * in[size - 3] + 4.0 * in[size - 4] + in[size - 5] - 2.0 * in[size - 6] - 5.0 * in[size - 7]) / 28.0;
 	}
 }
 
@@ -1569,8 +1533,8 @@ bool CPointSet::OnFltClnCPD3(long serial, long time)
 	long i;
 	for (i = 0; i < num; i++)
 	{
-		double* p = this->OnGetPoint(i);
-		double* t = tmp.OnGetPoint(i);
+		double *p = this->OnGetPoint(i);
+		double *t = tmp.OnGetPoint(i);
 		p[serial] += (p[serial] - t[serial]);
 	}
 	return true;
@@ -1588,11 +1552,11 @@ bool CPointSet::OnFltCln3(long serial, long time)
 	double x_s;
 	double x_e;
 
-	double* tmp1 = NULL;
-	double* tmp2 = NULL;
+	double *tmp1 = NULL;
+	double *tmp2 = NULL;
 
-	tmp1 = (double*)malloc(sizeof(double) * num);
-	tmp2 = (double*)malloc(sizeof(double) * num);
+	tmp1 = (double *)malloc(sizeof(double) * num);
+	tmp2 = (double *)malloc(sizeof(double) * num);
 	if (tmp1 == NULL ||
 		tmp2 == NULL)
 	{
@@ -1600,14 +1564,13 @@ bool CPointSet::OnFltCln3(long serial, long time)
 		free(tmp2);
 		return false;
 	}
-	double* v;
+	double *v;
 
 	for (i = 0; i < num; i++)
 	{
 		v = OnGetPoint(i);
 		tmp1[i] = v[offset];
 	}
-
 
 	x_s = tmp1[0];
 	x_e = tmp1[num - 1];
@@ -1633,7 +1596,6 @@ bool CPointSet::OnFltCln3(long serial, long time)
 	return true;
 }
 
-
 bool CPointSet::OnFltCln(long serial, long time)
 {
 	long offset = serial;
@@ -1647,11 +1609,11 @@ bool CPointSet::OnFltCln(long serial, long time)
 	double x_s;
 	double x_e;
 
-	double* tmp1 = NULL;
-	double* tmp2 = NULL;
+	double *tmp1 = NULL;
+	double *tmp2 = NULL;
 
-	tmp1 = (double*)malloc(sizeof(double) * num);
-	tmp2 = (double*)malloc(sizeof(double) * num);
+	tmp1 = (double *)malloc(sizeof(double) * num);
+	tmp2 = (double *)malloc(sizeof(double) * num);
 	if (tmp1 == NULL ||
 		tmp2 == NULL)
 	{
@@ -1659,14 +1621,13 @@ bool CPointSet::OnFltCln(long serial, long time)
 		free(tmp2);
 		return false;
 	}
-	double* v;
+	double *v;
 
 	for (i = 0; i < num; i++)
 	{
 		v = OnGetPoint(i);
 		tmp1[i] = v[offset];
 	}
-
 
 	x_s = tmp1[0];
 	x_e = tmp1[num - 1];
@@ -1706,12 +1667,12 @@ bool CPointSet::OnCpyC2C(long target_c, long src_c)
 	long i;
 	for (i = 0; i < num; i++)
 	{
-		double* p = this->OnGetPoint(i);
+		double *p = this->OnGetPoint(i);
 		p[target_c] = p[src_c];
 	}
 	return true;
 }
-bool  CPointSet::OnAdd(long col_serial, double add_value)
+bool CPointSet::OnAdd(long col_serial, double add_value)
 {
 	if (col_serial < 0 || col_serial >= m_PointType)
 	{
@@ -1722,7 +1683,7 @@ bool  CPointSet::OnAdd(long col_serial, double add_value)
 	long i;
 	for (i = 0; i < num; i++)
 	{
-		double* p = this->OnGetPoint(i);
+		double *p = this->OnGetPoint(i);
 		p[col_serial] += add_value;
 	}
 	return true;
@@ -1741,7 +1702,7 @@ bool CPointSet::OnMovCloToTail(long col_serial)
 	double tmp;
 	for (i = 0; i < num; i++)
 	{
-		double* p = this->OnGetPoint(i);
+		double *p = this->OnGetPoint(i);
 		tmp = p[col_serial];
 		for (j = col_serial; j < cnum - 1; j++)
 		{
@@ -1751,13 +1712,13 @@ bool CPointSet::OnMovCloToTail(long col_serial)
 	}
 	return true;
 }
-bool CPointSet::OnLoadXFile(char* path, long load_col_num, long exp_col_num)
+bool CPointSet::OnLoadXFile(char *path, long load_col_num, long exp_col_num)
 {
-	if (exp_col_num < 1 || exp_col_num >40)
+	if (exp_col_num < 1 || exp_col_num > 40)
 	{
 		return false;
 	}
-	if (load_col_num < 1 || load_col_num >40)
+	if (load_col_num < 1 || load_col_num > 40)
 	{
 		return false;
 	}
@@ -1769,8 +1730,7 @@ bool CPointSet::OnLoadXFile(char* path, long load_col_num, long exp_col_num)
 	this->OnEmpty();
 	this->OnInit(m_L_Type[exp_col_num]);
 
-
-	FILE* fp = fopen(path, "rb");
+	FILE *fp = fopen(path, "rb");
 	if (fp == NULL)
 	{
 		printf("load err\n");
@@ -1809,13 +1769,12 @@ bool CPointSet::OnLoadXFile(char* path, long load_col_num, long exp_col_num)
 
 	return true;
 }
-bool CPointSet::OnLoad(FILE* fp)
+bool CPointSet::OnLoad(FILE *fp)
 {
 	if (m_PointType == PotT_BEGIN)
 	{
 		return false;
 	}
-
 
 	char tag_buf[256];
 	memset(tag_buf, 0, 256);
@@ -1844,7 +1803,6 @@ bool CPointSet::OnLoad(FILE* fp)
 			fclose(fp);
 			return false;
 		}
-
 
 		for (long i = 0; i < tlen; i++)
 		{
@@ -1877,7 +1835,6 @@ bool CPointSet::OnLoad(FILE* fp)
 				return false;
 			}
 
-
 			for (long i = 0; i < tlen; i++)
 			{
 				if (fscanf(fp, "%c", &stag_buf[i]) != 1)
@@ -1898,7 +1855,6 @@ bool CPointSet::OnLoad(FILE* fp)
 			}
 		}
 	}
-
 
 	if (lt != m_PointType)
 	{
@@ -1928,7 +1884,6 @@ bool CPointSet::OnLoad(FILE* fp)
 		}
 	}
 
-
 	if (m_Points.OnInit(m_PointType * sizeof(double)) == false)
 	{
 		fclose(fp);
@@ -1945,7 +1900,10 @@ bool CPointSet::OnLoad(FILE* fp)
 				return false;
 			};
 		}
-		fscanf(fp, "%c", &r);
+		if (fscanf(fp, "%c", &r) != 1)
+		{
+			return false;
+		}
 		if (r != 0x0a)
 		{
 			return false;
@@ -1955,9 +1913,9 @@ bool CPointSet::OnLoad(FILE* fp)
 	return true;
 }
 
-bool CPointSet::OnLoadExp(char* path, long exp_col_num)
+bool CPointSet::OnLoadExp(char *path, long exp_col_num)
 {
-	if (exp_col_num < 1 || exp_col_num >40)
+	if (exp_col_num < 1 || exp_col_num > 40)
 	{
 		return false;
 	}
@@ -1986,27 +1944,24 @@ bool CPointSet::OnLoadExp(char* path, long exp_col_num)
 	long j;
 	for (i = 0; i < num; i++)
 	{
-		double* p = tmp.OnGetPoint(i);
+		double *p = tmp.OnGetPoint(i);
 		for (j = 0; j < tt; j++)
 		{
 			v[j] = p[j];
 		}
 		this->OnSetPoint(v);
-
 	}
-
 
 	return true;
 }
 
-
-bool CPointSet::OnLoadFast(char* path)
+bool CPointSet::OnLoadFast(char *path)
 {
 	if (path == NULL)
 	{
 		return false;
 	}
-	FILE* fp = fopen(path, "rb");
+	FILE *fp = fopen(path, "rb");
 	if (fp == NULL)
 	{
 		return false;
@@ -2019,7 +1974,6 @@ bool CPointSet::OnLoadFast(char* path)
 	memset(stag_buf, 0, 256);
 	memset(m_SubTag, 0, 256);
 
-
 	char r = 0x0a;
 	long lt;
 	long num;
@@ -2028,7 +1982,6 @@ bool CPointSet::OnLoadFast(char* path)
 		fclose(fp);
 		return false;
 	}
-
 
 	if (r == 'T')
 	{
@@ -2043,7 +1996,6 @@ bool CPointSet::OnLoadFast(char* path)
 			fclose(fp);
 			return false;
 		}
-
 
 		for (long i = 0; i < tlen; i++)
 		{
@@ -2075,7 +2027,6 @@ bool CPointSet::OnLoadFast(char* path)
 				fclose(fp);
 				return false;
 			}
-
 
 			for (long i = 0; i < tlen; i++)
 			{
@@ -2144,7 +2095,10 @@ bool CPointSet::OnLoadFast(char* path)
 				return false;
 			}
 		}
-		fscanf(fp, "%c", &r);
+		if (fscanf(fp, "%c", &r) != 1)
+		{
+			return false;
+		}
 		if (r != 0x0a)
 		{
 			fclose(fp);
@@ -2155,7 +2109,7 @@ bool CPointSet::OnLoadFast(char* path)
 	fclose(fp);
 	return true;
 }
-bool CPointSet::OnLoad(char* path)
+bool CPointSet::OnLoad(char *path)
 {
 	if (m_PointType == PotT_BEGIN)
 	{
@@ -2165,7 +2119,7 @@ bool CPointSet::OnLoad(char* path)
 	{
 		return false;
 	}
-	FILE* fp = fopen(path, "rb");
+	FILE *fp = fopen(path, "rb");
 	if (fp == NULL)
 	{
 		return false;
@@ -2199,7 +2153,6 @@ bool CPointSet::OnLoad(char* path)
 			return false;
 		}
 
-
 		for (long i = 0; i < tlen; i++)
 		{
 			if (fscanf(fp, "%c", &tag_buf[i]) != 1)
@@ -2230,7 +2183,6 @@ bool CPointSet::OnLoad(char* path)
 				fclose(fp);
 				return false;
 			}
-
 
 			for (long i = 0; i < tlen; i++)
 			{
@@ -2297,7 +2249,11 @@ bool CPointSet::OnLoad(char* path)
 				return false;
 			}
 		}
-		fscanf(fp, "%c", &r);
+
+		if (fscanf(fp, "%c", &r) != 1)
+		{
+			return false;
+		}
 		if (r != 0x0a)
 		{
 			fclose(fp);
@@ -2308,4 +2264,3 @@ bool CPointSet::OnLoad(char* path)
 	fclose(fp);
 	return true;
 }
-

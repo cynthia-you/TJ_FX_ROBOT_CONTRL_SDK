@@ -30,7 +30,7 @@ def case1_link_robot():
         return False
 
     ''' release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
@@ -88,7 +88,7 @@ def case2_position():
         time.sleep(0.001)
 
     ''' disable and release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
@@ -156,7 +156,7 @@ def case3_position_two_arms():
         time.sleep(0.001)
 
     ''' disable and release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
@@ -220,7 +220,7 @@ def case4_impedance_joint():
         time.sleep(0.001)
 
     ''' disable and release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
@@ -285,7 +285,7 @@ def case5_impedance_cart():
         time.sleep(0.001)
 
     ''' disable and release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
@@ -362,7 +362,7 @@ def case6_impedance_force():
     time.sleep(5)
 
     ''' disable and release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
@@ -415,7 +415,7 @@ def case7_joint_drag():
 
 
     ''' disable and release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
@@ -482,14 +482,14 @@ def case8_cart_drag_z_and_save_data(save_path='drag_z.txt'):
         return False
 
     ''' disable and release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
     robot.disable(arm=arm)
     robot.release_robot()
 
-def case9_run_pln_joint_space(config_path="ccs_m6_40.MvKDCfg"):
+def case9_run_pln_joint_space(config_path=config_path):
     '''define parameters'''
     arm='A'
     pln_vel = 0.5
@@ -561,14 +561,14 @@ def case9_run_pln_joint_space(config_path="ccs_m6_40.MvKDCfg"):
 
 
     ''' disable and release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
     robot.disable(arm=arm)
     robot.release_robot()
 
-def case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg"):
+def case10_run_pln_cart_space(config_path=config_path):
     '''define parameters'''
     arm='A'
     pln_vel = 0.5
@@ -719,7 +719,7 @@ def case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg"):
 
 
     ''' disable and release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
@@ -764,7 +764,7 @@ def case11_set_eef_tools():
     logger.info(f"dynamics:{sub_data['inputs'][1]['tool_dyn']}")
 
     ''' release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
@@ -799,13 +799,14 @@ def case12_eef_communication():
             break
 
     ''' release robot
-    After release, other programs or computers can connect to the robot. 
+    After release, other programs or computers can connect to the robot.
     After release, if you want to control the robot again, you must reconnect.
     '''
     time.sleep(1)
     robot.release_robot()
 
 if __name__=="__main__":
+    config_path=os.path.join(parent_dir, 'CommonConfig/ccs_m6_40.MvKDCfg')
     logger.info("----------------------------------------------------")
     logger.info("------------Concise SDK API showcases--------------")
     logger.info("Concise SDK APIe coexists compatibly with the old interface.\nPlease uncomment the showcases below one by one and compile and run them.")
@@ -858,12 +859,12 @@ if __name__=="__main__":
     '''showcase9: In joint space: Perform multiple loops, plan motion from the starting point to the end point, and interrupt the planned motion during the movement.'''
     # logger.info("--------------------------")
     # logger.info("showcase: In joint space: Perform multiple loops, plan motion from the starting point to the end point, and interrupt the planned motion during the movement.")
-    # case9_run_pln_joint_space(config_path="ccs_m6_40.MvKDCfg")
+    # case9_run_pln_joint_space(config_path=config_path)
 
     '''showcase10: In cartesian space: planning rectangular movement from the starting point.'''
     # logger.info("--------------------------")
     # logger.info("showcase: In cartesian space: planning rectangular movement from the starting point.")
-    # case10_run_pln_cart_space(config_path="ccs_m6_40.MvKDCfg")
+    # case10_run_pln_cart_space(config_path=config_path)
 
     '''showcase11: set End-effector tools info :kinematics and dynamics'''
     # logger.info("--------------------------")

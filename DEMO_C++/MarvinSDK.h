@@ -2,190 +2,7 @@
 #define FX_MARVINSDK_H_
 
 #include "PointSet.h"
-
-#define FX_VOID void
-#define FX_BOOL unsigned char
-#define FX_TRUE 1
-#define FX_FALSE 0
-
-#define FX_CHAR char
-#define FX_UCHAR unsigned char
-#define FX_INT16 short
-#define FX_INT32 int
-#define FX_INT32L long
-#define FX_INT64 long long
-
-#define FX_UINT8 unsigned char
-#define FX_UINT16 unsigned short
-#define FX_UINT32 unsigned int
-#define FX_UINT32L unsigned long
-#define FX_UINT64 unsigned long long
-
-#define FX_FLOAT float
-#define FX_DOUBLE double
-
-typedef enum
-{
-	ARM_STATE_IDLE = 0,		//////// 下伺服
-	ARM_STATE_POSITION = 1, //////// 位置跟随
-	ARM_STATE_PVT = 2,		//////// PVT
-	ARM_STATE_TORQ = 3,		//////// 扭矩
-	ARM_STATE_RELEASE = 4,	//////// 释放
-
-	ARM_STATE_ERROR = 100,			   //////// 报错了，清错
-	ARM_STATE_TRANS_TO_POSITION = 101, //////// 正常，切换过程,但是如果一直是这个值就是切换失败.
-	ARM_STATE_TRANS_TO_PVT = 102,	   //////// 正常，切换过程,但是如果一直是这个值就是切换失败.
-	ARM_STATE_TRANS_TO_TORQ = 103,	   //////// 正常，切换过程,但是如果一直是这个值就是切换失败.
-	ARM_STATE_TRANS_TO_RELEASE = 104,  //////// 正常，切换过程,但是如果一直是这个值就是切换失败.
-	ARM_STATE_TRANS_TO_IDLE = 109,	   //////// 正常，切换过程,但是如果一直是这个值就是切换失败.
-} ArmState;
-
-typedef struct
-{
-	FX_INT32 m_CurState; ///* 当前状态 */ ArmState
-	FX_INT32 m_CmdState; ///* 指令状态 */ DCSSCmdType 0
-	FX_INT32 m_ERRCode;	 ///* 错误码   */
-} StateCtr;
-
-typedef struct
-{
-	FX_INT32 m_OutFrameSerial;		  ///* 输出帧序号   0 -  1000000 取模*/
-	FX_FLOAT m_FB_Joint_Pos[7];		  ///* 反馈关节位置 */							0-6
-	FX_FLOAT m_FB_Joint_Vel[7];		  ///* 反馈关节速度 */							10-16
-	FX_FLOAT m_FB_Joint_PosE[7];	  ///* 反馈关节位置(外编) */						20-26
-	FX_FLOAT m_FB_Joint_Cmd[7];		  ///* 位置关节指令 */							30-36
-	FX_FLOAT m_FB_Joint_CToq[7];	  ///* 反馈关节电流 */							40-46
-	FX_FLOAT m_FB_Joint_SToq[7];	  ///* 反馈关节扭矩 */							50-56
-	FX_FLOAT m_FB_Joint_Them[7];	  ///* 反馈关节温度 */
-	FX_FLOAT m_EST_Joint_Firc[7];	  ///* 关节摩檫力估计值 */						60-66
-	FX_FLOAT m_EST_Joint_Firc_Dot[7]; ///* 关节力扰动估计值微分 */				70-76
-	FX_FLOAT m_EST_Joint_Force[7];	  ///* 关节力扰动估计值 */						80-86
-	FX_FLOAT m_EST_Cart_FN[6];		  ///* 末端扰动估计值 */							90-95
-	FX_CHAR m_TipDI;
-	FX_CHAR m_LowSpdFlag; // 机器人停止运动标志， 可用于判断是否运动到位。
-	FX_CHAR m_pad[1];
-	FX_CHAR m_TrajState; // 规划状态： 0: no traj; 1: receving; 2: recevied; >=3: running traj
-} RT_OUT;
-
-typedef struct
-{
-	FX_INT32 m_RtInSwitch;		///* 实时输入开关 用户实时数据 进行开关设置 0 -  close rt_in ;1- open rt_in*/
-	FX_INT32 m_ImpType;			///* 阻抗类型:1关节阻抗 2 迪卡尔阻抗 3力控*/
-	FX_INT32 m_InFrameSerial;	///* 输入帧序号   0 -  1000000 取模*/
-	FX_INT16 m_FrameMissCnt;	///* 丢帧计数*/
-	FX_INT16 m_MaxFrameMissCnt; ///* 开 启 后 最 大 丢 帧 计 数 */
-
-	FX_INT32 m_SysCyc;			 ///* 0 -  1000000 */
-	FX_INT16 m_SysCycMissCnt;	 ///* 实 时 性  Miss 计 数*/
-	FX_INT16 m_MaxSysCycMissCnt; ///* 开 启 后 最 大 实 时 性Miss 计 数 */
-
-	FX_FLOAT m_ToolKine[6]; ///* 工 具 运 动 学 参 数 */ 1
-	FX_FLOAT m_ToolDyn[10]; ///* 工 具 动 力 学 参 数 */ 1
-
-	FX_FLOAT m_Joint_CMD_Pos[7]; ///* 关 节 位 置 指 令 */         7
-	FX_INT16 m_Joint_Vel_Ratio;	 ///* 关 节 速 度 限 制 百分比*/        2
-	FX_INT16 m_Joint_Acc_Ratio;	 ///* 关 节 加 速 度 限 制  百分比*/    2
-
-	FX_FLOAT m_Joint_K[7]; ///* 关节阻抗刚度K指令*///3
-	FX_FLOAT m_Joint_D[7]; ///* 关节阻抗阻尼D指令*///3
-
-	FX_INT32 m_DragSpType;	  ///* 拖动类型*///5
-	FX_FLOAT m_DragSpPara[6]; ///* 拖动参数类型*///5
-
-	FX_INT32 m_Cart_KD_Type; ///* 坐标阻抗类型*/
-	FX_FLOAT m_Cart_K[6];	 ///* 坐标阻抗刚度K指令*///4
-	FX_FLOAT m_Cart_D[6];	 ///* 坐标阻抗阻尼D指令*///4
-	FX_FLOAT m_Cart_KN;		 /// 4
-	FX_FLOAT m_Cart_DN;		 /// 4
-
-	FX_INT32 m_Force_FB_Type;  ///* 力控反馈源类型*/
-	FX_INT32 m_Force_Type;	   ///* 力控类型*///6
-	FX_FLOAT m_Force_Dir[6];   ///* 力控方向6维空间方向*///6
-	FX_FLOAT m_Force_PIDUL[7]; ///* 力控pid*///6
-	FX_FLOAT m_Force_AdjLmt;   ///* 允许调节最大范围*///6
-
-	FX_FLOAT m_Force_Cmd; ///* 力控指令*///8
-
-	FX_UCHAR m_SET_Tags[16];
-	FX_UCHAR m_Update_Tags[16];
-
-	FX_UCHAR m_PvtID;
-	FX_UCHAR m_PvtID_Update;
-	FX_UCHAR m_Pvt_RunID;	 // 0: no pvt file; 1~249: user ; 250: TOOL_CALIB.txt; 251: LEFT_ARM_CALIB.txt; 252: RIGHT_ARM_CALIB.txt
-	FX_UCHAR m_Pvt_RunState; // 0: idle; 1: loading ; 2: running; 3: error
-
-} RT_IN;
-
-typedef struct
-{
-	StateCtr m_State[2];
-	RT_IN m_In[2];
-	RT_OUT m_Out[2];
-
-	FX_CHAR m_ParaName[30];	  // section_name.param_name
-	FX_UCHAR m_ParaType;	  // 0: FX_INT32; 1: FX_DOUBLE; 2: FX_STRING
-	FX_UCHAR m_ParaIns;		  // DCSSCfgOperationType
-	FX_INT32 m_ParaValueI;	  // FX_INT32 value
-	FX_FLOAT m_ParaValueF;	  // FX_FLOAT value
-	FX_INT16 m_ParaCmdSerial; // from PC
-	FX_INT16 m_ParaRetSerial; // working: 0; finish: cmd serial; error cmd_serial + 100
-} DCSS;
-
-typedef struct
-{
-	FX_INT32 m_CH;
-	FX_INT32 m_SUB_CH;
-	FX_INT32 m_Serial;
-	FX_INT32 m_Size;
-	FX_UCHAR m_Data[256];
-} DDSS;
-
-typedef enum
-{
-	DCSS_CMD_ARM0_TRANS_STATE = 101,
-	DCSS_CMD_ARM0_SET_TOOL = 102,
-	DCSS_CMD_ARM0_SET_JOINT_VA = 103,
-	DCSS_CMD_ARM0_SET_JOINT_KD = 104,
-	DCSS_CMD_ARM0_SET_CART_KD = 105,
-	DCSS_CMD_ARM0_SET_ZERO_SP = 106,
-	DCSS_CMD_ARM0_SET_FORCE_PIDUL = 107,
-	DCSS_CMD_ARM0_SET_JOINT_CMD = 108,
-	DCSS_CMD_ARM0_SET_FORCE_CMD = 109,
-	DCSS_CMD_ARM0_SET_PVT_CMD = 110,
-	DCSS_CMD_ARM0_SET_IMP_TYPE = 111,
-	DCSS_CMD_ARM0_INIT_TRAJ = 112,
-	DCSS_CMD_ARM0_SET_TRAJ = 113,
-	DCSS_CMD_ARM0_RUN_TRAJ = 114,
-	DCSS_CMD_ARM0_STOP_TRAJ = 115,
-
-	DCSS_CMD_CFG_OPERATION = 150,
-
-	DCSS_CMD_ARM1_TRANS_STATE = 201,
-	DCSS_CMD_ARM1_SET_TOOL = 202,
-	DCSS_CMD_ARM1_SET_JOINT_VA = 203,
-	DCSS_CMD_ARM1_SET_JOINT_KD = 204,
-	DCSS_CMD_ARM1_SET_CART_KD = 205,
-	DCSS_CMD_ARM1_SET_ZERO_SP = 206,
-	DCSS_CMD_ARM1_SET_FORCE_PIDUL = 207,
-	DCSS_CMD_ARM1_SET_JOINT_CMD = 208,
-	DCSS_CMD_ARM1_SET_FORCE_CMD = 209,
-	DCSS_CMD_ARM1_SET_PVT_CMD = 210,
-	DCSS_CMD_ARM1_SET_IMP_TYPE = 211,
-	DCSS_CMD_ARM1_INIT_TRAJ = 212,
-	DCSS_CMD_ARM1_SET_TRAJ = 213,
-	DCSS_CMD_ARM1_RUN_TRAJ = 214,
-	DCSS_CMD_ARM1_STOP_TRAJ = 215,
-
-} DCSSCmdType;
-
-typedef enum
-{
-	DCSS_CFG_OP_SET_INT32 = 101,
-	DCSS_CFG_OP_SET_DOUBLE = 102,
-	DCSS_CFG_OP_GET_INT32 = 103,
-	DCSS_CFG_OP_GET_DOUBLE = 104,
-	DCSS_CFG_OP_SAVE = 105,
-} DCSSCfgOperationType;
+#include "FxRtCSDef.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -193,10 +10,13 @@ extern "C"
 #endif
 
 	//////// API之间SLEEP至少1毫秒. 个别API如清错建议至少200毫秒,保存文件建议至少1秒 ////////
-
+	// 检查调用方字节大小是否与SDK定义(FxType.h)一致、#pragma pack(4)对齐是否生效，并检测大小端
+	// 返回值: 0=全部通过; 负数=不一致(错误码按位或); 1=小端(little-endian); 2=大端(big-endian)
+	// pByteOrder: 若非NULL，写入字节序结果 0=小端 1=大端
+	int CheckSDKTypeCompat(int *pByteOrder);
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// 连接机器人
-	bool OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4);
+	bool OnLinkTo(unsigned char ip1, unsigned char ip2, unsigned char ip3, unsigned char ip4);
 	// 释放机器人:只要有连接一定要释放,以便别的程序或者用户控制机器人
 	bool OnRelease();
 	//////////////////////////////////////////////////////////////////////
@@ -240,9 +60,6 @@ extern "C"
 	long OnGetFloatPara(char paraName[30], double *retValue);
 	long OnSavePara();
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	// 自动修正传感器偏移,测试中
-	long OnAutoRectifySensor();
-	////////////////////////////////////////////////////////////////////////////////////////////////
 	// 保存数据,该接口后要睡久一点,留够保存数据文件的时间,以防保存出错
 	bool OnSaveGatherData(char *path);
 	bool OnSaveGatherDataCSV(char *path);
@@ -283,15 +100,18 @@ extern "C"
 	bool OnSetCartKD_A(double K[7], double D[7], int type);
 	// 设置右臂笛卡尔阻抗的刚度和阻尼参数，以及阻抗类型（ type=2）
 	bool OnSetCartKD_B(double K[7], double D[7], int type);
-	// 3.2 设置末端笛卡尔方向的旋转
-	// 自定义设置左臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	// 设置左臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
+	// 3.2 设置指定手臂的末端笛卡尔方向的旋转
+	// 设置fcType=1，为自定义笛卡尔旋转方向，CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
+	// 设置fcType=2，为系统自动计算末端笛卡尔旋转， CartCtrlPara全填0
+	// 设置fcType=3，与末端力控接口OnSetForceCtrPara_A/OnSetForceCtrPara_B一起使用， CartCtrlPara全填0
+	// 设置左臂末端笛卡尔旋转
 	bool OnSetEefRot_A(int fcType, double CartCtrlPara[7]);
-	// 自定义设置右臂臂末端旋转方向fcType=1。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
-	// 设置右臂fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
+	// 设置右臂末端笛卡尔旋转
 	bool OnSetEefRot_B(int fcType, double CartCtrlPara[7]);
 	// 4 如果使用力控模式,在扭矩模式力控模式下,即 OnSetTargetState_A(3) && OnSetImpType_A(3) 以下两个指令连用
 	// 4.1 设置指定手臂的力控参数
+	// 设置fcType=0，基于基座的力控。
+	// 设置fcType=3，末端阻抗下力控，先使用OnSetEefRot_A/OnSetEefRot_B
 	// 设置左臂力控参数
 	bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
 	// 设置右臂力控参数
@@ -364,6 +184,21 @@ extern "C"
 	long OnGetChDataB(unsigned char data_ptr[256], long *ret_ch);
 	bool OnSetChDataB(unsigned char data_ptr[256], long size_int, long set_ch);
 
+	// 设置PD控制速度前馈 轨迹发送周期
+	// arm:"A" "B" ； step： 轨迹发送周期（单位： ms ），小于1 则不添加速度前馈
+	bool FX_OnSetVelEstStep(char arm, long step);
+
+	// 设置指定手臂的扭矩控制指令
+	// 机械臂末端以给定的力和扭矩运动到给定的位置距离和姿态距离。可实时触发调整力的方向和大小。
+	// arm:"A" "B" ；
+	// FTCmds ：见下FxRtCSDef.h下FTCmd结构体
+	bool FTArmControl(char arm, FTCmd FTCmds);
+
+	// 设置获取用户自定义数据接口
+	bool OnSetUserSpcfData_A(long data_category);
+	bool OnSetUserSpcfData_B(long data_category);
+	bool OnSetUserSpcfData(long data_category);
+
 	/////////////////////////////////////简明式接口Concise SDK API//////////////////////////////////////////////
 	// 简明式接口，摒弃了老接口需要在OnClearSet() 和 OnSetSend()之间使用，且左右臂要的单独调取用，且需要查询伺服是否有错，清错后使用的逻辑。
 	// 简明式接口自行在内部做错误状态检查。
@@ -401,16 +236,16 @@ extern "C"
 	//  bool OnGetBuf(DCSS * ret);
 
 	// 连接机器人,log_switch（日志默认为关）： 0 关; 1 开。
-	bool Connect(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4, int log_switch = 0);
+	bool Connect(unsigned char ip1, unsigned char ip2, unsigned char ip3, unsigned char ip4, int log_switch = 0);
 
 	// 机器人日志开关, signal: 0 关; 1 开
 	void LogSwitch(int signal);
 
 	// 指定手臂软急停, arm: "A" "B" "AB" 三种字符是许可值
-	void EStop(const FX_CHAR *arm);
+	void EStop(const char *arm);
 
 	// 指定关节伺服软复位, arm: "A" "B"  两种字符是许可值; axis:0~6
-	void ServoReset(FX_CHAR arm, int axis);
+	void ServoReset(char arm, int axis);
 
 	// 检查手臂错误并清错
 	bool CheckArmError();
@@ -422,59 +257,59 @@ extern "C"
 
 	// 设置指定手臂的工具参数:运动学和动力学参数,运动学参数使正解到TCP, 动力学使扭矩模式可以正常使用
 	// arm:"A" "B"  两种字符是许可值; kinePara:工具相对于末端法兰的位置的偏移（毫米）和姿态的旋转（角度，XYZ顺序）；dynPara：工具动力学参数，用提供的上位机软件可识别
-	bool SetTool(FX_CHAR arm, double kinePara[6], double dynPara[10]);
+	bool SetTool(char arm, double kinePara[6], double dynPara[10]);
 
 	// 设置指定手臂的速度和加速度和位置模式,注意PVT和拖动不受该速度限制。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100
-	bool SetJointMode(FX_CHAR arm, int velRatio, int AccRatio);
+	bool SetJointMode(char arm, int velRatio, int AccRatio);
 
 	// 设置指定手臂的速度和加速度和关节阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
-	bool SetImpJointMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7]);
+	bool SetImpJointMode(char arm, int velRatio, int AccRatio, double K[7], double D[7]);
 
 	// 设置指定手臂的速度和加速度和笛卡尔阻抗模式。arm:"A" "B"  两种字符是许可值; velRatio:0~100; AccRatio:0~100; K:非负值； D：0~1
 	// 如果不定义末端笛卡尔的旋转：RotType=0；double CartCtrlPara[7]={0}
 	// 设置末端笛卡尔方向的旋转：
 	// RotType=1，为自定义末端旋转方向； 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0；
 	// RotType=2，为系统自动计算末端笛卡尔旋转； double CartCtrlPara[7]={0}
-	bool SetImpCartMode(FX_CHAR arm, int velRatio, int AccRatio, double K[7], double D[7], int RotType, double CartCtrlPara[7]);
+	bool SetImpCartMode(char arm, int velRatio, int AccRatio, double K[7], double D[7], int RotType, double CartCtrlPara[7]);
 
 	// 设置指定手臂的关节空间位置指令（位置模式扭矩模式下的关节指令）。  arm:"A" "B"  两种字符是许可值； joint：七个关节的目标角度(单位：度）
-	bool SetJointPostionCmd(FX_CHAR arm, double joint[7]);
+	bool SetJointPostionCmd(char arm, double joint[7]);
 
 	// 设置指定手臂的力控参数和力阻抗模式。arm:"A" "B"  两种字符是许可值; fxDir：任意定义方向； fcAdjLmt：力的调节范围，单位毫米
-	bool SetImpForceMode(FX_CHAR arm, double fxDir[6], double fcAdjLmt);
+	bool SetImpForceMode(char arm, double fxDir[6], double fcAdjLmt);
 	// 设置指定手臂的力值：arm:"A" "B"  两种字符是许可值; force: 力，单位：牛
-	bool SetForceCmd(FX_CHAR arm, double force);
+	bool SetForceCmd(char arm, double force);
 
 	// 以规划方式运动到目标点（位置模式下，规划执行频率50HZ）
 	// 关节空间规划初始化，只需初始化一次
 	bool PlnInit(char *path);
 	// 关节空间下从当前点规划方式运行到目标点
-	bool RunPlnJoint(FX_CHAR arm, double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
+	bool RunPlnJoint(char arm, double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio);
 	// 笛卡尔空间下从当前点规划方式运行到目标点，规划点位pset由KinematicsSDK计算接口FX_Robot_PLN_MOVLA计算得出。
-	bool RunPlnCart(FX_CHAR arm, void *pset);
+	bool RunPlnCart(char arm, void *pset);
 	// 中断规划运行，笛卡尔空间和关节空间都适用
-	bool StopPln(FX_CHAR arm);
+	bool StopPln(char arm);
 
 	// 上传本地PVT轨迹文件存为指定ID, arm:"A" "B"  两种字符是许可值; local_file:相对或绝对路径； serial:0~99
-	bool SendPVT(FX_CHAR arm, char *local_file, long serial);
+	bool SendPVT(char arm, char *local_file, long serial);
 	// 设置指定手臂的PVT号并立即运行该轨迹, arm:"A" "B"  两种字符是许可值； id：0~99(SendPVT上传的pvt文件的serial).特别注意运行PVT，需要将机器人位置调到PVT规划轨迹的起点
-	bool RunPVT(FX_CHAR arm, int id);
+	bool RunPVT(char arm, int id);
 
 	// 拖动，每种拖动使用完毕需要退出拖动再切换为别的拖动模式，否则拖动效果是叠加混乱的哦。
 	// 设置指定手臂为关节拖动。 arm:"A" "B"  两种字符是许可值
-	bool SetJointDrag(FX_CHAR arm);
+	bool SetJointDrag(char arm);
 	// 设置指定手臂为笛卡尔拖动。 arm:"A" "B"  两种字符是许可值; type: "X" "Y" "Z" "R" 四种字符是许可值（X/Y/Z/旋转， 四个方向选一）;
-	bool SetCartDrag(FX_CHAR arm, FX_CHAR type);
+	bool SetCartDrag(char arm, char type);
 	// 设置指定手臂退出拖动。arm:"A" "B"  两种字符是许可值
-	bool ExitDrag(FX_CHAR arm);
+	bool ExitDrag(char arm);
 
 	// 手臂末端安装工具的通讯
 	// 清缓存数据。arm:"A" "B"  两种字符是许可值
-	bool ClearChData(FX_CHAR arm);
+	bool ClearChData(char arm);
 	// 获取指定手臂指定通道的数据. arm:"A" "B" 两种字符是许可值; ret_ch==1: CAN/CANFD  ret_ch==2: COM1  ret_ch==3: COM2
-	long GetChData(FX_CHAR arm, unsigned char data_ptr[256], long *ret_ch);
+	long GetChData(char arm, unsigned char data_ptr[256], long *ret_ch);
 	// 给指定手臂指定通道发送数据. arm:"A" "B" 两种字符是许可值; ret_ch==1: CAN/CANFD  ret_ch==2: COM1  ret_ch==3: COM2
-	long SetChData(FX_CHAR arm, unsigned char data_ptr[256], long size_int, long set_ch);
+	long SetChData(char arm, unsigned char data_ptr[256], long size_int, long set_ch);
 
 	// 采集数据 停止采集
 	// 设置保存参数并开始采集数据
@@ -485,7 +320,7 @@ extern "C"
 
 	// 下使能/复位
 	// 设置指定手臂下使能/复位。arm:"A" "B"  两种字符是许可值
-	bool Disable(FX_CHAR arm);
+	bool Disable(char arm);
 
 #ifdef __cplusplus
 }

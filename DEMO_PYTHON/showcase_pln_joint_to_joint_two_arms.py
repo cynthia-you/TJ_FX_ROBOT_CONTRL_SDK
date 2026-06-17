@@ -99,7 +99,7 @@ while i<1000:
     if check_joints_accuracy_with_tolerance(data['outputs'][0]['fb_joint_pos'], start_joints_A) and check_joints_accuracy_with_tolerance(data['outputs'][1]['fb_joint_pos'], start_joints_B):
         break
 
-_cfg_files = os.path.join(current_path, 'ccs_m6_40.MvKDCfg')
+_cfg_files=os.path.join(parent_dir,'CommonConfig/ccs_m6_40.MvKDCfg')
 if not os.path.exists(_cfg_files):
     print("Failed!", f"no {_cfg_files} files found.")
     exit(-1)

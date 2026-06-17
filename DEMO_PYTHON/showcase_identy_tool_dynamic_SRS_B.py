@@ -146,26 +146,26 @@ def run_online():
 
     '''step1 采集右臂带载数据'''
     # collect_identy_data(robot_id='B',
-    #                     pvt_file="DEMO_PYTHON/LoadData_srs_right/LoadData/IdenTraj/LoadIdenTraj_MarvinSRS_Right.fmv",
+    #                     pvt_file=os.path.join(parent_dir,"CommonConfig/LoadData_srs_right/LoadData/IdenTraj/LoadIdenTraj_MarvinSRS_Right.fmv"),
     #                     pvt_id=3,
-    #                     save_path='DEMO_PYTHON/LoadData_srs_right/LoadData/LoadData.csv')
+    #                     save_path=os.path.join(parent_dir,"CommonConfig/LoadData_srs_right/LoadData/LoadData.csv"))
 
     '''step2 采集右臂空载数据'''
     # collect_identy_data(robot_id='B',
-    #                     pvt_file="DEMO_PYTHON/LoadData_srs_right/LoadData/IdenTraj/LoadIdenTraj_MarvinSRS_Right.fmv",
+    #                     pvt_file=os.path.join(parent_dir,"CommonConfig/LoadData_srs_right/LoadData/IdenTraj/LoadIdenTraj_MarvinSRS_Right.fmv"),
     #                     pvt_id=3,
-    #                     save_path='DEMO_PYTHON/LoadData_srs_right/LoadData/NoLoadData.csv')
+    #                     save_path=os.path.join(parent_dir,"CommonConfig/LoadData_srs_right/LoadData/NoLoadData.csv"))
 
     '''step3 算法辨识'''
     # # kk = Marvin_Kine()
-    # # tool_dynamic_parameters = kk.identify_tool_dyn(robot_type=2, ipath='DEMO_PYTHON/LoadData_srs_right/LoadData')
+    # # tool_dynamic_parameters = kk.identify_tool_dyn(robot_type=2, ipath=os.path.join(parent_dir,"CommonConfig/LoadData_srs_right/LoadData"))
     # # print(tool_dynamic_parameters)
 
     # robot.release_robot()
 
 def run_offline():
     kk = Marvin_Kine()
-    tool_dynamic_parameters = kk.identify_tool_dyn(robot_type=2, ipath='DEMO_PYTHON/LoadData_srs_right/LoadData')
+    tool_dynamic_parameters = kk.identify_tool_dyn(robot_type=2, ipath=os.path.join(parent_dir,"CommonConfig/LoadData_srs_right/LoadData"))
     print(tool_dynamic_parameters)
 
 
@@ -186,7 +186,7 @@ if __name__=="__main__":
 
     '''如果选择在线采集数据并辨识
     一定注意函数内部的提示,要三次流程分别反注释运行
-    
+
     '''
     # run_online()
 

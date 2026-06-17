@@ -116,38 +116,10 @@
     g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj.exe -L. -lKine -lMarvinSDK
     offline_movl_keepj.exe 
 
-# 四. 计算showcases
 
-## 1. 计算SDK 功能模块完整演示
-            showcase_kinematics_all_functions.cpp
-
-## 2. 计算逆解失败总结
-            showcase_ik_failed_conclusion.cpp
-
-## 3. 两条手臂同时计算
-            showcase_kine_two_arms.cpp
-
-## 5. 逆解参考基准
-            showcase_ik_nsp_two_arms.cpp
-            
-## 6. 演示左臂离线和在线规划功能接口：
-            showcase_online_and_offline_pln_all_function.cpp
-
-
-## 7. 左臂关节阻抗50HZ执行离线直线规划文件：
-            showcase_offline_movl_execution.cpp
-
-## 8.左臂关节阻抗50HZ执行在线直线规划点：
-            showcase_online_movla_execution.cpp
-
-## 9.左臂关节阻抗50HZ执行约束构型的离线直线规划文件：
-            showcase_offline_movl_keepj_execution.cpp
-
-## 10. 左臂关节阻抗50HZ执行约束构型的在线直线规划点位：
-            showcase_online_movl_keepja_execution.cpp
-
-
-# 五. 控制showcases
+# 四. 控制showcases
+## 0. 检查SDK类型兼容性
+            showcase_check_sdk_type_compat.cpp
 
 ## 1. 强制抱闸和强制松闸案例
             showcase_apply_brake_release_brake.cpp
@@ -205,6 +177,41 @@
 
 ## 19. 工具笛卡尔阻抗控制案列
             showcase_torque_EefCart_impedance.cpp
+
+## 20. 机械臂末端以给定的力和扭矩运动到给定的位置距离和姿态距离,可实时触发调整力的方向和大小。
+            showcase_Force_field_Control.cpp
     
 # 六、 控制SDK简明式接口案例
             showcase_new_control_sdk_usage.cpp
+
+
+# 五. 计算showcases
+
+## 1. 计算SDK 功能模块完整演示
+            showcase_kinematics_all_functions.cpp
+
+## 2. 计算逆解失败总结
+            showcase_ik_failed_conclusion.cpp
+
+## 3. 两条手臂同时计算
+            showcase_kine_two_arms.cpp
+
+## 5. 逆解参考基准
+            showcase_ik_nsp_two_arms.cpp
+            
+## 6. 演示左臂离线和在线规划功能接口：
+            showcase_online_and_offline_pln_all_function.cpp
+
+
+## 7. 左臂关节阻抗50HZ执行离线直线规划文件：
+            showcase_offline_movl_execution.cpp
+
+## 8.左臂关节阻抗50HZ执行在线直线规划点：
+            showcase_online_movla_execution.cpp
+
+## 9.左臂关节阻抗50HZ执行约束构型的离线直线规划文件：
+            showcase_offline_movl_keepj_execution.cpp
+
+## 10. 左臂关节阻抗50HZ执行约束构型的在线直线规划点位：
+            showcase_online_movl_keepja_execution.cpp
+

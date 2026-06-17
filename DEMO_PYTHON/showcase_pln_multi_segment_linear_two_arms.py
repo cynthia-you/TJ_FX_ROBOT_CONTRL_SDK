@@ -111,8 +111,8 @@ kk2 = Marvin_Kine()
 kk1.log_switch(0)
 kk2.log_switch(0)
 
-ini_result1 = kk1.load_config(arm_type=0, config_path=os.path.join(current_path, 'ccs_m6_40.MvKDCfg'))
-ini_result2 = kk2.load_config(arm_type=1, config_path=os.path.join(current_path, 'ccs_m6_40.MvKDCfg'))
+ini_result1 = kk1.load_config(arm_type=0, config_path=os.path.join(parent_dir,'CommonConfig/ccs_m6_40.MvKDCfg'))
+ini_result2 = kk2.load_config(arm_type=1, config_path=os.path.join(parent_dir,'CommonConfig/ccs_m6_40.MvKDCfg'))
 
 initial_kine_tag1 = kk1.initial_kine(
     robot_type=ini_result1['TYPE'][0],

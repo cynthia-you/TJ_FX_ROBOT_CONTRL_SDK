@@ -21,7 +21,7 @@ import logging
     查验连接是否成功,失败程序直接退出
     开启日志以便检查
     确认控制器是否有保存工具信息，如果有：加载保存的数据并生效； 如果无：初始化一个工具文本，并更新工具参数和设置生效
-    更新工具和设置生效  
+    更新工具和设置生效
     任务完成,下使能,释放内存使别的程序或者用户可以连接机器人
 '''#################################################################
 
@@ -31,7 +31,7 @@ logger = logging.getLogger('debug_printer')
 logger.setLevel(logging.INFO)# 一键关闭所有调试打印
 logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
 
-kine_cfg_file='ccs_m6_40.MvKDCfg'
+kine_cfg_file=os.path.join(parent_dir,'CommonConfig/ccs_m6_40.MvKDCfg')
 
 '''实列化计算'''
 kk1=Marvin_Kine() # LEFT ARM
@@ -114,8 +114,8 @@ if tool_result == 0:
     robot.clear_set()
     robot.set_tool(arm='A', dynamicParams=tool_left_dynamic, kineParams=tool_left_kinematics)
     robot.send_cmd()
-    time.sleep(0.5) 
-    
+    time.sleep(0.5)
+
     '''设置或者修改右臂的动力学信息和运动学信息'''
     # tool_right_dynamic工具动力学信息,长度为10  m,mcp_x,mcp_y,mcp_z,ixx,ixy,ixz,iyy,iyz,izz
     # m， 质量 单位千克

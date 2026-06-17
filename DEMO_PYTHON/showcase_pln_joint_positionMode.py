@@ -120,7 +120,7 @@ time.sleep(3)
 
 
 '''初始化规划器'''
-ret=robot.pln_init(config_path='ccs_m6_40.MvKDCfg')
+ret=robot.pln_init(config_path=os.path.join(parent_dir,'CommonConfig/ccs_m6_40.MvKDCfg'))
 if not ret:
     logger.info('load config failed')
 else:

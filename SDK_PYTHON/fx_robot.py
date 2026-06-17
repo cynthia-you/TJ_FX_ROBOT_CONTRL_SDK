@@ -412,6 +412,26 @@ class Marvin_Robot:
         '''
         return self.robot.OnGetSDKVersion()
 
+    def check_sdk_type_compat(self):
+        '''检查调用方字节大小是否与SDK定义(FxType.h)一致、#pragma pack(4)对齐是否生效，并检测大小端
+        :return:
+            tuple: (ret, byte_order)
+                ret: 0=全部通过; 负数=不一致(错误码按位或); 1=小端(little-endian); 2=大端(big-endian)
+                byte_order: 0=小端 1=大端
+        eg:
+            ret, byte_order = robot.check_sdk_type_compat()
+            if ret < 0:
+                print(f"SDK type compatibility check failed, error mask = 0x{-ret:x}")
+            else:
+                endian = "little-endian" if byte_order == 0 else "big-endian"
+                print(f"All checks passed, byte order: {endian}")
+        '''
+        byte_order = ctypes.c_int(0)
+        self.robot.CheckSDKTypeCompat.restype = ctypes.c_int
+        self.robot.CheckSDKTypeCompat.argtypes = [ctypes.POINTER(ctypes.c_int)]
+        ret = self.robot.CheckSDKTypeCompat(ctypes.byref(byte_order))
+        return ret, byte_order.value
+
     def update_SDK(self, sdk_path: str):
         '''更新系统SDK版本
         :param sdk_path: 本机存放SDK的绝对路径的SDK文件更新到控制柜上

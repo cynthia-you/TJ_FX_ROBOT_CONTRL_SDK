@@ -3,7 +3,7 @@
 # 本文档包含:一、SDK简要说明，二、编译方法，三、SDK更新，四、控制器版本更新，五、APP更新，六、使用注意，七、机器人报错及处理措施
 
 # ATTENTION
-    1.  请先熟练使用MARVIN_APP或MarvinPlatform软件。操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
+    1.  请先熟练使用MarvinPlatform软件。操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
     2.  DEMO_C++/ 和 DEMO_PYTHON/ 下为接口使用DEMO。每个demo顶部有该DEMO的案例说明和使用逻辑，请您一定先阅读，根据现场情况修改后运行。
         这些demo的使用逻辑和使用参数为研发测试使用开发的，仅供参考，并非实际生产代码。
             比如:
@@ -24,8 +24,6 @@
     特别说明：
             1.为了您更流畅操控我们的机器人，请您务必先查阅文档和案列，
             2.使用操作上位机软件后再根据您的控制需求开发业务和生产脚本。
-[上位机软件MarvinPlatform](./MarvinPlatform_EN/天机Marvin系列MarvinPlatform软件使用说明2601.pptx)
-
 
      机器人控制的主逻辑为:
         UDP连接机器人,通过接收数的更新据确认为有效连接
@@ -90,14 +88,14 @@
 
 ## 二、编译方法
 
-## 注：最新contrlSDK 和 kinematicsSDK 代码兼容windows 和linux平台。
+## 注：最新contrlSDK100343/contrlSDK  和 kinematicsSDK 代码兼容windows 和linux平台。
 
 ### 2.1 编译
     2.1.1 编译so动态库:
     linux设备编译:
-        控制SDK(contrlSDK)，以下方法均可编译: 
+        控制SDK(contrlSDK100343)，以下方法均可编译: 
 			1. g++ *.cpp -Wall -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
-			2./contrlSDK/makefile 生成libMarvinSDK.so
+			2./contrlSDK100343/makefile 生成libMarvinSDK.so
         运动学SDK(kinematicsSDK)，以下方法均可编译: 
 			1. g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
 			2./kinematicsSDK/makefile 生成libKine.so
@@ -105,31 +103,32 @@
 
     2.1.2 编译c++调用的dll动态库:
     1)windows下使用MinGW编译dll动态库:
-			控制SDK(contrlSDK): g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
+			控制SDK(contrlSDK100343): g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
             运动学SDK(kinematicsSDK): g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.dll
     编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
 
 			
 	2.1.3 编译python调用的dll动态库
     1)linux下编译dll动态库:
-        控制SDK(contrlSDK):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
+        控制SDK(contrlSDK100343):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
         运动学SDK(kinematicsSDK): g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.dll 
 
 	2）windows下使用MinGW编译dll动态库：
-			控制SDK（contrlSDK）：g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+			控制SDK（contrlSDK100343）：g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
 			运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
     编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
 
 ### 2.2 自动化编译动态链库
-	1)linux下可使用marvinSDK_ubuntu.sh 自动编译替换.so
+    以contrlSDK100343和运动学库为例：
+	1）linux下可使用marvinSDK_ubuntu_100343.sh 自动编译替换.so
 			# 赋予脚本执行权限
-			chmod +x marvinSDK_ubuntu.sh
-
+            chmod +xmarvinSDK_ubuntu_100343.sh
 			# 运行自动化编译脚本
-			./marvinSDK_ubuntu.sh
-	2）windows下可使用marvinSDK_windows.bat 自动编译替换.dll
+			./marvinSDK_ubuntu_100343.sh
+
+	2）windows下可使用marvinSDK_windows_100343.bat 自动编译替换.dll
 			# 直接运行批处理脚本
-			./marvinSDK_windows.bat
+			./marvinSDK_windows_100343.bat
         
 ### 2.3 使用案列
     LINUX:
@@ -146,10 +145,10 @@
 
 ### 2.4 不使用动态库，源码调用
 
-    使用contrlSDK为例, 假设调用代码文件main.cpp在和 contrlSDK 同级目录文件夹workspace下， 
+    使用contrlSDK100343为例, 假设调用代码文件main.cpp在和 contrlSDK100343 同级目录文件夹workspace下， 
     目录树为：
     ...
-    |---contrlSDK
+    |---contrlSDK100343
     |---workspace
         |--- main.cpp
     ...
@@ -157,14 +156,14 @@
 
     则编译指令为：
     1）windows下编译指令：
-    g++ -Wall main.cpp ../contrlSDK/*.cpp -I../contrlSDK -o main.exe -lws2_32 -lwinmm -DCMPL_WIN
+    g++ -Wall main.cpp ../contrlSDK100343/*.cpp -I../contrlSDK100343 -o main.exe -lws2_32 -lwinmm -DCMPL_WIN
 
     2）linux下编译指令：
-    g++ -Wall main.cpp ../contrlSDK/*.cpp -I../contrlSDK -o main -lpthread -lrt -DCMPL_LIN
+    g++ -Wall main.cpp ../contrlSDK100343/*.cpp -I../contrlSDK100343 -o main -lpthread -lrt -DCMPL_LIN
 
     编译完成后，会生成
     ...
-    |---contrlSDK
+    |---contrlSDK100343
     |---workspace
         |--- main.cpp
         |--- main.exe or main
@@ -173,17 +172,17 @@
 
                  
 ## 三、 SDK更新
+## contrlSDK不再维护，持续维护开发100343版本。
 
-### SDK100343版本
-    1 SDK100343版本必须匹配底层控制系统100343及以上版本，不支持控制系统100343以前的版本（如100341）。
-    2 SDK100343版本主要修改了通讯协议，增加校验功能，防止多线程调用接口导致发送指令混乱。
+### contrlSDK100343版本
+    1 contrlSDK100343版本必须匹配底层控制系统100343及以上版本，不支持控制系统100343以前的版本（如100341）。
+    2 contrlSDK100343版本主要修改了通讯协议，增加校验功能，防止多线程调用接口导致发送指令混乱。
     3 本分支原有DEMO以及用户已经存在的脚本无需修改，只需将SDK100342重新编译替换原有动态库即可，编译指令不变。
     4 特别注意控制系统100343版本不向下兼容，只能使用100343版本SDK。
 
 ## 3.1 案例更新
 ### 关节力矩转末端六维力
 [PYTHON案例](DEMO_PYTHON/showcase_jointsTorque2EefTorque.py)
-
 
 ## 3.2 控制SDK
 ### 控制SDK新增简明接口
@@ -304,14 +303,12 @@
 ### 4.2 升级版本和参数都发布在releases下
     https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/releases
 
+
 ## 五、APP更新
-
-### 5.1 添加FXSTAION软件源码
-     https://github.com/cynthia-you/TJ_FX_ROBOT_CONTRL_SDK/blob/%E4%B8%8A%E4%BD%8D%E6%9C%BA%E8%BD%AF%E4%BB%B6MARVIN_APP/FxStation_1217.zip
-	 
-### 5.2 增加浮机参数计算功能
-     MARVIN_APP_1125及以上以及UI-MarvinPlatform
-
+[MarvinPlatform源码](MarvinPlatform_EN/ui_EN.py)
+[MarvinPlatform windows 上位机](MarvinPlatform_EN\MarvinPlatform_win_100343.exe)
+[MarvinPlatform linux 上位机](MarvinPlatform_EN\MarvinPlatform_linux_100343)
+[MarvinPlatform使用说明](MarvinPlatform_EN/天机Marvin系列MarvinPlatform软件使用说明2601.pptx)
 
 
 ## 六、注意事项

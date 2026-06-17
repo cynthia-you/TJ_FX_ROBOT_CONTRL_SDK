@@ -73,6 +73,8 @@
     编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
 
 ## 四、 控制showcases
+### 0. 检查SDK类型兼容性
+        showcase_check_sdk_type_compat.py
 ### 1.双臂关节位置跟随控制演示
         showcase_position.py
 ### 2. 单臂执行PVT轨迹并保存数据的演示

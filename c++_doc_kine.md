@@ -27,22 +27,22 @@
 
 ## 1.2 SDK库文件编译
 
-    使用自动化编译脚本：
-        master分支下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
-        master分支下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+   使用自动化编译脚本：
+        master分支下marvinSDK_windows_100343.bat运行可自动编译C++和python调用的dll文件
+        master分支下marvinSDK_ubuntu_100343.sh运行可自动编译C++和python调用的so文件
 
     手动编译指令 ：   
     编译c++调用的dll动态库:
         1)windows下使用MinGW编译dll动态库:
-                控制SDK(contrlSDK): g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
+                控制SDK(contrlSDK100343): g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
                 运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -O2 -fPIC -shared -o libKine.dll
         编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
     
     编译so动态库:
         linux设备编译:
-            控制SDK(contrlSDK)，以下方法均可编译: 
+            控制SDK(contrlSDK100343)，以下方法均可编译: 
                 1. g++ *.cpp  -Wall -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
-                2./contrlSDK/makefile 生成libMarvinSDK.so
+                2./contrlSDK100343/makefile 生成libMarvinSDK.so
             运动学SDK(kinematicsSDK)，以下方法均可编译: 
                 1. g++ *.cpp  -Wall -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
                 2./kinematicsSDK/makefile 生成libKine.so

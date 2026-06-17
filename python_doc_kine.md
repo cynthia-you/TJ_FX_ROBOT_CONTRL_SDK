@@ -48,21 +48,22 @@
         master下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
 
     
-    手动编译指令：
+    手动编译指令 ：   
+    编译c++调用的dll动态库:
+        windows下使用MinGW编译dll动态库：
+			控制SDK（contrlSDK100343）：g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+			运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+        编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
     
-    windows下使用MinGW编译dll动态库：
-            控制SDK（contrlSDK）：g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
-            运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
-    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
-    
-    linux设备编译:
-    控制SDK(contrlSDK)，以下方法均可编译: 
-        1. g++ *.cpp  -Wall -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
-        2./contrlSDK/makefile 生成libMarvinSDK.so
-    运动学SDK(kinematicsSDK)，以下方法均可编译: 
-        1. g++ *.cpp  -Wall -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
-        2./kinematicsSDK/makefile 生成libKine.so
-    编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
+    编译so动态库:
+        linux设备编译:
+            控制SDK(contrlSDK100343)，以下方法均可编译: 
+                1. g++ *.cpp -Wall -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
+                2./contrlSDK100343/makefile 生成libMarvinSDK.so
+            运动学SDK(kinematicsSDK)，以下方法均可编译: 
+                1. g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
+                2./kinematicsSDK/makefile 生成libKine.so
+	    编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
 
 ## 二、 接口详解 
 

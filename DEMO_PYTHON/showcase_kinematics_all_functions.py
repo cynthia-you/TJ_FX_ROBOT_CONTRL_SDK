@@ -34,7 +34,7 @@ kk.log_switch(0)#0 off, 1 on
     srs机型为srs.MvKDCfg. 多个*.MvKDCfg会解析出错
 一定要确认arm_type是左臂0 还是右臂1
 '''
-ini_result=kk.load_config(arm_type=0,config_path=os.path.join(current_path,'ccs_m6_40.MvKDCfg'))
+ini_result=kk.load_config(arm_type=0,config_path=os.path.join(parent_dir,'CommonConfig/ccs_m6_40.MvKDCfg'))
 print(ini_result)
 print('-'*50)
 
@@ -166,8 +166,6 @@ print('-'*50)
 #ONLINE
 points=kk.movLA(start_xyzabc=pose_6d_1,end_xyzabc=pose_6d_2,ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68],vel=100,acc=100,freq_hz=500)
 print(f"Got {len(points)} planning points")
-if points:
-    print(f"First point: {points[0]}")
 print('-'*50)
 
 '''
@@ -186,8 +184,6 @@ print('-'*50)
 points,pset=kk.movL_KeepJA(start_joints=[-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995],
                        end_joints=[-26.908 ,-91.109, 74.502 ,-88.083, -93.599 ,17.151, -13.602],vel=100,acc=100,freq_hz=500)
 print(f"Got {len(points)} planning points")
-if points:
-    print(f"First point: {points[0]}")
 print('-'*50)
 
 
@@ -228,7 +224,7 @@ print('-'*50)
     ！！！目前仅支持横装方式的辨识！！！
     #检查数据是否有问题！
 '''
-dyn_para = kk.identify_tool_dyn(robot_type=1, ipath=os.path.join(current_path,'LoadData_ccs_right/LoadData/'))
+dyn_para = kk.identify_tool_dyn(robot_type=1, ipath=os.path.join(parent_dir,'CommonConfig/LoadData_ccs_right/LoadData/'))
 if type(dyn_para)==str:
     print('error:',dyn_para)
 else:

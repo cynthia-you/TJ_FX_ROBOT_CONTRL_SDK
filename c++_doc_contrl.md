@@ -74,21 +74,21 @@
 ## 1.3 SDK库文件编译
 
     使用自动化编译脚本：
-        master分支下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
-        master分支下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+        master分支下marvinSDK_windows_100343.bat运行可自动编译C++和python调用的dll文件
+        master分支下marvinSDK_ubuntu_100343.sh运行可自动编译C++和python调用的so文件
 
     手动编译指令 ：   
     编译c++调用的dll动态库:
         1)windows下使用MinGW编译dll动态库:
-                控制SDK(contrlSDK): g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
+                控制SDK(contrlSDK100343): g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
                 运动学SDK(kinematicsSDK): g++ *.cpp *.c -Wall -O2 -fPIC -shared -o libKine.dll
         编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
     
     编译so动态库:
         linux设备编译:
-            控制SDK(contrlSDK)，以下方法均可编译: 
+            控制SDK(contrlSDK100343)，以下方法均可编译: 
                 1. g++ *.cpp  -Wall -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
-                2./contrlSDK/makefile 生成libMarvinSDK.so
+                2./contrlSDK100343/makefile 生成libMarvinSDK.so
             运动学SDK(kinematicsSDK)，以下方法均可编译: 
                 1. g++ *.cpp  -Wall -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
                 2./kinematicsSDK/makefile 生成libKine.so
@@ -98,10 +98,10 @@
 
 ### 1.4 不使用动态库，源码调用
 
-    使用contrlSDK为例, 假设调用代码文件main.cpp在和 contrlSDK 同级目录文件夹workspace下， 
+    使用contrlSDK100343为例, 假设调用代码文件main.cpp在和 contrlSDK 同级目录文件夹workspace下， 
     目录树为：
     ...
-    |---contrlSDK
+    |---contrlSDK100343
     |---workspace
         |--- main.cpp
     ...
@@ -109,14 +109,14 @@
 
     则编译指令为：
     1）windows下编译指令：
-    g++ -Wall main.cpp ../contrlSDK/*.cpp -I../contrlSDK -o main.exe -lws2_32 -lwinmm -DCMPL_WIN
+    g++ -Wall main.cpp ../contrlSDK100343/*.cpp -I../contrlSDK100343 -o main.exe -lws2_32 -lwinmm -DCMPL_WIN
 
     2）linux下编译指令：
-    g++ -Wall main.cpp ../contrlSDK/*.cpp -I../contrlSDK -o main -lpthread -lrt -DCMPL_LIN
+    g++ -Wall main.cpp ../contrlSDK100343/*.cpp -I../contrlSDK100343 -o main -lpthread -lrt -DCMPL_LIN
 
     编译完成后，会生成
     ...
-    |---contrlSDK
+    |---contrlSDK100343
     |---workspace
         |--- main.cpp
         |--- main.exe or main

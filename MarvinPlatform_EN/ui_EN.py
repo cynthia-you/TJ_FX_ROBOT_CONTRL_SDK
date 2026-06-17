@@ -14,6 +14,7 @@ import difflib
 import re
 import json
 from typing import Optional
+
 if not getattr(sys, 'frozen', False):
     root_dir = Path(__file__).parent.parent
     if str(root_dir) not in sys.path:
@@ -5118,16 +5119,10 @@ class App:
         if is_zero0 and is_zero1:
             messagebox.showerror("value error", "start and end in same pose, can not run planning")
             return
-
-        _script_dir = get_app_dir()
-        _cfg_files = glob.glob(os.path.join(_script_dir, 'config', '*.MvKDCfg'))
-        if not _cfg_files:
-            messagebox.showerror("Failed!", f"No .MvKDCfg files found in {os.path.join(_script_dir, 'config')}")
-            return
-        ret = robot.pln_init(config_path=_cfg_files[0])
+        ret = robot.pln_init(config_path=config_path)
         if not ret:
             messagebox.showerror("Failed!",
-                                 f"load calculate config failed: {_cfg_files[0]}")
+                                 f"load calculate config failed: {config_path}")
             return
 
         if not is_zero0 and is_zero1:
@@ -6929,12 +6924,10 @@ def preview_text_file_1():
 
 def preview_text_file():
     """在新窗口中预览文本文件"""
-    file_path = os.path.join(get_app_dir(), "config", "python_doc_contrl.md")
-    # 创建新窗口
+    file_path = os.path.join(get_app_dir(),  "python_doc_contrl.md")
     preview_window = tk.Toplevel(root)
     preview_window.title(f"预览文档: {file_path.split('/')[-1]}")
     preview_window.geometry("600x400")
-    # 创建带滚动条的文本框
     scroll_frame = tk.Frame(preview_window)
     scroll_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
     scrollbar = tk.Scrollbar(scroll_frame)
@@ -7197,12 +7190,12 @@ if __name__ == "__main__":
     '''
     ini sdk
     '''
-    crr_pth = os.getcwd()
-    script_dir = get_app_dir()
-    config_pattern = os.path.join(script_dir, 'config', '*.MvKDCfg')
+    _script_dir = get_app_dir()
+    project_root = os.path.dirname(_script_dir)
+    config_pattern = os.path.join(project_root, "CommonConfig/config", '*.MvKDCfg')
     config_files = glob.glob(config_pattern)
     if not config_files:
-        print(f"ERROR: No .MvKDCfg files found in {os.path.join(script_dir, 'config')}")
+        print(f"ERROR: No .MvKDCfg files found in {os.path.join(project_root, 'CommonConfig/config')}")
         sys.exit(1)
     config_path = config_files[0]
     dcss = DCSS()
