@@ -76,7 +76,7 @@ class Marvin_Kine:
             ctypes.POINTER(ctypes.c_double),  # ZSP_Para (6个double)
             ctypes.c_double,  # Vel
             ctypes.c_double,  # Acc
-            ctypes.c_long  # Freq
+            ctypes.c_int32  # Freq
         ]
         self.kine.FX_Robot_PLN_Set_MOVL_Start.restype = ctypes.c_bool
 
@@ -1110,7 +1110,7 @@ class Marvin_Kine:
         zsp_arr = (ctypes.c_double * 6)(*zsp_para)
         vel_val = ctypes.c_double(vel)
         acc_val = ctypes.c_double(acc)
-        freq_val = ctypes.c_long(freq)
+        freq_val = ctypes.c_int32(freq)
 
         result = self.kine.FX_Robot_PLN_Set_MOVL_Start(
             serial, ref_arr, start_arr, end_arr,
