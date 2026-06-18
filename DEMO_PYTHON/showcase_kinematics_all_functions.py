@@ -224,7 +224,7 @@ print('-'*50)
     ！！！目前仅支持横装方式的辨识！！！
     #检查数据是否有问题！
 '''
-dyn_para = kk.identify_tool_dyn(robot_type=1, ipath=os.path.join(parent_dir,'CommonConfig/LoadData_ccs_right/LoadData/'))
+dyn_para = kk.identify_tool_dyn(robot_type=1, ipath=os.path.join(parent_dir,'CommonConfig/LoadData_ccs/LoadData/'))
 if type(dyn_para)==str:
     print('error:',dyn_para)
 else:
