@@ -1369,6 +1369,8 @@ void CRobot::DoCnt()
 			m_respones_time_tag = 1;
 			m_last_response_timeout_cnt = 0;
 			m_send_response_timeout_cnt = 0;
+
+			m_send_response_cv.notify_one();
 		}
 	}
 }
@@ -3381,10 +3383,10 @@ long CRobot::OnSetSendWaitResponse(long time_out)
 		return -1;
 	}
 
-	while (m_InsRobot->m_send_response_timeout_cnt > 0)
-	{
-		SLEEP(1);
-	}
+	std::unique_lock<std::mutex> lock(m_InsRobot->m_send_response_mutex);
+	m_InsRobot->m_send_response_cv.wait_for(lock, std::chrono::milliseconds(tmp_time_out), [&]
+											{ return m_InsRobot->m_send_response_timeout_cnt == 0; });
+
 	if (m_InsRobot->m_respones_time_tag == 1)
 	{
 		m_InsRobot->m_respones_time_tag = 0;

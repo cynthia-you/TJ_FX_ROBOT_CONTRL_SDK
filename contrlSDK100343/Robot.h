@@ -16,6 +16,8 @@
 #include <cassert>
 #include <math.h>
 #include "PointSet.h"
+#include <mutex>
+#include <condition_variable>
 #define SDK_VERSION 100343007
 
 class CRobot
@@ -113,7 +115,6 @@ public:
 	static bool OnStopPlnJoint_A();
 	static bool OnStopPlnJoint_B();
 
-
 	static bool OnSetSend();
 	static long OnSetSendWaitResponse(long time_out);
 	static bool OnUpdateSystem(char *local_path);
@@ -132,6 +133,10 @@ protected:
 	bool m_send_lock;
 	CRobot();
 	static CRobot *GetIns();
+
+	std::mutex m_send_response_mutex;
+	std::condition_variable m_send_response_cv;
+
 	std::atomic<unsigned char> m_send_response_local_tag;
 	std::atomic<unsigned char> m_send_response_recv_tag;
 	std::atomic<long> m_send_response_timeout_cnt;

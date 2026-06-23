@@ -171,11 +171,11 @@ typedef enum
 
 typedef enum
 {
-	SLEEP_TIME = 20, // sleep time after sendCmd
-	TIME_OUT = 20,	 /// internal time_out, for api:OnSetSendWaitResponse
 	ARM_IMP_JOINT = 1,
 	ARM_IMP_CART = 2,
 	ARM_IMP_FORCE = 3,
+	SLEEP_TIME = 20, // sleep time after sendCmd
+	TIME_OUT = 20,	 /// internal time_out, for api:OnSetSendWaitResponse
 } InterCMD;
 
 typedef enum

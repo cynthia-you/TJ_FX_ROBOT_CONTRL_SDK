@@ -15,6 +15,8 @@
 #include <atomic>
 #include <math.h>
 #include "PointSet.h"
+#include <mutex>
+#include <condition_variable>
 #define SDK_VERSION 1003
 
 class CRobot
@@ -119,6 +121,10 @@ public:
 protected:
 	CRobot();
 	static CRobot *GetIns();
+
+	std::mutex m_send_response_mutex;
+	std::condition_variable m_send_response_cv;
+
 	std::atomic<unsigned char> m_send_response_local_tag;
 	std::atomic<unsigned char> m_send_response_recv_tag;
 	std::atomic<long> m_send_response_timeout_cnt;
