@@ -3,6 +3,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "math.h"
+#include <inttypes.h>
 #include "AxisPln.h"
 #include "LoadIdenPub.h"
 
@@ -52,7 +53,7 @@ FX_BOOL LOADMvCfg(FX_CHAR *path, FX_INT32L TYPE[2], FX_DOUBLE GRV[2][3], FX_DOUB
 
 	for (i = 0; i < 2; i++)
 	{
-		if (fscanf(fp, "%ld,%lf,%lf,%lf,%c", &TYPE[i], &GRV[i][0], &GRV[i][1], &GRV[i][2], &c) != 5)
+		if (fscanf(fp, "%" PRId32 ",%lf,%lf,%lf,%c", &TYPE[i], &GRV[i][0], &GRV[i][1], &GRV[i][2], &c) != 5)
 		{
 			fclose(fp);
 			return FX_FALSE;
@@ -114,7 +115,7 @@ FX_BOOL LOADMvCfg(FX_CHAR *path, FX_INT32L TYPE[2], FX_DOUBLE GRV[2][3], FX_DOUB
 
 	{
 		if (FX_LOG_TAG)
-			printf("TYPE=[%ld %ld]\n", TYPE[0], TYPE[1]);
+			printf("TYPE=[%" PRId32 " %" PRId32 "]\n", TYPE[0], TYPE[1]);
 	}
 	return FX_TRUE;
 }

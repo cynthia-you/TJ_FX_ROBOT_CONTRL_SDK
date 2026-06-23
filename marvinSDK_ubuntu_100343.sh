@@ -5,12 +5,14 @@ echo "start compile & replace so ..."
 
 # 编译 contrlSDK100343
 cd contrlSDK100343
+rm -f libMarvinSDK.so
 make clean 2>/dev/null
 make && chmod 777 libMarvinSDK.so
 cd ..
 
 # 编译 kinematicsSDK
 cd kinematicsSDK
+rm -f libKine.so
 make clean 2>/dev/null
 make && chmod 777 libKine.so
 cd ..
