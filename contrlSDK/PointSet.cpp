@@ -714,11 +714,11 @@ bool CPointSet::OnSave(FILE *fp)
 	{
 		if (strlen(m_SubTag) == 0)
 		{
-			fprintf(fp, "PoinType=%d@%ldT%lld%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
 		}
 		else
 		{
-			fprintf(fp, "PoinType=%d@%ldT%lld%sST%lld%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%sST%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
 		}
 	}
 
@@ -801,11 +801,11 @@ bool CPointSet::OnSave(char *path)
 	{
 		if (strlen(m_SubTag) == 0)
 		{
-			fprintf(fp, "PoinType=%d@%ldT%lld%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
 		}
 		else
 		{
-			fprintf(fp, "PoinType=%d@%ldT%lld%sST%lld%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%sST%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
 		}
 	}
 
@@ -889,11 +889,11 @@ bool CPointSet::OnSaveHL(char *path)
 	{
 		if (strlen(m_SubTag) == 0)
 		{
-			fprintf(fp, "PoinType=%d@%ldT%lld%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, r);
 		}
 		else
 		{
-			fprintf(fp, "PoinType=%d@%ldT%lld%sST%lld%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
+			fprintf(fp, "PoinType=%d@%ldT%zu%sST%zu%s%c", m_PointType, num, strlen(m_Tag), m_Tag, strlen(m_SubTag), m_SubTag, r);
 		}
 	}
 
@@ -1032,7 +1032,7 @@ bool CPointSet::OnGetLine(FILE *fp, char *buf)
 
 	buf[0] = '\0';
 	char c = EOF;
-	fread(&c, 1, 1, fp);
+	(void)fread(&c, 1, 1, fp);
 	long len = 0;
 	while (c != EOF)
 	{
@@ -1054,7 +1054,7 @@ bool CPointSet::OnGetLine(FILE *fp, char *buf)
 			}
 		}
 		c = EOF;
-		fread(&c, 1, 1, fp);
+		(void)fread(&c, 1, 1, fp);
 		if (c == EOF)
 		{
 			if (len != 0)
@@ -1894,7 +1894,7 @@ bool CPointSet::OnLoad(FILE *fp)
 				return false;
 			};
 		}
-		fscanf(fp, "%c", &r);
+				(void)fscanf(fp, "%c", &r);
 		if (r != 0x0a)
 		{
 			return false;
@@ -2086,7 +2086,7 @@ bool CPointSet::OnLoadFast(char *path)
 				return false;
 			}
 		}
-		fscanf(fp, "%c", &r);
+				(void)fscanf(fp, "%c", &r);
 		if (r != 0x0a)
 		{
 			fclose(fp);
@@ -2237,7 +2237,7 @@ bool CPointSet::OnLoad(char *path)
 				return false;
 			}
 		}
-		fscanf(fp, "%c", &r);
+				(void)fscanf(fp, "%c", &r);
 		if (r != 0x0a)
 		{
 			fclose(fp);

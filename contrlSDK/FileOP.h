@@ -158,4 +158,5 @@ protected:
 	
 };
 
+#pragma pack()
 #endif
