@@ -3,7 +3,6 @@
 .vscode/
 *.pyc
 __pycache__/
-*.txt
 kinematicsSDK/*.txt
 DEMO_C++/*.txt
 DEMO_C++/*.csv
