@@ -6550,70 +6550,26 @@ class App:
         self.left_state_2.config(text=f"{self.result['outputs'][0]['low_speed_flag'][0]}")
         self.left_state_3.config(text=f"{self.result['states'][0]['err_code']}")
         arm_error=self.result['states'][0]['err_code']
+        print(f'---arm0:{str(arm_error)}')
         if str(arm_error) in arm_err_code_EN:
-            type = arm_err_code[str(arm_error)]
-            self.left_arm_error.config(text=f"arm error {arm_error} is:"+f"{type}")
+            type = arm_err_code_EN[str(arm_error)]
+            self.left_arm_error.config(text=f"arm error {arm_error}: "+f"{type}")
         else:
             self.left_arm_error.config(text="")
+
         type1 = ''
         self.right_state_main.config(text=f"{self.result['states'][1]['cur_state']}")
         self.right_state_1.config(text=f"{self.result['outputs'][1]['tip_di'][0]}")
         self.right_state_2.config(text=f"{self.result['outputs'][1]['low_speed_flag'][0]}")
         self.right_state_3.config(text=f"{self.result['states'][1]['err_code']}")
         arm_error1 = self.result['states'][1]['err_code']
+        print(f'---arm1:{str(arm_error1)}')
         if str(arm_error1) in arm_err_code_EN:
-            type1 = arm_err_code[str(arm_error1)]
-            self.right_arm_error.config(text=f"arm error {arm_error} is"+f"{type1}")
+            type1 = arm_err_code_EN[str(arm_error1)]
+            self.right_arm_error.config(text=f"arm error {arm_error1} : "+f"{type1}")
         else:
             self.right_arm_error.config(text="")
 
-    # def update_6d(self):
-    #     """更新机械臂数据"""
-    #     key = self.data_keys[self.display_mode]
-    #
-    #     '''left'''
-    #     joint_pos_l = self.result['outputs'][0][key]
-    #     joint_text_l = ""
-    #     for i in range(7):
-    #         joint_text_l += f"{joint_pos_l[i]:.3f}, "
-    #     joint_text_l = joint_text_l.rstrip(", ")
-    #     self.left_joint_text.config(state="normal")
-    #     self.left_joint_text.delete("1.0", tk.END)
-    #     self.left_joint_text.insert("1.0", joint_text_l)
-    #     self.left_joint_text.tag_add("center", "1.0", "end")
-    #     self.left_joint_text.config(state="disabled")
-    #
-    #     '''xyzabc'''
-    #     fk_mat_l = kk1.fk(joints=self.result['outputs'][0]['fb_joint_pos'])
-    #     self.pose_6d_l = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_l)
-    #     cartesian_text_l = f"{self.pose_6d_l[0]:.3f},{self.pose_6d_l[1]:.3f},{self.pose_6d_l[2]:.3f},{self.pose_6d_l[3]:.3f}, {self.pose_6d_l[4]:.3f}, {self.pose_6d_l[5]:.3f}"
-    #     self.left_cartesian_text.config(state="normal")
-    #     self.left_cartesian_text.delete("1.0", tk.END)
-    #     self.left_cartesian_text.insert("1.0", cartesian_text_l)
-    #     self.left_cartesian_text.tag_add("center", "1.0", "end")
-    #     self.left_cartesian_text.config(state="disabled")
-    #
-    #     '''right'''
-    #     joint_pos_r = self.result['outputs'][1][key]
-    #     joint_text_r = ""
-    #     for i in range(7):
-    #         joint_text_r += f"{joint_pos_r[i]:.3f}, "
-    #     joint_text_r = joint_text_r.rstrip(", ")
-    #     self.right_joint_text.config(state="normal")
-    #     self.right_joint_text.delete("1.0", tk.END)
-    #     self.right_joint_text.insert("1.0", joint_text_r)
-    #     self.right_joint_text.tag_add("center", "1.0", "end")
-    #     self.right_joint_text.config(state="disabled")
-    #
-    #     '''xyzabc'''
-    #     fk_mat_r = kk2.fk(joints=self.result['outputs'][1]['fb_joint_pos'])
-    #     self.pose_6d_r = kk1.mat4x4_to_xyzabc(pose_mat=fk_mat_r)
-    #     cartesian_text_r = f"{self.pose_6d_r[0]:.3f},{self.pose_6d_r[1]:.3f},{self.pose_6d_r[2]:.3f},{self.pose_6d_r[3]:.3f}, {self.pose_6d_r[4]:.3f}, {self.pose_6d_r[5]:.3f}"
-    #     self.right_cartesian_text.config(state="normal")
-    #     self.right_cartesian_text.delete("1.0", tk.END)
-    #     self.right_cartesian_text.insert("1.0", cartesian_text_r)
-    #     self.right_cartesian_text.tag_add("center", "1.0", "end")
-    #     self.right_cartesian_text.config(state="disabled")
 
     def update_6d(self):
         """更新机械臂数据"""
