@@ -1,0 +1,56 @@
+windows下的调用，这个是分析画图的↓
+python TEST_SCRIPT/Analyze_PerJoint_AmpSweep_Results.py --run_dir ./results_per_joint_custom_curve_200hz/PerJoint_CustomCurveTable_200Hz_20260623_143147 --velocity_source sdk
+
+
+windows下的调用，这个是指令的轨迹限制了速度加速度的↓
+python .\TEST_SCRIPT\PerJoint_CustomCurveTable_200Hz.py --arm A --no_confirm 
+
+
+windows下的调用，这个是复现的↓
+python .\TEST_SCRIPT\PerJoint_AmpSweep_200Hz.py --arm A --home_mode report --pre_trial_impedance_hold_s 0.2 --no_confirm 
+
+
+
+/***************LINUX***************/
+这个是检查一下自己修改的轨迹 的 速度加速度有没有超限
+python TEST_SCRIPT/PerJoint_CustomCurveTable_200Hz.py \
+  --arm A \
+  --precheck_only
+
+
+
+实时性方面，
+建议真机测试时尽量关掉重负载 GUI/后台任务，用有线网络或独立 AP，并重点看输出里的：
+command_dt_mean_ms
+command_dt_p95_ms
+command_jitter_p95_ms
+negative_sleep_count
+overrun_count
+
+可以尝试↓（不想sudo的话可以把linux rt priority 调0，应该会降低实时性)
+这是跑完整实验
+sudo -E $(which python) TEST_SCRIPT/PerJoint_CustomCurveTable_200Hz.py \
+  --arm A \
+  --no_confirm \
+  --ctrl_hz 200 \
+  --linux_timer_slack_ns 50000 \
+  --cpu_affinity 2 \             （用来绑定CPU的）
+  --linux_rt_priority 20 \       (P.S. 实时权限不好调度的话，可以设0）
+  --spin_threshold_s 0.001      （P.S. CPU 占用太高，把自旋窗口降回默认的0.0005)
+
+这是复现实验↓
+sudo -E $(which python) TEST_SCRIPT/PerJoint_AmpSweep_200Hz.py \
+  --arm A \
+  --home_mode report \
+  --pre_trial_impedance_hold_s 0.2 \
+  --no_confirm \
+  --ctrl_hz 200 \
+  --linux_timer_slack_ns 50000 \
+  --cpu_affinity 2 \
+  --linux_rt_priority 20 \
+  --spin_threshold_s 0.001
+
+分析脚本这样跑↓
+python TEST_SCRIPT/Analyze_PerJoint_AmpSweep_Results.py \
+  --run_dir ./results_per_joint_custom_curve_200hz/PerJoint_CustomCurveTable_200Hz_20260623_143147 \
+  --velocity_source sdk
