@@ -1,0 +1,45 @@
+//  L1   WINDOWS下测试c++调用源码测试控制库，不编译为库 
+ g++ -w main.cpp \
+./L0Control/*.cpp ./FileClient/*.cpp ./L1Robot/*.cpp ./Kinematics/*.cpp \
+./Kinematics/ArmKinematics/*.cpp ./Kinematics/BaseMath/*.cpp ./Kinematics/DynaIdent/*.cpp \
+./Kinematics/KineCommon/*.cpp ./Kinematics/MotionPlanner/*.cpp ./Kinematics/SkyeBodyKinematics/*.cpp \
+-I./Common -I./Kinematics -I./Kinematics/ArmKinematics -I./Kinematics/BaseMath -I./Kinematics/DynaIdent \
+-I./Kinematics/KineCommon -I./Kinematics/MotionPlanner -I./Kinematics/SkyeBodyKinematics -I./FileClient -I./L0Control -I./L1Robot \
+-o main.exe -lws2_32 -lwinmm -DCMPL_WIN -DL1_SDK_EXPORTS
+
+
+// L1   WINDOWS下编译为python 使用的 dll库
+g++ ./L0Control/*.cpp ./FileClient/*.cpp ./L1Robot/*.cpp ./Kinematics/*.cpp \
+./Kinematics/ArmKinematics/*.cpp ./Kinematics/BaseMath/*.cpp ./Kinematics/DynaIdent/*.cpp \
+./Kinematics/KineCommon/*.cpp ./Kinematics/MotionPlanner/*.cpp ./Kinematics/SkyeBodyKinematics/*.cpp \
+-I./Common -I./Kinematics -I./Kinematics/ArmKinematics -I./Kinematics/BaseMath -I./Kinematics/DynaIdent \
+-I./Kinematics/KineCommon -I./Kinematics/MotionPlanner -I./Kinematics/SkyeBodyKinematics -I./FileClient -I./L0Control -I./L1Robot \
+-Wall -O2 -shared -o libGentoSDKPY.dll -DL1_SDK_EXPORTS -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+
+
+// L1   WINDOWS下编译为C/C++使用的dll库
+g++ ./L0Control/*.cpp ./FileClient/*.cpp ./L1Robot/*.cpp ./Kinematics/*.cpp \
+./Kinematics/ArmKinematics/*.cpp ./Kinematics/BaseMath/*.cpp ./Kinematics/DynaIdent/*.cpp \
+./Kinematics/KineCommon/*.cpp ./Kinematics/MotionPlanner/*.cpp ./Kinematics/SkyeBodyKinematics/*.cpp \
+-I./Common -I./Kinematics -I./Kinematics/ArmKinematics -I./Kinematics/BaseMath -I./Kinematics/DynaIdent \
+-I./Kinematics/KineCommon -I./Kinematics/MotionPlanner -I./Kinematics/SkyeBodyKinematics -I./FileClient -I./L0Control -I./L1Robot \
+-Wall -O2 -shared -o libGentoSDK.dll -DL1_SDK_EXPORTS -DCMPL_WIN -lws2_32 -lwinmm
+
+
+// L1   LINUX下C/C++调用源码测试控制库，不编译为库 
+g++ -w main.cpp ./L0Control/*.cpp ./FileClient/*.cpp ./L1Robot/*.cpp ./Kinematics/*.cpp \
+./Kinematics/ArmKinematics/*.cpp ./Kinematics/BaseMath/*.cpp ./Kinematics/DynaIdent/*.cpp \
+./Kinematics/KineCommon/*.cpp ./Kinematics/MotionPlanner/*.cpp ./Kinematics/SkyeBodyKinematics/*.cpp \
+-I./Common -I./Kinematics -I./Kinematics/ArmKinematics -I./Kinematics/BaseMath -I./Kinematics/DynaIdent \
+-I./Kinematics/KineCommon -I./Kinematics/MotionPlanner -I./Kinematics/SkyeBodyKinematics -I./FileClient -I./L0Control -I./L1Robot \
+-o main -DCMPL_LIN -lrt -DL1_SDK_EXPORTS
+
+
+// L1  LINUX下编译为so库， python  C/C++通用
+g++ ./L0Control/*.cpp ./FileClient/*.cpp ./L1Robot/*.cpp ./Kinematics/*.cpp \
+./Kinematics/ArmKinematics/*.cpp ./Kinematics/BaseMath/*.cpp ./Kinematics/DynaIdent/*.cpp \
+./Kinematics/KineCommon/*.cpp ./Kinematics/MotionPlanner/*.cpp ./Kinematics/SkyeBodyKinematics/*.cpp \
+-I./Common -I./Kinematics -I./Kinematics/ArmKinematics -I./Kinematics/BaseMath -I./Kinematics/DynaIdent \
+-I./Kinematics/KineCommon -I./Kinematics/MotionPlanner -I./Kinematics/SkyeBodyKinematics -I./FileClient \
+-I./L0Control -I./L1Robot \
+-Wall -O2 -fPIC -shared -o libGentoSDK.so -lpthread -lrt -DCMPL_LIN
