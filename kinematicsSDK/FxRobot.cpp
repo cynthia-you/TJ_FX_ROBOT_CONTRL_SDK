@@ -2950,6 +2950,7 @@ FX_BOOL FX_InvKine_Pilot_CCS(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_p
 		if (solve_para->m_Output_RetJoint[i] < solve_para->m_Output_RunLmtN[i])
 		{
 			solve_para->m_Output_IsJntExd = FX_TRUE;
+			solve_para->m_Output_JntExdTags[i] = FX_TRUE;
 
 			exdabs = FX_Fabs(solve_para->m_Output_RetJoint[i] - solve_para->m_Output_RunLmtN[i]);
 			if (solve_para->m_Output_JntExdABS < exdabs)
