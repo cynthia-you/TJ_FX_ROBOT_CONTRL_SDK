@@ -6550,7 +6550,6 @@ class App:
         self.left_state_2.config(text=f"{self.result['outputs'][0]['low_speed_flag'][0]}")
         self.left_state_3.config(text=f"{self.result['states'][0]['err_code']}")
         arm_error=self.result['states'][0]['err_code']
-        print(f'---arm0:{str(arm_error)}')
         if str(arm_error) in arm_err_code_EN:
             type = arm_err_code_EN[str(arm_error)]
             self.left_arm_error.config(text=f"arm error {arm_error}: "+f"{type}")
@@ -6563,7 +6562,6 @@ class App:
         self.right_state_2.config(text=f"{self.result['outputs'][1]['low_speed_flag'][0]}")
         self.right_state_3.config(text=f"{self.result['states'][1]['err_code']}")
         arm_error1 = self.result['states'][1]['err_code']
-        print(f'---arm1:{str(arm_error1)}')
         if str(arm_error1) in arm_err_code_EN:
             type1 = arm_err_code_EN[str(arm_error1)]
             self.right_arm_error.config(text=f"arm error {arm_error1} : "+f"{type1}")

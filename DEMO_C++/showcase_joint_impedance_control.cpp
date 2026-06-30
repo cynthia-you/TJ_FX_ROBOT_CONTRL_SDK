@@ -11,53 +11,36 @@
 #include <unistd.h>
 #define SLEEP(ms) usleep((ms) * 1000)
 #endif
-// '''#################################################################
-// 该DEMO 让机械臂末端以给定的力和扭矩运动到给定的位置距离和姿态距离。
-// 可实时触发调整力的方向和大小。针对机器人拉门和拉抽屉任务，
-// 需要实时调整力方向和大小的场景十分适用。 此功能无法进行力位混合控制  但可以实时切换控制模式
-// 注：此时零空间刚度为0,力场模式下，限制零空间运动可以增大零空间阻尼
+//'''#################################################################
+// 该DEMO 为关节阻抗模式下运动控制案列
+//
 // 使用逻辑
-//      初始化订阅数据的结构体
-//      查验连接是否成功,失败程序直接退出
-//      设置关节阻抗模式
-//      关节阻抗模式运动到给定位置
-//      切换笛卡尔力场模式进行力控
-//      任务完成,释放内存使别的程序或者用户可以连接机器人
-// '''#################################################################
+//    初始化订阅数据的结构体
+//    初始化机器人接口
+//    查验连接是否成功,失败程序直接退出
+//    开启日志以便检查
+//    设置关节控制参数并进关节阻抗模式
+//    订阅查看关节阻抗模式和参数是否设置成功
+//    运动到指定位置
+//    任务完成，下使能
+//    释放内存使别的程序或者用户可以连接机器人
+//'''################################################################
+
+bool checkJointsReached(double target_joints[7], double current_joints[7], double tolerance = 0.05)
+{
+    for (int i = 0; i < 7; i++)
+    {
+        double error = std::abs(target_joints[i] - current_joints[i]);
+        if (error >= tolerance)
+        {
+            return false;
+        }
+    }
+    return true;
+}
 
 int main()
 {
-    // 初始化订阅数据的结构体
-
-    // 打印数组的lambda - 保留两位小数
-    auto print_array = [](auto *arr, size_t n, const char *name = "", int precision = 2)
-    {
-        if (name[0] != '\0')
-            printf("%s=", name);
-        printf("[");
-        for (size_t i = 0; i < n; ++i)
-        {
-            printf("%.*lf%s", precision, arr[i], i < n - 1 ? "," : "");
-        }
-        printf("]\n");
-    };
-
-    // 打印矩阵的lambda - 保留两位小数
-    auto print_matrix = [](auto *mat, size_t rows, size_t cols, const char *name = "", int precision = 2)
-    {
-        if (name[0] != '\0')
-            printf("%s=\n", name);
-        for (size_t i = 0; i < rows; ++i)
-        {
-            printf("%s[", i == 0 ? "[" : " ");
-            for (size_t j = 0; j < cols; ++j)
-            {
-                printf("%.*lf%s", precision, mat[i][j], j < cols - 1 ? "," : "");
-            }
-            printf("]%s\n", i < rows - 1 ? "," : "]");
-        }
-    };
-
     // 初始化订阅数据的结构体
     DCSS dcss;
 
@@ -172,59 +155,87 @@ int main()
         return -1;
     }
 
-    // 控制日志开
+    // 开启日志
     OnLogOn();
     OnLocalLogOn();
 
-    double K[7] = {5000, 5000, 5000, 10, 10, 10, 50}; // 设置刚度和阻尼参数
-    double D[7] = {0.5, 0.5, 0.5, 0.3, 0.3, 0.3, 1};
-    double k[7] = {10, 10, 10, 8, 5, 4, 4};
-    // double d[7] = { 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 };
-
-    double d[7] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
-    int run_vel = 20;
-    int run_acc = 20;
+    // 关节阻抗参数设置
+    double k[7] = {12, 12, 12, 10, 9, 9, 7};
+    double d[7] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 1};
     OnClearSet();
-    OnSetJointLmt_B(run_vel, run_acc);
-    OnSetCartKD_B(K, D, 2);
-    OnSetJointKD_B(k, d);
-    OnSetTargetState_B(ARM_STATE_TORQ);
-    OnSetImpType_B(1);
+    OnSetJointLmt_A(10, 10);
+    OnSetJointKD_A(k, d);
+    OnSetSend();
+    SLEEP(200);
+
+    // 切换到关节阻抗控制模式
+    OnClearSet();
+    OnSetTargetState_A(3); // 3:torque mode; 1:position mode
+    OnSetImpType_A(1);     // type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
     OnSetSend();
     SLEEP(1000);
-    // 订阅查看设置是否成功
 
-    double joints_b[7] = {90, 80, -90, -90, 0, 0, 0};
+    // 订阅数据，查看是否参数设置成功
+    OnGetBuf(&dcss);
+    printf("CMD of imdepancd:%d\n", dcss.m_In[0].m_ImpType);
+    printf("CMD of vel and acc:%d %d\n", dcss.m_In[0].m_Joint_Vel_Ratio, dcss.m_In[1].m_Joint_Acc_Ratio);
+    printf("CMD of joint K=[%lf %lf %lf %lf %lf %lf %lf]\n", dcss.m_In[0].m_Joint_K[0],
+           dcss.m_In[0].m_Joint_K[1],
+           dcss.m_In[0].m_Joint_K[2],
+           dcss.m_In[0].m_Joint_K[3],
+           dcss.m_In[0].m_Joint_K[4],
+           dcss.m_In[0].m_Joint_K[5],
+           dcss.m_In[0].m_Joint_K[6]);
+    printf("CMD of joint D=[%lf %lf %lf %lf %lf %lf %lf]\n", dcss.m_In[0].m_Joint_D[0],
+           dcss.m_In[0].m_Joint_D[1],
+           dcss.m_In[0].m_Joint_D[2],
+           dcss.m_In[0].m_Joint_D[3],
+           dcss.m_In[0].m_Joint_D[4],
+           dcss.m_In[0].m_Joint_D[5],
+           dcss.m_In[0].m_Joint_D[6]);
+
+    // 设置两个运控点位
+    double fb_joints[7] = {0.0};
+    double target_joint[7] = {0, 0, 0, 0, 0, 0, 0};
+    double target_joint1[7] = {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35};
+
+    // 运动到点位1
     OnClearSet();
-    OnSetJointCmdPos_B(joints_b);
+    OnSetJointCmdPos_A(target_joint);
     OnSetSend();
-    SLEEP(5000); // 预留运动时间
+    SLEEP(20); // 预留机器人加速时间
+    do
+    {
+        OnGetBuf(&dcss);
+        for (long joint = 0; joint < 7; joint++)
+        {
+            fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
+        }
+        SLEEP(1);
+    } while (!(dcss.m_Out[0].m_LowSpdFlag == 1 || checkJointsReached(target_joint, fb_joints)));
 
-    SLEEP(500);
-    FTCmd FTCmds;
-    FTCmds.fxDir[0] = 1;
-    FTCmds.fxDir[1] = 0;
-    FTCmds.fxDir[2] = 0;
-    FTCmds.fxDir[3] = 0;
-    FTCmds.fxDir[4] = 0;
-    FTCmds.fxDir[5] = -1;
-    FTCmds.F = 10;
-    FTCmds.K = 6000;
-    FTCmds.Dis = 50;
-    FTCmds.FreeDis = 1;
-    FTCmds.NFreeDis = 1;
-    FTCmds.Tn = 2;
-    FTCmds.Ndis = 100;
-    FTCmds.Kn = 80;
+    // 运动到点位2
     OnClearSet();
-    FTArmControl('B', FTCmds);
+    OnSetJointCmdPos_A(target_joint1);
     OnSetSend();
-    SLEEP(8000);
+    SLEEP(1000); // 预留机器人加速时间
+    do
+    {
+        OnGetBuf(&dcss);
+        for (long joint = 0; joint < 7; joint++)
+        {
+            fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
+        }
+        SLEEP(1);
+    } while (!(dcss.m_Out[0].m_LowSpdFlag == 1 || checkJointsReached(target_joint1, fb_joints)));
 
+    // 任务完成，下使能
     OnClearSet();
-    OnSetTargetState_B(ARM_STATE_IDLE);
+    OnSetTargetState_A(0);
     OnSetSend();
+    SLEEP(1000);
 
+    // 释放内存使别的程序或者用户可以连接机器人
     OnRelease();
-    return 1;
+    return 0;
 }

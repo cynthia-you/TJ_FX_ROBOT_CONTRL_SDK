@@ -3,6 +3,8 @@
 .vscode/
 *.pyc
 __pycache__/
+PLN_MOVL_KEEPJ.txt
+PLN_MOVL.txt
 kinematicsSDK/*.txt
 DEMO_C++/*.txt
 DEMO_C++/*.csv

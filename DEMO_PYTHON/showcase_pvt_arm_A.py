@@ -68,7 +68,7 @@ else:
 robot.log_switch('1') #全局日志开："1", 关："0"
 robot.local_log_switch('1') # 主要日志开："1", 关："0"
 
-'''设置位置模式和速度'''
+'''设置PVT模式'''
 robot.clear_set()
 robot.set_state(arm='A',state=2)#PVT， 自己的速度和加速度，不受外部控制。
 robot.send_cmd()

@@ -1,1 +1,23 @@
-*.sh text eol=lf
+# Force LF for all source files (Linux compilation)
+*.sh       text eol=lf
+Makefile*  text eol=lf
+*.mk       text eol=lf
+*.py       text eol=lf
+*.cpp      text eol=lf
+*.c        text eol=lf
+*.h        text eol=lf
+*.hpp      text eol=lf
+*.md       text eol=lf
+
+# Keep CRLF for Windows batch files
+*.bat      text eol=crlf
+
+# Binary files — do not touch
+*.exe      binary
+*.dll      binary
+*.so       binary
+*.png      binary
+*.ico      binary
+
+# Auto-detect remaining text files, normalize to LF on commit
+*          text=auto

@@ -12,21 +12,32 @@
 #define SLEEP(ms) usleep((ms) * 1000)
 #endif
 //'''#################################################################
-// 该DEMO 为在笛卡尔阻抗模式下,进笛卡尔Y方向拖动,拖动并保存数据的控制案列
+// 该DEMO 为在笛卡尔阻抗模式下运动控制案列
 //
 // 使用逻辑
 //    初始化订阅数据的结构体
 //    初始化机器人接口
 //    查验连接是否成功,失败程序直接退出
 //    开启日志以便检查
-//    进拖动前先切换扭矩模式和切到笛卡尔阻抗模式
-//    设置拖动类型
-//    订阅查看是否进入扭矩模式-->是否为笛卡尔阻抗模式-->拖动类型是否为笛卡尔Y拖动-->检测是否按下拖动按钮
-//    上一步条件满足,设置保存关节轨迹并开始保存
-//    拖动完成松开按钮即可,程序自动检测是否松开按钮,松开停止采集数据并保存数据到指定文件
-//    拖动任务完成，退出拖动下使能
+//    设置笛卡尔控制参数并进笛卡尔阻抗模式
+//    订阅查看笛卡尔阻抗模式和参数是否设置成功
+//    运动到指定位置
+//    任务完成，下使能
 //    释放内存使别的程序或者用户可以连接机器人
 //'''################################################################
+
+bool checkJointsReached(double target_joints[7], double current_joints[7], double tolerance = 0.05)
+{
+    for (int i = 0; i < 7; i++)
+    {
+        double error = std::abs(target_joints[i] - current_joints[i]);
+        if (error >= tolerance)
+        {
+            return false;
+        }
+    }
+    return true;
+}
 
 int main()
 {
@@ -148,95 +159,95 @@ int main()
     OnLogOn();
     OnLocalLogOn();
 
-    // 进关节拖动前先设置机器人运动控制模式为笛卡尔阻抗
+    // 笛卡尔阻抗参数设置
+    double k[7] = {10000, 10000, 10000, 600, 600, 600, 20};
+    double d[7] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 1};
+    OnClearSet();
+    OnSetJointLmt_A(20, 20);
+    OnSetCartKD_A(k, d);
+    OnSetSend();
+    SLEEP(200);
+
+    // 切换到笛卡尔阻抗控制模式
     OnClearSet();
     OnSetTargetState_A(3); // 3:torque mode; 1:position mode
     OnSetImpType_A(2);     // type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
     OnSetSend();
-    SLEEP(200);
+    SLEEP(1000);
 
-    // 设置拖动类型
-    int dgType = 3;
-    //   gType
-    // # 0 退出拖动模式
-    // # 1 关节空间拖动
-    // # 2 笛卡尔空间x方向拖动
-    // # 3 笛卡尔空间y方向拖动
-    // # 4 笛卡尔空间z方向拖动
-    // # 5 笛卡尔空间旋转方向拖动
+    // 订阅数据，查看是否参数设置成功
+    OnGetBuf(&dcss);
+    printf("CMD state of A arm:%d\n", dcss.m_State[0].m_CmdState);
+    printf("CMD of imdepancd:%d\n", dcss.m_In[0].m_ImpType);
+    printf("CMD of vel and acc:%d %d\n", dcss.m_In[0].m_Joint_Vel_Ratio, dcss.m_In[1].m_Joint_Acc_Ratio);
+    printf("CMD of cart K=[%lf %lf %lf %lf %lf %lf %lf]\n", dcss.m_In[0].m_Cart_K[0],
+           dcss.m_In[0].m_Cart_K[1],
+           dcss.m_In[0].m_Cart_K[2],
+           dcss.m_In[0].m_Cart_K[3],
+           dcss.m_In[0].m_Cart_K[4],
+           dcss.m_In[0].m_Cart_K[5],
+           dcss.m_In[0].m_Cart_K[6]);
+    printf("CMD of cart D=[%lf %lf %lf %lf %lf %lf %lf]\n", dcss.m_In[0].m_Cart_D[0],
+           dcss.m_In[0].m_Cart_D[1],
+           dcss.m_In[0].m_Cart_D[2],
+           dcss.m_In[0].m_Cart_D[3],
+           dcss.m_In[0].m_Cart_D[4],
+           dcss.m_In[0].m_Cart_D[5],
+           dcss.m_In[0].m_Cart_D[6]);
+
+    // 设置两个运控点位
+    long timeout = 0;
+    double fb_joints[7] = {0.0};
+    double target_joint[7] = {0, 0, 0, 0, 0, 0, 0};
+    double target_joint1[7] = {9.22, -40.58, -43.89, -102.09, 128.44, 17.55, -28.35};
+
+    // 运动到点位1
     OnClearSet();
-    OnSetDragSpace_A(dgType);
+    OnSetJointCmdPos_A(target_joint);
     OnSetSend();
-    SLEEP(200);
-
-    int stage1 = 1;
-    int stage2 = 0;
-    // 是否进入扭矩模式-->是否为笛卡尔阻抗模式-->拖动类型是否为笛卡尔Y拖动-->检测是否按下拖动按钮, 满足条件: 设置保存数据参数并开始保存数据
-    while (stage1 == 1)
+    SLEEP(1000); // 预留机器人加速时间
+    do
     {
         OnGetBuf(&dcss);
-        if (dcss.m_State[0].m_CurState == 3)
+        for (long joint = 0; joint < 7; joint++)
         {
-            if (dcss.m_In[0].m_ImpType == 2)
-            {
-                if (dcss.m_In[0].m_DragSpType == 2)
-                {
-                    if (dcss.m_Out[0].m_TipDI == 1)
-                    {
-                        long targetNum = 7;
-                        long targetID[35] = {0, 1, 2, 3, 4, 5, 6,
-                                             0, 0, 0, 0, 0, 0, 0,
-                                             0, 0, 0, 0, 0, 0, 0,
-                                             0, 0, 0, 0, 0, 0, 0,
-                                             0, 0, 0, 0, 0, 0, 0};
-                        long recordNum = 1000;
-                        OnClearSet();
-                        OnStartGather(targetNum, targetID, recordNum);
-                        OnSetSend();
-                        SLEEP(200);
-                        stage2 = 1;
-                        stage1 = 0;
-                        break;
-                    }
-                }
-            }
+            fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
         }
         SLEEP(1);
-    }
+    } while (!(checkJointsReached(target_joint, fb_joints)));
 
-    // 检测是否松开拖动按钮,松开停止数据采集
-    while (stage2 == 1)
+    // 运动到点位2
+    OnClearSet();
+    OnSetJointCmdPos_A(target_joint1);
+    timeout = OnSetSendWaitResponse(50);
+    if (timeout < 0)
+    {
+        printf("send cmd time out\n");
+        return -1;
+    }
+    SLEEP(1000); // 预留机器人加速时间
+    do
     {
         OnGetBuf(&dcss);
-        if (dcss.m_Out[0].m_TipDI == 0)
+        for (long joint = 0; joint < 7; joint++)
         {
-            OnClearSet();
-            OnStopGather();
-            OnSetSend();
-            SLEEP(20);
-            stage2 = 0;
-            break;
+            fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
         }
         SLEEP(1);
+    } while (!(checkJointsReached(target_joint1, fb_joints)));
+
+    // 任务完成，下使能
+    OnClearSet();
+    OnSetTargetState_A(0);
+    timeout = OnSetSendWaitResponse(50);
+    if (timeout < 0)
+    {
+        printf("send cmd time out\n");
+        return -1;
     }
-
-    // 保存采集数据
-    char save_path[] = "drag_cart_y.txt";
-    OnSaveGatherData(save_path);
-
-    SLEEP(5000);
-
-    // 拖动任务完成，退出拖动下使能
-    OnClearSet();
-    OnSetImpType_A(0); // type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
-    OnSetSend();
-    SLEEP(200);
-    OnClearSet();
-    OnSetTargetState_A(0); // 3:torque mode; 1:position mode
-    OnSetSend();
     SLEEP(200);
 
-    // 任务完成,释放内存使别的程序或者用户可以连接机器人
+    // 释放内存使别的程序或者用户可以连接机器人
     OnRelease();
-    return 1;
+    return 0;
 }

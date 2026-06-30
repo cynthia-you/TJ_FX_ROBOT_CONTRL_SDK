@@ -176,7 +176,7 @@ int main()
     OnSetTargetState_A(3);
     OnSetImpType_A(2);
     OnSetSend();
-    SLEEP(200);
+    SLEEP(1000);
 
     // 获取左臂状态信息并打印
     OnGetBuf(&dcss);

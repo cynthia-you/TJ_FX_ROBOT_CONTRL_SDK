@@ -852,7 +852,7 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
-    def set_cart_kd_params(self, arm:str, K: list, D: list, type: int):
+    def set_cart_kd_params(self, arm:str, K: list, D: list, type=2):
         '''设置笛卡阻抗尔参数
             # 在笛卡尔阻抗模式下：
             刚度系数： 1-3平移方向刚度系数不超过3000, 4-6旋转方向不超过100。 零空间刚度系数不超过20
@@ -972,6 +972,68 @@ class Marvin_Robot:
                 return self.robot.OnSetForceCmd_B(f_double)
         except Exception as e:
             print(f'ERROR:{e}')
+
+    def ft_arm_control(self, arm: str, ft_cmd: "FTCmd"):
+        '''设置指定手臂的扭矩控制指令（一步到位）
+        机械臂末端以给定的力和扭矩运动到给定的位置距离和姿态距离。可实时触发调整力的方向和大小。
+        :param arm: 机械手臂ID “A” OR “B”
+        :param ft_cmd: FTCmd结构体，包含力控全部参数:
+            fxDir[6] — 六维力方向（位置方向相对基坐标系，姿态方向相对末端坐标系）
+            K        — 位置方向刚度
+            F        — 沿给定方向的力
+            FreeDis  — 位置方向无力区间 (mm)
+            Dis      — 沿给定方向的运动距离 (mm)
+            Kn       — 姿态方向刚度
+            Tn       — 姿态方向扭矩
+            NFreeDis — 姿态方向无力区间 (度)
+            Ndis     — 姿态方向运动距离 (度)
+        :return:
+            int : 1: True,  0: False
+        eg:
+            from SDK_PYTHON.fx_robot import FTCmd
+            cmd = FTCmd()
+            cmd.fxDir[1] = 1.0   # 沿基座Y方向施力
+            cmd.K = 2000.0       # 平移刚度
+            cmd.F = 15.0         # 15N的力
+            cmd.FreeDis = 0.0
+            cmd.Dis = 50.0       # 最大运动50mm
+            cmd.Kn = 100.0       # 旋转刚度
+            cmd.Tn = 0.0
+            cmd.NFreeDis = 0.0
+            cmd.Ndis = 0.0
+            robot.ft_arm_control('A', cmd)
+        '''
+        try:
+            arm_byte = arm.encode('ascii')
+            self.robot.FTArmControl.restype = ctypes.c_bool
+            result = self.robot.FTArmControl(arm_byte, ft_cmd)
+            return int(result)
+        except Exception as e:
+            print(f'ERROR:{e}')
+            return 0
+
+    def set_user_specified_data(self, arm: str, data_category: int):
+        '''设置获取用户自定义数据接口
+        :param arm: 机械手臂ID "A", "B" 或 "AB"（ASB表示双臂）
+        :param data_category: 数据类别编号
+        :return:
+            int : 1: True,  0: False
+        '''
+        try:
+            self.robot.OnSetUserSpcfData.restype = ctypes.c_bool
+            if arm == 'A':
+                result = self.robot.OnSetUserSpcfData_A(ctypes.c_long(data_category))
+            elif arm == 'B':
+                result = self.robot.OnSetUserSpcfData_B(ctypes.c_long(data_category))
+            elif arm == 'AB':
+                result = self.robot.OnSetUserSpcfData(ctypes.c_long(data_category))
+            else:
+                print(f'ERROR: arm must be "A", "B" or "AB", got "{arm}"')
+                return 0
+            return int(result)
+        except Exception as e:
+            print(f'ERROR:{e}')
+            return 0
 
     def set_pvt_id(self,arm:str,id:int):
         '''设置指定id号的pvt路径并运行
@@ -1354,6 +1416,23 @@ class Marvin_Robot:
         except Exception as e:
             print(f'ERROR:{e}')
 
+    def set_PD_vel_est_step(self,arm:str,step:int):
+        '''设置PD控制速度前馈 轨迹发送周期
+        :param arm: 机械手臂ID “A” OR “B”
+        :param step： 轨迹发送周期（单位： ms ），小于1 则不添加速度前馈
+        :return:  bool
+        '''
+        self.robot.FX_OnSetVelEstStep.argtypes = [ctypes.c_char, ctypes.c_long]
+        self.robot.FX_OnSetVelEstStep.restype = c_bool
+        step_long=c_long(step)
+        arm_byte = arm.encode('ascii')
+        try:
+            result = self.robot.FX_OnSetVelEstStep(arm_byte, step_long)
+            return bool(result)
+        except Exception as e:
+            print(f"set_PD_vel_est_step failed: {e}")
+            return False
+    
     def get_tool_info(self,):
         '''检查控制器是否已经保存工具信息
         :return:
@@ -1625,6 +1704,21 @@ class Concise_Marvin_Robot:
         # Disable
         self.robot.Disable.argtypes = [ctypes.c_char]  # arm
         self.robot.Disable.restype = ctypes.c_bool
+
+        # FTArmControl
+        self.robot.FTArmControl.argtypes = [
+            ctypes.c_char,  # arm
+            FTCmd           # ft_cmd (struct pass by value)
+        ]
+        self.robot.FTArmControl.restype = ctypes.c_bool
+
+        # OnSetUserSpcfData
+        self.robot.OnSetUserSpcfData_A.argtypes = [ctypes.c_long]
+        self.robot.OnSetUserSpcfData_A.restype = ctypes.c_bool
+        self.robot.OnSetUserSpcfData_B.argtypes = [ctypes.c_long]
+        self.robot.OnSetUserSpcfData_B.restype = ctypes.c_bool
+        self.robot.OnSetUserSpcfData.argtypes = [ctypes.c_long]
+        self.robot.OnSetUserSpcfData.restype = ctypes.c_bool
 
     def _convert_ip(self, ip_str: str):
         """将IP字符串转换为四个整数的元组"""
@@ -2132,6 +2226,53 @@ class Concise_Marvin_Robot:
             print(f"SetForceCmd failed: {e}")
             return False
 
+    def ft_arm_control(self, arm: str, ft_cmd: "FTCmd") -> bool:
+        """设置指定手臂的扭矩控制指令（一步到位）
+        机械臂末端以给定的力和扭矩运动到给定的位置距离和姿态距离。可实时触发调整力的方向和大小。
+
+        :param arm: 机械手臂ID "A" 或 "B"（单字符）
+        :param ft_cmd: FTCmd结构体，包含力控全部参数:
+            fxDir[6] — 六维力方向（位置方向相对基坐标系，姿态方向相对末端坐标系）
+            K        — 位置方向刚度
+            F        — 沿给定方向的力
+            FreeDis  — 位置方向无力区间 (mm)
+            Dis      — 沿给定方向的运动距离 (mm)
+            Kn       — 姿态方向刚度
+            Tn       — 姿态方向扭矩
+            NFreeDis — 姿态方向无力区间 (度)
+            Ndis     — 姿态方向运动距离 (度)
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if len(arm) != 1 or arm not in ('A', 'B'):
+            raise ValueError(f"arm must be 'A' or 'B', got '{arm}'")
+        arm_byte = arm.encode('ascii')
+        try:
+            result = self.robot.FTArmControl(arm_byte, ft_cmd)
+            return bool(result)
+        except Exception as e:
+            print(f"FTArmControl failed: {e}")
+            return False
+
+    def set_user_specified_data(self, arm: str, data_category: int) -> bool:
+        """设置获取用户自定义数据接口
+
+        :param arm: 机械手臂ID "A", "B" 或 "AB"（AB表示双臂同时设置）
+        :param data_category: 数据类别编号
+        :return: bool 成功返回 True，失败返回 False
+        """
+        if arm not in ('A', 'B', 'AB'):
+            raise ValueError(f"arm must be 'A', 'B' or 'AB', got '{arm}'")
+        try:
+            if arm == 'A':
+                return bool(self.robot.OnSetUserSpcfData_A(ctypes.c_long(data_category)))
+            elif arm == 'B':
+                return bool(self.robot.OnSetUserSpcfData_B(ctypes.c_long(data_category)))
+            else:  
+                return bool(self.robot.OnSetUserSpcfData(ctypes.c_long(data_category)))
+        except Exception as e:
+            print(f"OnSetUserSpcfData failed: {e}")
+            return False
+
     def set_joint_position_cmd(self, arm: str, joint) -> bool:
         """设置指定手臂的关节空间位置指令（位置模式扭矩模式下的关节指令）
 
@@ -2229,6 +2370,78 @@ class Concise_Marvin_Robot:
         except Exception as e:
             print(f"StopPln failed: {e}")
             return False
+
+        def setPln_joint_AB(self,
+                            start_joints_A: List[float],  # 7个关节角度
+                            stop_joints_A: List[float],
+                            start_joints_B: List[float],
+                            stop_joints_B: List[float],
+                            vel_ratio: float,
+                            acc_ratio: float) -> bool:
+        """
+        关节空间两个手臂同时规划运行（同时开始，不一定同时结束）
+        :param start_joints_A: A臂起始关节角度（7个）
+        :param stop_joints_A: A臂目标关节角度（7个）
+        :param start_joints_B: B臂起始关节角度（7个）
+        :param stop_joints_B: B臂目标关节角度（7个）
+        :param vel_ratio: 速度比例（0~1? 具体由SDK定义）
+        :param acc_ratio: 加速度比例
+        :return: 成功返回True，失败返回False
+        """
+        if len(start_joints_A) != 7 or len(stop_joints_A) != 7 or \
+            len(start_joints_B) != 7 or len(stop_joints_B) != 7:
+            raise ValueError("All joint arrays must have exactly 7 elements")
+
+        # 转换为ctypes数组
+        start_A = (ctypes.c_double * 7)(*start_joints_A)
+        stop_A = (ctypes.c_double * 7)(*stop_joints_A)
+        start_B = (ctypes.c_double * 7)(*start_joints_B)
+        stop_B = (ctypes.c_double * 7)(*stop_joints_B)
+
+
+        self.robot.CoRunPlnJoint.argtypes = [
+            ctypes.POINTER(ctypes.c_double),  # start_joints_A (7)
+            ctypes.POINTER(ctypes.c_double),  # stop_joints_A (7)
+            ctypes.POINTER(ctypes.c_double),  # start_joints_B (7)
+            ctypes.POINTER(ctypes.c_double),  # stop_joints_B (7)
+            ctypes.c_double,  # vel_ratio
+            ctypes.c_double  # acc_ratio
+        ]
+        self.robot.CoRunPlnJoint.restype = ctypes.c_bool
+
+        ret = self.robot.CoRunPlnJoint(
+            ctypes.cast(start_A, ctypes.POINTER(ctypes.c_double)),
+            ctypes.cast(stop_A, ctypes.POINTER(ctypes.c_double)),
+            ctypes.cast(start_B, ctypes.POINTER(ctypes.c_double)),
+            ctypes.cast(stop_B, ctypes.POINTER(ctypes.c_double)),
+            ctypes.c_double(vel_ratio),
+            ctypes.c_double(acc_ratio)
+        )
+        return ret
+
+    def setPln_Cart_AB(self, pset0:ctypes.c_void_p, pset1:ctypes.c_void_p) -> bool:
+        """
+        笛卡尔空间两个手臂从当前点规划方式运行到目标点，
+        规划点位pset由KinematicsSDK计算接口计算得出。
+        :param pset0: 手臂0的点集对象
+        :param pset1: 手臂1的点集对象
+        :return: 成功返回True，失败返回False
+        """
+        self.robot.CoRunPlnCart.argtypes = [
+            ctypes.c_void_p,  # pset0
+            ctypes.c_void_p  # pset1
+        ]
+        self.robot.CoRunPlnCart.restype = ctypes.c_bool
+        return self.robot.CoRunPlnCart(pset0, pset1)
+
+    def stopPln_AB(self) -> bool:
+        """
+        同时中断两个手臂的规划运行（笛卡尔空间和关节空间都适用）
+        :return: 成功返回True，失败返回False
+        """
+        self.robot.CoStopPln.argtypes = []
+        self.robot.CoStopPln.restype = ctypes.c_bool
+        return self.robot.CoStopPln()
 
     def send_pvt(self, arm: str, local_file: str, serial: int) -> bool:
         """上传本地 PVT 轨迹文件存为指定 ID
@@ -2598,6 +2811,19 @@ class DCSS(Structure):
         ("m_ParaValueF", c_float),  # FX_FLOAT value
         ("m_ParaCmdSerial", c_short),  # short from PC
         ("m_ParaRetSerial", c_short),  # short working: 0; finish: cmd serial; error cmd_serial + 100
+    ]
+
+class FTCmd(Structure):
+    _fields_ = [
+        ("fxDir", c_double * 6),  # 六维力方向  这里的位置方向为相对于机械臂的基坐标系   姿态为相对于末端坐标系
+        ("K", c_double),          # 位置方向的刚度
+        ("F", c_double),          # 沿着给定方向的力
+        ("FreeDis", c_double),    # 位置方向无力区间   mm
+        ("Dis", c_double),        # 沿着给定方向的运动距离  mm
+        ("Kn", c_double),         # 姿态方向的刚度
+        ("Tn", c_double),         # 姿态方向的扭矩
+        ("NFreeDis", c_double),   # 姿态方向的无力区间  度
+        ("Ndis", c_double),       # 姿态方向的运动距离  度
     ]
 
 def _param_kind_to_str(kind):
@@ -3076,7 +3302,6 @@ fault_code_dict_CN = {
     "0xFF90": "第2速度跟随误差过大",
     "0xFF91": "驱动器内部异常2",
 }
-
 
 fault_code_dict_EN = {
     "0x2280": "Drive short circuit",
