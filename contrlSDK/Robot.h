@@ -17,7 +17,7 @@
 #include "PointSet.h"
 #include <mutex>
 #include <condition_variable>
-#define SDK_VERSION 1
+#define SDK_VERSION 1003
 
 class CRobot
 {
