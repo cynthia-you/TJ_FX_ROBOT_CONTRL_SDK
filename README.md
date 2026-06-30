@@ -71,6 +71,336 @@
         2)笛卡尔阻抗模式下,选择笛卡尔拖动中单一方向的拖动:X,Y,Z,旋转四种. 切换拖动方向需要先退出拖动,再切换为另一方向(否则控制效果是混乱的)
 
 
+## 机器人运动控制模式说明
+    MarvinProx机器人（人形臂）的运动控制支持多种运控模式：
+        -位置模式
+        -扭矩/阻抗模式，细分为关节阻抗，笛卡尔阻抗，力控阻抗三种
+        -PD模式
+        -协作释放（零力拖动模式）
+        -轨迹复现模式
+
+
+### 位置模式（Position Mode）
+    基于伺服闭环控制，机器人各关节按照预设的目标位置、速度和加速度轨迹运动，实现高精度的点到点或连续路径跟踪。该模式适用于对轨迹重复性要求高的场景（如搬运、涂胶、焊接），不对外部接触力做主动调节，位置偏差主要由刚度决定。
+
+    开启条件：
+    C/C++(省略连接仅展示切换代码)：
+```c
+//设置速度加速度百分比
+OnClearSet();
+OnSetJointLmt_A(10, 10) ;
+OnSetJointLmt_B(10, 10) ;
+OnSetSend();
+SLEEP(200);
+//切换为位置模式
+OnClearSet();
+OnSetTargetState_A(1) ;
+OnSetTargetState_B(1) ;
+OnSetSend();
+SLEEP(1000);
+```
+    python(省略连接仅展示切换代码)：
+```python
+'''设置速度加速度百分比'''
+robot.clear_set()
+robot.set_vel_acc(arm='A',velRatio=10, AccRatio=10)
+robot.set_vel_acc(arm='B',velRatio=10, AccRatio=10)
+robot.send_cmd()
+time.sleep(0.2)
+'''切换为位置模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=1)
+robot.set_state(arm='B',state=1)
+robot.send_cmd()
+time.sleep(1)
+```
+
+
+### 关节阻抗模式（Joint Impedance Mode）
+    在关节空间内建立力矩与位置偏差的动态关系，表现为“弹簧-阻尼”特性。用户可分别设置每个关节的刚度（范围 0~22， 单位N*m/rad）和阻尼（>0，单位N*m/（rad/s)），刚度越高关节“越硬”，阻尼越大，物体振幅减小越快，但对力、位移的响应迟缓，运动时感觉阻力大，有粘滞感； 阻尼越小，减震效果减弱，但运动阻力小，更流畅，停止到位置时有余震感。该模式适用于需要关节级柔顺性的装配、抛光和避障任务，可吸收冲击并适应不规则表面。
+    
+    开启条件：
+    C/C++(省略连接仅展示切换代码)：
+```c
+// 设置关节阻抗关键参数
+double k[7] = {12, 12, 12, 10, 9, 9, 7};
+double d[7] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 1};
+OnClearSet();
+OnSetJointLmt_A(10, 10);
+OnSetJointKD_A(k, d);
+OnSetJointLmt_B(10, 10);
+OnSetJointKD_B(k, d);
+OnSetSend();
+SLEEP(200);
+// 切换到关节阻抗控制模式
+OnClearSet();
+OnSetTargetState_A(3); 
+OnSetImpType_A(1);
+OnSetTargetState_B(3); 
+OnSetImpType_B(1);
+OnSetSend();
+SLEEP(1000);
+```
+    python(省略连接仅展示切换代码)：
+```python
+'''设置关节阻抗关键参数'''
+robot.clear_set()
+robot.set_joint_kd_params(arm='A',K=[12, 12, 12, 10, 9, 9, 7], D=[0.3,0.3,0.3,0.2,0.2,0.2,0.2]）
+robot.set_vel_acc(arm='A',velRatio=10, AccRatio=10)
+robot.set_joint_kd_params(arm='B',K=[12, 12, 12, 10, 9, 9, 7], D=[0.3,0.3,0.3,0.2,0.2,0.2,0.2]）
+robot.set_vel_acc(arm='B',velRatio=10, AccRatio=10)
+robot.send_cmd()
+time.sleep(0.2)
+'''切换关节阻抗模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=3)
+robot.set_impedance_type(arm='A',type=1) 
+robot.set_state(arm='B',state=3)
+robot.set_impedance_type(arm='B',type=1) 
+robot.send_cmd()
+time.sleep(1)
+```
+
+### 笛卡尔阻抗模式（Cartesian Impedance Mode）
+    在末端笛卡尔空间（X/Y/Z方向及旋转轴）构建柔顺控制模型，使末端对外力呈现可调的刚度和阻尼特性。平移刚度范围 0~1200 N*m ，旋转 N*m/rad，；阻尼值需 >0，单位N*m/（rad/s)。该模式适用于末端与外部环境交互（如打磨、去毛刺、力控装配），可在保持轨迹精度的同时主动顺应外力，提高接触安全性。
+     
+    开启条件：
+    C/C++(省略连接仅展示切换代码)：
+```c
+// 设置笛卡尔阻抗关键参数
+double k[7] = {10000, 10000, 10000, 600, 600, 600, 20};
+double d[7] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 1};
+OnClearSet();
+OnSetJointLmt_A(10, 10);
+OnSetJointKD_A(k, d);
+OnSetJointLmt_B(10, 10);
+OnSetJointKD_B(k, d);
+OnSetSend();
+SLEEP(200);
+// 切换到笛卡尔控制模式
+OnClearSet();
+OnSetTargetState_A(3); 
+OnSetImpType_A(2);
+OnSetTargetState_B(3); 
+OnSetImpType_B(2);
+OnSetSend();
+SLEEP(1000);
+```
+    python(省略连接仅展示切换代码)：
+```python
+'''设置笛卡尔阻抗关键参数'''
+robot.clear_set()
+robot.set_joint_kd_params(arm='A',K=[10000, 10000, 10000, 600, 600, 600, 20], D=[0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 1]）
+robot.set_vel_acc(arm='A',velRatio=10, AccRatio=10)
+robot.set_joint_kd_params(arm='B',K=[10000, 10000, 10000, 600, 600, 600, 20], D=[0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 1]）
+robot.set_vel_acc(arm='B',velRatio=10, AccRatio=10)
+robot.send_cmd()
+time.sleep(0.2)
+
+'''切换笛卡尔阻抗模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=3)
+robot.set_impedance_type(arm='A',type=2) 
+robot.set_state(arm='B',state=3)
+robot.set_impedance_type(arm='B',type=2) 
+robot.send_cmd()
+time.sleep(1)
+```
+
+### 力控阻抗模式（Force-controlled Impedance Mode）
+    在指定笛卡尔方向（X、Y、Z 三轴）上直接以期望接触力为目标进行闭环控制，同时保留阻抗柔顺特性。力控制范围 0~50 N，力作用距离（即允许的位移偏差窗口）为 -50 mm ~ +50 mm。该模式适用于恒定力跟踪应用，通过调整参数适应接触表面起伏，确保接触力稳定可控。
+     
+    开启条件：
+    C/C++(省略连接仅展示切换代码)：
+```c
+// 设置末端力控参数：Z方向力控
+int fcType=0;// 基于基座的力控
+double fcCtrlPara[7] = {0.0};
+double fxDir[6] = {0, 0, 1, 0, 0, 0};
+double fcAdjLmt = 50;
+double force = 10;
+OnClearSet();
+OnSetForceCtrPara_A(0, fxDir, fcCtrlPara, fcAdjLmt);
+OnSetForceCmd_A(force);
+OnSetSend();
+SLEEP(200);
+// 切换力控模式
+OnClearSet();
+OnSetTargetState_A(3); 
+OnSetImpType_A(3);
+OnSetTargetState_B(3); 
+OnSetImpType_B(3);
+OnSetSend();
+SLEEP(1000);
+
+```
+    python(省略连接仅展示切换代码)：
+```python
+'''设置力控参数'''
+robot.clear_set()
+# 设置是在Y轴方向有5厘米的调节范围
+robot.set_force_control_params(arm='A',fcType=0, fxDirection=[0, 1, 0, 0, 0, 0], fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
+                                        fcAdjLmt=5.)
+time.sleep(0.5)
+'''切换力控模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=3)
+robot.set_impedance_type(arm='A',type=3) 
+robot.set_state(arm='B',state=3)
+robot.set_impedance_type(arm='B',type=3) 
+robot.send_cmd()
+time.sleep(1)
+```
+### PD前馈模式
+    PD模式时一种极低延时跟踪模式兼具关节阻抗模式的柔顺性能，主要适用于遥操场景。
+    用户的关节轨迹每个关节速度不能超过180度/秒
+    开启条件:
+        - 配置参数robot.ini文件中 JointPIDCtlType=1; 
+        - 在关节阻抗模式下使用，速度加速大设置为最大，以免限制轨迹；
+        - 发送轨迹前，通过FX_OnSetVelEstStep()开启前馈控制
+     
+    开启条件：
+    C/C++(省略连接仅展示切换代码)：
+```c
+//切换关节阻抗，速度加速度设置为最大，设置刚度阻尼参数
+//推荐三组刚度参数，按需选择使用
+double k_max[7] = {20, 20, 20, 15, 8, 8, 8};//max
+double k_min[7] = {2, 2, 2, 1.5, 0.8, 0.8, 0.8 };//min
+double k_normal[7]={ 14, 14, 14, 10.5, 5.6, 5.6, 5.6}
+double d[7] = { 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3};
+OnClearSet();
+OnSetJointLmt_A(100,100)
+OnSetJointKD_A(k_normal, d)
+OnSetJointLmt_B(100, 100);
+OnSetJointKD_B (k_normal, d)
+OnSetTargetState_A(3)
+OnSetImpType_A(1)
+OnSetTargetState_B(3)
+OnSetImpType_B(1)
+OnSetSend();
+SLEEP(200);
+//开启PD前馈
+//控制周期ControlPeriod参数范围0~20ms, 0表示不开启PD前馈。建议设置为5ms，并且发送的轨迹速度经可能不要超过最大速度限制。
+int ControlPeriod = 5;
+OnClearSet();
+FX_OnSetVelEstStep("A"，ControlPeriod);
+FX_OnSetVelEstStep("B"，ControlPeriod);
+OnSetSend();
+SLEEP(1000);
+```
+    python(省略连接仅展示切换代码)：
+```python
+'''切换关节阻抗，速度加速度设置为最大，设置刚度阻尼参数'''
+#推荐三组刚度参数，按需选择使用
+k_max=[20, 20, 20, 15, 8, 8, 8]
+k_min=[2, 2, 2, 1.5, 0.8, 0.8, 0.8]
+k_normal=[ 14, 14, 14, 10.5, 5.6, 5.6, 5.6]
+d=[0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3]
+robot.clear_set()
+robot.set_joint_kd_params(arm='A',K=k_normal, D=d）
+robot.set_vel_acc(arm='A',velRatio=100, AccRatio=100)
+robot.set_joint_kd_params(arm='B',K=k_normal, D=d）
+robot.set_vel_acc(arm='B',velRatio=100, AccRatio=100)
+robot.send_cmd()
+time.sleep(0.2)
+robot.clear_set()
+robot.set_state(arm='A',state=3)
+robot.set_impedance_type(arm='A',type=1) 
+robot.set_state(arm='B',state=3)
+robot.set_impedance_type(arm='B',type=1) 
+robot.send_cmd()
+time.sleep(1)
+'''开启PD前馈
+控制周期ControlPeriod参数范围0~20ms, 0表示不开启PD前馈。建议设置为5ms，并且发送的轨迹速度经可能不要超过最大速度限制。'''
+ControlPeriod = 5
+robot.clear_set()
+robot.set_PD_vel_est_step(arm='A',step=ControlPeriod)
+robot.set_PD_vel_est_step(arm='B',step=ControlPeriod)
+robot.send_cmd()
+time.sleep(1)
+```
+    
+### 协作释放模式（Collaborative Release Mode）
+    专为人机协作安全设计的安全响应模式。当检测到碰撞或外力超过阈值时，机器人立即停止运动并主动释放所有关节制动力矩，使各轴处于“零力漂浮”状态，从而最大限度降低碰撞冲击能量。该模式也可由操作员手动触发，用于紧急脱离或手动拖拽示教，恢复后需重新上使能方可继续运行。
+     
+    开启条件：
+    C/C++(省略连接仅展示切换代码)：
+```c
+//开启协作释放模式
+OnClearSet();
+OnSetTargetState_A(4) ;
+OnSetTargetState_B(4) ;
+OnSetSend();
+SLEEP(1000);
+//开启后可拖拽手臂调制位置，调整结束复位
+OnClearSet();
+OnSetTargetState_A(0) ;
+OnSetTargetState_B(0) ;
+OnSetSend();
+SLEEP(1000);
+```
+    python(省略连接仅展示切换代码)：
+```python
+'''开启协作释放模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=1)
+robot.set_state(arm='B',state=1)
+robot.send_cmd()
+time.sleep(1)
+'''开启后可拖拽手臂调制位置，调整结束复位'''
+robot.clear_set()
+robot.set_state(arm='A',state=0)
+robot.set_state(arm='B',state=0)
+robot.send_cmd()
+time.sleep(1)
+```
+
+### 轨迹复现PVT模式（Position-Velocity-Time Replay Mode）
+    该模式基于示教或离线编程记录的轨迹点（每个点包含位置、速度及时间戳信息），通过高精度插补算法在关节或笛卡尔空间内按原始时间序列复现完整运动路径。PVT模式保证了轨迹的连续性与速度平滑性，适合喷涂、打磨、点焊等需要严格遵循示教路径的重复作业。参数设置包括插补周期，速度和加速度限制，确保复现精度与动态性能。
+    注意，机械臂先执行到轨迹的起始点位。
+         
+    开启条件：
+    C/C++(省略连接仅展示切换代码)：
+```c
+//设置PVT模式
+OnClearSet();
+OnSetTargetState_A(2) ;
+OnSetSend();
+SLEEP(200);
+//选择PVT轨迹文件和设置PVT号
+char path[] = "LoadData_ccs_right/LoadData/IdenTraj/LoadIdenTraj_MarvinCCS_Left.fmv"; //改成你的绝对路径
+long serial=27;
+bool re=false;
+re=OnSendPVT_A(path,serial);
+printf("send pvt return =%d\n",re);
+SLEEP(200);
+//执行指定的PVT号
+int id=27;
+OnClearSet();
+OnSetPVT_A(id);
+OnSetSend();
+//等待轨迹执行完毕
+```
+    python(省略连接仅展示切换代码)：
+```python
+'''设置PVT模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=2)#PVT， 自己的速度和加速度，不受外部控制。
+robot.send_cmd()
+time.sleep(0.5)
+'''设置PVT 轨迹本机路径 和PVT号'''
+pvt_file='/LoadData_ccs_right/LoadData/IdenTraj/LoadIdenTraj_MarvinCCS_Left.fmv'
+robot.send_pvt_file('A',pvt_file, 2)
+time.sleep(1)
+'''设置运行的PVT号'''
+robot.clear_set()
+robot.set_pvt_id('A',2)
+robot.send_cmd()
+#等待轨迹执行完毕
+```
+
+
+
 ## 1.1 机器人控制SDK文档：
 [C++ 控制SDK 文档](c++_doc_contrl.md)
 
