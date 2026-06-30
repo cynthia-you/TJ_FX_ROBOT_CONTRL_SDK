@@ -2371,13 +2371,13 @@ class Concise_Marvin_Robot:
             print(f"StopPln failed: {e}")
             return False
 
-        def setPln_joint_AB(self,
-                            start_joints_A: List[float],  # 7个关节角度
-                            stop_joints_A: List[float],
-                            start_joints_B: List[float],
-                            stop_joints_B: List[float],
-                            vel_ratio: float,
-                            acc_ratio: float) -> bool:
+    def setPln_joint_AB(self,
+                        start_joints_A: List[float],  # 7个关节角度
+                        stop_joints_A: List[float],
+                        start_joints_B: List[float],
+                        stop_joints_B: List[float],
+                        vel_ratio: float,
+                        acc_ratio: float) -> bool:
         """
         关节空间两个手臂同时规划运行（同时开始，不一定同时结束）
         :param start_joints_A: A臂起始关节角度（7个）

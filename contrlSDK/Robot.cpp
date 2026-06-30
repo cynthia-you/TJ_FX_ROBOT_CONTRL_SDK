@@ -197,8 +197,7 @@ bool CRobot::OnSetChDataB(unsigned char *data_ptr, long size_int, long set_ch)
 
 long CRobot::OnGetSDKVersion()
 {
-	if (m_InsRobot->m_LocalLogTag == true)
-		printf("[Marvin SDK]: SDK version %d\n", SDK_VERSION);
+	printf("[Marvin SDK]: SDK version %d\n", SDK_VERSION);
 	return SDK_VERSION;
 }
 
@@ -377,7 +376,7 @@ CRobot::CRobot()
 		}
 	}
 	printf("  /var/tmp/ directory permissions:\n");
-		(void)system("ls -ld /var/tmp/");
+	(void)system("ls -ld /var/tmp/");
 #endif
 	(void)m_ShMem.OnMapMster(&m_ShMem, shm_name, 102400);
 	m_psm = m_ShMem.OnGetMem(&m_ShMem);
@@ -390,7 +389,7 @@ CRobot::CRobot()
 #else
 		char cmd[256];
 		snprintf(cmd, sizeof(cmd), "ls -la %s 2>/dev/null || echo '  File not found'", shm_name);
-			(void)system(cmd);
+		(void)system(cmd);
 		int fd = open(shm_name, O_RDWR);
 		if (fd != -1)
 		{
@@ -424,7 +423,7 @@ CRobot::CRobot()
 			printf("  Checking file existence:\n");
 			char cmd[256];
 			snprintf(cmd, sizeof(cmd), "ls -la %s 2>/dev/null || echo '  File not found'", shm_name);
-				(void)system(cmd);
+			(void)system(cmd);
 #endif
 		}
 		else

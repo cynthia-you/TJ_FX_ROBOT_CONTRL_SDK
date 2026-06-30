@@ -170,8 +170,7 @@ bool CRobot::OnSetChDataB(unsigned char *data_ptr, long size_int, long set_ch)
 
 long CRobot::OnGetSDKVersion()
 {
-	if (m_InsRobot->m_LocalLogTag == true)
-		printf("[Marvin SDK]: SDK version %d\n", SDK_VERSION);
+	printf("[Marvin SDK]: SDK version %d\n", SDK_VERSION);
 	return SDK_VERSION;
 }
 
