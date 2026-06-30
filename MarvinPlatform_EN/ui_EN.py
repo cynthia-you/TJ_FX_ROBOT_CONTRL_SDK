@@ -159,6 +159,10 @@ class App:
         self.drag_mode = False
         self.tools_txt = 'tool_dyn_kine.txt'
         self.tool_result = None
+        self.sdk_collect_data_tag_idx=76
+        self.sdk_version=robot.SDK_version()
+        if self.sdk_version>100343007:
+            self.sdk_collect_data_tag_idx=66
 
         # 初始化两个点的列表
         self.points1 = []
@@ -3789,8 +3793,11 @@ class App:
         self.status_bar = tk.Frame(self.root, height=20)
         self.status_bar.pack(side="bottom", fill="x")
         self.version_label = tk.Label(
-            self.status_bar, text=f"", fg="black", font=("Arial", 9))
+            self.status_bar, text=f"Controller version:", fg="black", font=("Arial", 9))
         self.version_label.pack(side="left", padx=15)
+        self.sdk_version_label = tk.Label(
+            self.status_bar, text=f"SDK version:{self.sdk_version}", fg="black", font=("Arial", 9))
+        self.sdk_version_label.pack(side="left", padx=(150,5))
         self.time_label = tk.Label(
             self.status_bar, text="", fg="black", font=("Arial", 9))
         self.time_label.pack(side="right", padx=15)
@@ -3800,7 +3807,6 @@ class App:
         """更新时间显示"""
         current_time = time.strftime("%Y-%m-%d %H:%M:%S")
         self.time_label.config(text=current_time)
-        self.version_label.config(text=f"controller version:{self.version}")
         self.root.after(1000, self.update_time)
 
     def on_mousewheel(self, event):
@@ -6109,13 +6115,14 @@ class App:
                 if robot_id == 'A':
                     idx = [0, 1, 2, 3, 4, 5, 6,
                            50, 51, 52, 53, 54, 55, 56,
-                           76, 0, 0, 0, 0, 0, 0,
+                           self.sdk_collect_data_tag_idx, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0]
+                           0, 0, 0, 0, 0, 0, 0] 
                 elif robot_id == 'B':
+                    b_tag_idx=self.sdk_collect_data_tag_idx+100
                     idx = [100, 101, 102, 103, 104, 105, 106,
                            150, 151, 152, 153, 154, 155, 156,
-                           176, 0, 0, 0, 0, 0, 0,
+                           b_tag_idx, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0]
                 else:
@@ -6199,13 +6206,14 @@ class App:
                 if robot_id == 'A':
                     idx = [0, 1, 2, 3, 4, 5, 6,
                            50, 51, 52, 53, 54, 55, 56,
-                           76, 0, 0, 0, 0, 0, 0,
+                           self.sdk_collect_data_tag_idx, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0,
-                           0, 0, 0, 0, 0, 0, 0]
+                           0, 0, 0, 0, 0, 0, 0] 
                 elif robot_id == 'B':
+                    b_tag_idx=self.sdk_collect_data_tag_idx+100
                     idx = [100, 101, 102, 103, 104, 105, 106,
                            150, 151, 152, 153, 154, 155, 156,
-                           176, 0, 0, 0, 0, 0, 0,
+                           b_tag_idx, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0,
                            0, 0, 0, 0, 0, 0, 0]
                 else:
@@ -6418,6 +6426,7 @@ class App:
                 # get controller version
                 ret, version = robot.get_param('int', 'VERSION')
                 self.version = version
+                self.version_label.config(text=f"Controller version:{self.version}")
 
                 '''启动读485数据'''
                 self.data_subscriber = DataSubscriber(self.update_data)
@@ -7154,7 +7163,7 @@ if __name__ == "__main__":
     config_path = config_files[0]
     dcss = DCSS()
     robot = Marvin_Robot()
-
+    
     kk1 = Marvin_Kine()
     kk2 = Marvin_Kine()
     kk1.log_switch(0)
