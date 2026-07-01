@@ -8,6 +8,7 @@ Makefile*  text eol=lf
 *.h        text eol=lf
 *.hpp      text eol=lf
 *.md       text eol=lf
+*.MvKDCfg  text eol=lf
 
 # Keep CRLF for Windows batch files
 *.bat      text eol=crlf
