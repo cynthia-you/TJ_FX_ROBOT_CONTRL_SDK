@@ -3669,6 +3669,8 @@ FX_BOOL FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
 	FX_DOUBLE jerk = ACC * 10;
 
 	CAxisPln Spln;
+	FX_Robot *pRobot = (FX_Robot *)&m_Robot[RobotSerial];
+	Spln.OnSetPNVA(pRobot->m_Lmt.m_JLmtPos_P, pRobot->m_Lmt.m_JLmtPos_N, pRobot->m_Lmt.m_JLmtVel, pRobot->m_Lmt.m_JLmtAcc);
 	Spln.OnSetFreq(Freq);
 	FX_BOOL result = Spln.OnMovL(RobotSerial, refJ, start_pos, end_pos, Vel, ACC, jerk, ret_pset);
 
@@ -3747,6 +3749,8 @@ FX_BOOL FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
 	}
 
 	CAxisPln Spln;
+	FX_Robot *pRobot = (FX_Robot *)&m_Robot[RobotSerial];
+	Spln.OnSetPNVA(pRobot->m_Lmt.m_JLmtPos_P, pRobot->m_Lmt.m_JLmtPos_N, pRobot->m_Lmt.m_JLmtVel, pRobot->m_Lmt.m_JLmtAcc);
 	Spln.OnSetFreq(Freq);
 	FX_BOOL result = Spln.OnMovL_KeepJ_CutA(RobotSerial, start_pos, end_pos, vel, acc, ret_pset);
 
@@ -3824,6 +3828,8 @@ FX_BOOL FX_Robot_PLN_Set_MOVL_Start(FX_INT32L RobotSerial, Vect7 Ref_Joints, Vec
 	FX_DOUBLE jerk = Acc * 10;
 
 	// CAxisPln Spln;
+	FX_Robot *pRobot = (FX_Robot *)&m_Robot[RobotSerial];
+	m_AxisPln.OnSetPNVA(pRobot->m_Lmt.m_JLmtPos_P, pRobot->m_Lmt.m_JLmtPos_N, pRobot->m_Lmt.m_JLmtVel, pRobot->m_Lmt.m_JLmtAcc);
 	m_AxisPln.OnInit_MOVL_ZSP();
 	m_AxisPln.OnSetFreq(Freq);
 	FX_BOOL result = m_AxisPln.OnMovL_ZSP(RobotSerial, refJ, start_pos, end_pos, Vel, Acc, jerk, ZSP_Type, ZSP_Para, Allow_Range, FX_MOVL_START);

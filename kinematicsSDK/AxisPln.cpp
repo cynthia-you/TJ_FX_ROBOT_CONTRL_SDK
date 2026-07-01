@@ -844,6 +844,62 @@ double CAxisPln::OnGetPln(double *ret_v)
 	return m_s;
 }
 
+static bool OnMovCheckVA(CPointSet *pset, double cycle, double joint_acc_lmt[7], double joint_vel_lmt[7])
+{
+	if (pset == NULL || joint_vel_lmt == NULL || joint_acc_lmt == NULL)
+	{
+		printf("invalid VA limit\n");
+		return false;
+	}
+
+	long point_num = pset->OnGetPointNum();
+	if (point_num < 2 || cycle <= 0.000001)
+	{
+		printf("invalid path points num\n");
+		return false;
+	}
+
+	double inv_cycle = 1.0 / cycle;
+	double inv_cycle2 = inv_cycle * inv_cycle;
+	double prev_vel[7] = {0};
+
+	for (long i = 1; i < point_num; i++)
+	{
+		double *prev_point = pset->OnGetPoint(i - 1);
+		double *cur_point = pset->OnGetPoint(i);
+		if (prev_point == NULL || cur_point == NULL)
+		{
+			printf("path point is NULL\n");
+			return false;
+		}
+
+		for (long j = 0; j < 7; j++)
+		{
+			double delta = cur_point[j] - prev_point[j];
+			double cur_vel = FX_Fabs(delta) * inv_cycle;
+
+			if (joint_vel_lmt[j] > 0.000001 && cur_vel > joint_vel_lmt[j] + 0.000001)
+			{
+				printf("[Warning]Velocity exceed limit at point %ld joint %ld: cur_vel= %lf, limit= %lf\n", i+1, j+1, cur_vel, joint_vel_lmt[j]);
+				return false;
+			}
+
+			if (i >= 2 && joint_acc_lmt[j] > 0.000001)
+			{
+				double cur_acc = FX_Fabs(delta * inv_cycle2 - prev_vel[j] * inv_cycle);
+				if (cur_acc > joint_acc_lmt[j] + 0.000001)
+				{
+					printf("[Warning]Acceleration exceed limit at point %ld joint %ld: cur_acc= %lf, limit= %lf\n", i+1, j+1, cur_acc, joint_acc_lmt[j]);
+					return false;
+				}
+			}
+			prev_vel[j] = delta * inv_cycle;
+		}
+	}
+
+	return true;
+}
+
 bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, char *path)
 {
 	///////determine same points
@@ -1521,6 +1577,9 @@ bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6
 		}
 		// ret_pset->OnSetPoint(ret_joints);
 	}
+
+	// VA check
+	OnMovCheckVA(ret_pset, m_cycle, m_Joint_Acc_Lmt, m_Joint_Vel_Lmt);
 	return true;
 }
 
@@ -2151,6 +2210,9 @@ bool CAxisPln::OnMovL_KeepJ_CutA(long RobotSerial, double startjoints[7], double
 		ret_pset->OnSetPoint(&p[19]);
 	}
 
+	// VA check
+	OnMovCheckVA(ret_pset, m_cycle, m_Joint_Acc_Lmt, m_Joint_Vel_Lmt);
+
 	return true;
 }
 
@@ -2238,60 +2300,6 @@ static bool OnPointSetCopy(CPointSet *src, CPointSet *dst)
 	}
 
 	return point_num > 0;
-}
-
-static bool OnMovCheckVA(CPointSet *pset, double cycle, double joint_acc_lmt[7], double joint_vel_lmt[7])
-{
-	if (pset == NULL || joint_vel_lmt == NULL || joint_acc_lmt == NULL)
-	{
-		printf("invalid VA limit\n");
-		return false;
-	}
-
-	long point_num = pset->OnGetPointNum();
-	if (point_num < 2 || cycle <= 0.000001)
-	{
-		return false;
-	}
-
-	double inv_cycle = 1.0 / cycle;
-	double inv_cycle2 = inv_cycle * inv_cycle;
-	double prev_vel[7] = {0};
-
-	for (long i = 1; i < point_num; i++)
-	{
-		double *prev_point = pset->OnGetPoint(i - 1);
-		double *cur_point = pset->OnGetPoint(i);
-		if (prev_point == NULL || cur_point == NULL)
-		{
-			return false;
-		}
-
-		for (long j = 0; j < 7; j++)
-		{
-			double delta = cur_point[j] - prev_point[j];
-			double cur_vel = FX_Fabs(delta) * inv_cycle;
-
-			if (joint_vel_lmt[j] > 0.000001 && cur_vel > joint_vel_lmt[j] + 0.000001)
-			{
-				printf("velocity exceed limit at point %ld joint %ld: cur_vel= %lf, limit= %lf\n", i, j, cur_vel, joint_vel_lmt[j]);
-				return false;
-			}
-
-			if (i >= 2 && joint_acc_lmt[j] > 0.000001)
-			{
-				double cur_acc = FX_Fabs(delta * inv_cycle2 - prev_vel[j] * inv_cycle);
-				if (cur_acc > joint_acc_lmt[j] + 0.000001)
-				{
-					printf("acceleration exceed limit at point %ld joint %ld: cur_acc= %lf, limit= %lf\n", i, j, cur_acc, joint_acc_lmt[j]);
-					return false;
-				}
-			}
-			prev_vel[j] = delta * inv_cycle;
-		}
-	}
-
-	return true;
 }
 
 static double OnMapLiner2ratio(double value)
@@ -2722,9 +2730,9 @@ bool CAxisPln::OnMovL_ZSP(long RobotSerial, double ref_joints[7], double start_p
 	}
 
 	Overlap_Num = overlap_num;
-	char op[] = "D:\\cccc\\SPMOVL\\overlap_0316.csv";
-	char *path = op;
-	m_output_pset.OnSaveCSV(path);
+	// char* path = (char*)"D:\\cccc\\SPMOVL\\overlap_0316.csv";
+	// m_output_pset.OnSaveCSV(path);
+
 	return true;
 }
 
@@ -2739,6 +2747,9 @@ bool CAxisPln::OnSendPoints(CPointSet *out)
 		double *p = m_output_pset.OnGetPoint(i);
 		out->OnSetPoint(p);
 	}
+
+	// VA check
+	OnMovCheckVA(out, m_cycle, m_Joint_Acc_Lmt, m_Joint_Vel_Lmt);
 	return true;
 }
 
