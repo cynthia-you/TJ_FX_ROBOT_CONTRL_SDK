@@ -287,8 +287,8 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
         2. Start_XYZABC起始点末端的位姿信息，六维信息，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
         3. End_XYZABC终止点末端的位姿信息，六维信息，目标末端点的平移和欧拉旋转使用FX_Robot_CalEndXYZABC自定义输入，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
         4. Ref_Joints约束了规划的起始关节点信息。单位：度。 
-        5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为500 mm/s
+        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为500 mm/s^2
         7. Freq 设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
 		8. OutPutPath 规划文件的保存路径
     输出：
@@ -305,8 +305,8 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
         1. FX_INT32L RobotSerial：0，左臂；1，右臂
         2. startjoints:起始点各个关节位置（单位：角度）
         3. stopjointss:终点各个关节位置（单位：角度）
-        4. vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        5. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        4. vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为500 mm/s
+        5. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为500 mm/s^2
         6. Freq 设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
 		7. OutPutPath：规划文件的保存路径
     输出：
@@ -355,8 +355,8 @@ FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End
         2. Start_XYZABC起始点末端的位姿信息，六维信息，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
         3. End_XYZABC终止点末端的位姿信息，六维信息，目标末端点的平移和欧拉旋转使用FX_Robot_CalEndXYZABC自定义输入，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
         4. Ref_Joints约束了规划的起始关节点信息。单位：度。 
-        5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为500 mm/s
+        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为500 mm/s^2
         7. Freq 设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
         8. CPointSet* ret_pset 点位缓存类函数
     输出：
@@ -372,8 +372,8 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect
         1. FX_INT32L RobotSerial：0，左臂；1，右臂
         2. startjoints:起始点各个关节位置（单位：角度）
         3. stopjointss:终点各个关节位置（单位：角度）
-        4. vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        5. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        4. vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为500 mm/s
+        5. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为500 mm/s^2
         6. Freq 设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
         7. CPointSet* ret_pset 点位缓存类函数
     输出：
@@ -421,8 +421,8 @@ FX_BOOL  FX_Robot_PLN_Set_MOVL_Start(FX_INT32L RobotSerial, Vect7 Ref_Joints, Ve
         7. Vect6 ZSP_Para:零空间约束相关参数(详情请参考逆解结构体数据介绍)
             ZSP_Type=0:ZSP_Para传入长度为6的全零数组，输入其他数值不会生效
             ZSP_Type=1:ZSP_Para数组中前三位为肘平面切向量，后三位为0。例如：希望肘平面尽量与地面平行，可设置ZSP_para=[0,0,1,0,0,0]。具体选择输入向量可参考KinematicsSDK接口中计算正运动学和零空间(臂角平面)参数的接口说明
-        8. FX_DOUBLE Vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        9. FX_DOUBLE ACC:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        8. FX_DOUBLE Vel:约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为500 mm/s
+        9. FX_DOUBLE ACC:约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为500 mm/s^2
         10. FX_INT32L Freq:设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
     返回值：
         成功：True/1; 失败：False/0
@@ -494,8 +494,8 @@ FX_BOOL FX_Robot_PLN_MOV_Target(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6
         2. Start_XYZABC起始点末端的位姿信息，六维信息，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
         3. End_XYZABC终止点末端的位姿信息，六维信息，目标末端点的平移和欧拉旋转使用FX_Robot_CalEndXYZABC自定义输入，可用正解FX_Robot_Kine_FK接口得到目标末端位姿矩阵，再用FX_Matrix42XYZABCDEG求得XYZABC。（单位：平移为毫米， 旋转为度）
         4. Ref_Joints约束了规划的起始关节点信息。单位：度。 
-        5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为1000 mm/s
-        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为1000 mm/s^2
+        5. Vel 约束了输出的规划文件的速度。单位毫米/秒， 最小为0.1mm/s， 最大为500 mm/s
+        6. ACC 约束了输出的规划文件的加速度。单位毫米/平方秒， 最小为0.1mm/s^2， 最大为500 mm/s^2
         7. Freq 设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
         8. CPointSet* ret_pset 点位缓存类函数
     输出：

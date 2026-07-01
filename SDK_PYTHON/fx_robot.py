@@ -1184,8 +1184,8 @@ class Marvin_Robot:
         :param stop_joints_A: A臂目标关节角度（7个）
         :param start_joints_B: B臂起始关节角度（7个）
         :param stop_joints_B: B臂目标关节角度（7个）
-        :param vel_ratio: 速度比例（0~1? 具体由SDK定义）
-        :param acc_ratio: 加速度比例
+        :param vel_ratio: 速度比例（0~1）
+        :param acc_ratio: 加速度比例（0~1）
         :return: 成功返回True，失败返回False
         """
         if len(start_joints_A) != 7 or len(stop_joints_A) != 7 or \
@@ -2314,8 +2314,8 @@ class Concise_Marvin_Robot:
         :param arm: 机械手臂ID "A" 或 "B"（单字符）
         :param start_joints: 起始关节角度（7个，单位度）
         :param stop_joints: 目标关节角度（7个，单位度）
-        :param vel_ratio: 速度比例（0~1 或百分比）
-        :param acc_ratio: 加速度比例（0~1 或百分比）
+        :param vel_ratio: 速度比例（0~1 ）
+        :param acc_ratio: 加速度比例（0~1 ）
         :return: bool 成功返回 True，失败返回 False
         """
         if len(arm) != 1 or arm not in ('A', 'B'):
