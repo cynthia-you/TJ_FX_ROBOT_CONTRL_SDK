@@ -195,6 +195,9 @@ extern "C"
 	bool OnSetUserSpcfData_B(long data_category);
 	bool OnSetUserSpcfData(long data_category);
 
+	// 获取机器人名称
+	bool OnGetRobotName(char *robotName);
+
 	/////////////////////////////////////简明式接口Concise SDK API//////////////////////////////////////////////
 	// 简明式接口，摒弃了老接口需要在OnClearSet() 和 OnSetSend()之间使用，且左右臂要的单独调取用，且需要查询伺服是否有错，清错后使用的逻辑。
 	// 简明式接口自行在内部做错误状态检查。

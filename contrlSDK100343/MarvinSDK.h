@@ -151,6 +151,7 @@ extern "C"
 	// 4.1 设置指定手臂的力控参数
 	// 设置fcType=0，基于基座的力控。
 	// 设置fcType=3，末端阻抗下力控，先使用OnSetEefRot_A/OnSetEefRot_B
+	// 设置fcType=4，进立场控制，设置后再调用FTArmControl接口
 	// 设置左臂力控参数
 	FX_DLL_EXPORT bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
 	// 设置右臂力控参数
@@ -250,6 +251,9 @@ extern "C"
 	FX_DLL_EXPORT bool OnSetUserSpcfData_A(long data_category);
 	FX_DLL_EXPORT bool OnSetUserSpcfData_B(long data_category);
 	FX_DLL_EXPORT bool OnSetUserSpcfData(long data_category);
+
+	// 获取机器人名称
+	FX_DLL_EXPORT bool OnGetRobotName(char *robotName);
 
 	/////////////////////////////////////简明式接口Concise SDK API//////////////////////////////////////////////
 	// 简明式接口，摒弃了老接口需要在OnClearSet() 和 OnSetSend()之间使用，且左右臂要的单独调取用，且需要查询伺服是否有错，清错后使用的逻辑。

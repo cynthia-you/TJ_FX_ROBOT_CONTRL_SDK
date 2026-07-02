@@ -527,9 +527,9 @@ bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], doub
 			return false;
 		}
 	}
-	if (fcType != 0 && fcType != 3)
+	if (fcType != 0 && fcType != 3 && fcType != 4)
 	{
-		printf("[ERROR] OnSetForceCtrPara_A: Invalid fcType number %d (valid value: 0 or 3)\n", fcType);
+		printf("[ERROR] OnSetForceCtrPara_A: Invalid fcType number %d (valid value: 0,3,4)\n", fcType);
 		return false;
 	}
 	if (isnan(fcAdjLmt) || isinf(fcAdjLmt))
@@ -791,9 +791,9 @@ bool OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], doub
 			return false;
 		}
 	}
-	if (fcType != 0 && fcType != 3)
+	if (fcType != 0 && fcType != 3 && fcType != 4)
 	{
-		printf("[ERROR] OnSetForceCtrPara_B: Invalid fcType number %d (valid value: 0 or 3)\n", fcType);
+		printf("[ERROR] OnSetForceCtrPara_B: Invalid fcType number %d (valid value: 0,3,4)\n", fcType);
 		return false;
 	}
 	if (isnan(fcAdjLmt) || isinf(fcAdjLmt))
@@ -3619,4 +3619,144 @@ int CheckSDKTypeCompat(int *pByteOrder)
 
 	printf("[INFO] CheckSDKTypeCompat: all checks passed (type sizes, pack(4), byte order)\n");
 	return is_little ? 1 : 2;
+}
+
+bool OnGetRobotName(char *robotName)
+{
+
+	{
+		printf("[Error]: OnGetRobotName: robotName is NULL\n");
+		return false;
+	}
+	char *local_path = (char *)"robot.ini";
+	char *remot_path = (char *)"/home/FUSION/Config/cfg/robot.ini";
+	if (!CRobot::OnRecvFile(local_path, remot_path))
+	{
+		return false;
+	}
+
+	FILE *file = fopen(local_path, "rb");
+	if (!file)
+	{
+		printf("[Error]: Cannot open file:%s\n", local_path);
+		if (remove(local_path) == 0)
+		{
+			printf("[Error]: delet file:%s\n", local_path);
+		}
+		return false;
+	}
+
+	if (local_log_tag == true)
+	{
+		printf("[Marvin SDK]: Recv file from host:%s\n", local_path);
+	}
+
+	const long CHUNK_SIZE = 4096;
+	char *chunk = (char *)malloc(CHUNK_SIZE);
+	char line[512];
+	int lineLen = 0;
+	bool found = false;
+
+	if (!chunk)
+	{
+		fclose(file);
+		printf("[Error]: malloc failed\n");
+		return false;
+	}
+
+	if (fseek(file, 0, SEEK_END) != 0)
+	{
+		free(chunk);
+		fclose(file);
+		printf("[Error]: fseek failed on %s\n", local_path);
+		return false;
+	}
+	long pos = ftell(file);
+
+	while (pos > 0 && !found)
+	{
+		long readSize = (pos >= CHUNK_SIZE) ? CHUNK_SIZE : pos;
+		pos -= readSize;
+		fseek(file, pos, SEEK_SET);
+		size_t got = fread(chunk, 1, readSize, file);
+
+		for (long i = (long)got - 1; i >= 0 && !found; i--)
+		{
+			char c = chunk[i];
+			if (c == '\n')
+			{
+				if (lineLen > 0)
+				{
+					for (int a = 0, b = lineLen - 1; a < b; a++, b--)
+					{
+						char t = line[a];
+						line[a] = line[b];
+						line[b] = t;
+					}
+					line[lineLen] = '\0';
+					if (strncmp(line, "Name=", 5) == 0)
+					{
+						strcpy(robotName, line + 5);
+						found = true;
+					}
+					lineLen = 0;
+				}
+			}
+			else if (c != '\r')
+			{
+				if (lineLen < (int)(sizeof(line) - 1))
+				{
+					line[lineLen++] = c;
+				}
+			}
+		}
+	}
+
+	if (!found && lineLen > 0)
+	{
+		for (int a = 0, b = lineLen - 1; a < b; a++, b--)
+		{
+			char t = line[a];
+			line[a] = line[b];
+			line[b] = t;
+		}
+		line[lineLen] = '\0';
+		if (strncmp(line, "Name=", 5) == 0)
+		{
+			strcpy(robotName, line + 5);
+			found = true;
+		}
+	}
+
+	free(chunk);
+	fclose(file);
+
+	if (!found)
+	{
+		printf("[Error]: can not find 'Name' in robot.ini\n");
+		if (remove(local_path) == 0)
+		{
+			printf("[Error]: delet file:%s\n", local_path);
+		}
+		return false;
+	}
+
+	if (local_log_tag == true)
+	{
+		printf("[Marvin SDK]: RobotName=%s\n", robotName);
+	}
+
+	if (remove(local_path) == 0)
+	{
+		if (local_log_tag == true)
+		{
+			printf("[Marvin SDK]: delet file:%s\n", local_path);
+		}
+	}
+	else
+	{
+		printf("[Error]: delete file failed or file does not exsist:%s\n", local_path);
+		return false;
+	}
+	return true;
 }

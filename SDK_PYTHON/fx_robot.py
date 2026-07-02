@@ -883,7 +883,7 @@ class Marvin_Robot:
     def set_force_control_params(self,arm:str, fcType: int, fxDirection: list, fcCtrlpara: list, fcAdjLmt: float):
         '''设置力控参数
         :param arm: 机械手臂ID “A” OR “B”
-        :param fcType: 力控类型 0:坐标空间力控;3:末端阻抗下力控
+        :param fcType: 力控类型 0:坐标空间力控;3:末端阻抗下力控;4:立场
         :param fxDirection: list(6,1). 力控方向 需要控制方向设1，目前只支持 X,Y,Z控制方向.如力控方向为z,fxDirection=[0,0,1,0,0,0]
         :param fcCtrlpara: list(7,1). 控制参数 目前全0
         :param fcAdjLmt:毫米，允许的调节范围
