@@ -1245,23 +1245,19 @@ bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6
 	///////determine same points
 	long i = 0;
 	long j = 0;
-	long same_tag[6] = {0};
-	for (i = 0; i < 6; i++)
-	{
-		if (fabs(end_pos[i] - start_pos[i]) < 0.01)
-		{
-			same_tag[i] = 1;
-		}
-	}
+	long dof = 0;
+
 	///////Check Max Axis
-	CPointSet ret[6];
-	long num[3] = {0}; // ret[0].OnGetPointNum();
+	CPointSet ret[4];
+	long num[4] = {0}; // ret[0].OnGetPointNum();
 	long max_num = 0;
 	long max_num_axis = 0;
+	double axis_len[4] = {0};
 
 	for (i = 0; i < 3; i++)
 	{
-		OnPln(start_pos[i], end_pos[i], vel, acc, jerk, &ret[i]);
+		axis_len[i] = FX_Sqrt((end_pos[i] - start_pos[i]) * (end_pos[i] - start_pos[i]));
+		OnPln(0, axis_len[i], vel, acc, jerk, &ret[i]);
 		num[i] = ret[i].OnGetPointNum();
 		if (num[i] > max_num)
 		{
@@ -1288,19 +1284,20 @@ bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6
 		Q_end[2] = -Q_end[2];
 		Q_end[3] = -Q_end[3];
 	}
-	double qangle = FX_ACOS(cosangle) * 2 * FXARM_R2D;
-
-	// Cut Quaterniongs PLN
-	if ((same_tag[3] + same_tag[4] + same_tag[5]) < 3)
+	if(FX_Fabs(cosangle) > 1.000)
 	{
-		OnPln(0, qangle, vel, acc, jerk, &ret[3]);
-		double qnum = ret[3].OnGetPointNum();
+		cosangle = FX_Fabs(cosangle)/cosangle;
+	}
 
-		if (qnum > max_num)
-		{
-			max_num = qnum;
-			max_num_axis = 3;
-		}
+	double qangle = acos(cosangle) * 2 * FXARM_R2D;
+	OnPln(0, qangle, vel*0.8, acc*0.8, jerk*0.8, &ret[3]);
+	num[3] = ret[3].OnGetPointNum();
+
+	if (num[3] > max_num)
+	{
+		max_num = num[3];
+		max_num_axis = 3;
+		axis_len[3] = qangle;
 	}
 
 	CPointSet out;
@@ -1310,167 +1307,30 @@ bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6
 	for (i = 0; i < max_num; i++)
 	{
 		double *p = ret[max_num_axis].OnGetPoint(i);
-		tmp[0] = end_pos[0];
-		tmp[1] = end_pos[1];
-		tmp[2] = end_pos[2];
-		tmp[max_num_axis] = p[0];
+		double ratio = p[0]/axis_len[max_num_axis];
 
-		if ((same_tag[3] + same_tag[4] + same_tag[5]) < 3)
+		for(j = 0;j < 3; j++)
 		{
-			double ratio = 0.0;
-			if (max_num_axis == 3)
-			{
-				ratio = p[0] / qangle;
-				FX_QuaternionSlerp(Q_start, Q_end, ratio, &tmp[3]);
-			}
-			else
-			{
-				ratio = i / (double)(max_num - 1);
-				FX_QuaternionSlerp(Q_start, Q_end, ratio, &tmp[3]);
-			}
+			tmp[j] = start_pos[j] * (1-ratio) + end_pos[j] * ratio;
 		}
-		else
-		{
-			tmp[3] = Q_start[0];
-			tmp[4] = Q_start[1];
-			tmp[5] = Q_start[2];
-			tmp[6] = Q_start[3];
-		}
+		FX_QuaternionSlerp(Q_start,Q_end,ratio,&tmp[3]);
 
 		out.OnSetPoint(tmp);
 	}
 
-	// set 4 same point
-	for (i = 0; i < 4; i++)
+	// set 3 same point
+	for (i = 0; i < 3; i++)
 	{
 		out.OnSetPoint(tmp);
 	}
-
-	long dof = 0;
-	bool end_tag = false;
-	for (dof = 0; dof < 3; dof++)
-	{
-		if (dof != max_num_axis)
-		{
-			if (same_tag[dof] == 0)
-			{
-				double step = (double)(num[dof] - 1) / (max_num + 1);
-				long serial = 0;
-				double tmpy = 0;
-				for (i = 0; i < num[dof] - 3; i += 2)
-				{
-					double *p1 = ret[dof].OnGetPoint(i);
-					double *p2 = ret[dof].OnGetPoint(i + 1);
-					double *p3 = ret[dof].OnGetPoint(i + 2);
-					double *p4 = ret[dof].OnGetPoint(i + 3);
-
-					double x[4] = {0};
-					double y[4] = {0};
-					double xpara[10] = {0};
-					double retpara[4] = {0};
-
-					x[0] = i;
-					x[1] = i + 1;
-					x[2] = i + 2;
-					x[3] = i + 3;
-
-					y[0] = p1[0];
-					y[1] = p2[0];
-					y[2] = p3[0];
-					y[3] = p4[0];
-
-					CO3Polynorm::CalXPara(x, xpara);
-					CO3Polynorm::CalPnPara(xpara, y, retpara);
-
-					if (i == 0)
-					{
-						// for (j = 0; j < 3; j++)
-						for (; tmpy < x[3]; tmpy = serial * step)
-						{
-							double sloy = CO3Polynorm::CalPnY(retpara, tmpy);
-							double *p = out.OnGetPoint(serial);
-
-							serial++;
-
-							if (p != NULL)
-							{
-								p[dof] = sloy;
-							}
-						}
-					}
-					else
-					{
-						long k = 0;
-						while (tmpy > x[0])
-						{
-							k++;
-							tmpy -= step;
-						}
-						k--;
-						tmpy += step;
-
-						while (tmpy < x[1])
-						{
-							double sloy = CO3Polynorm::CalPnY(retpara, tmpy);
-							double *p = out.OnGetPoint(serial - k);
-							if (p != NULL)
-							{
-								double r1 = j;
-								double r2 = 0.0;
-								r1 /= step;
-								r2 = 1 - r1;
-								sloy = sloy * r1 + p[dof] * r2;
-								p[dof] = sloy;
-							}
-
-							tmpy += step;
-							k--;
-						}
-
-						while (tmpy < x[3])
-						{
-							double sloy = CO3Polynorm::CalPnY(retpara, tmpy);
-							double *p = out.OnGetPoint(serial);
-
-							serial++;
-							tmpy += step;
-							if (sloy < x[3] && tmpy > x[3])
-							{
-								end_tag = true;
-							}
-
-							if (p != NULL)
-							{
-								p[dof] = sloy;
-							}
-						}
-
-						if (end_tag == true)
-						{
-							double *p = out.OnGetPoint(serial);
-							if (p != NULL)
-							{
-								p[dof] = end_pos[dof];
-							}
-						}
-					}
-				}
-			}
-			else
-			{
-				for (i = 0; i < max_num; i++)
-				{
-					double *p = out.OnGetPoint(i);
-					if (p != NULL)
-					{
-						p[dof] = start_pos[dof];
-					}
-				}
-			}
-		}
-	}
-
 	long final_num = out.OnGetPointNum();
+
+	if(0)
+	{
+		char* path1 = (char*)"generate_xyzq.txt";
+		out.OnSave(path1);
+	}
+
 	////////////////////InvKine//////////////
 	FX_InvKineSolvePara sp;
 
@@ -1576,6 +1436,12 @@ bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6
 			printf("failed\n");
 		}
 		// ret_pset->OnSetPoint(ret_joints);
+	}
+
+	if(0)
+	{
+		char* path2 = (char*)"output_joints.txt";
+		ret_pset->OnSave(path2);
 	}
 
 	// VA check
