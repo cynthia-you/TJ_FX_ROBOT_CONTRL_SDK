@@ -108,6 +108,7 @@ extern "C"
 	// 4.1 设置指定手臂的力控参数
 	// 设置fcType=0，基于基座的力控。
 	// 设置fcType=3，末端阻抗下力控，先使用OnSetEefRot_A/OnSetEefRot_B
+	// 设置fcType=4，进立场控制，设置后再调用FTArmControl接口
 	// 设置左臂力控参数
 	bool OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt);
 	// 设置右臂力控参数

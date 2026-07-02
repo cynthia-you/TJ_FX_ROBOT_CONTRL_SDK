@@ -3623,7 +3623,7 @@ int CheckSDKTypeCompat(int *pByteOrder)
 
 bool OnGetRobotName(char *robotName)
 {
-
+	if (robotName == NULL)
 	{
 		printf("[Error]: OnGetRobotName: robotName is NULL\n");
 		return false;

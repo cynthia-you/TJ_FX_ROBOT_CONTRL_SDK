@@ -2687,6 +2687,7 @@ class Concise_Marvin_Robot:
             self.robot.OnGetRobotName.argtypes = [c_char_p]
             self.robot.OnGetRobotName.restype = c_bool
             result = self.robot.OnGetRobotName(name_buf)
+            print(f"===={name_buf.value.decode('utf-8')}")
             if result:
                 return name_buf.value.decode('utf-8')
             return None
