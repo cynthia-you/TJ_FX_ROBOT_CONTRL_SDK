@@ -2429,10 +2429,6 @@ bool CAxisPln::OnMovL_ZSP(long RobotSerial, double ref_joints[7], double start_p
 		cartesian_traj.OnSetPoint(pose);
 	}
 
-	char op1[] = "D:\\cccc\\SPMOVL\\overlap_midxyzabc.csv";
-	char *path1 = op1;
-	cartesian_traj.OnSaveCSV(path1);
-
 	long final_num = cartesian_traj.OnGetPointNum();
 	////////////////////InvKine//////////////
 	FX_InvKineSolvePara sp;
@@ -2596,8 +2592,6 @@ bool CAxisPln::OnMovL_ZSP(long RobotSerial, double ref_joints[7], double start_p
 	}
 
 	Overlap_Num = overlap_num;
-	// char* path = (char*)"D:\\cccc\\SPMOVL\\overlap_0316.csv";
-	// m_output_pset.OnSaveCSV(path);
 
 	return true;
 }
