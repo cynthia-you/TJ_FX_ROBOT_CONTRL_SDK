@@ -1432,7 +1432,23 @@ class Marvin_Robot:
         except Exception as e:
             print(f"set_PD_vel_est_step failed: {e}")
             return False
-    
+
+    def get_robot_name(self):
+        '''获取机器人名称
+        :return: 成功返回机器人名称(str)，失败返回 None
+        '''
+        try:
+            name_buf = ctypes.create_string_buffer(512)
+            self.robot.OnGetRobotName.argtypes = [c_char_p]
+            self.robot.OnGetRobotName.restype = c_bool
+            ret = self.robot.OnGetRobotName(name_buf)
+            if ret:
+                return name_buf.value.decode('utf-8')
+            return None
+        except Exception as e:
+            print(f'ERROR:{e}')
+            return None
+
     def get_tool_info(self,):
         '''检查控制器是否已经保存工具信息
         :return:
@@ -2660,6 +2676,23 @@ class Concise_Marvin_Robot:
         self.robot.FX_OnSetVelEstStep.restype = ctypes.c_bool
         time_long = ctypes.c_long(time)
         return self.robot.FX_OnSetVelEstStep(arm.encode('ascii'),time_long)
+
+    def get_robot_name(self) -> str | None:
+        """获取机器人名称
+
+        :return: 成功返回机器人名称(str)，失败返回 None
+        """
+        name_buf = ctypes.create_string_buffer(512)
+        try:
+            self.robot.OnGetRobotName.argtypes = [c_char_p]
+            self.robot.OnGetRobotName.restype = c_bool
+            result = self.robot.OnGetRobotName(name_buf)
+            if result:
+                return name_buf.value.decode('utf-8')
+            return None
+        except Exception as e:
+            print(f"OnGetRobotName failed: {e}")
+            return None
 
     def help(self, method_name: str = None) -> None:
         """

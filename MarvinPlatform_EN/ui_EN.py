@@ -2247,7 +2247,7 @@ class App:
         row1_frame.pack(fill="x", pady=5)
 
         ttk.Label(row1_frame, text="The coordinate directions of the base (x-axis and y-axis)").pack(side="left", padx=5)
-        ttk.Label(row1_frame, text="UMI coordinate orientation (option to align base with UMI coordinate orientation)").pack(side="right", padx=5)
+        ttk.Label(row1_frame, text="IMU coordinate orientation (option to align base with IMU coordinate orientation)").pack(side="right", padx=5)
 
         axis_frame = ttk.Frame(parent)
         axis_frame.pack(fill="x", pady=10)
