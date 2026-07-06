@@ -2350,16 +2350,17 @@ bool CRobot::OnStopPlnJoint_A()
 
 bool CRobot::OnStopPlnJoint_interA()
 {
-	long add_size = 1 + sizeof(FX_FLOAT) * 1;
-	if (add_size + m_InsRobot->m_Slen >= 1400)
+	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
+		if (m_InsRobot->m_LocalLogTag == true)
+		{
+			printf("[Marvin SDK %s]: Warning: Version mismatch between control system %d and SDK %d\n", __FUNCTION__, m_InsRobot->m_ctrlSysVersion, SDK_VERSION);
+		}
 		return false;
 	}
-	m_InsRobot->m_SendBuf[m_InsRobot->m_Slen] = 115;
-	m_InsRobot->m_Slen++;
-	FX_UCHAR *pnum = (FX_UCHAR *)&m_InsRobot->m_SendBuf[2];
-	(*pnum)++;
-	return true;
+	int data[10] = {0};
+	long ret = OnWriteInt32(115, 0, data);
+	return (ret == 0);
 }
 
 bool CRobot::OnSetTrajSet_A(long serial, long pointNum, double *data)

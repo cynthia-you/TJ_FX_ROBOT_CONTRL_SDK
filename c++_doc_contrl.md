@@ -284,10 +284,10 @@ bool OnGetBuf(DCSS * ret);
         FX_FLOAT    m_EST_Joint_Firc_Dot[7];	///* 关节力扰动估计值微分 */				70-76
         FX_FLOAT    m_EST_Joint_Force[7];	///* 关节力扰动估计值 */						80-86
         FX_FLOAT    m_EST_Cart_FN[6];		///* 末端扰动估计值 */						90-95
-        FX_CHAR     m_TipDI;                ///* 是否按住拖动按钮信号 */	
-        FX_CHAR     m_LowSpdFlag;			///* 机器人停止运动标志， 可用于判断是否运动到位。 */	
+        FX_UCHAR    m_TipDI;                ///* 是否按住拖动按钮信号 */	
+        FX_UCHAR    m_LowSpdFlag;			///* 机器人停止运动标志， 可用于判断是否运动到位。 */	
         FX_CHAR     m_pad[1];               ///* 填充，没有实义 */
-	    FX_CHAR		m_TrajState;			//规划状态： 0: no traj; 1: receving; 2: recevied; >=3: running traj
+	    FX_UCHAR	m_TrajState;			//规划状态： 0: no traj; 1: receving; 2: recevied; >=3: running traj
     }RT_OUT; ///* 机器人反馈数据*/
     
     typedef struct

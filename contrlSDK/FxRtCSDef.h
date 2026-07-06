@@ -2,6 +2,7 @@
 #define FX_RTCS_DEF_H_
 
 #include "FxType.h"
+#pragma pack(push, 4)
 
 #define MAX_ROWS 7
 #define MAX_COLS 50
@@ -43,10 +44,10 @@ typedef struct
 	FX_FLOAT m_EST_Joint_Firc_Dot[7]; ///* 关节力扰动估计值微分 */				70-76
 	FX_FLOAT m_EST_Joint_Force[7];	  ///* 关节力扰动估计值 */						80-86
 	FX_FLOAT m_EST_Cart_FN[6];		  ///* 末端扰动估计值 */							90-95
-	FX_CHAR m_TipDI;				  // 末端按钮是否按下
-	FX_CHAR m_LowSpdFlag;			  // 机器人停止运动标志， 可用于判断是否运动到位。
-	FX_CHAR m_pad[1];
-	FX_CHAR m_TrajState; // 规划状态： 0: no traj; 1: receving; 2: recevied; >=3: running traj
+	FX_UCHAR m_TipDI;				  // 末端按钮是否按下
+	FX_UCHAR m_LowSpdFlag;			  // 机器人停止运动标志， 可用于判断是否运动到位。
+	FX_UCHAR m_pad[1];
+	FX_UCHAR m_TrajState; // 规划状态： 0: no traj; 1: receving; 2: recevied; >=3: running traj
 } RT_OUT;
 
 typedef struct
@@ -195,5 +196,5 @@ typedef enum
 	ARM_ERR_Emcy = 13,				  //"急停"
 	ARM_DYNA_FLOAT_NO_GYRO = 14,	  //"配置文件选择了浮动基座选项，但是UMI设置在配置文件未开"
 } ArmError;
-
+#pragma pack(pop)
 #endif
