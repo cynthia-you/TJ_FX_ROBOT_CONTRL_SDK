@@ -181,6 +181,7 @@ extern "C"
 	long OnGetChDataB(unsigned char data_ptr[256], long *ret_ch);
 	bool OnSetChDataB(unsigned char data_ptr[256], long size_int, long set_ch);
 
+	///////////////  以下为100343特有方法  ///////////////
 	// 设置PD控制速度前馈 轨迹发送周期
 	// arm:"A" "B" ； step： 轨迹发送周期（单位： ms ），小于1 则不添加速度前馈
 	bool FX_OnSetVelEstStep(char arm, long step);
@@ -198,6 +199,7 @@ extern "C"
 
 	// 获取机器人名称
 	bool OnGetRobotName(char *robotName);
+	///////////////  以上为100343特有方法  ///////////////
 
 	/////////////////////////////////////简明式接口Concise SDK API//////////////////////////////////////////////
 	// 简明式接口，摒弃了老接口需要在OnClearSet() 和 OnSetSend()之间使用，且左右臂要的单独调取用，且需要查询伺服是否有错，清错后使用的逻辑。
