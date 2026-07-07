@@ -418,7 +418,13 @@ robot.send_cmd()
 
 ## 二、编译方法
 
-## 注：最新contrlSDK100343/contrlSDK  和 kinematicsSDK 代码兼容windows 和linux平台。
+### 开发编译环境
+        Winodws: windows11, 编译工具MINGW
+        Linux: ubuntu20.04（glibc2.31）x_86
+
+        SDK在x86的CPU架构的机器下测试，如果您是arm系列机器，请修改编译后使用。
+        
+        contrlSDK100343/contrlSDK  和 kinematicsSDK 代码兼容windows 和linux平台。
 
 ### 2.1 编译
     2.1.1 编译so动态库:
