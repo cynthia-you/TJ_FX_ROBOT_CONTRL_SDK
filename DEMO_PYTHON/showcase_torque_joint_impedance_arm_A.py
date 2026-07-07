@@ -66,22 +66,23 @@ else:
 robot.log_switch('1') #全局日志开："1", 关："0"
 robot.local_log_switch('1') # 主要日志开："1", 关："0"
 
-'''设置扭矩模式,关节阻抗模式,速度加速度百分比'''
-robot.clear_set()
-robot.set_state(arm='A',state=3)#state=3扭矩模式
-robot.set_impedance_type(arm='A',type=1) #type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
-robot.set_vel_acc(arm='A',velRatio=10, AccRatio=10)
-robot.send_cmd()
-time.sleep(0.5)
 
-'''阻抗参数'''
+'''设置阻抗参数'''
 robot.clear_set()
 # #高刚度
 # K=[10,10,10,10, 10, 10, 10]
 # D7=[1,1,1,1,1,1,1]
 robot.set_joint_kd_params(arm='A',K=[12, 12, 12, 10, 9, 9, 7], D=[0.3,0.3,0.3,0.2,0.2,0.2,0.2])#预设参考。
+robot.set_vel_acc(arm='A',velRatio=10, AccRatio=10)
 robot.send_cmd()
 time.sleep(0.5)
+
+'''设置扭矩模式,关节阻抗模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=3)#state=3扭矩模式
+robot.set_impedance_type(arm='A',type=1) #type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
+robot.send_cmd()
+time.sleep(1)
 
 
 '''订阅数据查看是否设置'''
