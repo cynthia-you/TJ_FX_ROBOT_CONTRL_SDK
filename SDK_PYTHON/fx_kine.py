@@ -547,7 +547,7 @@ class Marvin_Kine:
             return False
 
     def ik(self, structure_data):
-        '''末端位置和姿态逆解到关节值
+        '''末端位置和姿态逆解到关节值，通过结构体数据判断逆解情况：是否成功； 失败原因等。
         :param 结构体数据
             输入参数：
                 m_Input_IK_TargetTCP：末端位置姿态4x4列表，可通过正解接口获取或者指定末端的位置和旋转
@@ -630,6 +630,19 @@ class Marvin_Kine:
 
     def ik_nsp(self, sturcture_data):
         '''逆解优化：可调整方向,不能单独使用，ik得到的逆运动学解的臂角不满足当前选解需求时使用。
+            结构体可真实反馈逆解情况
+    
+        输入数据里必须检查：
+            1）m_Input_IK_TargetTCP 是否超过机器人可达，
+            2）m_Input_IK_RefJoint ， 非零位的TCP的参考关节角度不能全为0
+            3）如果需要使用零空间臂角优化，m_Input_IK_ZSPType，m_Input_IK_ZSPPara，m_Input_ZSP_Angle需要设置
+    
+        如果逆解失败，可通过以下tag分析失败原因：
+            1）m_Output_IsOutRange 为 true, 输入的位置姿态矩阵机器人不可达。
+            2）m_Output_IsDeg 为 true, 关节间有奇异，调整参考角度
+            3）m_Output_IsJntExd 为 true, 有关节超出正负限位，细查看 m_Output_JntExdTags可知具体超限关节，再调整参考角度
+
+
             输入参数：
                 m_Input_IK_TargetTCP：末端位置姿态4x4列表，可通过正解接口获取或者指定末端的位置和旋转
                 m_Input_IK_RefJoint：参考输入角度，约束构想接近参考解读，防止解出来的构型跳变。该构型的肩、肘、腕组成初始臂角平面，以肩到腕方向为Z向量，参考角第四关节不能为零

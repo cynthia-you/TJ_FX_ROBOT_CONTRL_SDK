@@ -83,6 +83,18 @@
     使用前，请一定确认机型，导入正确的配置文件(*.MvKDCfg)，文件导错，计算会错误啊啊啊,甚至看起来运行正常，但是值错误！！！
 
 ### 逆解结构体参数介绍
+    结构体可真实反馈逆解情况
+    
+    输入数据里必须检查：
+        1）m_Input_IK_TargetTCP 是否超过机器人可达，
+        2）m_Input_IK_RefJoint ， 非零位的TCP的参考关节角度不能全为0
+        3）如果需要使用零空间臂角优化，m_Input_IK_ZSPType，m_Input_IK_ZSPPara，m_Input_ZSP_Angle需要设置
+    
+    如果逆解失败，可通过以下tag分析失败原因：
+        1）m_Output_IsOutRange 为 true, 输入的位置姿态矩阵机器人不可达。
+        2）m_Output_IsDeg 为 true, 关节间有奇异，调整参考角度
+        3）m_Output_IsJntExd 为 true, 有关节超出正负限位，细查看 m_Output_JntExdTags可知具体超限关节，再调整参考角度
+        
     class FX_InvKineSolvePara(ctypes.Structure):
         _fields_ = [
             # 输入部分
@@ -104,7 +116,7 @@
             ("m_Output_JntExdABS", FX_DOUBLE), #所有关节中超出限位的最大角度的绝对值，比如解出一组关节角度，7关节超限，的值为-95，已知软限位为-90度，m_Output_JntExdABS=5.
             ("m_Output_IsJntExd", FX_BOOL), #是否有关节超出位置正负限制（False：未超出；True：超出）
             ("m_Output_RunLmtP", Vect7), #各个关节运行的正限位, 可作为计算六七关节的干涉参考最大限制。
-            ("m_Output_RunLmtN", Vect7) #各个关节运行的负限位，可作为计算六七关节的干涉参考最大限制。                                                                                mm
+            ("m_Output_RunLmtN", Vect7) #各个关节运行的负限位，可作为计算六七关节的干涉参考最大限制。                                                                                
         ]
 
 ### （1）日志关闭
