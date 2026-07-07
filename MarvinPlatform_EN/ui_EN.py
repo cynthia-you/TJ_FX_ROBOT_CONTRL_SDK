@@ -929,7 +929,7 @@ class App:
         joints_row3 = tk.Frame(joint_cmd_frame,bg='white')
         joints_row3.pack(fill="x", pady=(0, 5))
 
-        self.run_period_1 = tk.Button(joints_row3, text="Trajectory", width=8, command=lambda: self.thread_run_period('A'))
+        self.run_period_1 = tk.Button(joints_row3, text="RunTrajectory", width=12, command=lambda: self.thread_run_period('A'))
         self.run_period_1.pack(side="left", padx=(0, 5))
 
         self.period_path_entry_1 = tk.Entry(joints_row3, textvariable=self.period_file_path_1, width=45,
@@ -1461,7 +1461,7 @@ class App:
         joints_row3 = tk.Frame(joint_cmd_frame,bg='white')
         joints_row3.pack(fill="x", pady=(0, 5))
 
-        self.run_period_2 = tk.Button(joints_row3, text="Trajectory",width=8,  command=lambda: self.thread_run_period('B'))
+        self.run_period_2 = tk.Button(joints_row3, text="RunTrajectory",width=12,  command=lambda: self.thread_run_period('B'))
         self.run_period_2.pack(side="left", padx=(0, 5))
 
         self.period_path_entry_2 = tk.Entry(joints_row3, textvariable=self.period_file_path_2, width=45,
