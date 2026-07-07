@@ -3890,6 +3890,44 @@ FX_BOOL FX_Robot_PLN_Get_MOVL_Path(FX_INT32L RobotSerial, CPointSet *ret_Pset)
 
 	return FX_TRUE;
 }
+
+FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_Joints, FX_DOUBLE Vel_ratio, FX_DOUBLE ACC_ratio, FX_INT32L Freq, CPointSet* ret_pset)
+{
+	if (FX_LOG_TAG)
+		FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVJ]\n");
+
+	Vect7 start_pos = {0};
+	Vect7 end_pos = {0};
+	FX_INT32L i = 0;
+	FX_DOUBLE vr = Vel_ratio * 0.01;
+	FX_DOUBLE ar = ACC_ratio * 0.01;
+
+	for (i = 0; i < 7; i++)
+	{
+		start_pos[i] = Start_Joints[i];
+		end_pos[i] = End_Joints[i];
+	}
+
+	CAxisJointPln Spln;
+	FX_Robot *pRobot = (FX_Robot *)&m_Robot[RobotSerial];
+	Spln.OnSetLmt(7,pRobot->m_Lmt.m_JLmtPos_N, pRobot->m_Lmt.m_JLmtPos_P, pRobot->m_Lmt.m_JLmtVel, pRobot->m_Lmt.m_JLmtAcc);
+	Spln.OnSetFreq(Freq);
+	FX_BOOL result = Spln.OnMovJoint(RobotSerial, start_pos, end_pos, vr, ar, ret_pset);
+
+	if (result != FX_FALSE)
+	{
+		return FX_TRUE;
+	}
+	else
+	{
+		if (FX_LOG_TAG)
+			FX_LOG_INFO("FX_Robot_PLN_MOVJ: Joint Over Limit or Over Reachable Space. Check Parameters.\n");
+		return FX_FALSE;
+	}
+
+	return FX_FALSE;
+}
+
 /////Joint Torque to EE Torque Mapping
 FX_BOOL FX_Robot_Solve66_GaussJordan(const Matrix6 A, const Vect6 b, Vect6 x)
 {

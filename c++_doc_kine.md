@@ -501,6 +501,22 @@ FX_BOOL FX_Robot_PLN_MOV_Target(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6
     输出：
         成功：True/1; 失败：False/0 
 
+###     19. 关节空间规划
+FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_Joints, FX_DOUBLE Vel_ratio, FX_DOUBLE ACC_ratio, 
+                            FX_INT32L Freq, CPointSet* ret_pset);
+
+    • 输入RobotSerial（参数含义参考初始化参数部分）、起始关节角、结束关节角、关节空间规速度比例及划加速度比例，输出为点位缓存类函数
+    输入：
+        1. FX_INT32L RobotSerial：0，左臂；1，右臂
+        2. Vect7 Start_Joints：起始点关节角度
+        3. Vect7 End_Joints：终止点关节角度
+        4. FX_DOUBLE Vel_ratio：速度比例（1-100）
+        6. FX_DOUBLE ACC_ratio：加速度比例（1-100）
+        7. FX_INT32L Freq：设置内部规划频率(注意：基频设置为1000Hz，下发点位频率若不是基频的整数分频，则默认频率为500Hz)
+        8. CPointSet* ret_pset 点位缓存类函数
+    输出：
+        成功：True/1; 失败：False/0 
+
 # 二、案例脚本
 ## C++开发的使用编译见：
 [SDK使用](DEMO_C++/readme.md)
