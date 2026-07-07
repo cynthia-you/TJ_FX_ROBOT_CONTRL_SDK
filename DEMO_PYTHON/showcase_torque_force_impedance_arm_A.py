@@ -89,6 +89,7 @@ robot.clear_set()
 # 设置是在Y轴方向有5厘米的调节范围
 robot.set_force_control_params(arm='A',fcType=0, fxDirection=[0, 1, 0, 0, 0, 0], fcCtrlpara=[0, 0, 0, 0, 0, 0, 0],
                                         fcAdjLmt=5.)
+robot.send_cmd()
 time.sleep(0.5)
 
 '''订阅数据查看是否设置'''
