@@ -32,15 +32,18 @@ extern "C"
 	FX_BOOL FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para);
 	FX_BOOL FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para);
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	/////Motion Planning
+	/////Motion Planning - Cartisian space
 	FX_BOOL FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L RotType, Vect3 Angle_Param, Vect6 End_XYZABC);
 	FX_BOOL FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, FX_CHAR *OutPutPath);
 	FX_BOOL FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc, FX_INT32L Freq, FX_CHAR *OutPutPath);
 
-	/////Multi-Point Motion Planning
+	/////Multi-Point Motion Planning - Cartisian space
 	FX_BOOL FX_Robot_PLN_Set_MOVL_Start(FX_INT32L RobotSerial, Vect7 Ref_Joints, Vect6 Start_XYZABC, Vect6 End_XYZABC, FX_DOUBLE Allow_Range, FX_INT32L ZSP_Type, Vect6 ZSP_Para, FX_DOUBLE Vel, FX_DOUBLE Acc, FX_INT32L Freq);
 	FX_BOOL FX_Robot_PLN_Set_MOVL_Next_Point(FX_INT32L RobotSerial, Vect6 Next_XYZABC, FX_DOUBLE Allow_Range, FX_INT32L ZSP_Type, Vect6 ZSP_Para, FX_DOUBLE Vel, FX_DOUBLE Acc);
 	FX_BOOL FX_Robot_PLN_Get_MOVL_Path(FX_INT32L RobotSerial, CPointSet *ret_Pset);
+
+	/////Motion Planning - Joint space
+	FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_Joints, FX_DOUBLE Vel_ratio, FX_DOUBLE ACC_ratio, FX_INT32L Freq, CPointSet* ret_pset);
 
 	/////Joint Torque to EE Torque Mapping
 	FX_BOOL FX_Robot_JntTau2EETau(FX_INT32L RobotSerial, Vect7 q, Vect7 Joint_Torque, Vect6 EE_Torque);
