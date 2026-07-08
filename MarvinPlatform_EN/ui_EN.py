@@ -5333,7 +5333,6 @@ class App:
             else:
                 return
 
-            # 文本框里是 "x,y,z,a,b,c" 逗号分隔的字符串，需先 split 成数值再格式化
             values = [float(p) for p in raw.split(",") if p.strip()]
             if len(values) != 6:
                 messagebox.showerror('Error', f'Invalid xyzabc data for {label}')
