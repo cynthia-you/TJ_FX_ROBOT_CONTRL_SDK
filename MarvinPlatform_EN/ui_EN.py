@@ -5076,12 +5076,8 @@ class App:
                       self.joints_start_arm1_entry, self.joints_end_arm1_entry]:
             original = entry.get()
             if ',' in original:
-                parts = original.split(',')
-                zero_parts = []
-                for part in parts:
-                    zero_parts.append("0.0")
                 entry.delete(0, tk.END)
-                entry.insert(0, ', '.join(zero_parts))
+                entry.insert(0, ', '.join(["0.0"] * len(original.split(','))))
             else:
                 entry.delete(0, tk.END)
                 entry.insert(0, "0.0")
@@ -5200,12 +5196,8 @@ class App:
                       self.linear_start_arm1_entry, self.linear_end_arm1_entry]:
             original = entry.get()
             if ',' in original:
-                parts = original.split(',')
-                zero_parts = []
-                for part in parts:
-                    zero_parts.append("0.0")
                 entry.delete(0, tk.END)
-                entry.insert(0, ', '.join(zero_parts))
+                entry.insert(0, ', '.join(["0.0"] * len(original.split(','))))
             else:
                 entry.delete(0, tk.END)
                 entry.insert(0, "0.0")
@@ -5331,23 +5323,25 @@ class App:
     def pln_get_cur_xyzabc(self, obj):
         try:
             if obj == 'Arm0':
-                arm0_xyzabc = self.left_cartesian_text.get()
-                if arm0_xyzabc and len(arm0_xyzabc) == 6:
-                    arm0_xyzabc_text = ", ".join(f"{v:.3f}" for v in arm0_xyzabc)
-                    self.cart_start_arm0_entry.delete(0, tk.END)
-                    self.cart_start_arm0_entry.insert(0, arm0_xyzabc_text)
-                else:
-                    messagebox.showerror('Error', 'Invalid xyzabc data for Arm0')
-
+                raw = self.left_cartesian_text.get("1.0", "end-1c")
+                dest = self.cart_start_arm0_entry
+                label = 'Arm0'
             elif obj == 'Arm1':
-                arm1_xyzabc = self.right_cartesian_text.get()
-                if arm1_xyzabc and len(arm1_xyzabc) == 6:
-                    arm1_xyzabc_text = ", ".join(f"{v:.3f}" for v in arm1_xyzabc)
-                    self.cart_start_arm1_entry.delete(0, tk.END)
-                    self.cart_start_arm1_entry.insert(0, arm1_xyzabc_text)
-                else:
-                    messagebox.showerror('Error', 'Invalid xyzabc data for Arm1')
-        except (KeyError, IndexError, TypeError) as e:
+                raw = self.right_cartesian_text.get("1.0", "end-1c")
+                dest = self.cart_start_arm1_entry
+                label = 'Arm1'
+            else:
+                return
+
+            # 文本框里是 "x,y,z,a,b,c" 逗号分隔的字符串，需先 split 成数值再格式化
+            values = [float(p) for p in raw.split(",") if p.strip()]
+            if len(values) != 6:
+                messagebox.showerror('Error', f'Invalid xyzabc data for {label}')
+                return
+
+            dest.delete(0, tk.END)
+            dest.insert(0, ", ".join(f"{v:.3f}" for v in values))
+        except (KeyError, IndexError, TypeError, ValueError) as e:
             messagebox.showerror('Error', f'Failed to get xyzabc positions: {e}')
 
     def clear_linear_cart_inputs(self):
@@ -5355,12 +5349,8 @@ class App:
                       self.cart_start_arm1_entry, self.cart_end_arm1_entry, self.linear_ref_arm1_entry]:
             original = entry.get()
             if ',' in original:
-                parts = original.split(',')
-                zero_parts = []
-                for part in parts:
-                    zero_parts.append("0.0")
                 entry.delete(0, tk.END)
-                entry.insert(0, ', '.join(zero_parts))
+                entry.insert(0, ', '.join(["0.0"] * len(original.split(','))))
             else:
                 entry.delete(0, tk.END)
                 entry.insert(0, "0.0")
@@ -5527,12 +5517,8 @@ class App:
         for entry in [self.multi_start_joints_arm0_entry, self.multi_start_joints_arm1_entry]:
             original = entry.get()
             if ',' in original:
-                parts = original.split(',')
-                zero_parts = []
-                for part in parts:
-                    zero_parts.append("0.0")
                 entry.delete(0, tk.END)
-                entry.insert(0, ', '.join(zero_parts))
+                entry.insert(0, ', '.join(["0.0"] * len(original.split(','))))
             else:
                 entry.delete(0, tk.END)
                 entry.insert(0, "0.0")
@@ -5540,12 +5526,8 @@ class App:
         for entry in [self.multi_add_xyzabc_arm0_entry, self.multi_add_xyzabc_arm1_entry]:
             original = entry.get()
             if ',' in original:
-                parts = original.split(',')
-                zero_parts = []
-                for part in parts:
-                    zero_parts.append("0.0")
                 entry.delete(0, tk.END)
-                entry.insert(0, ', '.join(zero_parts))
+                entry.insert(0, ', '.join(["0.0"] * len(original.split(','))))
             else:
                 entry.delete(0, tk.END)
                 entry.insert(0, "0.0")
@@ -6887,7 +6869,9 @@ def preview_text_file_1():
 
 def preview_text_file():
     """在新窗口中预览文本文件"""
-    file_path = os.path.join(get_app_dir(),  "python_doc_contrl.md")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    file_path = os.path.join(parent_dir,"python_doc_contrl.md")
     preview_window = tk.Toplevel(root)
     preview_window.title(f"预览文档: {file_path.split('/')[-1]}")
     preview_window.geometry("600x400")

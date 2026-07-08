@@ -83,13 +83,12 @@ robot.send_cmd()
 time.sleep(1)
 
 
-
 '''设置扭矩模式 力控模式 '''
 robot.clear_set()
 robot.set_state(arm='A',state=3)#state=3扭矩模式
 robot.set_impedance_type(arm='A',type=3) #type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
 robot.send_cmd()
-time.sleep(0.5)
+time.sleep(1)
 
 '''设置力控参数'''
 robot.clear_set()
