@@ -275,7 +275,7 @@ FX_BOOL FX_Init_Robot_Kine_Pilot_SRS(FX_INT32L RobotSerial, FX_DOUBLE DH[8][4])
 	SPC->Angt = 180.0 - SPC->Ang1 - SPC->Ang2;
 	SPC->m_J4_Bound = -SPC->Ang1;
 
-	SPC->cart_len = FX_Sqrt(SPC->L1 * SPC->L1 + SPC->L2 * SPC->L2);
+	SPC->cart_len = SPC->L1 + SPC->L2;
 
 	if (FX_LOG_TAG)
 		printf("EG:DH[0]=[%lf %lf %lf %lf]\n", DH[0][0], DH[0][1], DH[0][2], DH[0][3]);
