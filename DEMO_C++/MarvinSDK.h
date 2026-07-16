@@ -199,6 +199,20 @@ extern "C"
 
 	// 获取机器人名称
 	bool OnGetRobotName(char *robotName);
+
+	// 六维力传感器清零
+	// arm:"A" "B" ；
+	bool OnReset6DofForceSensor(char arm);
+
+	// 设置控制器系统时间
+	bool OnSetSystemTime(int year, int month, int day, int hour, int minute, int second);
+
+	// 软重启，仅控制板重启
+	bool OnSetReboot();
+
+	// 中止手臂运动，非急停，非idle
+	// arm: "A" "B" "AB" 三种字符是许可值
+	bool OnSetStopRunning(const char *arm);
 	///////////////  以上为100343特有方法  ///////////////
 
 	/////////////////////////////////////简明式接口Concise SDK API//////////////////////////////////////////////

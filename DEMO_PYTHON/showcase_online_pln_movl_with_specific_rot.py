@@ -69,7 +69,7 @@ else:
     logger.error('failed:robot connection failed')
     exit(0)
 
-'''开启日志以便检查'''
+'''开启日志以便检查,速度加速度百分比'''
 robot.log_switch('1') #全局日志开："1", 关："0"
 robot.local_log_switch('1') # 主要日志开："1", 关："0"
 
@@ -77,6 +77,12 @@ robot.local_log_switch('1') # 主要日志开："1", 关："0"
 robot.clear_set()
 robot.set_cart_kd_params(arm='A', K=[8000,8000,8000, 600, 600, 600, 20], D=[0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 1],
                          type=2)
+robot.send_cmd()
+time.sleep(0.5)
+
+# 走大动作用小速度
+robot.clear_set()
+robot.set_vel_acc(arm='A', velRatio=20, AccRatio=20)
 robot.send_cmd()
 time.sleep(0.5)
 
@@ -88,11 +94,6 @@ robot.send_cmd()
 time.sleep(0.5)
 
 
-# 走大动作用小速度
-robot.clear_set()
-robot.set_vel_acc(arm='A', velRatio=20, AccRatio=20)
-robot.send_cmd()
-time.sleep(0.5)
 
 '''订阅数据查看是否设置'''
 sub_data = robot.subscribe(dcss)
@@ -210,9 +211,10 @@ end_xyzabc=kk.calculate_end_xyzabc(start_xyzabc=pose_6d_1,pose_offset=[-100,0,0]
 points,pset = kk.movLA(start_xyzabc=pose_6d_1, end_xyzabc=end_xyzabc,
                   ref_joints=[21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68], vel=200, acc=200,freq_hz=100)
 print(f"Got {len(points)} planning points")
+
 # 走小动作用大速度
 robot.clear_set()
-robot.set_vel_acc(arm='A', velRatio=50, AccRatio=50)
+robot.set_vel_acc(arm='A', velRatio=100, AccRatio=100)
 robot.send_cmd()
 time.sleep(0.2)
 
@@ -254,7 +256,7 @@ print(f"Got {len(points)} planning points")
 
 # 走小动作用大速度
 robot.clear_set()
-robot.set_vel_acc(arm='A', velRatio=50, AccRatio=50)
+robot.set_vel_acc(arm='A', velRatio=100, AccRatio=100)
 robot.send_cmd()
 time.sleep(0.2)
 

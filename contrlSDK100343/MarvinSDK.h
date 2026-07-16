@@ -255,6 +255,20 @@ extern "C"
 	// 获取机器人名称
 	FX_DLL_EXPORT bool OnGetRobotName(char *robotName);
 
+	// 六维力传感器清零
+	// arm:"A" "B" ；
+	FX_DLL_EXPORT bool OnReset6DofForceSensor(char arm);
+
+	// 设置控制器系统时间
+	FX_DLL_EXPORT bool OnSetSystemTime(int year, int month, int day, int hour, int minute, int second);
+
+	// 软重启，仅控制板重启
+	FX_DLL_EXPORT bool OnSetReboot();
+
+	// 中止手臂运动，非急停，非idle
+	// arm: "A" "B" "AB" 三种字符是许可值
+	FX_DLL_EXPORT bool OnSetStopRunning(const char *arm);
+
 	/////////////////////////////////////简明式接口Concise SDK API//////////////////////////////////////////////
 	// 简明式接口，摒弃了老接口需要在OnClearSet() 和 OnSetSend()之间使用，且左右臂要的单独调取用，且需要查询伺服是否有错，清错后使用的逻辑。
 	// 简明式接口自行在内部做错误状态检查。

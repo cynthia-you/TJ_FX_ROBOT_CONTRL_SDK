@@ -68,14 +68,19 @@ else:
 robot.log_switch('1') #全局日志开："1", 关："0"
 robot.local_log_switch('1') # 主要日志开："1", 关："0"
 
-'''设置位置模式和速度 加速度百分比'''
+'''速度 加速度百分比'''
 robot.clear_set()
-robot.set_state(arm='A',state=1)#state=1位置模式
 robot.set_vel_acc(arm='A',velRatio=10, AccRatio=10)
-robot.set_state(arm='B',state=1)#state=1位置模式
 robot.set_vel_acc(arm='B',velRatio=10, AccRatio=10)
 robot.send_cmd()
+time.sleep(0.1)
 
+'''设置位置模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=1)#state=1位置模式
+robot.set_state(arm='B',state=1)#state=1位置模式
+robot.send_cmd()
+time.sleep(1)
 
 '''订阅数据查看是否设置'''
 sub_data=robot.subscribe(dcss)

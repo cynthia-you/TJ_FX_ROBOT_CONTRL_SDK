@@ -1,0 +1,145 @@
+import sys
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+current_file_path = os.path.abspath(__file__)
+current_path = os.path.dirname(current_file_path)
+from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS
+import time
+import logging
+'''#################################################################
+该DEMO 为在运动过程中，让手臂不下使能停止运动的案例
+
+使用逻辑
+     初始化订阅数据的结构体
+    初始化机器人接口
+    查验连接是否成功,失败程序直接退出
+    开启日志以便检查
+    设置速度加速度百分比
+    切换位置模式
+    订阅查看设置是否成功
+    下发运动点位1
+    下发运动点位2，并中途停止运动
+    继续运动
+    订阅查看是否在使能状态下停止运动
+    任务完成,下使能,释放内存使别的程序或者用户可以连接机器人
+'''#################################################################
+
+# 配置日志系统
+logging.basicConfig(format='%(message)s')
+logger = logging.getLogger('debug_printer')
+logger.setLevel(logging.INFO)# 一键关闭所有调试打印
+logger.setLevel(logging.DEBUG)  # 默认开启DEBUG级
+
+
+'''初始化机器人接口'''
+robot=Marvin_Robot()
+
+'''初始化订阅数据的结构体'''
+dcss=DCSS()
+
+'''查验连接是否成功'''
+init = robot.connect('192.168.1.190')
+if init==0:
+    logger.error('failed to connect to the robot, port is occupied')
+    exit(0)
+
+'''检查机械臂和伺服当前是否存错误，有错误清错'''
+robot.check_error_and_clear(dcss)
+
+'''通过确认freame数据的刷新，确认UDP数据通道连接成功（防火墙等可能不能正常收到数据）'''
+motion_tag = 0
+frame_update = None
+for i in range(5):
+    sub_data = robot.subscribe(dcss)
+    print(f"connect frames :{sub_data['outputs'][0]['frame_serial']}")
+    if sub_data['outputs'][0]['frame_serial'] != 0 and frame_update != sub_data['outputs'][0]['frame_serial']:
+        motion_tag += 1
+        frame_update = sub_data['outputs'][0]['frame_serial']
+    time.sleep(0.01)
+if motion_tag > 0:
+    logger.info('success:robot connected')
+else:
+    logger.error('failed:robot connection failed')
+    exit(0)
+
+'''开启日志以便检查'''
+robot.log_switch('1') #全局日志开："1", 关："0"
+robot.local_log_switch('1') # 主要日志开："1", 关："0"
+
+
+'''速度 加速度百分比'''
+robot.clear_set()
+robot.set_vel_acc(arm='A',velRatio=20, AccRatio=20)
+robot.set_vel_acc(arm='B',velRatio=20, AccRatio=20)
+robot.send_cmd()
+time.sleep(0.1)
+
+'''设置位置模式'''
+robot.clear_set()
+robot.set_state(arm='A',state=1)#state=1位置模式
+robot.set_state(arm='B',state=1)#state=1位置模式
+robot.send_cmd()
+time.sleep(1)
+
+
+'''订阅数据查看是否设置'''
+sub_data=robot.subscribe(dcss)
+logger.info('-----------\nA arm:')
+logger.info(f'current state{sub_data["states"][0]["cur_state"]}')
+logger.info(f'arm error code:{sub_data["states"][0]["err_code"]}')
+logger.info(f'set vel={sub_data["inputs"][0]["joint_vel_ratio"]}, acc={sub_data["inputs"][0]["joint_acc_ratio"]}')
+logger.info('-----------\nB arm:')
+logger.info(f'current state{sub_data["states"][1]["cur_state"]}')
+logger.info(f'arm error code:{sub_data["states"][1]["err_code"]}')
+logger.info(f'set vel={sub_data["inputs"][1]["joint_vel_ratio"]}, acc={sub_data["inputs"][1]["joint_acc_ratio"]}')
+
+
+'''go to home'''
+robot.clear_set()
+joint_cmd_1=[0.,0.,0.,0.,0.,0.,0.]
+robot.set_joint_cmd_pose(arm='A',joints=joint_cmd_1)
+robot.set_joint_cmd_pose(arm='B',joints=joint_cmd_1)
+robot.send_cmd()
+time.sleep(3)
+
+'''go to new pose and stop run'''
+robot.clear_set()
+joint_cmd_1=[0,0,0,-90,0,0,0]
+robot.set_joint_cmd_pose(arm='A',joints=joint_cmd_1)
+robot.set_joint_cmd_pose(arm='B',joints=joint_cmd_1)
+robot.send_cmd()
+
+time.sleep(0.5)
+robot.stop_running("AB")
+
+'''预留足够运动到指定目标点位的时间再订阅数据，如果当前位置没有到指定目标，则停止运动成功'''
+time.sleep(0.001)
+sub_data=robot.subscribe(dcss)
+logger.info('-----------\nA arm:')
+logger.info(f'current state={sub_data["states"][0]["cur_state"]}')
+logger.info(f'set joint={sub_data["inputs"][0]["joint_cmd_pos"]}')
+logger.info(f'current joint={sub_data["outputs"][0]["fb_joint_pos"]}')
+logger.info('-----------\nB arm:')
+logger.info(f'current state={sub_data["states"][1]["cur_state"]}')
+logger.info(f'set joint={sub_data["inputs"][1]["joint_cmd_pos"]}')
+logger.info(f'current joint={sub_data["outputs"][1]["fb_joint_pos"]}')
+time.sleep(1)
+
+'''继续运动'''
+robot.clear_set()
+joint_cmd_1=[0,0,0,-90,0,0,0]
+robot.set_joint_cmd_pose(arm='A',joints=joint_cmd_1)
+robot.set_joint_cmd_pose(arm='B',joints=joint_cmd_1)
+robot.send_cmd()
+time.sleep(3)
+sub_data=robot.subscribe(dcss)
+logger.info('-----------\nA arm:')
+logger.info(f'current joint={sub_data["outputs"][0]["fb_joint_pos"]}')
+logger.info('-----------\nB arm:')
+logger.info(f'current joint={sub_data["outputs"][1]["fb_joint_pos"]}')
+
+
+'''释放机器人内存'''
+robot.release_robot()

@@ -16,7 +16,8 @@ void OnEMG_A()
 {
 	for (long i = 0; i < 3; i++)
 	{
-		CRobot::OnSetIntPara((char *)"EMCY0", 0);
+		if (CRobot::OnSetIntPara((char *)"EMCY0", 0) == 0)
+			break;
 		SLEEP(2);
 	}
 	CRobot::OnClearSet();
@@ -32,7 +33,8 @@ void OnEMG_B()
 {
 	for (long i = 0; i < 3; i++)
 	{
-		CRobot::OnSetIntPara((char *)"EMCY1", 0);
+		if (CRobot::OnSetIntPara((char *)"EMCY1", 0) == 0)
+			break;
 		SLEEP(2);
 	}
 	CRobot::OnClearSet();
@@ -48,8 +50,8 @@ void OnEMG_AB()
 {
 	for (long i = 0; i < 3; i++)
 	{
-		CRobot::OnSetIntPara((char *)"EMCY0", 0);
-		CRobot::OnSetIntPara((char *)"EMCY1", 0);
+		if (CRobot::OnSetIntPara((char *)"EMCY0", 0) == 0 && CRobot::OnSetIntPara((char *)"EMCY1", 0) == 0)
+			break;
 		SLEEP(2);
 	}
 	CRobot::OnClearSet();
@@ -70,7 +72,8 @@ void OnServoReset_A(int axis)
 	}
 	for (long i = 0; i < 3; i++)
 	{
-		CRobot::OnSetIntPara((char *)"RESETS0", axis);
+		if (CRobot::OnSetIntPara((char *)"RESETS0", axis) == 0)
+			break;
 		SLEEP(2);
 	}
 }
@@ -83,7 +86,8 @@ void OnServoReset_B(int axis)
 	}
 	for (long i = 0; i < 3; i++)
 	{
-		CRobot::OnSetIntPara((char *)"RESETS1", axis);
+		if (CRobot::OnSetIntPara((char *)"RESETS1", axis) == 0)
+			break;
 		SLEEP(2);
 	}
 }
@@ -126,7 +130,8 @@ void OnClearErr_A()
 	sprintf(name, "RESET0");
 	for (long i = 0; i < 3; i++)
 	{
-		CRobot::OnSetIntPara(name, 0);
+		if (CRobot::OnSetIntPara(name, 0) == 0)
+			break;
 		SLEEP(2);
 	}
 	if (local_log_tag == true)
@@ -140,9 +145,10 @@ void OnClearErr_B()
 	char name[30];
 	memset(name, 0, 30);
 	sprintf(name, "RESET1");
-	for (long i = 0; i < 10; i++)
+	for (long i = 0; i < 3; i++)
 	{
-		CRobot::OnSetIntPara(name, 0);
+		if (CRobot::OnSetIntPara(name, 0) == 0)
+			break;
 		SLEEP(2);
 	}
 	if (local_log_tag == true)
@@ -1535,7 +1541,8 @@ void ServoReset(char arm, int axis)
 	const char *cmd = (arm == 'A') ? "RESETS0" : "RESETS1";
 	for (int i = 0; i < 3; ++i)
 	{
-		CRobot::OnSetIntPara(const_cast<char *>(cmd), axis);
+		if (CRobot::OnSetIntPara(const_cast<char *>(cmd), axis) == 0)
+			break;
 		SLEEP(2);
 	}
 }
@@ -1659,8 +1666,8 @@ void ClearErr()
 	sprintf(name1, "RESET1");
 	for (long i = 0; i < 3; i++)
 	{
-		CRobot::OnSetIntPara(name, 0);
-		CRobot::OnSetIntPara(name1, 0);
+		if (CRobot::OnSetIntPara(name, 0) == 0 && CRobot::OnSetIntPara(name1, 0) == 0)
+			break;
 		SLEEP(2);
 	}
 	if (local_log_tag == true)
@@ -3462,6 +3469,7 @@ bool OnSetUserSpcfData_A(long data_category)
 	}
 	return true;
 }
+
 bool OnSetUserSpcfData_B(long data_category)
 {
 	CRobot::OnClearSet();
@@ -3473,6 +3481,7 @@ bool OnSetUserSpcfData_B(long data_category)
 	}
 	return true;
 }
+
 bool OnSetUserSpcfData(long data_category)
 {
 	CRobot::OnClearSet();
@@ -3757,6 +3766,163 @@ bool OnGetRobotName(char *robotName)
 	{
 		printf("[Error]: delete file failed or file does not exsist:%s\n", local_path);
 		return false;
+	}
+	return true;
+}
+
+bool OnReset6DofForceSensor(char arm)
+{
+	char name[30];
+	long vers = 0;
+	memset(name, 0, 30);
+	if (arm == 'A')
+	{
+		sprintf(name, "FTCL0");
+	}
+	else
+	{
+		sprintf(name, "FTCL1");
+	}
+	for (long i = 0; i < 3; i++)
+	{
+		if (CRobot::OnSetIntPara(name, 0) == 0)
+			break;
+		SLEEP(2);
+	}
+	if (local_log_tag == true)
+	{
+		printf("[Marvin SDK]: Six-axis force sensor of arm '%c' reset.\n", arm);
+	}
+	return true;
+}
+
+bool OnSetSystemTime(int year, int month, int day, int hour, int minute, int second)
+{
+	struct tm t;
+	t.tm_year = year - 1900;
+	t.tm_mon = month - 1;
+	t.tm_mday = day;
+	t.tm_hour = hour;
+	t.tm_min = minute;
+	t.tm_sec = second;
+	errno = 0;
+	mktime(&t);
+
+	if (t.tm_year != year - 1900 ||
+		t.tm_mon != month - 1 ||
+		t.tm_mday != day ||
+		t.tm_hour != hour ||
+		t.tm_min != minute ||
+		t.tm_sec != second)
+	{
+		return false;
+	}
+
+	char name[30];
+	char tmp[30];
+	long vers;
+	vers = 0;
+	memset(name, 0, 30);
+	strftime(tmp, 20, "%Y-%m-%d %H:%M:%S", &t);
+	snprintf(name, 30, "TM%s", tmp);
+	for (long i = 0; i < 3; i++)
+	{
+		CRobot::OnSetIntPara(name, vers);
+		SLEEP(2);
+	}
+	if (local_log_tag == true)
+	{
+		printf("[Marvin SDK]: set system time susccess\n");
+	}
+	return true;
+}
+
+bool OnSetReboot()
+{
+	if (SDK_VERSION < 100343009)
+	{
+		printf("[Error]: Reboot api only supported by SDK100343009+\n");
+		return false;
+	}
+	char name[30];
+	memset(name, 0, 30);
+	sprintf(name, "REBOOT");
+	CRobot::OnSetIntPara(name, 0);
+	printf("[Marvin SDK]: Reboot now\n");
+	return true;
+}
+
+bool OnSetStopRunning(const char *arm)
+{
+	if (arm == NULL)
+	{
+		printf("[ERROR] OnSetRunningStop: arm is NULL.\n");
+		return false;
+	}
+	size_t len = strlen(arm);
+	if (len == 0)
+	{
+		printf("[ERROR] OnSetRunningStop: arm is empty.\n");
+		return false;
+	}
+	if (len > 2)
+	{
+		printf("[ERROR] OnSetRunningStop: arm \"%s\" too long (max 2 chars).\n", arm);
+		return false;
+	}
+	if (strcmp(arm, "A") != 0 &&
+		strcmp(arm, "B") != 0 &&
+		strcmp(arm, "AB") != 0)
+	{
+		printf("[ERROR] OnSetRunningStop: invalid arm \"%s\". Must be exactly \"A\", \"B\", or \"AB\".\n", arm);
+		return false;
+	}
+	char paraName[30];
+	memset(paraName, 0, 30);
+	if (strcmp(arm, "A") == 0)
+	{
+		sprintf(paraName, "RSTA0");
+		for (long i = 0; i < 3; i++)
+		{
+			if (CRobot::OnSetIntPara(paraName, 0) == 0)
+				break;
+			SLEEP(2);
+		}
+		if (local_log_tag == true)
+		{
+			printf("[Marvin SDK]: stop running arm '%s'.\n", arm);
+		}
+		return true;
+	}
+	else if (strcmp(arm, "B") == 0)
+	{
+		sprintf(paraName, "RSTA1");
+		for (long i = 0; i < 3; i++)
+		{
+			if (CRobot::OnSetIntPara(paraName, 0) == 0)
+				break;
+			SLEEP(2);
+		}
+		if (local_log_tag == true)
+		{
+			printf("[Marvin SDK]: stop running arm '%s'.\n", arm);
+		}
+		return true;
+	}
+	else if (strcmp(arm, "AB") == 0)
+	{
+		sprintf(paraName, "RSTA01");
+		for (long i = 0; i < 3; i++)
+		{
+			if (CRobot::OnSetIntPara(paraName, 0) == 0)
+				break;
+			SLEEP(2);
+		}
+		if (local_log_tag == true)
+		{
+			printf("[Marvin SDK]: stop running arm '%s' reset.\n", arm);
+		}
+		return true;
 	}
 	return true;
 }

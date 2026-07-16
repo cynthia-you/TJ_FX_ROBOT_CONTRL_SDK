@@ -84,13 +84,13 @@ robot.log_switch('1') #全局日志开："1", 关："0"
 robot.local_log_switch('1') # 主要日志开："1", 关："0"
 
 
-
 '''设置速度 加速度百分比'''
 robot.clear_set()
 robot.set_vel_acc(arm='B',velRatio=100, AccRatio=100)
 timeout = robot.send_cmd_wait_response(100)
 logger.info(f'set vel&acc, 100ms 内测到的执行的响应延迟是 ：{timeout} ms')
-time.sleep(0.5)
+
+
 '''设置位置模式'''
 robot.clear_set()
 robot.set_state(arm='B',state=1)
@@ -105,7 +105,6 @@ logger.info('-----------\nA arm:')
 logger.info(f'current state{sub_data["states"][1]["cur_state"]}')
 logger.info(f'arm error code:{sub_data["states"][1]["err_code"]}')
 logger.info(f'set vel={sub_data["inputs"][1]["joint_vel_ratio"]}, acc={sub_data["inputs"][0]["joint_acc_ratio"]}')
-
 
 
 '''设置初始位置'''
