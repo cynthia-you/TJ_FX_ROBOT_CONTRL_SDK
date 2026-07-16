@@ -395,10 +395,10 @@ class App:
         self.cart_k_a_entry = tk.StringVar(value="10000, 10000, 10000, 600, 600, 600, 20")
         self.cart_d_a_entry = tk.StringVar(value="0.8, 0.8, 0.8, 0.2, 0.2, 0.2, 1")
         self.cart_d_b_entry = tk.StringVar(value="0.8, 0.8, 0.8, 0.2, 0.2, 0.2, 1")
-        self.k_a_entry=tk.StringVar(value="12, 12, 12, 10, 9, 9, 7")
-        self.k_b_entry=tk.StringVar(value="12, 12, 12, 10, 9, 9, 7")
-        self.d_a_entry=tk.StringVar(value="0,0,0,0,0,0,0")
-        self.d_b_entry=tk.StringVar(value="0,0,0,0,0,0,0")
+        self.k_a_entry=tk.StringVar(value="5,5,5,4,3,3,2")
+        self.k_b_entry=tk.StringVar(value="5,5,5,4,3,3,2")
+        self.d_a_entry=tk.StringVar(value="0.3,0.3,0.3,0.2,0.2,0.2,0.2")
+        self.d_b_entry=tk.StringVar(value="0.3,0.3,0.3,0.2,0.2,0.2,0.2")
 
     def create_main_content(self):
         self.main_container = tk.Frame(self.root, bg="white", padx=5, pady=10)

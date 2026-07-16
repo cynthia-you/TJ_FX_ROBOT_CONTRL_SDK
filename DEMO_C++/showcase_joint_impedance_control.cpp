@@ -160,8 +160,8 @@ int main()
     OnLocalLogOn();
 
     // 关节阻抗参数设置
-    double k[7] = {12, 12, 12, 10, 9, 9, 7};
-    double d[7] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 1};
+    double k[7] = {5, 5, 5, 4, 3, 3, 2};
+    double d[7] = {0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.2};
     OnClearSet();
     OnSetJointLmt_A(10, 10);
     OnSetJointKD_A(k, d);

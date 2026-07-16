@@ -69,10 +69,13 @@ robot.local_log_switch('1') # 主要日志开："1", 关："0"
 
 '''设置阻抗参数'''
 robot.clear_set()
-# #高刚度
-# K=[10,10,10,10, 10, 10, 10]
-# D7=[1,1,1,1,1,1,1]
-robot.set_joint_kd_params(arm='A',K=[12, 12, 12, 10, 9, 9, 7], D=[0.3,0.3,0.3,0.2,0.2,0.2,0.2])#预设参考。
+# #高刚度阻尼
+# k=[12, 12, 12, 10, 9, 9, 7]
+# d=[0.3,0.3,0.3,0.2,0.2,0.2,0.2]
+#适中刚度阻尼
+k=[5,5,5,4,3,3,2]
+d=[0.3,0.3,0.3,0.2,0.2,0.2,0.2]
+robot.set_joint_kd_params(arm='A',K=k, D=d)#预设参考。
 robot.set_vel_acc(arm='A',velRatio=10, AccRatio=10)
 robot.send_cmd()
 time.sleep(0.5)
