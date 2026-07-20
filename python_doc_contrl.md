@@ -155,8 +155,7 @@
     release_robot()
 
     '''释放机器人连接,释放后，要获取机器人的控制，需再次连接
-        :return:
-            int: 断开状态码 1: True; 0: Flase
+    :return: bool
     '''
 
 ### (3) 系统及系统更新相关
@@ -324,7 +323,7 @@
         :param type: float or int .参数类型
         :param paraName:  参数名见robot.ini
         :param value:
-        :return:
+        :return: long, 大于等于0 成功。
         eg:
          robot,ini:
             [R.A0.BASIC]
@@ -352,7 +351,7 @@
 
     save_para_file():
         '''保存配置文件
-        :return:
+        :return: long, 大于等于0 成功。
         '''
 
 ### (8) 数据采集和保存相关
@@ -361,7 +360,7 @@
         :param targetNum:targetNum采集列数 值最大35， 因为一次最多采集35个特征。
         :param targetID: list(35,1) 对应采集数据ID序号(见下)
         :param recordNum: 采集行数，小于1000会采集1000行，设置大于一百万行会采集一百万行。
-        :return:
+        :return: bool
                     采集数据ID序号
                     左臂
                         0-6  	左臂关节位置
@@ -431,7 +430,7 @@
         '''收指定来源的末端数据
         :param arm: 机械手臂ID “A” OR “B”
         :param com: 信息来源， 1:CAN端; 2：com1; 3:com2
-        :return: int, 长度size
+        :return: long, 长度size
         '''
 
     set_485_data(self, arm: str, data:bytes, size_int:int,com:int):
@@ -515,7 +514,7 @@
                    2 PVT
                    3 扭矩
                    4 协作释放
-        :return:
+        :return: bool
         '''
 ### (13) 设置指定手臂在扭矩模式下阻抗类型
 
@@ -527,7 +526,7 @@
             Type = 2 坐标阻抗
             Type = 3 力控
             注：需要在ARM_STATE_TORQ状态: set_state(arm='A',state=3)  才能以阻抗模式控制!!!
-        :return:
+        :return: bool
             int : 1: True,  2: False
         '''
 ### （14）设置指定手臂的关节跟随速度/加速度
@@ -537,8 +536,7 @@
         :param arm: 机械手臂ID “A” OR “B”
         :param velRatio: 速度百分比, 值范围： 0~100
         :param AccRatio: 加速度百分比， 值范围：0~100
-        :return:
-            int： 1: True; 0:Flase
+        :return: bool
         '''
 
 ### （15）设置指定手臂的阻抗参数
@@ -549,10 +547,9 @@
         #关节阻抗时，需更低刚度避免震动，且希望机械臂有顺从性，因此采用低刚度配低阻尼。
         1-7关节阻尼0-1之间
         :param arm: 机械手臂ID “A” OR “B”
-        :param K: list(7,1). 刚度 牛米 / 度 。 设置每个轴的的力为刚度系数。 如K=[2，2,2,1,1,1,1]，第1到3轴有2N作为刚度系数参与控制计算，第4到7轴有1N作为刚度系数参与控制计算。
-        :param D: list(7,1). 阻尼比例系数，大于0。
-        :return:
-            int : 1: True,  2: False
+        :param K: list(7,1). 设置每个轴的的力为刚度系数(N*m/deg)。 如K=[2，2,2,1,1,1,1]，第1到3轴有2N作为刚度系数参与控制计算，第4到7轴有1N作为刚度系数参与控制计算。
+        :param D: list(7,1). 阻尼比例系数，设置范围0~1。
+        :return: bool
         '''
 
     set_cart_kd_params(arm:str, K: list, D: list, type: int):
@@ -562,11 +559,10 @@
             阻尼系数： 平移和旋转阻尼系数0-1之间。 零空间阻尼系数不超过1
             零空间控制是保持末端固定不动，手臂角度运动的控制方式。接口未开放
         :param arm: 机械手臂ID “A” OR “B”
-        :param K: list(7,1). K[0]-k[2] N*m，x,y,z 平移方向每米的控制力; K[3]-k[5] N*m/rad, rx,ry,rz旋转弧度的控制力;K[6]N*m/rad,零空间总和刚度系数
-        :param D: list(7,1). D[0]-D[5]  阻尼比例系数, D[6] 零空间总和阻尼比例系数,范围0-1
-        :param type:int. set_A_arm_impedance_type设置的阻抗类型
-        :return:
-            int : 1: True,  2: False
+        :param K: list(7,1). K[0]-k[2] x,y,z平移方向每米的控制力（N*m）; K[3]-k[5] rx,ry,rz旋转弧度的控制力（N*m/rad）; K[6] 零空间总和刚度系数（N*m/rad）
+        :param D: list(7,1). D[0]-D[5] x,y,z,rx,ry,rz阻尼比例系数,设置范围0~1; D[6] 零空间总和阻尼比例系数,设置范围0~1
+        :param type:int. set_A_arm_impedance_type设置的阻抗类型，默认为2
+        :return: bool
         '''
 
 	注：1.参数在不同构型下的表现不同，请自行调节值到合适范围
@@ -580,8 +576,7 @@
         :param fxDirection: list(6,1). 力控方向 X,Y,Z,A,B,C控制方向.如力控方向为z,fxDirection=[0,0,1,0,0,0]
         :param fcCtrlpara: list(7,1). 控制参数 目前全0
         :param fcAdjLmt:毫米，允许的调节范围
-        :return:
-            int : 1: True,  2: False
+        :return: bool
         '''
 
     set_force_cmd(arm:str, f:float):
@@ -596,8 +591,7 @@
         '''设置关节跟踪指令值
         :param arm: 机械手臂ID “A” OR “B”
         :param joints: list(7,1). 角度，非弧度，在位置跟随和扭矩模式下均有效
-        :return:
-            int : 1: True,  2: False
+        :return: bool
         '''
 
 ### (18) 设置指定手臂的拖动空间
@@ -610,7 +604,7 @@
                 3 笛卡尔空间y方向拖动
                 4 笛卡尔空间z方向拖动
                 5 笛卡尔空间旋转方向拖动
-        :return:
+        :return: bool
         '''
     注意：
         1.关节拖动需要在关节阻抗状态下使用
@@ -631,8 +625,7 @@
               fcType=1，为自定义末端旋转方向。 笛卡尔方向：CartCtrlPara前三个参数置为末端基于基座X Y Z顺序的旋转，后四个为保留参数，填0
               fcType=2，为系统自动计算末端笛卡尔旋转。 CartCtrlPara全填0
         :param CartCtrlPara: list(7,1). 控制参数前三个为旋转信息，基于基座的XYZ旋转。
-        :return:
-            int : 1: True,  2: False
+        :return: bool
         '''
 
 ### (20) 位置模式下规划当前点到目标点功能
@@ -641,8 +634,7 @@
     pln_init(self,config_path):
         '''关节空间规划初始化
         :param config_path: 本地机械臂配置文件*.MvKDCfg, 可相对路径.
-        :return:
-            ture or false
+        :return: bool
         '''
 #### 控制器以规划方式运动到目标关节
     setPln_joint(arm:str,start_joints:list, target_joints:list, velRatio:float,accRatio:float):
@@ -652,8 +644,7 @@
         :param target_joints list(7, 1).目标关节位置，单位角度
         :param velRatio float .规划插点的速度百分比， 范围0~1
         :param accRatio float .规划插点的加速度百分比，范围0~1
-        :return:
-            ture or false
+        :return: bool
         '''
 #### 控制器以规划方式运动到目标坐标空间
     setPln_Cart(self,arm:str, pset: ctypes.c_void_p) -> bool:
@@ -662,15 +653,16 @@
         :param pset: 由计算接口movLA(start_xyzabc: List[float], end_xyzabc: List[float],
               ref_joints: List[float], vel: float, acc: float,freq_hz:int,
               dimension: int = 7) -> tuple[List[List[float]], ctypes.c_void_p]计算得出
-        :return:
-            ture or false
+        :return: bool
         """   
 
 #### 中断规划运动，关节空间和笛卡尔空间都适用
     stopRunPln_joint(arm: str):
         '''停止之前的规划运动，关节空间和笛卡尔空间都适用
         :param arm: 机械手臂ID “A” OR “B”
+        :return: bool
         '''
+
 #### 协同规划：关节空间两个手臂同时规划运行
      setPln_joint_AB(self,
                             start_joints_A: List[float],  # 7个关节角度
@@ -687,7 +679,7 @@
         :param stop_joints_B: B臂目标关节角度（7个）
         :param vel_ratio: 速度比例（0~1? 具体由SDK定义）
         :param acc_ratio: 加速度比例
-        :return: 成功返回True，失败返回False
+        :return: bool
         """
        
 #### 协同规划：坐标空间两个手臂同时规划运行
@@ -697,14 +689,14 @@
         规划点位pset由KinematicsSDK计算接口计算得出。
         :param pset0: 手臂0的点集对象
         :param pset1: 手臂1的点集对象
-        :return: 成功返回True，失败返回False
+        :return: bool
         """
        
 #### 协同中断规划：同时中断规划运动，关节空间和笛卡尔空间都适用
     stopPln_AB(self) -> bool:
         """
         同时中断两个手臂的规划运行（笛卡尔空间和关节空间都适用）
-        :return: 成功返回True，失败返回False
+        :return: bool
         """
 
 # 三、简明式接口介绍
@@ -780,7 +772,7 @@
         :param type: float or int .参数类型
         :param paraName:  参数名见robot.ini
         :param value:
-        :return:
+        :return:long, 大于等于0陈功。
         eg:
          robot,ini:
             [R.A0.BASIC]
@@ -808,7 +800,7 @@
 ### 保存机器人配置参数（控制器端）
     save_para_file(self):
         '''保存配置文件
-        :return:
+        :return: long, 大于等于0成功。
         '''
 
 ## （6）数据采集相关
@@ -873,7 +865,7 @@
      save_gather_data_as_csv_to_path(self,path:str) -> bool:
         '''以csv格式将采集的数据保存到指定的绝对路径
         :param path:本机绝对路径
-        :return:
+        :return: bool
         '''
 
 ## （7）指定手臂软急停
@@ -918,6 +910,7 @@
         :param velRatio: 速度百分比, 范围 0~100
         :param AccRatio: 加速度百分比, 范围 0~100
         :return: bool 设置成功返回 True，失败返回 False
+
 ### 关节阻抗状态（扭矩）
     set_imp_joint_state(self, arm: str, velRatio: int, AccRatio: int, K, D) -> bool:
         """设置阻抗关节模式参数
