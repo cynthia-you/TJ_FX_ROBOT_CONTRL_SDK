@@ -177,7 +177,7 @@ int main()
 
     // 订阅数据，查看是否参数设置成功
     OnGetBuf(&dcss);
-    printf("CMD state of A arm:%d\n", dcss.m_State[0].m_CmdState);
+    printf("CMD state of A arm:%d\n", dcss.m_State[0].m_CurState);
     printf("CMD of imdepancd:%d\n", dcss.m_In[0].m_ImpType);
     printf("CMD of vel and acc:%d %d\n", dcss.m_In[0].m_Joint_Vel_Ratio, dcss.m_In[1].m_Joint_Acc_Ratio);
     printf("CMD of cart K=[%lf %lf %lf %lf %lf %lf %lf]\n", dcss.m_In[0].m_Cart_K[0],

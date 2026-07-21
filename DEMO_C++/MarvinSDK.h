@@ -42,6 +42,12 @@ extern "C"
 	// 获取伺服错误
 	void OnGetServoErr_A(long ErrCode[7]);
 	void OnGetServoErr_B(long ErrCode[7]);
+	
+	// 指定关节伺服软复位
+	//  左臂指定关节伺服软复位
+	void OnServoReset_A(int axis);
+	// 右臂指定关节伺服软复位
+	void OnServoReset_B(int axis);
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// SDK日志开关
 	void OnLogOn();
@@ -73,6 +79,9 @@ extern "C"
 	// 清伺服错误,在使用OnLinkTo接口后,立即清错以防总线通讯异常导致
 	void OnClearErr_A();
 	void OnClearErr_B();
+
+
+	//
 
 	// 设置保存数据参数并开始保存
 	bool OnStartGather(long targetNum, long targetID[35], long recordNum);

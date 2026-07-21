@@ -35,13 +35,12 @@ void hex_to_str(const unsigned char *data, int size, char *output, int output_si
     int pos = 0;
     for (int i = 0; i < size && pos < output_size - 3; i++)
     {
-        // 每个字节转换为两个十六进制字符
         sprintf(output + pos, "%02X ", data[i]);
         pos += 3;
     }
     if (pos > 0)
     {
-        output[pos - 1] = '\0'; // 替换最后一个空格为结束符
+        output[pos - 1] = '\0';
     }
     else
     {
@@ -49,7 +48,7 @@ void hex_to_str(const unsigned char *data, int size, char *output, int output_si
     }
 }
 
-// 将十六进制字符串转换为字节数组
+
 int hex_string_to_bytes(const char *hex_str, unsigned char *bytes, int max_bytes)
 {
     int count = 0;
@@ -58,19 +57,14 @@ int hex_string_to_bytes(const char *hex_str, unsigned char *bytes, int max_bytes
 
     while (*pos && count < max_bytes)
     {
-        // 跳过空格
         while (*pos == ' ')
             pos++;
         if (!*pos)
             break;
-
-        // 提取两个字符作为一个字节
         byte_str[0] = *pos++;
         if (!*pos)
-            break; // 确保有第二个字符
+            break;
         byte_str[1] = *pos++;
-
-        // 转换为字节
         bytes[count++] = (unsigned char)strtol(byte_str, NULL, 16);
     }
 
@@ -209,16 +203,16 @@ int main()
 
     // 转换十六进制字符串为字节数组
     size_int = hex_string_to_bytes(hex_str, data_ptr, 256);
-    printf("转换后的字节数据: ");
+    printf("byte data: ");
     for (int i = 0; i < size_int; i++)
     {
         printf("%02X ", data_ptr[i]);
     }
-    printf("\n数据长度: %ld\n", size_int);
+    printf("\ndata length: %ld\n", size_int);
 
     // 发送HEX数据到com1串口
     bool result = OnSetChDataA(data_ptr, size_int, set_ch);
-    printf("函数执行结果: %s\n", result ? "成功" : "失败");
+    printf("result: %s\n", result ? "succesee" : "failed");
 
     // 接收com1串口的HEX数据
     long set_ch1 = 2;
@@ -232,7 +226,7 @@ int main()
         if (tag >= 1)
         {
             hex_to_str(data_buf, data_size, hex_str1, sizeof(hex_str1));
-            printf("接收信号: %d, 接收的HEX数据: %s", tag, hex_str1);
+            printf("receive: %d, hex data: %s", tag, hex_str1);
         }
     }
 

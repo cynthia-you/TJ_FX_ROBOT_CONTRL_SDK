@@ -1341,7 +1341,7 @@ class Marvin_Robot:
         '''发送数据到485的指定来源， 每次长度不超过256字节，超过就切成多个包发。
 
         :param arm: 机械手臂ID "A" 或 "B"（单字符）
-        :param data: 要传递的字节数据 (长度不超过2256)
+        :param data: 要传递的字节数据 (长度不超过256)
         :param size_int: int, 发送的字节长度，不能超过256
         :param com: 信息来源， 1:CAN端; 2：com1; 3:com2
         :return: bool
@@ -1354,19 +1354,19 @@ class Marvin_Robot:
             self.robot.OnSetChDataB.restype = ctypes.c_long
 
             if len(data) >= 257:
-                raise ValueError(f"数据长度({len(data)})超过256字节限制")
+                raise ValueError(f"data length({len(data)}) exceed 256")
             if size_int >= 257:
-                print(f"size_int({size_int})超过256，将被截断")
+                print(f"size_int({size_int}) will be 256")
                 size_int = 256
 
             result = identify_and_calculate_length(data)
             if result['type'] == "hex string" or result['type'] == 'bytes' or result[
                 'type'] == "bytes representation string":
                 print("-" * 50)
-                print(f"输入: {data}")
-                print(f"类型: {result['type']}")
-                print(f"字节长度: {result['length_bytes']}")
-                print(f"字节表示: {result['bytes_representation']}")
+                print(f"input: {data}")
+                print(f"type: {result['type']}")
+                print(f"byte length: {result['length_bytes']}")
+                print(f"byte: {result['bytes_representation']}")
                 print("-" * 50)
             else:
                 print(f"ERROR: set_485_data input must be hex string of bytes string")

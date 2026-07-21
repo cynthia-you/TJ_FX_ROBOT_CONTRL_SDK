@@ -183,7 +183,6 @@ int main()
     // 订阅查看设置是否成功
     OnGetBuf(&dcss);
     printf("current state of A arm:%d\n", dcss.m_State[0].m_CurState);
-    printf("cmd state of A arm:%d\n", dcss.m_State[0].m_CmdState);
     printf("error code of A arms:%d\n", dcss.m_State[0].m_ERRCode);
     printf("cmd of vel and acc:%d %d\n", dcss.m_In[0].m_Joint_Vel_Ratio, dcss.m_In[0].m_Joint_Acc_Ratio);
     printf("------------------------------\n");

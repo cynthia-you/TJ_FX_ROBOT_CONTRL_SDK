@@ -270,7 +270,7 @@ int main()
     print_array(stop_joints1, 7, "end joints of arm B");
 
     // 调用轨迹规划函数下发点位，解决通讯抖动
-    if (OnSetPlnJoint_AB(start_joints0, stop_joints0, start_joints1, stop_joints1, vel_ratio, acc_ratio) != true)
+    if (CoRunPlnJoint(start_joints0, stop_joints0, start_joints1, stop_joints1, vel_ratio, acc_ratio) != true)
     {
         printf("AB arm pln failed at iteration %ld!\n", j);
         return -1;

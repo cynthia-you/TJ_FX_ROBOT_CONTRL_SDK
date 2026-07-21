@@ -10,7 +10,6 @@ CAxisSpPln::CAxisSpPln()
 }
 CAxisSpPln::~CAxisSpPln()
 {
-
 }
 bool CAxisSpPln::OnSetLmt(long dof, double PosNeg[8], double PosPos[8], double VelLmt[8], double AccLmt[8])
 {
@@ -25,7 +24,7 @@ bool CAxisSpPln::OnSetLmt(long dof, double PosNeg[8], double PosPos[8], double V
 		m_PosPos[i] = PosPos[i];
 		m_VelLmt[i] = VelLmt[i];
 		m_AccLmt[i] = AccLmt[i];
-		printf("NPVA %ld	%lf %lf	%lf	%lf	\n",i,m_PosNeg[i],m_PosPos[i],m_VelLmt[i],m_AccLmt[i]);
+		printf("NPVA %ld	%lf %lf	%lf	%lf	\n", i, m_PosNeg[i], m_PosPos[i], m_VelLmt[i], m_AccLmt[i]);
 	}
 	m_ts = 0.02;
 
@@ -39,7 +38,7 @@ long CAxisSpPln::OnPln(double startp[8], double stopp[8], double vel_ratio, doub
 	}
 	{
 		long i;
-		for ( i = 0; i < m_dof; i++)
+		for (i = 0; i < m_dof; i++)
 		{
 			if (startp[i] < m_PosNeg[i] || startp[i] > m_PosPos[i])
 			{
@@ -63,8 +62,7 @@ long CAxisSpPln::OnPln(double startp[8], double stopp[8], double vel_ratio, doub
 		vr = 1;
 	}
 
-
-	double ar = vel_ratio;
+	double ar = acc_ratio;
 	if (acc_ratio < 0.01)
 	{
 		acc_ratio = 0.01;
@@ -75,8 +73,8 @@ long CAxisSpPln::OnPln(double startp[8], double stopp[8], double vel_ratio, doub
 	}
 
 	double t_max = 0;
-	long   t_max_axis_num = -1;
-	for ( i = 0; i < m_dof; i++)
+	long t_max_axis_num = -1;
+	for (i = 0; i < m_dof; i++)
 	{
 		m_start[i] = startp[i];
 		m_stop[i] = stopp[i];
@@ -100,7 +98,7 @@ long CAxisSpPln::OnPln(double startp[8], double stopp[8], double vel_ratio, doub
 			if (sa * 2.0 >= dsp)
 			{
 				m_Pln_Type[i] = 1;
-				double t1 = sqrt( dsp / a);
+				double t1 = sqrt(dsp / a);
 				double t = 2 * t1;
 
 				m_Pln_T[i] = t;
@@ -110,10 +108,10 @@ long CAxisSpPln::OnPln(double startp[8], double stopp[8], double vel_ratio, doub
 				m_Pln_P1[i][2] = a;
 				m_Pln_P1[i][3] = t1;
 
-				m_Pln_P3[i][0] = dsp*0.5;
+				m_Pln_P3[i][0] = dsp * 0.5;
 				m_Pln_P3[i][1] = v;
 				m_Pln_P3[i][2] = -a;
-				m_Pln_P3[i][3] =  t;
+				m_Pln_P3[i][3] = t;
 
 				if (t >= t_max)
 				{
@@ -125,7 +123,7 @@ long CAxisSpPln::OnPln(double startp[8], double stopp[8], double vel_ratio, doub
 			{
 				m_Pln_Type[i] = 2;
 				double t1 = v / a;
-				double t2 = (dsp - 2 * sa)/v;
+				double t2 = (dsp - 2 * sa) / v;
 				double t = 2 * t1 + t2;
 
 				m_Pln_T[i] = t;
@@ -134,22 +132,21 @@ long CAxisSpPln::OnPln(double startp[8], double stopp[8], double vel_ratio, doub
 				m_Pln_P1[i][2] = a;
 				m_Pln_P1[i][3] = t1;
 
-				m_Pln_P2[i][0] = sa ;
+				m_Pln_P2[i][0] = sa;
 				m_Pln_P2[i][1] = v;
 				m_Pln_P2[i][2] = 0;
 				m_Pln_P2[i][3] = t1 + t2;
 
-				m_Pln_P3[i][0] = dsp -  sa;
+				m_Pln_P3[i][0] = dsp - sa;
 				m_Pln_P3[i][1] = v;
 				m_Pln_P3[i][2] = -a;
-				m_Pln_P3[i][3] =  t;
+				m_Pln_P3[i][3] = t;
 
 				if (t >= t_max)
 				{
 					t_max = t;
 					t_max_axis_num = i;
 				}
-
 			}
 		}
 	}
@@ -159,7 +156,7 @@ long CAxisSpPln::OnPln(double startp[8], double stopp[8], double vel_ratio, doub
 		return 0;
 	}
 
-	for ( i = 0; i < m_dof; i++)
+	for (i = 0; i < m_dof; i++)
 	{
 		if (i == t_max_axis_num)
 		{
@@ -172,7 +169,6 @@ long CAxisSpPln::OnPln(double startp[8], double stopp[8], double vel_ratio, doub
 				m_Pln_TRatio[i] = m_Pln_T[i] / t_max;
 			}
 		}
-
 	}
 	m_totl_t = t_max;
 	m_cur_t = 0;
@@ -181,12 +177,11 @@ long CAxisSpPln::OnPln(double startp[8], double stopp[8], double vel_ratio, doub
 	return t_max / m_ts + 6;
 }
 
-
 bool CAxisSpPln::OnCut(double retp[8])
 {
 	long i;
 	long j;
-	for ( i = 0; i < m_dof; i++)
+	for (i = 0; i < m_dof; i++)
 	{
 		double cut_t = m_cur_t;
 		if (m_Pln_Type[i] == 0)
@@ -207,7 +202,7 @@ bool CAxisSpPln::OnCut(double retp[8])
 			else
 			{
 				cut_t -= m_Pln_P1[i][3];
-				double len = m_Pln_P3[i][0] + m_Pln_P3[i][1]* cut_t +  0.5 * m_Pln_P3[i][2] * cut_t * cut_t;
+				double len = m_Pln_P3[i][0] + m_Pln_P3[i][1] * cut_t + 0.5 * m_Pln_P3[i][2] * cut_t * cut_t;
 
 				double r = len / m_Pln_Len[i];
 				retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
@@ -222,7 +217,6 @@ bool CAxisSpPln::OnCut(double retp[8])
 				double len = 0.5 * m_Pln_P1[i][2] * cut_t * cut_t;
 				double r = len / m_Pln_Len[i];
 				retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
-				// printf("r1 %lf ",r);
 			}
 			else
 			{
@@ -231,8 +225,7 @@ bool CAxisSpPln::OnCut(double retp[8])
 					cut_t -= m_Pln_P1[i][3];
 					double len = m_Pln_P2[i][0] + m_Pln_P2[i][1] * cut_t;
 					double r = len / m_Pln_Len[i];
-					retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i]; 
-					// printf("r2 %lf ", r);
+					retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
 				}
 				else
 				{
@@ -240,9 +233,7 @@ bool CAxisSpPln::OnCut(double retp[8])
 					double len = m_Pln_P3[i][0] + m_Pln_P3[i][1] * cut_t + 0.5 * m_Pln_P3[i][2] * cut_t * cut_t;
 					double r = len / m_Pln_Len[i];
 					retp[i] = r * m_stop[i] + (1.0 - r) * m_start[i];
-					// printf("r3 %lf ", r);
 				}
-
 			}
 		}
 	}
@@ -253,14 +244,13 @@ bool CAxisSpPln::OnCut(double retp[8])
 		m_cur_t = m_totl_t;
 	}
 
-
 	if (m_FristTag == true)
 	{
 		m_FristTag = false;
 		m_wpos = 0;
-		for ( i = 0; i < m_dof; i++)
+		for (i = 0; i < m_dof; i++)
 		{
-			for ( j = 0; j < 5; j++)
+			for (j = 0; j < 5; j++)
 			{
 				m_value[i][j] = retp[i];
 			}
@@ -271,20 +261,19 @@ bool CAxisSpPln::OnCut(double retp[8])
 	{
 		for (i = 0; i < m_dof; i++)
 		{
-		  m_value[i][m_wpos] = retp[i];	
-		  retp[i] = 0;
-		  for ( j = 0; j < 5; j++)
-		  {
-			  retp[i] += m_value[i][j];
-		  }
-		  retp[i] *= 0.2;
+			m_value[i][m_wpos] = retp[i];
+			retp[i] = 0;
+			for (j = 0; j < 5; j++)
+			{
+				retp[i] += m_value[i][j];
+			}
+			retp[i] *= 0.2;
 		}
 		m_wpos++;
 		if (m_wpos >= 5)
 		{
 			m_wpos = 0;
 		}
-
 	}
 
 	return true;

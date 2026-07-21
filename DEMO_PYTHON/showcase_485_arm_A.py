@@ -105,12 +105,12 @@ robot.local_log_switch('1') # 主要日志开："1", 关："0"
 '''发送HEX数据到com1串口'''
 hex_data = "01 06 00 00 00 01 48 0A"
 success, sdk_return = robot.set_485_data(robot_id,hex_data, len(hex_data), com)
-logger.info(f"设置结果: {'成功' if success else '失败'}")
+logger.info(f"result: {'success' if success else 'fail'}")
 
 '''接收com1串口的HEX数据'''
 tag, receive_hex_data = robot.get_485_data(robot_id, com)
 if tag >= 1:
-    logger.info(f"接收的HEX数据：{receive_hex_data}")
+    logger.info(f"received hex data:{receive_hex_data}")
 
 
 '''释放机器人内存'''
