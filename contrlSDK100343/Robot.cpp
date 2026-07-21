@@ -1483,8 +1483,8 @@ void CRobot::DoSend()
 	m_send_lock = true;
 	if (m_SendTag == 100)
 	{
-
-		sendto(_tosock_, (char *)m_SendBuf, m_Slen, 0, (struct sockaddr *)&_to, sizeof(_to));
+		memcpy(m_SendBuf_, m_SendBuf, 1500);
+		sendto(_tosock_, (char *)m_SendBuf_, m_Slen, 0, (struct sockaddr *)&_to, sizeof(_to));
 		m_SendTag = 0;
 		m_Slen = 0;
 	}
@@ -1763,6 +1763,10 @@ bool CRobot::OnClearSet()
 
 bool CRobot::OnSetJointLmt_A(int velRatio, int AccRatio)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	int data[10] = {0};
 	int v = velRatio;
 	int a = AccRatio;
@@ -1787,6 +1791,10 @@ bool CRobot::OnSetJointLmt_A(int velRatio, int AccRatio)
 
 bool CRobot::OnSetPVT_A(int id)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -1817,6 +1825,10 @@ bool CRobot::OnSetPVT_A(int id)
 
 bool CRobot::OnSetPVT_B(int id)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -1846,6 +1858,10 @@ bool CRobot::OnSetPVT_B(int id)
 
 bool CRobot::OnSetUserSpcfData_A(long data_category)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -1865,6 +1881,10 @@ bool CRobot::OnSetUserSpcfData_A(long data_category)
 
 bool CRobot::OnSetUserSpcfData_B(long data_category)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -1884,6 +1904,10 @@ bool CRobot::OnSetUserSpcfData_B(long data_category)
 
 bool CRobot::OnSetUserSpcfData(long data_category)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -1903,6 +1927,10 @@ bool CRobot::OnSetUserSpcfData(long data_category)
 
 bool CRobot::OnSetForceCmd_A(double force)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -1919,6 +1947,10 @@ bool CRobot::OnSetForceCmd_A(double force)
 
 bool CRobot::OnSetJointCmdPos_A(double joint[7])
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -1949,6 +1981,10 @@ bool CRobot::OnSetJointCmdPos_A(double joint[7])
 
 bool CRobot::OnInitPlnLmt(char *path)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2061,6 +2097,10 @@ bool CRobot::OnInitPlnLmt(char *path)
 
 bool CRobot::OnSetPlnCart_A(CPointSet *pset)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2163,6 +2203,10 @@ bool CRobot::OnSetPlnCart_A(CPointSet *pset)
 
 bool CRobot::OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2280,6 +2324,10 @@ bool CRobot::OnSetPlnJoint_A(double start_joints[7], double stop_joints[7], doub
 
 bool CRobot::OnSetTrajInit_A(int pointNum)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2308,6 +2356,10 @@ bool CRobot::OnSetTrajInit_A(int pointNum)
 
 bool CRobot::OnSetTrajRun_A()
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2323,6 +2375,10 @@ bool CRobot::OnSetTrajRun_A()
 
 bool CRobot::OnStopPlnJoint_A()
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2350,6 +2406,10 @@ bool CRobot::OnStopPlnJoint_A()
 
 bool CRobot::OnStopPlnJoint_interA()
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2365,6 +2425,10 @@ bool CRobot::OnStopPlnJoint_interA()
 
 bool CRobot::OnSetTrajSet_A(long serial, long pointNum, double *data)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (pointNum <= 0 || pointNum > 50)
 	{
 		return false;
@@ -2376,6 +2440,10 @@ bool CRobot::OnSetTrajSet_A(long serial, long pointNum, double *data)
 
 bool CRobot::OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2407,6 +2475,10 @@ bool CRobot::OnSetForceCtrPara_A(int fcType, double fxDir[6], double fcCtrlPara[
 
 bool CRobot::OnSetDragSpace_A(int zsType)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2424,6 +2496,10 @@ bool CRobot::OnSetDragSpace_A(int zsType)
 
 bool CRobot::OnSetCartKD_A(double K[7], double D[7], int type)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	double pv[20] = {0};
 	pv[0] = K[0];
 	pv[1] = K[1];
@@ -2450,6 +2526,10 @@ bool CRobot::OnSetCartKD_A(double K[7], double D[7], int type)
 bool CRobot::OnSetEefRot_A(int fcType, double CartCtrlPara[7])
 {
 
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	int pv1[20] = {0};
 	pv1[0] = fcType;
 	double pv[20] = {0};
@@ -2473,6 +2553,10 @@ bool CRobot::OnSetEefRot_A(int fcType, double CartCtrlPara[7])
 
 bool CRobot::OnSetJointKD_A(double K[7], double D[7])
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	double pv[20] = {0};
 	pv[0] = K[0];
 	pv[1] = K[1];
@@ -2495,6 +2579,11 @@ bool CRobot::OnSetJointKD_A(double K[7], double D[7])
 }
 bool CRobot::OnSetVelEstStep_A(long step)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
+
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2519,6 +2608,10 @@ bool CRobot::OnSetVelEstStep_A(long step)
 }
 bool CRobot::OnSetTool_A(double kinePara[6], double dynPara[10])
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	double pv[20] = {0};
 	pv[0] = kinePara[0];
 	pv[1] = kinePara[1];
@@ -2544,6 +2637,11 @@ bool CRobot::OnSetTool_A(double kinePara[6], double dynPara[10])
 
 bool CRobot::OnSetTargetState_A(int state)
 {
+
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2561,6 +2659,10 @@ bool CRobot::OnSetTargetState_A(int state)
 
 bool CRobot::OnSetImpType_A(int type)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2579,6 +2681,10 @@ bool CRobot::OnSetImpType_A(int type)
 /////////////////B//////////////////
 bool CRobot::OnSetJointLmt_B(int velRatio, int AccRatio)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	int data[10] = {0};
 	int v = velRatio;
 	int a = AccRatio;
@@ -2603,6 +2709,10 @@ bool CRobot::OnSetJointLmt_B(int velRatio, int AccRatio)
 
 bool CRobot::OnSetForceCmd_B(double force)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2619,6 +2729,10 @@ bool CRobot::OnSetForceCmd_B(double force)
 
 bool CRobot::OnSetJointCmdPos_B(double joint[7])
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		return false;
@@ -2643,6 +2757,10 @@ bool CRobot::OnSetJointCmdPos_B(double joint[7])
 
 bool CRobot::OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[7], double fcAdjLmt)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2674,6 +2792,10 @@ bool CRobot::OnSetForceCtrPara_B(int fcType, double fxDir[6], double fcCtrlPara[
 
 bool CRobot::OnSetDragSpace_B(int zsType)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2691,6 +2813,10 @@ bool CRobot::OnSetDragSpace_B(int zsType)
 
 bool CRobot::OnSetCartKD_B(double K[7], double D[7], int type)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	double pv[20] = {0};
 	pv[0] = K[0];
 	pv[1] = K[1];
@@ -2716,6 +2842,10 @@ bool CRobot::OnSetCartKD_B(double K[7], double D[7], int type)
 
 bool CRobot::OnSetEefRot_B(int fcType, double CartCtrlPara[7])
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	int pv1[20] = {0};
 	pv1[0] = fcType;
 	double pv[20] = {0};
@@ -2739,6 +2869,10 @@ bool CRobot::OnSetEefRot_B(int fcType, double CartCtrlPara[7])
 
 bool CRobot::OnSetJointKD_B(double K[7], double D[7])
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	double pv[20] = {0};
 	pv[0] = K[0];
 	pv[1] = K[1];
@@ -2762,6 +2896,10 @@ bool CRobot::OnSetJointKD_B(double K[7], double D[7])
 
 bool CRobot::OnSetVelEstStep_B(long step)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2786,6 +2924,10 @@ bool CRobot::OnSetVelEstStep_B(long step)
 }
 bool CRobot::OnSetTool_B(double kinePara[6], double dynPara[10])
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	double pv[20] = {0};
 	pv[0] = kinePara[0];
 	pv[1] = kinePara[1];
@@ -2811,6 +2953,10 @@ bool CRobot::OnSetTool_B(double kinePara[6], double dynPara[10])
 
 bool CRobot::OnSetTargetState_B(int state)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2828,6 +2974,10 @@ bool CRobot::OnSetTargetState_B(int state)
 
 bool CRobot::OnSetImpType_B(int type)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2845,6 +2995,10 @@ bool CRobot::OnSetImpType_B(int type)
 
 bool CRobot::OnSetPlnCart_B(CPointSet *pset)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -2946,6 +3100,10 @@ bool CRobot::OnSetPlnCart_B(CPointSet *pset)
 
 bool CRobot::OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], double vel_ratio, double acc_ratio)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -3064,6 +3222,10 @@ bool CRobot::OnSetPlnJoint_B(double start_joints[7], double stop_joints[7], doub
 
 bool CRobot::OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7], double start_joints_B[7], double stop_joints_B[7], double vel_ratio, double acc_ratio)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	DCSS t;
 	double vr = vel_ratio;
 	double ar = acc_ratio;
@@ -3248,6 +3410,10 @@ bool CRobot::OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7],
 
 bool CRobot::OnSetTrajInit_B(int pointNum)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -3277,6 +3443,10 @@ bool CRobot::OnSetTrajInit_B(int pointNum)
 
 bool CRobot::OnSetTrajRun_B()
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -3292,6 +3462,10 @@ bool CRobot::OnSetTrajRun_B()
 
 bool CRobot::OnStopPlnJoint_B()
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -3319,6 +3493,10 @@ bool CRobot::OnStopPlnJoint_B()
 
 bool CRobot::OnStopPlnJoint_interB()
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (m_InsRobot->m_VersionMatchTag == FX_FALSE)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
@@ -3334,6 +3512,10 @@ bool CRobot::OnStopPlnJoint_interB()
 
 bool CRobot::OnSetTrajSet_B(long serial, long pointNum, double *data)
 {
+	if (m_InsRobot->m_SendTag != 0)
+	{
+		return false;
+	}
 	if (pointNum <= 0 || pointNum > 50)
 	{
 		return false;
@@ -3345,10 +3527,12 @@ bool CRobot::OnSetTrajSet_B(long serial, long pointNum, double *data)
 
 long CRobot::OnSetSendWaitResponse(long time_out)
 {
-	if (m_InsRobot->m_SendTag == 100)
+	if (m_InsRobot->m_SendTag == 100 || m_InsRobot->m_SendTag == 50 || m_InsRobot->m_SendTag == 70)
 	{
 		return -1;
 	}
+
+	m_InsRobot->m_SendTag = 70;
 	if (m_InsRobot->m_send_response_local_tag < 7)
 	{
 		m_InsRobot->m_send_response_local_tag = 7;

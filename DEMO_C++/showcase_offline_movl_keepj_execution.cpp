@@ -204,7 +204,7 @@ int main()
     OnSetTargetState_A(3); // 3:torque mode; 1:position mode
     OnSetImpType_A(1);     // type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
     OnSetSend();
-    SLEEP(200);
+    SLEEP(1000);
 
     // 订阅查看设置是否成功
     OnGetBuf(&dcss);

@@ -32,8 +32,6 @@ robot=Marvin_Robot()
 ret, byte_order = robot.check_sdk_type_compat()
 if ret < 0:
     logger.error(f"SDK type compatibility check failed, error mask = 0x{-ret:x}")
-    '''释放机器人内存'''
-    robot.release_robot()
     exit(-1)
 else:
     endian = "little-endian" if byte_order == 0 else "big-endian"

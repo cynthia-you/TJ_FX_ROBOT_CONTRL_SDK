@@ -163,9 +163,10 @@ for next_one in arm0_multi_points[2:]:
         print(f"multi-segment planing: set next failed")
 
 data, pset = kk.multi_movL_get_points()
-print(f"multi-segment planing:: Got {len(pset)} planning points")
+
+print(f"multi-segment planing:: Got {len(data)} planning points")
 if pset:
-    print(f"First point: {pset[0]}")
+    print(f"First point: {data[0]}")
 print('-'*50)
 
 

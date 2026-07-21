@@ -182,8 +182,8 @@ int main()
     //  OnLocalLogOff();
 
     // 设置笛卡尔阻抗参数
-    double K[7] = {8000, 8000, 8000, 600, 600, 600, 20}; // 预设参考。
-    double D[7] = {0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 1};     // 预设参考。
+    double K[7] = {3000, 3000, 3000, 100, 100, 100, 20}; // 预设参考。
+    double D[7] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};   // 预设参考。
     OnClearSet();
     OnSetCartKD_A(K, D);
     OnSetSend();
@@ -200,7 +200,7 @@ int main()
     OnSetTargetState_A(3); // 3:torque mode; 1:position mode
     OnSetImpType_A(2);     // type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
     OnSetSend();
-    SLEEP(200);
+    SLEEP(1000);
 
     // 订阅查看设置是否成功
     OnGetBuf(&dcss);

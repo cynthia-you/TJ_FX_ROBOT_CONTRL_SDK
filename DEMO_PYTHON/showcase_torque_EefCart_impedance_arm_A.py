@@ -46,7 +46,12 @@ def auto_eefCart(robot,dcss,calculate_cfg_path:str,which_arm:str):
     from SDK_PYTHON.fx_kine import Marvin_Kine
     kk = Marvin_Kine()
     kk.log_switch(0)  # 0 off, 1 on
-    ini_result = kk.load_config(arm_type=idx, config_path=os.path.join(current_path, calculate_cfg_path))
+    config_path = calculate_cfg_path
+    if not os.path.isabs(config_path):
+        local_cfg = os.path.join(current_path, calculate_cfg_path)
+        common_cfg = os.path.join(parent_dir, 'CommonConfig', calculate_cfg_path)
+        config_path = local_cfg if os.path.exists(local_cfg) else common_cfg
+    ini_result = kk.load_config(arm_type=idx, config_path=config_path)
     initial_kine_tag = kk.initial_kine(
         robot_type=ini_result['TYPE'][idx],
         dh=ini_result['DH'][idx],
@@ -108,7 +113,7 @@ if __name__=="__main__":
 
     '''设置阻抗模式下的参数'''
     robot.clear_set()
-    robot.set_cart_kd_params(arm='A', K=[10, 5000, 5000,600, 600, 600, 20], D=[0.1, 0.1, 0.1, 0.3, 0.3, 0.3, 1],
+    robot.set_cart_kd_params(arm='A',K=[3000,3000,3000,100,100,100,20], D=[0.2,0.2,0.2,0.2,0.2,0.2,0.2],
                              type=2)  # 预设参考。
     robot.set_vel_acc(arm='A',velRatio=50, AccRatio=50)
     robot.send_cmd()

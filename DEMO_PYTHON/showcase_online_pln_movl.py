@@ -75,7 +75,7 @@ robot.local_log_switch('1') # 主要日志开："1", 关："0"
 
 '''设置阻抗参数,速度加速度百分比'''
 robot.clear_set()
-robot.set_cart_kd_params(arm='A', K= [8000,8000,8000, 600, 600, 600, 20], D=[0.8, 0.8, 0.8, 0.4, 0.4, 0.4, 1],
+robot.set_cart_kd_params(arm='A', K=[3000,3000,3000,100,100,100,20], D=[0.2,0.2,0.2,0.2,0.2,0.2,0.2],
                          type=2)
 robot.set_vel_acc(arm='A', velRatio=100, AccRatio=100)
 robot.send_cmd()

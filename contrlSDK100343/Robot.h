@@ -74,6 +74,7 @@ public:
 	static bool OnSetForceCmd_A(double force);
 	static bool OnSetPVT_A(int id);
 	static bool OnSetImpType_A(int type);
+
 	static bool OnSetTargetState_B(int state);
 	static bool OnSetVelEstStep_B(long step);
 	static bool OnSetTool_B(double kinePara[6], double dynPara[10]);
@@ -187,6 +188,7 @@ protected:
 	char recvbuf[2000];
 
 	unsigned char m_SendBuf[1500];
+	unsigned char m_SendBuf_[1500];
 	std::atomic<long> m_Slen;
 	std::atomic<long> m_SendTag;
 	FX_BOOL SendFile(char *local_file, char *remote_file);

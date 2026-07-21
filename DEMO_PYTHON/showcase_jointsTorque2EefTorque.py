@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -78,13 +78,13 @@ if __name__=="__main__":
 
     arm='A'
     idx=0
-    calculate_config_file='ccs_m6.MvKDCfg'
+    calculate_config_file='ccs_m6_40.MvKDCfg'
     if arm=='B':
         idx=1
 
     ''' load kinematics'''
     kk=Marvin_Kine()
-    ini_result=kk.load_config(arm_type=idx,config_path=os.path.join(current_path,calculate_config_file))
+    ini_result=kk.load_config(arm_type=idx,config_path=os.path.join(parent_dir, 'CommonConfig', calculate_config_file))
     if not ini_result:
         logger.error(f'load {calculate_config_file} error, please check file or path')
         exit(-1)

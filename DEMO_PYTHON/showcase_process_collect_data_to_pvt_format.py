@@ -1,3 +1,4 @@
+import os
 import re
 def process_and_downsample(file_path, format_unify=True):
     """
@@ -187,4 +188,8 @@ def process_and_downsample(file_path, format_unify=True):
 if __name__ == "__main__":
     # 指定文件路径
     file_path = "left_drag_y_data.txt"  # 替换为你的文件路径,保存文件也在这个路径下，以“process_”开头
-    process_and_downsample(file_path, format_unify=True)
+    if not os.path.exists(file_path):
+        print(f"Missing input file: {file_path}")
+        print("Run the drag-data demo first, or put/rename an existing collected file in the current directory.")
+    else:
+        process_and_downsample(file_path, format_unify=True)

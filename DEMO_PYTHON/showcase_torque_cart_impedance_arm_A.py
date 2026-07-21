@@ -69,7 +69,7 @@ robot.local_log_switch('1') # 主要日志开："1", 关："0"
 
 '''设置阻抗模式下的参数'''
 robot.clear_set()
-robot.set_cart_kd_params(arm='A',K=[10000, 10000, 10000, 600, 600, 600, 20], D=[0.8, 0.8, 0.8, 0.2, 0.2, 0.2, 1], type=2) #预设参考。
+robot.set_cart_kd_params(arm='A',K=[3000,3000,3000,100,100,100,20], D=[0.2,0.2,0.2,0.2,0.2,0.2,0.2], type=2) #预设参考。
 robot.set_vel_acc(arm='A',velRatio=10, AccRatio=10)
 robot.send_cmd()
 time.sleep(0.5)
