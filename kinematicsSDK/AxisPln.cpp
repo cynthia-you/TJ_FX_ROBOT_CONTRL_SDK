@@ -1324,6 +1324,11 @@ bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6
 		out.OnSetPoint(tmp);
 	}
 	long final_num = out.OnGetPointNum();
+	if(final_num >= 5000)
+	{
+		printf("Generated more than 5,000 points. Please try reducing the planning distance or increasing VA.");
+		return false;
+	}
 
 	if(0)
 	{
@@ -1986,6 +1991,11 @@ bool CAxisPln::OnMovL_KeepJ_CutA(long RobotSerial, double startjoints[7], double
 
 	FX_INT32L num = 0;
 	num = pset.OnGetPointNum();
+	if(num >= 5000)
+	{
+		printf("Generated more than 5,000 points. Please try reducing the planning distance or increasing VA.");
+		return false;
+	}
 	FX_InvKineSolvePara sp;
 	sp.m_DGR1 = 10;
 	sp.m_DGR2 = 10;
@@ -2430,6 +2440,11 @@ bool CAxisPln::OnMovL_ZSP(long RobotSerial, double ref_joints[7], double start_p
 	}
 
 	long final_num = cartesian_traj.OnGetPointNum();
+	if(final_num >= 5000)
+	{
+		printf("Generated more than 5,000 points. Please try reducing the planning distance or increasing VA.");
+		return false;
+	}
 	////////////////////InvKine//////////////
 	FX_InvKineSolvePara sp;
 
@@ -2646,6 +2661,11 @@ FX_BOOL CAxisJointPln::OnMovJoint(FX_INT32 RobotSerial, Vect7 start_joint, Vect7
 		sto[i] = end_joint[i];
 	}
 	FX_INT32 num = OnPln(sta, sto, vr, ar);
+	if(num >= 5000)
+	{
+		printf("Generated more than 5,000 points. Please try reducing the planning distance or increasing VA.");
+		return false;
+	}
 	if (num <= 0)
 	{
 		return FX_FALSE;
