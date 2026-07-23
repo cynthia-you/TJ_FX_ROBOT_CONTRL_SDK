@@ -67,6 +67,7 @@ else:
 robot.log_switch('1')
 robot.local_log_switch('1')
 
+
 robot.clear_set()
 robot.set_vel_acc(arm='A', velRatio=100, AccRatio=100)
 robot.set_vel_acc(arm='B', velRatio=100, AccRatio=100)
@@ -76,10 +77,10 @@ logger.info(f'set A&B arm vel&acc, 100ms timeout: {timeout} ms')
 robot.clear_set()
 robot.set_state(arm='A', state=1)
 robot.set_state(arm='B', state=1)
-timeout = robot.send_cmd_wait_response(100)
-logger.info(f'set A&B arm position mode, 100ms timeout: {timeout} ms')
+timeout = robot.send_cmd_wait_response(1000)
+logger.info(f'set A&B arm position mode, 1000ms timeout: {timeout} ms')
+time.sleep(1)
 
-time.sleep(0.2)
 sub_data = robot.subscribe(dcss)
 logger.info('-----------\nA arm:')
 logger.info(f'current state{sub_data["states"][0]["cur_state"]}')

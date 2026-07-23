@@ -562,26 +562,33 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	memset(name, 0, 30);
 	sprintf(name, "VERSION");
 	long ctrlSysVers = 0;
-	long int cnt = 5;
-	while (cnt > 0)
+
+	for (long ii=0;ii<5;ii++)
 	{
-		if (0 != OnGetIntPara(name, &ctrlSysVers))
-		{
-			cnt--;
-			continue;
-		}
-		else
-		{
-			break;
-		}
+		OnGetIntPara(name, &ctrlSysVers);
+		printf("system version:%ld\n",ctrlSysVers);
+		SLEEP(10);
 	}
+	// long int cnt = 5;
+	// while (cnt > 0)
+	// {
+	// 	if (0 != OnGetIntPara(name, &ctrlSysVers))
+	// 	{
+	// 		cnt--;
+	// 		continue;
+	// 	}
+	// 	else
+	// 	{
+	// 		break;
+	// 	}
+	// }
 	m_InsRobot->m_ctrlSysVersion = ctrlSysVers;
-	int SDKVer = SDK_VERSION;
+	long SDKVer = SDK_VERSION;
 	if ((ctrlSysVers / 1000) != (SDKVer / 1000))
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
 		{
-			printf("[Marvin SDK %s]: Warning: Version mismatch between control system %d and SDK %d\n"
+			printf("[Marvin SDK %s]: Warning: Version mismatch between control system %ld and SDK %ld\n"
 				   "                      Some functions may not work properly\n",
 				   __FUNCTION__, m_InsRobot->m_ctrlSysVersion, SDK_VERSION);
 		}
@@ -3383,20 +3390,23 @@ bool CRobot::OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7],
 			return false;
 		}
 	}
-	SLEEP(20);
-	if (CRobot::OnGetBuf(&t) == true)
+
+	for (int i_=0;i_<5;i_++)
 	{
-		if (t.m_Out[0].m_TrajState != 2)
+		SLEEP(SLEEP_TIME);
+		CRobot::OnGetBuf(&t);
+		if (t.m_Out[0].m_TrajState == 2 || t.m_Out[1].m_TrajState == 2)
 		{
-			printf("[ERROR] OnSetPlnJoint_AB: The controller did not receive the sent trajectory of A\n");
-			return false;
-		}
-		if (t.m_Out[1].m_TrajState != 2)
-		{
-			printf("[ERROR] OnSetPlnJoint_AB: The controller did not receive the sent trajectory of B\n");
-			return false;
+			break;
 		}
 	}
+	CRobot::OnGetBuf(&t);
+	if (t.m_Out[0].m_TrajState != 2 || t.m_Out[1].m_TrajState != 2)
+	{
+		printf("[ERROR] OnSetPlnJoint_AB: controller did not receive trajectories.\n");
+		return false;
+	}
+	
 	CRobot::OnClearSet();
 	CRobot::OnSetTrajRun_A();
 	CRobot::OnSetTrajRun_B();

@@ -1048,11 +1048,9 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 	long relic_num = num0 % 50;
 	long ii, jj, kk;
 	double SendData_A[350];
-	double SendData_B[350];
-	double *retp0, *retp1;
+	double *retp0;
 	long spos;
 	long ipos0 = 0;
-	long ipos1 = 0;
 	for (ii = 0; ii < send_g_num; ii++)
 	{
 		spos = 0;
@@ -1062,22 +1060,15 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 			for (kk = 0; kk < 7; kk++)
 				SendData_A[spos++] = retp0[kk];
 		}
-		spos = 0;
-		for (jj = 0; jj < 50; jj++)
-		{
-			retp1 = static_cast<CPointSet *>(pset1)->OnGetPoint(ipos1++);
-			for (kk = 0; kk < 7; kk++)
-				SendData_B[spos++] = retp1[kk];
-		}
 
 		CRobot::OnClearSet();
 		CRobot::OnSetTrajSet_A(ii, 50, SendData_A);
 		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		{
+			printf("[ERROR] OnSetTrajSet_A: timeout.\n");
 			return false;
-		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_B(ii, 50, SendData_B);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
-			return false;
+		}
+			
 	}
 	if (relic_num != 0)
 	{
@@ -1088,35 +1079,71 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 			for (kk = 0; kk < 7; kk++)
 				SendData_A[spos++] = retp0[kk];
 		}
-		spos = 0;
-		for (jj = 0; jj < relic_num; jj++)
-		{
-			retp1 = static_cast<CPointSet *>(pset1)->OnGetPoint(ipos1++);
-			for (kk = 0; kk < 7; kk++)
-				SendData_B[spos++] = retp1[kk];
-		}
 		CRobot::OnClearSet();
 		CRobot::OnSetTrajSet_A(ii, relic_num, SendData_A);
 		if (CRobot::OnSetSendWaitResponse(5000) < 0)
 		{
-			printf("1\n");
-			return false;
-		}
-
-		CRobot::OnClearSet();
-		CRobot::OnSetTrajSet_B(ii, relic_num, SendData_B);
-		if (CRobot::OnSetSendWaitResponse(5000) < 0)
-		{
-			printf("11\n");
+			printf("[ERROR] OnSetTrajSet_A: timeout.\n");
 			return false;
 		}
 	}
-	SLEEP(10);
+
+	long send_g_num1 = num1 / 50;
+	long relic_num1 = num1 % 50;
+	long iii, jjj, kkk;
+	double SendData_B[350];
+	double *retp1;
+	long spos1;
+	long ipos1 = 0;
+	for (iii = 0; iii < send_g_num1; iii++)
+	{
+		spos1 = 0;
+		for (jjj = 0; jjj < 50; jjj++)
+		{
+			retp1 = static_cast<CPointSet *>(pset1)->OnGetPoint(ipos1++);
+			for (kkk = 0; kkk < 7; kkk++)
+				SendData_B[spos1++] = retp1[kkk];
+		}
+
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_B(iii, 50, SendData_B);
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		{
+			printf("[ERROR] OnSetTrajSet_B: timeout.\n");
+			return false;
+		}
+	}
+	if (relic_num1 != 0)
+	{
+		spos1 = 0;
+		for (jjj = 0; jjj < relic_num1; jjj++)
+		{
+			retp1 = static_cast<CPointSet *>(pset1)->OnGetPoint(ipos1++);
+			for (kkk = 0; kkk < 7; kkk++)
+				SendData_B[spos1++] = retp1[kkk];
+		}
+		CRobot::OnClearSet();
+		CRobot::OnSetTrajSet_B(iii, relic_num1, SendData_B);
+		if (CRobot::OnSetSendWaitResponse(5000) < 0)
+		{
+			printf("[ERROR] OnSetTrajSet_B: timeout.\n");
+			return false;
+		}
+	}
+
+	for (int i=0;i<5;i++)
+	{
+		SLEEP(SLEEP_TIME);
+		CRobot::OnGetBuf(&t);
+		if (t.m_Out[0].m_TrajState == 2 || t.m_Out[1].m_TrajState == 2)
+		{
+			break;
+		}
+	}
 	CRobot::OnGetBuf(&t);
 	if (t.m_Out[0].m_TrajState != 2 || t.m_Out[1].m_TrajState != 2)
 	{
-
-		printf("3\n");
+		printf("[ERROR] controller did not receive trajectories.\n");
 		return false;
 	}
 
