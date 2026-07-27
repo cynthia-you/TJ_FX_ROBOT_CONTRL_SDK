@@ -16,6 +16,7 @@
 #include <cassert>
 #include <math.h>
 #include "PointSet.h"
+#include <atomic>
 #include <mutex>
 #include <condition_variable>
 #define SDK_VERSION 100343013
@@ -56,6 +57,7 @@ public:
 
 	static bool OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4);
 	static bool OnRelease();
+	static void OnTimerTick();
 
 	void ReadPendingData();
 
@@ -155,6 +157,8 @@ protected:
 	FX_UINT32 miss_cnt;
 	FX_INT32 old_serial;
 	std::atomic<FX_BOOL> m_LinkTag;
+	std::atomic<bool> m_recv_stop{false};  
+	std::atomic<long> m_recv_active{0};    
 	FX_BOOL old_serial_tag;
 
 	FX_BOOL m_VersionMatchTag;

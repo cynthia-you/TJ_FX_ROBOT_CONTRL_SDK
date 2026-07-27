@@ -839,8 +839,9 @@ class Marvin_Robot:
 
     def set_joint_kd_params(self,arm:str, K: list, D: list):
         '''设置关节阻抗参数
-        #关节阻抗时，需更低刚度避免震动，且希望机械臂有顺从性，因此采用低刚度配低阻尼。
-        1-7关节阻尼0-1之间
+        参数范围：
+            每个关节的刚度（范围0~22， 单位N*m/deg），刚度越高关节“越硬”
+            每个关节的阻尼系数（范围0~1，建议值0.3）
 
         :param arm: 机械手臂ID "A" 或 "B"（单字符）
         :param K: list(7,1). 刚度 牛米 / 度 。 设置每个轴的的力为刚度系数。 如K=[2，2,2,1,1,1,1]，第1到3轴有2N作为刚度系数参与控制计算，第4到7轴有1N作为刚度系数参与控制计算。
@@ -864,15 +865,16 @@ class Marvin_Robot:
 
     def set_cart_kd_params(self, arm:str, K: list, D: list, type=2):
         '''设置笛卡阻抗尔参数
-            # 在笛卡尔阻抗模式下：
-            刚度系数： 1-3平移方向刚度系数不超过3000, 4-6旋转方向不超过100。 零空间刚度系数不超过20
-            阻尼系数： 平移和旋转阻尼系数0-1之间。 零空间阻尼系数不超过1
-            零空间控制是保持末端固定不动，手臂角度运动的控制方式。接口未开放
+        参数范围：
+                平移刚度（范围 0~1200 N*m）和阻尼（范围0~1，建议0.3）；
+                旋转刚度（范围 0~600 N*m/rad）和阻尼（范围0~1，建议0.3 ）
+                零空间总和刚度参数（范围20~100 N*m/rad）和零空间总和阻尼系数（范围0~1，建议0.3）。
+        零空间控制是保持末端固定不动，手臂角度运动的控制方式。
 
         :param arm: 机械手臂ID "A" 或 "B"（单字符）
         :param K: list(7,1). K[0]-k[2] N*m，x,y,z 平移方向每米的控制力; K[3]-k[5] N*m/rad, rx,ry,rz旋转弧度的控制力;K[6]N*m/rad,零空间总和刚度系数
         :param D: list(7,1). D[0]-D[5]  阻尼比例系数, D[6] 零空间总和阻尼比例系数,范围0-1
-        :param type:int. set_A_arm_impedance_type设置的阻抗类型
+        :param type:int. 2为笛卡尔阻抗
         :return: bool
         '''
         try:
@@ -1413,7 +1415,6 @@ class Marvin_Robot:
                 for byte in byte_data:
                     hex_value = hex(byte)[2:].upper().zfill(2)
                     hex_list.append(hex_value)
-
                 return result, ' '.join(hex_list)
 
         except Exception as e:

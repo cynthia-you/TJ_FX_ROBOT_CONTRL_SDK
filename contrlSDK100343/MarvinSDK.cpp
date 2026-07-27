@@ -1223,6 +1223,10 @@ long OnSetSendWaitResponse(long time_out)
 
 long OnGetChDataA(unsigned char data_ptr[256], long *ret_ch)
 {
+	if (data_ptr == NULL || ret_ch == NULL)
+	{
+		return 0;
+	}
 	if (*ret_ch != 1 && *ret_ch != 2 && *ret_ch != 3)
 	{
 		printf("[ERROR] OnGetChDataA: Invalid ret_ch number %ld (valid range: 1~3)\n", *ret_ch);
@@ -1248,6 +1252,10 @@ bool OnSetChDataA(unsigned char data_ptr[256], long size_int, long set_ch)
 
 long OnGetChDataB(unsigned char data_ptr[256], long *ret_ch)
 {
+	if (data_ptr == NULL || ret_ch == NULL)
+	{
+		return 0;
+	}
 	if (*ret_ch != 1 && *ret_ch != 2 && *ret_ch != 3)
 	{
 		printf("[ERROR] OnGetChDataB: Invalid ret_ch number %ld (valid range: 1~3)\n", *ret_ch);
@@ -3314,6 +3322,10 @@ long GetChData(char arm, unsigned char data_ptr[256], long *ret_ch)
 	{
 		printf("[ERROR] GetChData: invalid arm '%c'. Must be 'A' or 'B'.\n", arm);
 		return false;
+	}
+	if (data_ptr == NULL || ret_ch == NULL)
+	{
+		return 0;
 	}
 	if (*ret_ch != 1 && *ret_ch != 2 && *ret_ch != 3)
 	{

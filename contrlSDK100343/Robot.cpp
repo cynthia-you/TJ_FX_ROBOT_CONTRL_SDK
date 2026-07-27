@@ -45,6 +45,10 @@ bool CRobot::OnClearChDataB()
 
 long CRobot::OnGetChDataA(unsigned char data_ptr[256], long *ret_ch)
 {
+	if (data_ptr == NULL || ret_ch == NULL)
+	{
+		return 0;
+	}
 	if (m_InsRobot == NULL)
 	{
 		return 0;
@@ -52,13 +56,22 @@ long CRobot::OnGetChDataA(unsigned char data_ptr[256], long *ret_ch)
 	DDSS t;
 	long si = sizeof(DDSS);
 	long num = m_InsRobot->m_ACB1.ReadBuf((unsigned char *)&t, si);
-	if (num == 0)
+	if (num <= 0)
 	{
 		return num;
 	}
+	long copy_len = t.m_Size;
+	if (copy_len < 0)
+	{
+		copy_len = 0;
+	}
+	if (copy_len > 256)
+	{
+		copy_len = 256;
+	}
 	memset(data_ptr, 0, 256);
 	*ret_ch = t.m_SUB_CH;
-	memcpy(data_ptr, t.m_Data, t.m_Size);
+	memcpy(data_ptr, t.m_Data, copy_len);
 	if (m_InsRobot->m_LocalLogTag == true)
 	{
 		printf("[Marvin SDK]: Get 485 of A arm: \nchannel =%ld\n", *ret_ch);
@@ -79,7 +92,7 @@ long CRobot::OnGetChDataA(unsigned char data_ptr[256], long *ret_ch)
 		}
 		printf("\ndata size=%d \n", t.m_Size);
 	}
-	return t.m_Size;
+	return copy_len;
 }
 
 bool CRobot::OnSetChDataA(unsigned char *data_ptr, long size_int, long set_ch)
@@ -89,6 +102,10 @@ bool CRobot::OnSetChDataA(unsigned char *data_ptr, long size_int, long set_ch)
 		return false;
 	}
 	if (m_InsRobot->m_ch_send_a_tag == true)
+	{
+		return false;
+	}
+	if (size_int < 0 || size_int > 256)
 	{
 		return false;
 	}
@@ -108,6 +125,10 @@ bool CRobot::OnSetChDataA(unsigned char *data_ptr, long size_int, long set_ch)
 
 long CRobot::OnGetChDataB(unsigned char data_ptr[256], long *ret_ch)
 {
+	if (data_ptr == NULL || ret_ch == NULL)
+	{
+		return 0;
+	}
 
 	if (m_InsRobot == NULL)
 	{
@@ -116,13 +137,22 @@ long CRobot::OnGetChDataB(unsigned char data_ptr[256], long *ret_ch)
 	DDSS t;
 	long si = sizeof(DDSS);
 	long num = m_InsRobot->m_ACB2.ReadBuf((unsigned char *)&t, si);
-	if (num == 0)
+	if (num <= 0)
 	{
 		return num;
 	}
+	long copy_len = t.m_Size;
+	if (copy_len < 0)
+	{
+		copy_len = 0;
+	}
+	if (copy_len > 256)
+	{
+		copy_len = 256;
+	}
 	memset(data_ptr, 0, 256);
 	*ret_ch = t.m_SUB_CH;
-	memcpy(data_ptr, t.m_Data, t.m_Size);
+	memcpy(data_ptr, t.m_Data, copy_len);
 	if (m_InsRobot->m_LocalLogTag == true)
 	{
 		printf("[Marvin SDK]: Get 485 of B arm: \nchannel =%ld\n", *ret_ch);
@@ -142,7 +172,7 @@ long CRobot::OnGetChDataB(unsigned char data_ptr[256], long *ret_ch)
 		}
 		printf("\ndata size=%d \n", t.m_Size);
 	}
-	return t.m_Size;
+	return copy_len;
 }
 
 bool CRobot::OnSetChDataB(unsigned char *data_ptr, long size_int, long set_ch)
@@ -152,6 +182,10 @@ bool CRobot::OnSetChDataB(unsigned char *data_ptr, long size_int, long set_ch)
 		return false;
 	}
 	if (m_InsRobot->m_ch_send_b_tag == true)
+	{
+		return false;
+	}
+	if (size_int < 0 || size_int > 256)
 	{
 		return false;
 	}
@@ -249,19 +283,34 @@ bool CRobot::OnRecvFile(char *local_file, char *remote_file)
 #ifdef CMPL_WIN
 void CALLBACK CallBackFunc2(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2)
 {
-	m_InsRobot->DoRecv();
-	m_InsRobot->DoSend();
-	m_InsRobot->DoCnt();
+	CRobot::OnTimerTick();
 }
 #endif
 #ifdef CMPL_LIN
 void CallBackFunc(union sigval v)
 {
+	CRobot::OnTimerTick();
+}
+#endif
+
+void CRobot::OnTimerTick()
+{
+	if (m_InsRobot == NULL)
+	{
+		return;
+	}
+	m_InsRobot->m_recv_active.fetch_add(1);
+	if (m_InsRobot->m_recv_stop.load())
+	{
+		m_InsRobot->m_recv_active.fetch_sub(1);
+		return;
+	}
 	m_InsRobot->DoRecv();
 	m_InsRobot->DoSend();
 	m_InsRobot->DoCnt();
+	m_InsRobot->m_recv_active.fetch_sub(1);
 }
-#endif
+
 bool CRobot::OnOpenShareCh(char *shm_name)
 {
 	GetIns();
@@ -298,6 +347,7 @@ bool CRobot::OnOpenShareCh(char *shm_name)
 		}
 	}
 }
+
 CRobot::CRobot()
 {
 	m_Arm0PosCmdSendSerial = 7;
@@ -356,6 +406,7 @@ bool CRobot::OnRelease()
 		return true;
 	}
 	inRelease = true;
+	m_InsRobot->m_recv_stop.store(true);
 #ifdef CMPL_WIN
 
 	if (m_InsRobot->m_TimeEventID != 0)
@@ -391,6 +442,11 @@ bool CRobot::OnRelease()
 		m_InsRobot->_tosock_ = 0;
 	}
 #endif
+
+	while (m_InsRobot->m_recv_active.load() > 0)
+	{
+		SLEEP(1);
+	}
 
 	SLEEP(10);
 	if (m_InsRobot->m_share_ch_tag == true)
@@ -588,7 +644,7 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	{
 		if (m_InsRobot->m_LocalLogTag == true)
 		{
-			printf("[Marvin SDK %s]: Warning: Version mismatch between control system %ld and SDK %ld\n"
+			printf("[Marvin SDK %s]: Warning: Version mismatch between control system %d and SDK %d\n"
 				   "                      Some functions may not work properly\n",
 				   __FUNCTION__, m_InsRobot->m_ctrlSysVersion, SDK_VERSION);
 		}
@@ -1460,14 +1516,18 @@ void CRobot::DoRecv()
 		{
 			if (recvbuf[0] == 'C' && recvbuf[1] == 'H')
 			{
-				DDSS *p = (DDSS *)&recvbuf[2];
-				if (p->m_CH == 1)
+				DDSS tddss;
+				memcpy(&tddss, &recvbuf[2], sizeof(DDSS));
+				if (tddss.m_Size >= 0 && tddss.m_Size <= 256)
 				{
-					m_ACB1.WriteBuf((unsigned char *)p, sizeof(DDSS));
-				}
-				if (p->m_CH == 2)
-				{
-					m_ACB2.WriteBuf((unsigned char *)p, sizeof(DDSS));
+					if (tddss.m_CH == 1)
+					{
+						m_ACB1.WriteBuf((unsigned char *)&tddss, sizeof(DDSS));
+					}
+					if (tddss.m_CH == 2)
+					{
+						m_ACB2.WriteBuf((unsigned char *)&tddss, sizeof(DDSS));
+					}
 				}
 			}
 		}

@@ -132,7 +132,7 @@ extern "C"
 	bool OnSetTargetState_A(int state);
 	bool OnSetTargetState_B(int state);
 
-	// 设置指定手臂的扭矩类型:1关节 2迪卡尔 3力
+	// 设置指定手臂的扭矩类型:1关节 2笛卡尔 3力
 	bool OnSetImpType_A(int type);
 	bool OnSetImpType_B(int type);
 
