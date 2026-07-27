@@ -3916,6 +3916,31 @@ bool OnSetStopRunning(const char *arm)
 		printf("[ERROR] OnSetRunningStop: invalid arm \"%s\". Must be exactly \"A\", \"B\", or \"AB\".\n", arm);
 		return false;
 	}
+	DCSS dcss;
+	CRobot::OnGetBuf(&dcss);
+	if (strcmp(arm, "A") == 0)
+	{
+		if (dcss.m_Out[0].m_LowSpdFlag == 1)
+		{
+			return true;
+		}
+	}
+	if (strcmp(arm, "B") == 0)
+	{
+		if (dcss.m_Out[1].m_LowSpdFlag == 1)
+		{
+			return true;
+		}
+
+	}
+	if (strcmp(arm, "AB") == 0)
+	{
+		if (dcss.m_Out[0].m_LowSpdFlag == 1 && dcss.m_Out[1].m_LowSpdFlag == 1)
+		{
+			return true;
+		}
+	}
+
 	char paraName[30];
 	memset(paraName, 0, 30);
 	if (strcmp(arm, "A") == 0)
