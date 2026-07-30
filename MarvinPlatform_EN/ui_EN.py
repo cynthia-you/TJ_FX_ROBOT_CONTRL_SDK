@@ -4977,6 +4977,11 @@ class App:
         self.multi_zsp_params_entry.pack(side="left", padx=2)
         self.multi_zsp_params_entry.insert(0, "0, 0, -1, 0, 0, 0")
 
+        multi_params_row_text = tk.Frame(multi_seg_frame, bg="white")
+        multi_params_row_text.pack(fill="x", pady=5)
+        tk.Label(multi_params_row_text, text="If choose zsp_type=1, additionally reference angle plane parameters. It supports parameter constraints in the x, y, and z vector directions, and the last three are reserved."
+        , bg="#B1B1F7", font=("Arial", 9, "bold")).pack(padx=(0,0),pady=(0,5))
+
         multi_btn_row = tk.Frame(multi_seg_frame, bg="white")
         multi_btn_row.pack(pady=5, anchor="center")
         tk.Button(multi_btn_row, text="Clear params", width=10, font=("Arial", 11, "bold"), bg="#E6E6FA",
