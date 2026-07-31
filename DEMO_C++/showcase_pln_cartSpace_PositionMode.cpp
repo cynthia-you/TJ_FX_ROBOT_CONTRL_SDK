@@ -15,20 +15,30 @@
 #define SLEEP(ms) usleep((ms) * 1000)
 #endif
 
-//'''#################################################################
-// 该DEMO 为在位置模式下,避免通讯抖动，使用规划方式将目标点发送至机器人
+// =============================================================================
+// 示例说明：在位置模式下规划并执行笛卡尔空间 YZ 平面矩形轨迹
 //
-// 使用逻辑
-//   初始化订阅数据的结构体
-//   初始化机器人接口
-//   查验连接是否成功,失败程序直接退出
-//   开启日志以便检查
-//   设置速度加速度和位置模式
-//   走到初始运动点
-//   计算配置初始化
-//   在笛卡尔空间YZ平面执行一个矩形框，分别规划和执行四条边
-//   下使能释放内存使别的程序或者用户可以连接机器人
-//'''#################################################################
+// 整体流程：
+//   阶段一：连接与控制模式配置
+//     1. 初始化状态数据结构并连接机器人。
+//     2. 读取机械臂状态和伺服错误码，发现错误时执行清错。
+//     3. 检查 UDP 帧序号是否持续更新，确认数据通道正常。
+//     4. 开启控制日志。
+//     5. 设置速度、加速度及位置模式并确认配置结果。
+//   阶段二：起点与运动学初始化
+//     6. 下发起始关节角，使 A 臂运动至规划起点。
+//     7. 加载机型配置并初始化运动学计算接口。
+//     8. 通过正运动学计算起点末端位姿。
+//     9. 将起点位姿矩阵转换为 XYZABC。
+//   阶段三：矩形轨迹规划与执行
+//    10. 定义边长 200 mm 的 YZ 平面矩形。
+//    11. 规划并执行矩形第一条边。
+//    12. 规划并执行矩形第二条边。
+//    13. 规划并执行矩形第三条边。
+//    14. 规划并执行矩形第四条边。
+//   阶段四：资源释放
+//    15. 等待轨迹完成，下使能并释放机器人连接。
+// =============================================================================
 
 bool checkJointsReached(double target_joints[7],
                         double current_joints[7],
@@ -74,7 +84,7 @@ int main()
         }
     };
 
-    // 初始化订阅数据的结构体
+    // [阶段一｜步骤 1] 初始化状态数据结构并连接机器人
     DCSS dcss;
 
     // 查验连接是否成功
@@ -86,8 +96,7 @@ int main()
     }
 
     SLEEP(200);
-    // 检查伺服和手臂是否有错，有错误清错
-    // 订阅最新数据获取机械臂的错误和状态，有错误清错
+    // [阶段一｜步骤 2] 读取状态并清除机械臂错误
     OnGetBuf(&dcss);
     int arm_error_a = dcss.m_State[0].m_ERRCode;
     int arm_error_b = dcss.m_State[1].m_ERRCode;
@@ -114,7 +123,7 @@ int main()
         SLEEP(20);
     }
 
-    // 获取伺服错误，有错误清错
+    // 读取伺服错误码并清错
     long ErrCode_A[7] = {};
     long ErrCode_B[7] = {};
     OnGetServoErr_A(ErrCode_A);
@@ -158,7 +167,7 @@ int main()
         SLEEP(20);
     }
 
-    // 通过确认freame数据的刷新，确认UDP数据通道连接成功（防火墙等可能不能正常收到数据）
+    // [阶段一｜步骤 3] 检查帧序号更新，确认 UDP 数据通道正常
     int motion_tag = 0;
     int frame_update = 0;
 
@@ -188,14 +197,14 @@ int main()
         return -1;
     }
 
-    // 控制日志开
+    // [阶段一｜步骤 4] 开启控制日志
     OnLogOn();
     OnLocalLogOn();
-    // 控制日志关
+    // 如需关闭日志，可调用以下接口：
     //  OnLogOff();
     //  OnLocalLogOff();
 
-    // 设置关节的速度和加速度百分比
+    // [阶段一｜步骤 5] 设置速度、加速度及位置模式
     OnClearSet();
     OnSetJointLmt_A(100, 100);
     OnSetSend();
@@ -207,13 +216,13 @@ int main()
     OnSetSend();
     SLEEP(50);
 
-    // 订阅查看设置是否成功
+    // 读取并打印控制参数
     OnGetBuf(&dcss);
     printf("A arm\n");
     printf("current state:%d\n", dcss.m_State[0].m_CurState);
     printf("CMD of vel and acc:%d %d\n", dcss.m_In[0].m_Joint_Vel_Ratio, dcss.m_In[0].m_Joint_Acc_Ratio);
 
-    // 下发运动点位
+    // [阶段二｜步骤 6] 运动至规划起点
     double joints_a[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
     OnClearSet();
     OnSetJointCmdPos_A(joints_a);
@@ -221,20 +230,13 @@ int main()
     SLEEP(3000);
 
     double fb_joints[7] = {0.0};
-    // 订阅查看是否运动到位
+    // 检查指令位置与反馈位置
     OnGetBuf(&dcss);
     print_array(dcss.m_In[0].m_Joint_CMD_Pos, 7, "CMD joints of arm A");
     print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "current joints of arm A");
     SLEEP(50);
 
-    // MOVLA在线直线规划步骤：
-    // 1. 计算初始化
-    // 2. 将起点的关节角度通过正运动学得到起点的末端位置姿态矩阵
-    // 3. 起点的末端位置姿态矩阵转为XYZABC
-    // 4. 定义直线结束点的XYZABC，
-    // 5. 运行在线规划,规划文件为50HZ执行
-
-    // 1 计算初始化
+    // [阶段二｜步骤 7] 加载配置并初始化运动学计算接口
     FX_INT32L i = 0;
     FX_INT32L j = 0;
     // 关闭打印日志
@@ -251,7 +253,7 @@ int main()
     FX_DOUBLE MCP[2][7][3];
     FX_DOUBLE I[2][7][6];
 
-    // 配置导入 !!! 非常重要！！！ 使用前，请一定确认机型，导入正确的配置文件config_path，文件导错，看起来运行正常，但是值错误！！！
+    // 注意：配置文件必须与实际机器人型号和版本一致，否则计算结果可能错误。
     // 确认arm_type是左臂0 还是右臂1
     // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
     // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg；
@@ -277,7 +279,7 @@ int main()
         printf("Robot Init Limit Parameters Error\n");
         return -1;
     }
-    // 2.将起点的关节角度通过正运动学得到起点的末端位置姿态矩阵
+    // [阶段二｜步骤 8] 通过正运动学计算起点末端位姿
     FX_DOUBLE jv[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
     for (FX_INT32 i = 0; i < 7; i++)
     {
@@ -290,7 +292,7 @@ int main()
         return -1;
     }
 
-    // 3. 起点的末端位置姿态矩阵转为XYZABC
+    // [阶段二｜步骤 9] 将起点位姿转换为 XYZABC
     Vect6 xyzabc = {0};
     if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == FX_FALSE)
     {
@@ -303,7 +305,7 @@ int main()
         start[i] = xyzabc[i];
     }
 
-    // 4. 定义直线结束点的XYZABC， showcase是规划了一个YZ平面的边长200mm的矩形
+    // [阶段三｜步骤 10] 定义边长 200 mm 的 YZ 平面矩形
     Vect6 end = {0.0};
     for (i = 0; i < 6; i++)
     {
@@ -311,7 +313,7 @@ int main()
     }
     end[2] += 200;
 
-    // 5. 运行在线规划,规划文件为50HZ
+    // [阶段三｜步骤 11] 规划矩形第一条边，规划频率为 50 Hz
     CPointSet pset_movla;
     long freq = 50;
     if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla) == FX_FALSE)
@@ -320,7 +322,7 @@ int main()
         return -1;
     }
 
-    // 6. 下发点位
+    // 下发第一条边的规划点
     if (!OnSetPlnCart_A(&pset_movla))
     {
         printf("Failed to run MOVLA plan\n");
@@ -328,14 +330,14 @@ int main()
     }
     SLEEP(20);
 
-    // 7. 等待运动完成, 判断是否到达目标点位，并继续下一段规划
+    // 等待到达目标点，再继续规划下一条边
     do
     {
         OnGetBuf(&dcss);
         SLEEP(1);
     } while (dcss.m_Out[0].m_TrajState != 0);
 
-    // line-2
+    // [阶段三｜步骤 12] 规划并执行矩形第二条边
     CPointSet pset_movla1;
     {
         for (i = 0; i < 6; i++)
@@ -374,7 +376,7 @@ int main()
     } while (dcss.m_Out[0].m_TrajState != 0);
 
     CPointSet pset_movla2;
-    // line-3
+    // [阶段三｜步骤 13] 规划并执行矩形第三条边
     {
         for (i = 0; i < 6; i++)
         {
@@ -413,7 +415,7 @@ int main()
     } while (dcss.m_Out[0].m_TrajState != 0);
 
     CPointSet pset_movla3;
-    // line-4
+    // [阶段三｜步骤 14] 规划并执行矩形第四条边
     {
         for (i = 0; i < 6; i++)
         {
@@ -455,7 +457,7 @@ int main()
     jv[6] = joint4[6];
 
     SLEEP(20);
-    // 等待运动完成
+    // 等待整条矩形轨迹执行完成
     do
     {
         OnGetBuf(&dcss);
@@ -466,7 +468,7 @@ int main()
         }
     } while (!checkJointsReached(jv, fb_joints));
 
-    // 任务完成,下使能，释放内存使别的程序或者用户可以连接机器人
+    // [阶段四｜步骤 15] 任务结束：下使能并释放连接
     SLEEP(50);
     OnClearSet();
     OnSetTargetState_A(0);

@@ -30,20 +30,26 @@ bool checkJointsReached(double target_joints[7],
 
 int main()
 {
-    ////'''#################################################################
-    ////该DEMO 为位置模式下解决指令抖动/通讯抖动问题，用规划形式下发指令并实现中断的案例
-    ///指定目标位置下发执行存在指令抖动/通讯抖动问题
-    ///因此使用起点A到目标点B的规划功能下发，控制器内部以50HZ执行规划点位，解决直接接收目标点B的通讯抖动问题。
-    ////
-    ////使用逻辑
-    ////    初始化订阅数据的结构体
-    ////    查验连接是否成功
-    ////    为了防止伺服有错，先清错
-    ////    设置位置模式和速度加速度
-    ////    运动到初始位置
-    ////    完成4次循环：规划点位下发，并中断
-    ////    任务完成，释放内存使别的程序或者用户可以连接机器人
-    ////'''#################################################################
+    // =========================================================================
+    // 示例说明：在位置模式下执行关节空间规划，并演示规划中断
+    //
+    // 整体流程：
+    //   阶段一：连接与控制模式配置
+    //     1. 初始化状态数据结构并连接机器人。
+    //     2. 读取机械臂状态和伺服错误码，发现错误时执行清错。
+    //     3. 检查 UDP 帧序号是否持续更新，确认数据通道正常。
+    //     4. 开启控制日志。
+    //     5. 设置速度和加速度百分比。
+    //     6. 将 A 臂切换为位置模式。
+    //   阶段二：起点与规划器配置
+    //     7. 下发初始关节角并等待机械臂稳定到达零位。
+    //     8. 设置规划器速度和加速度比例。
+    //   阶段三：关节规划与中断
+    //     9. 使用规划接口下发关节目标。
+    //    10. 规划执行 1 s 后主动中断，并读取当前关节位置。
+    //   阶段四：资源释放
+    //    11. 循环结束后下使能并释放机器人连接。
+    // =========================================================================
      auto print_matrix = [](auto* mat, size_t rows, size_t cols, const char* name = "", int precision = 2) {
         if (name[0] != '\0') printf("%s=\n", name);
         for (size_t i = 0; i < rows; ++i) {
@@ -64,7 +70,7 @@ int main()
     printf("]\n");
     };
 
-        // 初始化订阅数据的结构体
+    // [阶段一｜步骤 1] 初始化状态数据结构并连接机器人
     DCSS dcss;
 
     // 查验连接是否成功
@@ -75,8 +81,7 @@ int main()
     }
 
     SLEEP(200);
-    //检查伺服和手臂是否有错，有错误清错
-    //订阅最新数据获取机械臂的错误和状态，有错误清错
+    // [阶段一｜步骤 2] 读取状态并清除机械臂错误
     OnGetBuf(&dcss);
     int arm_error_a=dcss.m_State[0].m_ERRCode;
     int arm_error_b=dcss.m_State[1].m_ERRCode;
@@ -101,7 +106,7 @@ int main()
         SLEEP(20);
     } 
 
-    //获取伺服错误，有错误清错
+    // 读取伺服错误码并清错
     long ErrCode_A[7]={};
     long ErrCode_B[7]={};
     OnGetServoErr_A(ErrCode_A);
@@ -141,7 +146,7 @@ int main()
         SLEEP(20);
     }
     
-    //通过确认freame数据的刷新，确认UDP数据通道连接成功（防火墙等可能不能正常收到数据）
+    // [阶段一｜步骤 3] 检查帧序号更新，确认 UDP 数据通道正常
     int motion_tag = 0;
     int frame_update = 0;
 
@@ -164,11 +169,11 @@ int main()
         return -1;
     }
 
-    //控制日志开
+    // [阶段一｜步骤 4] 开启控制日志
     OnLogOn();
 	OnLocalLogOn();
 
-    //设置速度加速度百分比
+    // [阶段一｜步骤 5] 设置速度和加速度百分比
     long return_delay=0;
     long wait_respond_time=100;
     int vel=100;
@@ -180,7 +185,7 @@ int main()
     SLEEP(100);
 
 
-    //设置position
+    // [阶段一｜步骤 6] 设置位置模式
     long return_delay1=0;
     OnClearSet();;
     OnSetTargetState_A(1);
@@ -194,13 +199,13 @@ int main()
         printf("load NPVA success!\n");
     }
 
-    //走到初始零位
+    // [阶段二｜步骤 7] 运动至初始零位
     double initial_pos[7]={0.0};
     OnClearSet();
     OnSetJointCmdPos_A(initial_pos);
     return_delay1 = OnSetSendWaitResponse(wait_respond_time);
     printf(" cmd delay in 100ms is:%d\n", return_delay1);
-    //等待到达工作起点，稳态
+    // 等待到达工作起点并进入稳定状态
     SLEEP(3000);
 
     double fb_joints[7]={0.0};
@@ -213,7 +218,7 @@ int main()
     } while (!checkJointsReached(initial_pos, fb_joints));
 
 
-    //定义规划器的速度和加速度比例：范围0~1.
+    // [阶段二｜步骤 8] 设置规划器速度和加速度比例，取值范围为 0～1
     double vel_ratio=0.2;
     double acc_ratio=0.2;
 
@@ -231,17 +236,17 @@ int main()
             OnGetBuf(&dcss);
         } while (dcss.m_Out[0].m_TrajState != 0);
 
-        // 调用轨迹规划函数下发点位，解决通讯抖动
+        // [阶段三｜步骤 9] 使用规划接口下发关节目标
         if (OnSetPlnJoint_A(start_joints, stop_joints, vel_ratio, acc_ratio) != true)
         {
             printf("A arm pln failed at iteration %ld!\n", j);
             return -1;
         }
 
-        // 等待轨迹规划执行1s
+        // 规划轨迹执行 1 s
         SLEEP(1000);
 
-        //中断规划执行
+        // [阶段三｜步骤 10] 中断当前规划执行
         OnStopPlnJoint_A();
         SLEEP(200);
         // 打印当前关节位置
@@ -250,7 +255,7 @@ int main()
 
 
 
-    //任务完成,下使能，释放内存使别的程序或者用户可以连接机器人
+    // [阶段四｜步骤 11] 任务结束：下使能并释放连接
     SLEEP(50);
     OnClearSet();
     OnSetTargetState_A(0) ;

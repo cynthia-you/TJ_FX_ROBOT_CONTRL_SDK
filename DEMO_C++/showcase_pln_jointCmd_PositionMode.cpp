@@ -15,20 +15,26 @@
 #define SLEEP(ms) usleep((ms) * 1000)
 #endif
 
-////'''#################################################################
-////该DEMO 为位置模式下解决指令抖动/通讯抖动问题的用例位置和到位规划功能的混合使用案例
-/// 指定目标位置下发执行存在指令抖动/通讯抖动问题
-/// 因此使用起点A到目标点B的规划功能下发，控制器内部以50HZ执行规划点位，解决直接接收目标点B的通讯抖动问题。
-////
-////使用逻辑
-////   初始化订阅数据的结构体
-////   查验连接是否成功
-////   为了防止伺服有错，先清错
-////   设置位置模式和速度加速度
-////   运动到初始位置
-////   完成4次循环：规划点位下发+位置指令下发
-////   任务完成，释放内存使别的程序或者用户可以连接机器人
-////'''#################################################################
+// =============================================================================
+// 示例说明：对比关节规划指令与直接关节位置指令的执行效果
+//
+// 整体流程：
+//   阶段一：连接与控制模式配置
+//     1. 初始化状态数据结构并连接机器人。
+//     2. 读取机械臂状态和伺服错误码，发现错误时执行清错。
+//     3. 检查 UDP 帧序号是否持续更新，确认数据通道正常。
+//     4. 开启控制日志。
+//     5. 设置速度和加速度百分比。
+//     6. 将 A 臂切换为位置模式。
+//   阶段二：起点与规划器配置
+//     7. 下发初始关节角，使 A 臂运动至零位。
+//     8. 设置规划器速度和加速度比例。
+//   阶段三：两种下发方式对比
+//     9. 等待上一段轨迹结束，读取当前位置并使用规划接口下发目标。
+//    10. 直接下发关节位置指令，与规划下发效果进行对比。
+//   阶段四：运动完成
+//    11. 等待本轮运动完成后进入下一轮或结束任务。
+// =============================================================================
 
 bool checkJointsReached(double target_joints[7],
                         double current_joints[7],
@@ -75,7 +81,7 @@ int main()
         printf("]\n");
     };
 
-    // 初始化订阅数据的结构体
+    // [阶段一｜步骤 1] 初始化状态数据结构并连接机器人
     DCSS dcss;
 
     // 查验连接是否成功
@@ -87,8 +93,7 @@ int main()
     }
 
     SLEEP(200);
-    // 检查伺服和手臂是否有错，有错误清错
-    // 订阅最新数据获取机械臂的错误和状态，有错误清错
+    // [阶段一｜步骤 2] 读取状态并清除机械臂错误
     OnGetBuf(&dcss);
     int arm_error_a = dcss.m_State[0].m_ERRCode;
     int arm_error_b = dcss.m_State[1].m_ERRCode;
@@ -115,7 +120,7 @@ int main()
         SLEEP(20);
     }
 
-    // 获取伺服错误，有错误清错
+    // 读取伺服错误码并清错
     long ErrCode_A[7] = {};
     long ErrCode_B[7] = {};
     OnGetServoErr_A(ErrCode_A);
@@ -159,7 +164,7 @@ int main()
         SLEEP(20);
     }
 
-    // 通过确认freame数据的刷新，确认UDP数据通道连接成功（防火墙等可能不能正常收到数据）
+    // [阶段一｜步骤 3] 检查帧序号更新，确认 UDP 数据通道正常
     int motion_tag = 0;
     int frame_update = 0;
 
@@ -189,11 +194,14 @@ int main()
         return -1;
     }
 
-    // 控制日志开
+    // [阶段一｜步骤 4] 开启控制日志
     OnLogOn();
     OnLocalLogOn();
+    // 如需关闭日志，可调用以下接口：
+    //  OnLogOff();
+    //  OnLocalLogOff();
 
-    // 设置速度加速度百分比
+    // [阶段一｜步骤 5] 设置速度和加速度百分比
     long return_delay = 0;
     long wait_respond_time = 100;
     int vel = 100;
@@ -204,7 +212,7 @@ int main()
     printf(" cmd delay in 100ms is:%d\n", return_delay);
     SLEEP(100);
 
-    // 设置position
+    // [阶段一｜步骤 6] 设置位置模式
     long return_delay1 = 0;
     OnClearSet();
     ;
@@ -222,7 +230,7 @@ int main()
         printf("load NPVA success!\n");
     }
 
-    // 走到初始零位
+    // [阶段二｜步骤 7] 运动至初始零位
     double initial_pos[7] = {0.0};
     OnClearSet();
     OnSetJointCmdPos_A(initial_pos);
@@ -240,7 +248,7 @@ int main()
         SLEEP(1);
     } while (!checkJointsReached(initial_pos, fb_joints));
 
-    // 定义规划器的速度和加速度比例：范围0~1.
+    // [阶段二｜步骤 8] 设置规划器速度和加速度比例，取值范围为 0～1
     double vel_ratio = 0.2;
     double acc_ratio = 0.2;
 
@@ -251,7 +259,7 @@ int main()
     for (j = 0; j < 5; j++)
     {
         printf("---iter---:%ld\n", j);
-        // 刷新直到轨迹状态为0
+        // [阶段三｜步骤 9] 等待上一段轨迹结束
         do
         {
             OnGetBuf(&dcss);
@@ -272,14 +280,14 @@ int main()
         stop_joints[3] -= 20;
         print_array(stop_joints, 7, "stop joints of arm A");
 
-        // 调用轨迹规划函数下发点位，解决通讯抖动
+        // 使用轨迹规划接口下发目标，降低通信抖动
         if (OnSetPlnJoint_A(start_joints, stop_joints, vel_ratio, acc_ratio) != true)
         {
             printf("A arm pln failed at iteration %ld!\n", j);
             return -1;
         }
 
-        // 等待轨迹规划完成
+        // 等待规划轨迹执行完成
         do
         {
             OnGetBuf(&dcss);
@@ -296,14 +304,14 @@ int main()
             OnGetBuf(&dcss);
         } while (dcss.m_Out[0].m_TrajState != 0);
 
-        // 直接下发关节命令，有通讯抖动
+        // [阶段三｜步骤 10] 直接下发关节命令，用于效果对比
         stop_joints[3] += 20;
         OnClearSet();
         OnSetJointCmdPos_A(stop_joints);
         return_delay1 = OnSetSendWaitResponse(wait_respond_time);
         printf(" cmd delay in 100ms is:%d\n", return_delay1);
 
-        // 等待运动完成
+        // [阶段四｜步骤 11] 等待本轮运动完成
         do
         {
             OnGetBuf(&dcss);

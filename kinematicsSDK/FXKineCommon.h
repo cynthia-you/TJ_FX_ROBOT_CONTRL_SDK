@@ -108,6 +108,8 @@ typedef struct
 	Matrix4 m_FlangeTip;
 	Matrix4 m_Tool;
 	Matrix4 m_InvTool;
+	Matrix4 m_UserFrame;
+	Matrix4 m_InvUserFrame;
 	//////// Kinematic Calculate
 	Matrix4 m_TCP;
 	Matrix4 m_JointPG[7];

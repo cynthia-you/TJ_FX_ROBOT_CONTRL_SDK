@@ -25,6 +25,8 @@ extern "C"
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	FX_BOOL FX_Robot_Tool_Set(FX_INT32L RobotSerial, Matrix4 tool);
 	FX_BOOL FX_Robot_Tool_Rmv(FX_INT32L RobotSerial);
+	FX_BOOL FX_Robot_UserFrame_Set(FX_INT32L RobotSerial, Matrix4 userframe);
+	FX_BOOL FX_Robot_UserFrame_Rmv(FX_INT32L RobotSerial);
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	FX_BOOL FX_Robot_Kine_FK(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos);
 	FX_BOOL FX_Robot_Kine_FK_NSP(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos, Matrix3 nspg);
@@ -38,7 +40,7 @@ extern "C"
 	FX_BOOL FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE acc, FX_INT32L Freq, FX_CHAR *OutPutPath);
 
 	/////Motion Planning - Joint space
-	FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_Joints, FX_DOUBLE Vel_ratio, FX_DOUBLE ACC_ratio, FX_INT32L Freq, CPointSet* ret_pset);
+	FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_Joints, FX_DOUBLE Vel_ratio, FX_DOUBLE ACC_ratio, FX_INT32L Freq, CPointSet *ret_pset);
 
 	/////Multi-Point Motion Planning
 	FX_BOOL FX_Robot_PLN_Set_MOVL_Start(FX_INT32L RobotSerial, Vect7 Ref_Joints, Vect6 Start_XYZABC, Vect6 End_XYZABC, FX_DOUBLE Allow_Range, FX_INT32L ZSP_Type, Vect6 ZSP_Para, FX_DOUBLE Vel, FX_DOUBLE Acc, FX_INT32L Freq);
@@ -68,7 +70,7 @@ extern "C"
 	FX_BOOL FX_Robot_PLN_MOVL_KeepJA_C(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints,
 									   FX_DOUBLE vel, FX_DOUBLE acc, FX_INT32L Freq, void *ret_pset);
 	FX_BOOL FX_Robot_PLN_MOV_Target_C(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC,
-						   Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, void *ret_pset);
+									  Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, void *ret_pset);
 	FX_BOOL FX_Robot_PLN_Get_MOVL_Path_C(FX_INT32L RobotSerial, void *ret_Pset);
 
 #ifdef __cplusplus
@@ -79,7 +81,7 @@ FX_BOOL FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
 FX_BOOL FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints,
 								 FX_DOUBLE vel, FX_DOUBLE acc, FX_INT32L Freq, CPointSet *ret_pset);
 FX_BOOL FX_Robot_PLN_MOV_Target(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC,
-								   Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, CPointSet *ret_pset);
+								Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, CPointSet *ret_pset);
 #endif
 
 #endif

@@ -2,12 +2,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// =============================================================================
+// 示例说明：演示逆运动学求解失败的典型场景及返回结果
+//
+// 整体流程：
+//   阶段一：运动学初始化
+//     1. 定义运动学参数存储区并加载机型配置文件。
+//     2. 初始化机器人类型、DH 参数及运动限制。
+//   阶段二：关节奇异场景
+//     3. 构造关节 4 为 0 的输入并执行逆解，观察失败结果。
+//   阶段三：超出可达空间场景
+//     4. 构造超出机器人可达空间的目标位姿并执行逆解。
+//
+// 关节超限需要检查逆运动学结构体的关节超限标志位
+// 注意：配置文件必须与实际机器人型号和版本一致。
+// =============================================================================
+
 void KineFailedDemo()
 {
     FX_INT32L i = 0;
     FX_INT32L j = 0;
 
-   ////////////////////////导入运动学参数
+    // [阶段一｜步骤 1] 定义并加载运动学参数
     FX_INT32L TYPE[2];
     FX_DOUBLE GRV[2][3];
     FX_DOUBLE DH[2][8][4];
@@ -17,12 +33,11 @@ void KineFailedDemo()
     FX_DOUBLE Mass[2][7];
     FX_DOUBLE MCP[2][7][3];
     FX_DOUBLE I[2][7][6];
-    // 配置导入 !!! 非常重要！！！ 使用前，请一定确认机型，导入正确的配置文件config_path，文件导错，看起来运行正常，但是值错误！！！
-    // 确认arm_type是左臂0 还是右臂1
-    // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
-    // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg；
-    // srs机型为srs.MvKDCfg.
-    if (LOADMvCfg((char*)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
+    // 注意：配置文件与实际机型不匹配时，程序可能正常运行但计算结果错误。
+    // 参考文件：CCS 6 kg 3.1/4.0 分别使用 ccs_m6_31/40.MvKDCfg，
+    // CCS 3 kg 使用 ccs_m3.MvKDCfg，SRS 使用 srs.MvKDCfg。
+    // 同时需要确认 arm_type 对应左臂（0）还是右臂（1）。
+    if (LOADMvCfg((char *)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
     {
         printf("Robot Load CFG Success\n");
     }
@@ -32,7 +47,7 @@ void KineFailedDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////初始化运动学参数
+    // [阶段一｜步骤 2] 初始化机器人类型、DH 参数及运动限制
     if (FX_Robot_Init_Type(0, TYPE[0]) == FX_FALSE)
     {
         printf("Robot Init Type Error\n");
@@ -61,7 +76,7 @@ void KineFailedDemo()
     }
     printf("------------------------------\n");
 
-    FX_DOUBLE jv[7] = { 10, 10, 10, 0, 10, 10, 10};
+    FX_DOUBLE jv[7] = {10, 10, 10, -6.869, 10, 10, 10};
     Matrix4 kine_pg;
     if (FX_Robot_Kine_FK(0, jv, kine_pg) == FX_FALSE)
     {
@@ -73,7 +88,7 @@ void KineFailedDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////逆向解失败情况1: 四关节为0
+    // [阶段二｜步骤 3] 失败场景一：关节 4 发生奇异
     FX_InvKineSolvePara sp;
     for (i = 0; i < 4; i++)
     {
@@ -97,12 +112,11 @@ void KineFailedDemo()
     }
     printf("------------------------------\n");
 
-
-    ////////////////////////#逆向解失败情况2: 超可达空间
-    Vect6 xyzabc={1000,500,300,0,0,0};
+    // [阶段三｜步骤 4] 失败场景二：目标位姿超出可达空间
+    Vect6 xyzabc = {1000, 500, 300, 0, 0, 0};
     Matrix4 mat_result;
-    FX_XYZABC2Matrix4DEG(xyzabc,mat_result);
-    FX_DOUBLE jv1[7]={10, 10, 10, 10, 10, 10, 10};
+    FX_XYZABC2Matrix4DEG(xyzabc, mat_result);
+    FX_DOUBLE jv1[7] = {10, 10, 10, 10, 10, 10, 10};
 
     for (i = 0; i < 4; i++)
     {
@@ -124,7 +138,6 @@ void KineFailedDemo()
     {
         printf("Robot Inverse Kinamatics Success\n");
     }
-
 }
 
 int main()

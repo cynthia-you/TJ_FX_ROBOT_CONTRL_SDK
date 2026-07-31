@@ -32,20 +32,26 @@ bool checkJointsReached(double target_joints[7],
 
 int main()
 {
-    ////'''#################################################################
-    ////该DEMO 为位置模式下解决指令抖动/通讯抖动问题的用例位置和到位规划功能的混合使用案例
-    /// 指定目标位置下发执行存在指令抖动/通讯抖动问题
-    /// 因此使用起点A到目标点B的规划功能下发，控制器内部以50HZ执行规划点位，解决直接接收目标点B的通讯抖动问题。
-    ////
-    ////使用逻辑
-    ////    初始化订阅数据的结构体
-    ////    查验连接是否成功
-    ////    为了防止伺服有错，先清错
-    ////    设置位置模式和速度加速度
-    ////    运动到初始位置
-    ////    完成4次循环：规划点位下发+位置指令下发
-    ////    任务完成，释放内存使别的程序或者用户可以连接机器人
-    ////'''#################################################################
+    // =========================================================================
+    // 示例说明：在位置模式下执行双臂关节空间规划，降低通信抖动
+    //
+    // 整体流程：
+    //   阶段一：连接与双臂状态检查
+    //     1. 初始化状态数据结构并连接机器人。
+    //     2. 读取双臂状态和伺服错误码，发现错误时执行清错。
+    //     3. 检查 UDP 帧序号是否持续更新，确认数据通道正常。
+    //     4. 开启控制日志。
+    //   阶段二：双臂控制模式配置
+    //     5. 设置双臂速度和加速度百分比。
+    //     6. 将双臂切换为位置模式。
+    //     7. 下发初始关节角，使双臂运动至零位。
+    //   阶段三：双臂关节空间规划
+    //     8. 设置规划器速度和加速度比例。
+    //     9. 读取当前关节位置并使用规划控制接口下发双臂目标。
+    //   阶段四：轨迹完成与资源释放
+    //    10. 等待双臂轨迹执行完成。
+    //    11. 任务结束后下使能并释放机器人连接。
+    // =========================================================================
     auto print_matrix = [](auto *mat, size_t rows, size_t cols, const char *name = "", int precision = 2)
     {
         if (name[0] != '\0')
@@ -73,7 +79,7 @@ int main()
         printf("]\n");
     };
 
-    // 初始化订阅数据的结构体
+    // [阶段一｜步骤 1] 初始化状态数据结构并连接机器人
     DCSS dcss;
 
     // 查验连接是否成功
@@ -85,8 +91,7 @@ int main()
     }
 
     SLEEP(200);
-    // 检查伺服和手臂是否有错，有错误清错
-    // 订阅最新数据获取机械臂的错误和状态，有错误清错
+    // [阶段一｜步骤 2] 读取双臂状态并清除机械臂错误
     OnGetBuf(&dcss);
     int arm_error_a = dcss.m_State[0].m_ERRCode;
     int arm_error_b = dcss.m_State[1].m_ERRCode;
@@ -113,7 +118,7 @@ int main()
         SLEEP(20);
     }
 
-    // 获取伺服错误，有错误清错
+    // 读取双臂伺服错误码并清错
     long ErrCode_A[7] = {};
     long ErrCode_B[7] = {};
     OnGetServoErr_A(ErrCode_A);
@@ -157,7 +162,8 @@ int main()
         SLEEP(20);
     }
 
-    // 通过确认freame数据的刷新，确认UDP数据通道连接成功（防火墙等可能不能正常收到数据）
+    // [阶段一｜步骤 3] 检查帧序号更新，确认 UDP 数据通道正常
+    // 防火墙等可能不能正常收到数据
     int motion_tag = 0;
     int frame_update = 0;
 
@@ -187,11 +193,14 @@ int main()
         return -1;
     }
 
-    // 控制日志开
+    // [阶段一｜步骤 4] 开启控制日志
     OnLogOn();
     OnLocalLogOn();
+    // 如需关闭日志，可调用以下接口：
+    //  OnLogOff();
+    //  OnLocalLogOff();
 
-    // 设置速度加速度百分比
+    // [阶段二｜步骤 5] 设置双臂速度和加速度百分比
     long return_delay = 0;
     long wait_respond_time = 100;
     int vel = 100;
@@ -203,10 +212,9 @@ int main()
     printf(" cmd delay in 100ms is:%d\n", return_delay);
     SLEEP(100);
 
-    // 设置position
+    // [阶段二｜步骤 6] 设置双臂位置模式
     long return_delay1 = 0;
     OnClearSet();
-    ;
     OnSetTargetState_A(1);
     OnSetTargetState_B(1);
     return_delay1 = OnSetSendWaitResponse(wait_respond_time);
@@ -222,7 +230,7 @@ int main()
         printf("load NPVA success!\n");
     }
 
-    // 走到初始零位
+    // [阶段二｜步骤 7] 双臂运动至初始零位
     double initial_pos[7] = {0.0};
     OnClearSet();
     OnSetJointCmdPos_A(initial_pos);
@@ -244,7 +252,7 @@ int main()
         SLEEP(1);
     } while (!checkJointsReached(initial_pos, fb_joints0) and !checkJointsReached(initial_pos, fb_joints1));
 
-    // 定义规划器的速度和加速度比例：范围0~1.
+    // [阶段三｜步骤 8] 设置规划器速度和加速度比例，取值范围为 0～1
     double vel_ratio = 0.2;
     double acc_ratio = 0.2;
 
@@ -254,7 +262,7 @@ int main()
     double stop_joints0[7] = {17.470, -43.308, 11.804, -79.761, -10.700, -2.874, 9.134};
     double stop_joints1[7] = {-17.470, -43.308, -11.804, -79.761, 10.700, -2.874, -9.134};
 
-    // 刷新直到轨迹状态为0
+    // 等待上一段轨迹结束
     do
     {
         OnGetBuf(&dcss);
@@ -269,14 +277,14 @@ int main()
     print_array(stop_joints0, 7, "end joints of arm A");
     print_array(stop_joints1, 7, "end joints of arm B");
 
-    // 调用轨迹规划函数下发点位，解决通讯抖动
+    // [阶段三｜步骤 9] 使用规划接口下发双臂目标
     if (CoRunPlnJoint(start_joints0, stop_joints0, start_joints1, stop_joints1, vel_ratio, acc_ratio) != true)
     {
         printf("AB arm pln failed at iteration %ld!\n", j);
         return -1;
     }
 
-    // 等待轨迹规划完成
+    // [阶段四｜步骤 10] 等待双臂轨迹执行完成
     do
     {
         OnGetBuf(&dcss);
@@ -286,7 +294,7 @@ int main()
     print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "current joints of arm A");
     print_array(dcss.m_Out[1].m_FB_Joint_Pos, 7, "current joints of arm B");
 
-    // 任务完成,下使能，释放内存使别的程序或者用户可以连接机器人
+    // [阶段四｜步骤 11] 任务结束：下使能并释放连接
     SLEEP(50);
     OnClearSet();
     OnSetTargetState_A(0);

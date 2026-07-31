@@ -13,24 +13,31 @@
 #include <unistd.h>
 #define SLEEP(ms) usleep((ms) * 1000)
 #endif
-// '''#################################################################
-// 该DEMO 为机器人以笛卡尔阻抗50HZ频率执行在线规划的完整演示脚本
-
-// MOVLA在线直线规划步骤：
-//     初始化订阅数据的结构体
-//     初始化机器人接口
-//     查验连接是否成功
-//     开启日志以便检查
-//     设置阻抗参数
-//     设置扭矩模式,笛卡尔阻抗模式,速度加速度百分比
-//     订阅数据查看是否设置
-//     运行到起始点位
-//     实列化计算并导入机型DH数据并初始化计算接口
-//     将起点的关节角度通过正运动学得到起点的末端位置姿态矩阵
-//     起点的末端位置姿态矩阵转为XYZABC
-//     定义直线结束点的XYZABC，showcase是规划了末端Z方向移动100毫米
-//     运行在线规划,规划点位为500HZ， 下采样为50HZ执行
-// '''  #################################################################
+// =============================================================================
+// 示例说明：以笛卡尔阻抗模式执行 MOVLA 在线直线轨迹
+//
+// 整体流程：
+//   阶段一：连接与状态检查
+//     1. 初始化状态数据结构并连接机器人。
+//     2. 读取机械臂状态和伺服错误码，发现错误时执行清错。
+//     3. 检查 UDP 帧序号是否持续更新，确认数据通道正常。
+//   阶段二：控制参数配置
+//     4. 开启控制日志。
+//     5. 设置关节速度和加速度参数。
+//     6. 设置笛卡尔阻抗参数。
+//     7. 将 A 臂切换为力矩模式和笛卡尔阻抗模式。
+//     8. 读取并打印控制参数，确认配置结果。
+//     9. 下发起始关节角，使 A 臂运动至规划起点。
+//   阶段三：起点位姿计算
+//    10. 加载机型配置并初始化运动学计算接口。
+//    11. 通过正运动学计算起点末端位姿。
+//    12. 将起点位姿矩阵转换为 XYZABC。
+//   阶段四：MOVLA 在线规划
+//    13. 定义末端沿 Z 方向移动 200 mm 的终点，以500Hz进行运动规划。
+//   阶段五：轨迹执行与资源释放
+//    14. 将 500 Hz 在线轨迹下采样为 50 Hz 并逐点执行。
+//    15. 轨迹结束后下使能并释放机器人连接。
+// =============================================================================
 
 int main()
 {
@@ -61,10 +68,10 @@ int main()
         }
     };
 
-    // 初始化订阅数据的结构体
+    // [阶段一｜步骤 1] 初始化状态数据结构并连接机器人
     DCSS dcss;
 
-    // 查验连接是否成功
+    // 检查机器人接口连接结果
     bool init = OnLinkTo(192, 168, 1, 190);
     if (!init)
     {
@@ -73,8 +80,7 @@ int main()
     }
 
     SLEEP(200);
-    // 检查伺服和手臂是否有错，有错误清错
-    // 订阅最新数据获取机械臂的错误和状态，有错误清错
+    // [阶段一｜步骤 2] 读取状态并清除机械臂错误
     OnGetBuf(&dcss);
     int arm_error_a = dcss.m_State[0].m_ERRCode;
     int arm_error_b = dcss.m_State[1].m_ERRCode;
@@ -101,7 +107,7 @@ int main()
         SLEEP(20);
     }
 
-    // 获取伺服错误，有错误清错
+    // 读取伺服错误码并清错
     long ErrCode_A[7] = {};
     long ErrCode_B[7] = {};
     OnGetServoErr_A(ErrCode_A);
@@ -145,7 +151,7 @@ int main()
         SLEEP(20);
     }
 
-    // 通过确认freame数据的刷新，确认UDP数据通道连接成功（防火墙等可能不能正常收到数据）
+    // [阶段一｜步骤 3] 检查帧序号更新，确认 UDP 数据通道正常
     int motion_tag = 0;
     int frame_update = 0;
 
@@ -175,21 +181,21 @@ int main()
         return -1;
     }
 
-    // 控制日志开
+    // [阶段二｜步骤 4] 开启控制日志
     OnLogOn();
     OnLocalLogOn();
 
-    // 控制日志关
+    // 如需关闭日志，可调用以下接口：
     //  OnLogOff();
     //  OnLocalLogOff();
 
-    // 设置关节的速度和加速度百分比
+    // [阶段二｜步骤 5] 设置关节速度和加速度百分比
     OnClearSet();
     OnSetJointLmt_A(100, 100);
     OnSetSend();
     SLEEP(200);
 
-    // 设置笛卡尔阻抗参数
+    // [阶段二｜步骤 6] 设置笛卡尔阻抗参数
     double K[7] = {3000, 3000, 3000, 100, 100, 100, 20}; // 预设参考。
     double D[7] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};   // 预设参考。
     OnClearSet();
@@ -197,14 +203,14 @@ int main()
     OnSetSend();
     SLEEP(200);
 
-    // 设置控制模式为笛卡尔阻抗
+    // [阶段二｜步骤 7] 设置力矩模式和笛卡尔阻抗模式
     OnClearSet();
     OnSetTargetState_A(3); // 3:torque mode; 1:position mode
     OnSetImpType_A(2);     // type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
     OnSetSend();
     SLEEP(1000);
 
-    // 订阅查看设置是否成功
+    // [阶段二｜步骤 8] 读取并打印控制参数
     OnGetBuf(&dcss);
     printf("A arm\n");
     printf("current state:%d\n", dcss.m_State[0].m_CurState);
@@ -213,27 +219,20 @@ int main()
     print_array(dcss.m_In[0].m_Joint_K, 7, "CMD of joint K");
     print_array(dcss.m_In[0].m_Joint_D, 7, "CMD of joint D");
 
-    // 下发运动点位
+    // [阶段二｜步骤 9] 运动至在线规划起点
     double joints_a[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
     OnClearSet();
     OnSetJointCmdPos_A(joints_a);
     OnSetSend();
     SLEEP(3000); // 预留运动时间
 
-    // 订阅查看是否运动到位
+    // 检查指令位置与反馈位置
     OnGetBuf(&dcss);
     print_array(dcss.m_In[0].m_Joint_CMD_Pos, 7, "CMD joints of arm A");
     print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "current joints of arm A");
     SLEEP(200);
 
-    // MOVLA在线直线规划步骤：
-    // 1. 计算初始化
-    // 2. 将起点的关节角度通过正运动学得到起点的末端位置姿态矩阵
-    // 3. 起点的末端位置姿态矩阵转为XYZABC
-    // 4. 定义直线结束点的XYZABC， showcase是规划了末端X方向移动50毫米
-    // 5. 运行在线规划,规划文件为500HZ， 下采样为50HZ执行
-
-    // 1 计算初始化
+    // [阶段三｜步骤 10] 加载配置并初始化运动学计算接口
     FX_INT32L i = 0;
     FX_INT32L j = 0;
     // 关闭打印日志
@@ -250,7 +249,7 @@ int main()
     FX_DOUBLE MCP[2][7][3];
     FX_DOUBLE I[2][7][6];
 
-    // 配置导入 !!! 非常重要！！！ 使用前，请一定确认机型，导入正确的配置文件config_path，文件导错，看起来运行正常，但是值错误！！！
+    // 注意：配置文件必须与实际机器人型号和版本一致，否则计算结果可能错误。
     // 确认arm_type是左臂0 还是右臂1
     // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
     // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg；
@@ -276,7 +275,7 @@ int main()
         printf("Robot Init Limit Parameters Error\n");
         return -1;
     }
-    // 2.将起点的关节角度通过正运动学得到起点的末端位置姿态矩阵
+    // [阶段三｜步骤 11] 通过正运动学计算起点末端位姿
     FX_DOUBLE jv[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
     Matrix4 kine_pg;
     if (FX_Robot_Kine_FK(0, jv, kine_pg) == FX_FALSE)
@@ -285,7 +284,7 @@ int main()
         return -1;
     }
 
-    // 3. 起点的末端位置姿态矩阵转为XYZABC
+    // [阶段三｜步骤 12] 将起点位姿矩阵转换为 XYZABC
     Vect6 xyzabc = {0};
     if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == FX_FALSE)
     {
@@ -298,15 +297,15 @@ int main()
         start[i] = xyzabc[i];
     }
 
-    // 4. 定义直线结束点的XYZABC， showcase是规划了末端X方向移动50毫米
+    // [阶段四｜步骤 13] 定义终点：末端沿 Z 方向移动 200 mm
     Vect6 end = {0.0};
     for (i = 0; i < 6; i++)
     {
         end[i] = xyzabc[i];
     }
-    end[2] += 200; // 末端X方向移动50毫米
+    end[2] += 200; // 末端沿 Z 方向移动 200 mm
 
-    // 5. 运行在线规划,规划文件为500HZ， 下采样为50HZ执行
+    // [阶段五｜步骤 14] 以500Hz生成在线轨迹，并以 50 Hz 下发
     CPointSet pset_movla;
     long freq = 500;
     if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla) == FX_FALSE)
@@ -319,7 +318,7 @@ int main()
     point_num = pset_movla.OnGetPointNum();
     printf("[ONLINE] MOVLA number of online pvt points:%d\n", point_num);
     double joints_[7] = {0.0};
-    for (long tag = 0; tag < point_num; tag += 10) // 规划文件为500HZ， 下采样为50HZ
+    for (long tag = 0; tag < point_num; tag += 10) // 500 Hz 轨迹下采样为 50 Hz
     {
         double *pvv = pset_movla.OnGetPoint(tag);
         print_array(pvv, 7, "MOVLA online pvt point");
@@ -344,7 +343,7 @@ int main()
         }
     }
 
-    // 任务完成,下使能，释放内存使别的程序或者用户可以连接机器人
+    // [阶段五｜步骤 15] 任务结束：下使能并释放连接
     SLEEP(200);
     OnClearSet();
     OnSetTargetState_A(0);

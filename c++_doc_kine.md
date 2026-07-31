@@ -168,9 +168,31 @@ FX_BOOL  FX_Robot_Tool_Rmv(FX_INT32L RobotSerial)
     输出：
         成功：True/1; 失败：False/0
 
+###    4. 用户坐标系设置
+FX_BOOL FX_Robot_UserFrame_Set(FX_INT32L RobotSerial, Matrix4 userframe)    
 
+    • 若需要在工件坐标系或其他自定义坐标系下进行运动学计算，在各关节参数初始化后，需要设置用户坐标系。
+    输入：
+        1.FX_INT32L RobotSerial：机器人序号。0，左臂；1，右臂
+        2.Matrix4 userframe：用户坐标系相对于机器人基座坐标系的齐次变换矩阵
 
-###    4. 计算正运动学
+    输出：
+        成功：True/1；失败：False/0。
+
+    • 设置用户坐标系后，正解结果为末端法兰或工具 TCP 相对于用户坐标系的平移和旋转；逆解输入位姿也应表示为相对于用户坐标系的位姿。
+    • 若同时设置了工具坐标系，则工具设置和用户坐标系设置同时生效。
+
+FX_BOOL FX_Robot_UserFrame_Rmv(FX_INT32L RobotSerial)
+
+    • 移除用户坐标系，恢复使用机器人基座坐标系作为运动学计算的参考坐标系
+    输入：
+        1. FX_INT32L RobotSerial：0，左臂；1，右臂
+    输出：
+        成功：True/1; 失败：False/0
+
+    • 移除用户坐标系后，正解结果恢复为末端法兰或工具 TCP 相对于机器人基座坐标系的平移和旋转。
+
+###    5. 计算正运动学
 FX_BOOL  FX_Robot_Kine_FK(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos)
 
     • 输入七关节角度及RobotSerial（参数含义参考初始化参数部分），输出为4*4的法兰末端位姿矩阵
@@ -181,7 +203,7 @@ FX_BOOL  FX_Robot_Kine_FK(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pg
     输出：
         成功：True/1; 失败：False/0
 
-###   5.计算正运动学和零空间(臂角平面)参数
+###   6.计算正运动学和零空间(臂角平面)参数
 FX_BOOL  FX_Robot_Kine_FK_NSP(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos, Matrix3 nspg);
 
     • 输入七关节角度及RobotSerial（参数含义参考初始化参数部分），输出为4*4的法兰末端位姿矩阵,并得到基于该角度下的零空间参数
@@ -197,7 +219,7 @@ FX_BOOL  FX_Robot_Kine_FK_NSP(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix
 
         
 
-###    6. 计算逆运动学
+###    7. 计算逆运动学
 FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
 
     • 输入RobotSerial（参数含义参考初始化参数部分）及solve_para结构体，输出包含在solve_para中
@@ -249,7 +271,7 @@ FX_BOOL  FX_Robot_Kine_IK(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para
 
 
 
-###    7. 计算末端位姿不变、改变零空间（臂角方向）的逆运动学
+###    8. 计算末端位姿不变、改变零空间（臂角方向）的逆运动学
 FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
 
     • 输入RobotSerial（参数含义参考初始化参数部分）及solve_para结构体，输出包含在solve_para中
@@ -267,7 +289,7 @@ FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
         成功：True/1; 失败：False/0
 
 
-###    8. 计算雅可比矩阵
+###    9. 计算雅可比矩阵
 FX_BOOL  FX_Robot_Kine_Jacb(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_Jacobi* jcb)
 
     • 输入关节角度及RobotSerial（参数含义参考初始化参数部分），输出为6*7的雅可比矩阵
@@ -278,7 +300,7 @@ FX_BOOL  FX_Robot_Kine_Jacb(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_Jacob
     输出：
         成功：True/1; 失败：False/0
 
-###    9. 直线规划（MOVL）
+###    10. 直线规划（MOVL）
 FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, FX_INT8* OutPutPath)
 
     • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为包含该段规划的关节点位文件
@@ -297,7 +319,7 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
     • FX_Robot_PLN_MOVL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
     
 
-###    10.直线规划，约束机器人气势和结束的各个关节角度（MOVLJ）
+###    11.直线规划，约束机器人气势和结束的各个关节角度（MOVLJ）
 FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE ACC，FX_INT32L Freq,  FX_CHAR* OutPutPath);
 
     • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为包含该段规划的关节点位文件
@@ -316,7 +338,7 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7
     • 该接口是不同于FX_Robot_PLN_MOVL的规划接口，FX_Robot_PLN_MOVL_KeepJ根据起始关节和结束关节规划一条直线路径。
  
 
-###    11. 工具动力学参数辨识
+###    12. 工具动力学参数辨识
 FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 Type,FX_CHAR* path,FX_DOUBLE* mass, Vect3 mr, Vect6 I);
 
     • 输入当前机型Type(获取机型Type参考导入运动学参数部分)及文件存放路径，输出为工具相对于法兰端的质量、质心及惯量
@@ -333,20 +355,20 @@ FX_INT32  FX_Robot_Iden_LoadDyn(FX_INT32 Type,FX_CHAR* path,FX_DOUBLE* mass, Vec
             
     • 其中 NoLoadData.csv 文件为无负载下采集的数据，在无负载情况下采集；LoadData.csv 文件需要在更换末端携带负载后重新采集（注意左右臂不可同时辨识，需要两个手臂逐一采集空载和带载辨识）
 
-###    12. 位置姿态4×4矩阵转XYZABC
+###    13. 位置姿态4×4矩阵转XYZABC
 FX_BOOL FX_Matrix42XYZABCDEG(FX_DOUBLE m[4][4],FX_DOUBLE xyzabc[6])
 
     • 输入为4*4的法兰末端位姿矩阵
     • 输出位姿信息XYZ及欧拉角ABC（单位：mm/度）
     输出：
         成功：True/1; 失败：False/0
-###     13. XYZABC转位置姿态4×4矩阵
+###     14. XYZABC转位置姿态4×4矩阵
 FX_VOID FX_XYZABC2Matrix4DEG(FX_DOUBLE xyzabc[6], FX_DOUBLE m[4][4])
 
     • 输入为位姿信息XYZ及欧拉角ABC（单位：mm/度）
     • 输出4*4的法兰末端位姿矩阵
 
-###     14. 在线直线规划（MOVLA）
+###     15. 在线直线规划（MOVLA）
 FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, CPointSet* ret_pset);
 
     • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为点位缓存类函数
@@ -364,7 +386,7 @@ FX_BOOL  FX_Robot_PLN_MOVLA(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End
 
     • FX_Robot_PLN_MOVLA的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
 
-###    15.直线规划，约束机器人气势和结束的各个关节角度（MOVLJA）
+###    16.直线规划，约束机器人气势和结束的各个关节角度（MOVLJA）
 FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE ACC，FX_INT32L Freq, CPointSet* ret_pset);
 
     • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为包含该段规划的关节点位文件
@@ -381,7 +403,7 @@ FX_BOOL  FX_Robot_PLN_MOVL_KeepJA(FX_INT32L RobotSerial, Vect7 startjoints, Vect
         
     • 该接口是不同于FX_Robot_PLN_MOVLA的规划接口，FX_Robot_PLN_MOVL_KeepJA根据起始关节和结束关节规划一条直线路径。
 
-###    16.MOVL终点位姿处理
+###    17.MOVL终点位姿处理
 FX_BOOL  FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L RotType, Vect3 Angle_Param, Vect6 End_XYZABC)
 
     • 输入起始点位姿、位置偏移、旋转类型及各轴旋转角度，输出为结束点位姿
@@ -400,7 +422,7 @@ FX_BOOL  FX_Robot_CalEndXYZABC(Vect6 Start_XYZABC, Vect3 Pos_offset, FX_INT32L R
 		3.FX_ROT_FIXED_xxx:固定角变换，基于基坐标系旋转    
     • 本接口输出的结束点位姿可以直接输入直线规划接口进行规划
 
-###    17. 多点MOVL连续规划
+###    18. 多点MOVL连续规划
 该功能为组合使用接口，共包含三个接口
 
 #### 设置多段规划的起点信息
@@ -482,7 +504,7 @@ FX_BOOL  FX_Robot_PLN_Get_MOVL_Path(FX_INT32L RobotSerial, CPointSet* ret_Pset);
     • 注意单段使用时，Allow_Range不生效
     • ret_pset中包含全部运动过程中的点位
 
-###     18. 直线优先规划
+###     19. 直线优先规划
 FX_BOOL FX_Robot_PLN_MOV_Target(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC,
 						            Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, CPointSet *ret_pset);
 
@@ -501,7 +523,7 @@ FX_BOOL FX_Robot_PLN_MOV_Target(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6
     输出：
         成功：True/1; 失败：False/0 
 
-###     19. 关节空间规划
+###     20. 关节空间规划
 FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_Joints, FX_DOUBLE Vel_ratio, FX_DOUBLE ACC_ratio, 
                             FX_INT32L Freq, CPointSet* ret_pset);
 

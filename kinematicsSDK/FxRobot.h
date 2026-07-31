@@ -25,6 +25,8 @@ extern "C"
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	FX_BOOL FX_Robot_Tool_Set(FX_INT32L RobotSerial, Matrix4 tool);
 	FX_BOOL FX_Robot_Tool_Rmv(FX_INT32L RobotSerial);
+	FX_BOOL FX_Robot_UserFrame_Set(FX_INT32L RobotSerial, Matrix4 userframe);
+	FX_BOOL FX_Robot_UserFrame_Rmv(FX_INT32L RobotSerial);
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	FX_BOOL FX_Robot_Kine_FK(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos);
 	FX_BOOL FX_Robot_Kine_FK_NSP(FX_INT32L RobotSerial, FX_DOUBLE joints[7], Matrix4 pgos, Matrix3 nspg);
@@ -43,7 +45,7 @@ extern "C"
 	FX_BOOL FX_Robot_PLN_Get_MOVL_Path(FX_INT32L RobotSerial, CPointSet *ret_Pset);
 
 	/////Motion Planning - Joint space
-	FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_Joints, FX_DOUBLE Vel_ratio, FX_DOUBLE ACC_ratio, FX_INT32L Freq, CPointSet* ret_pset);
+	FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_Joints, FX_DOUBLE Vel_ratio, FX_DOUBLE ACC_ratio, FX_INT32L Freq, CPointSet *ret_pset);
 
 	/////Joint Torque to EE Torque Mapping
 	FX_BOOL FX_Robot_JntTau2EETau(FX_INT32L RobotSerial, Vect7 q, Vect7 Joint_Torque, Vect6 EE_Torque);

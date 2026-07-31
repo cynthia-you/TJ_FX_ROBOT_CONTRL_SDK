@@ -3,6 +3,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// =============================================================================
+// 示例说明：集中演示机器人运动学与轨迹规划相关接口
+//
+// 整体流程：
+//   阶段一：运动学与坐标系初始化
+//     1. 设置运动学打印日志。
+//     2. 定义并加载运动学参数（需要注意导入文件名称）。
+//     3. 初始化运动学参数
+//     4. 设置工具坐标系。
+//     5. 设置用户坐标系。
+//   阶段二：运动学计算
+//     6. 计算正运动学。
+//     7. 将 4×4 位姿矩阵转换为 XYZABC。
+//     8. 计算雅可比矩阵。
+//     9. 计算逆运动学。
+//    10. 保持末端位姿不变，计算改变臂角的零空间逆解。
+//   阶段三：轨迹规划
+//    11. 执行 MOVL 离线直线规划。
+//    12. 执行 MOVLA 在线直线规划。
+//    13. 执行 MOVL_KeepJ 离线直线规划。
+//    14. 执行 MOVL_KeepJA 在线直线规划。
+//    15. 执行直线优先规划 FX_Robot_PLN_MOV_Target。
+//    16. 执行关节空间规划 MOVJ。
+//   阶段四：动力学参数辨识
+//    15. 执行工具动力学参数辨识并输出质量、质心和惯量。
+//
+// 注意：配置文件必须与实际机器人型号和版本一致。
+// =============================================================================
+
 void RobotKineDemo()
 {
     auto print_array = [](auto *arr, size_t n, const char *name = "", int precision = 2)
@@ -35,11 +64,11 @@ void RobotKineDemo()
     FX_INT32L i = 0;
     FX_INT32L j = 0;
 
-    ///////////////////////0 关闭打印日志
+    // [阶段一｜步骤 1] 设置运动学打印日志
     bool log_switch = false;
     FX_LOG_SWITCH(log_switch);
 
-    ////////////////////////1.导入运动学参数
+    // [阶段一｜步骤 2] 定义并加载运动学参数
     FX_INT32L TYPE[2];
     FX_DOUBLE GRV[2][3];
     FX_DOUBLE DH[2][8][4];
@@ -50,11 +79,13 @@ void RobotKineDemo()
     FX_DOUBLE MCP[2][7][3];
     FX_DOUBLE I[2][7][6];
 
-    // 配置导入 !!! 非常重要！！！ 使用前，请一定确认机型，导入正确的配置文件config_path，文件导错，看起来运行正常，但是值错误！！！
-    // 确认arm_type是左臂0 还是右臂1
-    // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
-    // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg；
+    // 注意：必须根据 CCS 6 kg、CCS 3 kg 或 SRS 的实际版本选择配置文件。
+    // // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
+    // // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg;
     // srs机型为srs.MvKDCfg.
+    // 配置错误可能不会立即报错，但会导致运动学计算结果错误。
+    // 同时需要确认 arm_type 对应左臂（0）还是右臂（1）。
+
     if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
     {
         printf("Robot Load CFG Success\n");
@@ -65,7 +96,7 @@ void RobotKineDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////2. 初始化运动学参数
+    // [阶段一｜步骤 3] 初始化运动学参数（机器人类型、DH 参数及运动限制等）
     if (FX_Robot_Init_Type(0, TYPE[0]) == FX_FALSE)
     {
         printf("Robot Init Type Error\n");
@@ -94,7 +125,7 @@ void RobotKineDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////3.工具设置
+    // [阶段一｜步骤 4] 设置工具坐标系
     Matrix4 tool;
 
     for (i = 0; i < 4; i++)
@@ -132,7 +163,49 @@ void RobotKineDemo()
 
     printf("------------------------------\n");
 
-    ////////////////////////4. 计算正运动学
+    // [阶段一｜步骤 5] 设置用户坐标系
+    Matrix4 user_frame_;
+
+    for (i = 0; i < 4; i++)
+    {
+        for (j = 0; j < 4; j++)
+        {
+            if (i == j)
+            {
+                user_frame_[i][j] = 1;
+            }
+            else
+            {
+                user_frame_[i][j] = 0;
+            }
+        }
+    }
+
+    user_frame_[0][3] += 10;
+    user_frame_[1][3] += 10;
+    user_frame_[2][3] += 10;
+
+    if (FX_Robot_UserFrame_Set(0, user_frame_) == FX_FALSE)
+    {
+        printf("Robot Set UserFrame Error\n");
+    }
+    else
+    {
+        printf("Robot Set UserFrame Success\n");
+    }
+
+    if (FX_Robot_UserFrame_Rmv(0) == FX_FALSE)
+    {
+        printf("Robot Remove UserFrame Error\n");
+    }
+    else
+    {
+        printf("Robot Remove UserFrame Success\n");
+    }
+
+    printf("------------------------------\n");
+
+    // [阶段二｜步骤 6] 计算正运动学
     FX_DOUBLE jv[7] = {10, 20, 30, 40, 50, 10, 10};
     Matrix4 kine_pg;
     if (FX_Robot_Kine_FK(0, jv, kine_pg) == FX_FALSE)
@@ -145,7 +218,7 @@ void RobotKineDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////5. 4*4位置姿态矩阵 转 xyzabc
+    // [阶段二｜步骤 7] 将 4×4 位姿矩阵转换为 XYZABC
     Vect6 xyzabc = {0};
 
     if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == FX_FALSE)
@@ -164,7 +237,7 @@ void RobotKineDemo()
     print_matrix(mat_result, 4, 4, "mat_rersukts");
     printf("------------------------------\n");
 
-    ////////////////////////6. 计算雅可比矩阵
+    // [阶段二｜步骤 8] 计算雅可比矩阵
     FX_Jacobi jcb;
     if (FX_Robot_Kine_Jacb(0, jv, &jcb) == FX_FALSE)
     {
@@ -176,7 +249,7 @@ void RobotKineDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////7. 计算逆运动学
+    // [阶段二｜步骤 9] 计算逆运动学
     FX_InvKineSolvePara sp;
     for (i = 0; i < 4; i++)
     {
@@ -201,7 +274,7 @@ void RobotKineDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////8.计算末端位姿不变、改变零空间（臂角方向）的逆运动学
+    // [阶段二｜步骤 10] 保持末端位姿不变，计算改变臂角的零空间逆解
     sp.m_Input_IK_ZSPType = 0;
     sp.m_Input_ZSP_Angle -= 1;
     if (FX_Robot_Kine_IK_NSP(0, &sp) == FX_FALSE)
@@ -214,7 +287,7 @@ void RobotKineDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////9. ֱ直线规划（MOVL）
+    // [阶段三｜步骤 11] 执行离线直线规划 MOVL
     Vect6 start = {0.0};
     for (i = 0; i < 6; i++)
     {
@@ -227,12 +300,11 @@ void RobotKineDemo()
         end[i] = xyzabc[i];
     }
 
-    end[0] += 10; // 末端X方向移动10毫米
+    end[0] += 10; // 末端沿 X 方向移动 10 mm
 
-    char op[] = "test_movl.txt";
-    char *path = op;
-    long freq_movl = 500;
-    if (FX_Robot_PLN_MOVL(0, start, end, jv, 100, 100, freq_movl, path) == FX_FALSE)
+    char *path = (char *)"test_movl.txt";
+    long freq = 500;
+    if (FX_Robot_PLN_MOVL(0, start, end, jv, 100, 100, freq, path) == FX_FALSE)
     {
         printf("Robot MOVL Error\n");
     }
@@ -242,9 +314,8 @@ void RobotKineDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////10. ֱ在线直线规划（MOVLA）并执行点
+    // [阶段三｜步骤 12] 执行在线直线规划 MOVLA
     CPointSet pset_movla;
-    long freq = 500;
     if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla) == FX_FALSE)
     {
         printf("Robot MOVLA Error\n");
@@ -255,7 +326,7 @@ void RobotKineDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////11. ֱ直线规划（MOVL_KeepJ）
+    // [阶段三｜步骤 13] 执行离线直线规划 MOVL_KeepJ
     FX_DOUBLE angle1[7] = {-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995};
     FX_DOUBLE angle2[7] = {-26.908, -91.109, 74.502, -88.083, -93.599, 17.151, -13.602};
 
@@ -272,7 +343,7 @@ void RobotKineDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////12. 在线直线规划（MOVL_KeepJA）并执行点
+    // [阶段三｜步骤 14] 执行在线直线规划 MOVL_KeepJA
     CPointSet pset_movl_keepja;
     if (FX_Robot_PLN_MOVL_KeepJA(0, angle1, angle2, 100, 100, freq, &pset_movl_keepja) == FX_FALSE)
     {
@@ -284,7 +355,31 @@ void RobotKineDemo()
     }
     printf("------------------------------\n");
 
-    ////////////////////////13. 工具动力学参数辨识
+    // [阶段三｜步骤 15] 执行直线优先规划 MOV_Target
+    CPointSet pset_mov_target;
+    if (FX_Robot_PLN_MOV_Target(0, angle1, angle2, jv, 100, 100, freq, &pset_mov_target) == FX_FALSE)
+    {
+        printf("Robot MOV Target Error\n");
+    }
+    else
+    {
+        printf("Robot MOV Target Success\n");
+    }
+    printf("------------------------------\n");
+
+    // [阶段三｜步骤 16] 执行关节空间规划 MOVJ
+    CPointSet pset_movj;
+    if (FX_Robot_PLN_MOVJ(0, angle1, angle2, 100, 100, freq, &pset_movj) == FX_FALSE)
+    {
+        printf("Robot MOV Joint Error\n");
+    }
+    else
+    {
+        printf("Robot MOV Joint Success\n");
+    }
+    printf("------------------------------\n");
+
+    // [阶段四｜步骤 17] 执行工具动力学参数辨识
     FX_DOUBLE ret_m = 0;
     Vect3 ret_mr = {0};
     Vect6 ret_I = {0};
@@ -300,7 +395,7 @@ void RobotKineDemo()
     {
         printf("tool dyn info =[%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf]\n", ret_m,
                ret_mr[0], ret_mr[1], ret_mr[2],
-               ret_I[0], ret_I[3], ret_I[4], ret_I[1], ret_I[5], ret_I[2]); // ixx,ixy,ixz,iyy,iyz,izz
+               ret_I[0], ret_I[3], ret_I[4], ret_I[1], ret_I[5], ret_I[2]); // 惯量顺序：ixx、ixy、ixz、iyy、iyz、izz
         printf("Robot Tool Dynamics Parameter Identification Success\n");
     }
     printf("------------------------------\n");

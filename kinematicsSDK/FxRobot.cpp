@@ -218,6 +218,8 @@ FX_BOOL FX_Init_Robot_Kine_Pilot_SRS(FX_INT32L RobotSerial, FX_DOUBLE DH[8][4])
 	FX_IdentM44(pRobot->m_KineBase.m_InvFlange);
 	FX_IdentM44(pRobot->m_KineBase.m_Tool);
 	FX_IdentM44(pRobot->m_KineBase.m_InvTool);
+	FX_IdentM44(pRobot->m_KineBase.m_UserFrame);
+	FX_IdentM44(pRobot->m_KineBase.m_InvUserFrame);
 	FX_IdentM44(pRobot->m_KineBase.m_TCP);
 
 	L1 = DH[0][2];
@@ -316,6 +318,8 @@ FX_BOOL FX_Init_Robot_Kine_Pilot_CCS(FX_INT32L RobotSerial, FX_DOUBLE DH[8][4])
 	FX_IdentM44(pRobot->m_KineBase.m_InvFlange);
 	FX_IdentM44(pRobot->m_KineBase.m_Tool);
 	FX_IdentM44(pRobot->m_KineBase.m_InvTool);
+	FX_IdentM44(pRobot->m_KineBase.m_UserFrame);
+	FX_IdentM44(pRobot->m_KineBase.m_InvUserFrame);
 	FX_IdentM44(pRobot->m_KineBase.m_TCP);
 
 	pRobot->m_KineBase.m_AxisRotBase[0][2][3] = L1;
@@ -620,7 +624,8 @@ FX_BOOL FX_Robot_Kine_Piolt(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_DOUBL
 	FX_PGMult(pRobot->m_KineBase.m_JointPG[5], pRobot->m_KineBase.m_AxisRotTip[6], pRobot->m_KineBase.m_JointPG[6]);
 	FX_PGMult(pRobot->m_KineBase.m_JointPG[6], pRobot->m_KineBase.m_Flange, pRobot->m_KineBase.m_FlangeTip);
 	FX_PGMult(pRobot->m_KineBase.m_FlangeTip, pRobot->m_KineBase.m_Tool, pRobot->m_KineBase.m_TCP);
-	FX_M44Copy(pRobot->m_KineBase.m_TCP, pgos);
+	FX_PGMult(pRobot->m_KineBase.m_UserFrame, pRobot->m_KineBase.m_TCP, pgos);
+	// FX_M44Copy(pRobot->m_KineBase.m_TCP, pgos);
 
 	return FX_TRUE;
 }
@@ -768,6 +773,70 @@ FX_BOOL FX_Robot_Tool_Rmv(FX_INT32L RobotSerial)
 			   pRobot->m_KineBase.m_Tool[1][0], pRobot->m_KineBase.m_Tool[1][1], pRobot->m_KineBase.m_Tool[1][2], pRobot->m_KineBase.m_Tool[1][3],
 			   pRobot->m_KineBase.m_Tool[2][0], pRobot->m_KineBase.m_Tool[2][1], pRobot->m_KineBase.m_Tool[2][2], pRobot->m_KineBase.m_Tool[2][3],
 			   pRobot->m_KineBase.m_Tool[3][0], pRobot->m_KineBase.m_Tool[3][1], pRobot->m_KineBase.m_Tool[3][2], pRobot->m_KineBase.m_Tool[3][3]);
+	return FX_TRUE;
+}
+
+FX_BOOL FX_Robot_UserFrame_Set(FX_INT32L RobotSerial, Matrix4 userframe)
+{
+	if (FX_LOG_TAG)
+		FX_LOG_INFO("[FxRobot - FX_Robot_UserFrame_Set]\n");
+
+	FX_INT32 i;
+	FX_INT32 j;
+	FX_Robot *pRobot;
+	if (RobotSerial < 0 || RobotSerial >= MAX_RUN_ROBOT_NUM)
+	{
+		if (FX_LOG_TAG)
+			FX_LOG_INFO("FX_Robot_UserFrame_Set: invalid RobotSerial\n");
+		return FX_FALSE;
+	}
+	pRobot = (FX_Robot *)&m_Robot[RobotSerial];
+
+	for (i = 0; i < 3; i++)
+	{
+		for (j = 0; j < 4; j++)
+		{
+			pRobot->m_KineBase.m_UserFrame[i][j] = userframe[i][j];
+		}
+	}
+	pRobot->m_KineBase.m_UserFrame[3][0] = 0;
+	pRobot->m_KineBase.m_UserFrame[3][1] = 0;
+	pRobot->m_KineBase.m_UserFrame[3][2] = 0;
+	pRobot->m_KineBase.m_UserFrame[3][3] = 1;
+	FX_PGMatrixInv(pRobot->m_KineBase.m_UserFrame, pRobot->m_KineBase.m_InvUserFrame);
+
+	if (FX_LOG_TAG)
+		printf("EG:UserFrame=[%lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf]\n",
+			   pRobot->m_KineBase.m_UserFrame[0][0], pRobot->m_KineBase.m_UserFrame[0][1], pRobot->m_KineBase.m_UserFrame[0][2], pRobot->m_KineBase.m_UserFrame[0][3],
+			   pRobot->m_KineBase.m_UserFrame[1][0], pRobot->m_KineBase.m_UserFrame[1][1], pRobot->m_KineBase.m_UserFrame[1][2], pRobot->m_KineBase.m_UserFrame[1][3],
+			   pRobot->m_KineBase.m_UserFrame[2][0], pRobot->m_KineBase.m_UserFrame[2][1], pRobot->m_KineBase.m_UserFrame[2][2], pRobot->m_KineBase.m_UserFrame[2][3],
+			   pRobot->m_KineBase.m_UserFrame[3][0], pRobot->m_KineBase.m_UserFrame[3][1], pRobot->m_KineBase.m_UserFrame[3][2], pRobot->m_KineBase.m_UserFrame[3][3]);
+	return FX_TRUE;
+}
+
+FX_BOOL FX_Robot_UserFrame_Rmv(FX_INT32L RobotSerial)
+{
+	if (FX_LOG_TAG)
+		FX_LOG_INFO("[FxRobot - FX_Robot_UserFrame_Rmv]\n");
+
+	FX_Robot *pRobot;
+	if (RobotSerial < 0 || RobotSerial >= MAX_RUN_ROBOT_NUM)
+	{
+		if (FX_LOG_TAG)
+			FX_LOG_INFO("FX_Robot_UserFrame_Rmv: invalid RobotSerial\n");
+		return FX_FALSE;
+	}
+	pRobot = (FX_Robot *)&m_Robot[RobotSerial];
+
+	FX_IdentM44(pRobot->m_KineBase.m_UserFrame);
+	FX_IdentM44(pRobot->m_KineBase.m_InvUserFrame);
+
+	if (FX_LOG_TAG)
+		printf("EG:UserFrame=[%lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf]\n",
+			   pRobot->m_KineBase.m_UserFrame[0][0], pRobot->m_KineBase.m_UserFrame[0][1], pRobot->m_KineBase.m_UserFrame[0][2], pRobot->m_KineBase.m_UserFrame[0][3],
+			   pRobot->m_KineBase.m_UserFrame[1][0], pRobot->m_KineBase.m_UserFrame[1][1], pRobot->m_KineBase.m_UserFrame[1][2], pRobot->m_KineBase.m_UserFrame[1][3],
+			   pRobot->m_KineBase.m_UserFrame[2][0], pRobot->m_KineBase.m_UserFrame[2][1], pRobot->m_KineBase.m_UserFrame[2][2], pRobot->m_KineBase.m_UserFrame[2][3],
+			   pRobot->m_KineBase.m_UserFrame[3][0], pRobot->m_KineBase.m_UserFrame[3][1], pRobot->m_KineBase.m_UserFrame[3][2], pRobot->m_KineBase.m_UserFrame[3][3]);
 	return FX_TRUE;
 }
 
@@ -1505,6 +1574,7 @@ FX_BOOL FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
 	FX_INT32L i = 0;
 	FX_INT32L j = 0;
 	Matrix4 m_flan = {{0}};
+	Matrix4 m_flan_uf = {{0}};
 	Matrix4 m_wrist = {{0}};
 	Vect3 pa = {0};
 	Vect3 pb = {0};
@@ -1554,7 +1624,16 @@ FX_BOOL FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
 	}
 
 	// Transform EE TCP to wrist center TCP
-	FX_MMM44(solve_para->m_Input_IK_TargetTCP, pRobot->m_KineBase.m_InvTool, m_flan);
+	for (i = 0; i < 4; i++)
+	{
+		for (j = 0; j < 4; j++)
+		{
+			printf("%f ", pRobot->m_KineBase.m_InvUserFrame[i][j]);
+		}
+		printf("\n");
+	}
+	FX_MMM44(pRobot->m_KineBase.m_InvUserFrame, solve_para->m_Input_IK_TargetTCP, m_flan_uf);
+	FX_MMM44(m_flan_uf, pRobot->m_KineBase.m_InvTool, m_flan);
 	FX_MMM44(m_flan, pRobot->m_KineBase.m_InvFlange, m_wrist);
 
 	for (i = 0; i < 3; i++)
@@ -3891,7 +3970,7 @@ FX_BOOL FX_Robot_PLN_Get_MOVL_Path(FX_INT32L RobotSerial, CPointSet *ret_Pset)
 	return FX_TRUE;
 }
 
-FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_Joints, FX_DOUBLE Vel_ratio, FX_DOUBLE ACC_ratio, FX_INT32L Freq, CPointSet* ret_pset)
+FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_Joints, FX_DOUBLE Vel_ratio, FX_DOUBLE ACC_ratio, FX_INT32L Freq, CPointSet *ret_pset)
 {
 	if (FX_LOG_TAG)
 		FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVJ]\n");
@@ -3910,7 +3989,7 @@ FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_J
 
 	CAxisJointPln Spln;
 	FX_Robot *pRobot = (FX_Robot *)&m_Robot[RobotSerial];
-	Spln.OnSetLmt(7,pRobot->m_Lmt.m_JLmtPos_N, pRobot->m_Lmt.m_JLmtPos_P, pRobot->m_Lmt.m_JLmtVel, pRobot->m_Lmt.m_JLmtAcc);
+	Spln.OnSetLmt(7, pRobot->m_Lmt.m_JLmtPos_N, pRobot->m_Lmt.m_JLmtPos_P, pRobot->m_Lmt.m_JLmtVel, pRobot->m_Lmt.m_JLmtAcc);
 	Spln.OnSetFreq(Freq);
 	FX_BOOL result = Spln.OnMovJoint(RobotSerial, start_pos, end_pos, vr, ar, ret_pset);
 
