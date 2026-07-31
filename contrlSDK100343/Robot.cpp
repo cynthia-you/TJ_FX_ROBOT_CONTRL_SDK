@@ -3385,6 +3385,22 @@ bool CRobot::OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7],
 		}
 	}
 
+	for (int i_=0;i_<5;i_++)
+	{
+		SLEEP(SLEEP_TIME);
+		CRobot::OnGetBuf(&t);
+		if (t.m_Out[0].m_TrajState == 2 )
+		{
+			break;
+		}
+	}
+	CRobot::OnGetBuf(&t);
+	if (t.m_Out[0].m_TrajState != 2)
+	{
+		printf("[ERROR] OnSetPlnJoint_AB: controller did not receive trajectory of A.\n");
+		return false;
+	}
+
 	long num1 = pln_B.OnPln(sta1, sto1, vr, ar);
 	if (num1 <= 0)
 	{
@@ -3455,15 +3471,15 @@ bool CRobot::OnSetPlnJoint_AB(double start_joints_A[7], double stop_joints_A[7],
 	{
 		SLEEP(SLEEP_TIME);
 		CRobot::OnGetBuf(&t);
-		if (t.m_Out[0].m_TrajState == 2 || t.m_Out[1].m_TrajState == 2)
+		if (t.m_Out[1].m_TrajState == 2)
 		{
 			break;
 		}
 	}
 	CRobot::OnGetBuf(&t);
-	if (t.m_Out[0].m_TrajState != 2 || t.m_Out[1].m_TrajState != 2)
+	if (t.m_Out[1].m_TrajState != 2)
 	{
-		printf("[ERROR] OnSetPlnJoint_AB: controller did not receive trajectories.\n");
+		printf("[ERROR] OnSetPlnJoint_AB: controller did not receive trajectory of B.\n");
 		return false;
 	}
 	

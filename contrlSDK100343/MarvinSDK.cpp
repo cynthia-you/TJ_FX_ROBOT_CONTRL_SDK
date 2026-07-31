@@ -1088,6 +1088,22 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 		}
 	}
 
+	for (int i=0;i<5;i++)
+	{
+		SLEEP(SLEEP_TIME);
+		CRobot::OnGetBuf(&t);
+		if (t.m_Out[0].m_TrajState == 2 )
+		{
+			break;
+		}
+	}
+	CRobot::OnGetBuf(&t);
+	if (t.m_Out[0].m_TrajState != 2)
+	{
+		printf("[ERROR] controller did not receive trajectory of A.\n");
+		return false;
+	}
+
 	long send_g_num1 = num1 / 50;
 	long relic_num1 = num1 % 50;
 	long iii, jjj, kkk;
@@ -1135,15 +1151,15 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 	{
 		SLEEP(SLEEP_TIME);
 		CRobot::OnGetBuf(&t);
-		if (t.m_Out[0].m_TrajState == 2 || t.m_Out[1].m_TrajState == 2)
+		if (t.m_Out[1].m_TrajState == 2)
 		{
 			break;
 		}
 	}
 	CRobot::OnGetBuf(&t);
-	if (t.m_Out[0].m_TrajState != 2 || t.m_Out[1].m_TrajState != 2)
+	if ( t.m_Out[1].m_TrajState != 2)
 	{
-		printf("[ERROR] controller did not receive trajectories.\n");
+		printf("[ERROR] controller did not receive trajectory of B.\n");
 		return false;
 	}
 
