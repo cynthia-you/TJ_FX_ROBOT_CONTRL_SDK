@@ -131,16 +131,10 @@
         showcase_pln_cart_positionMode_with_break.py
 ### 28. 关节力矩转末端六维力
         showcase_jointsTorque2EefTorque.py
-
-# 建议运行顺序：29->30->31->32
-### 29. 双臂协作关节空间同步规划运动（setPln_joint_AB）
-        showcase_pln_joint_to_joint_two_arms.py
-### 30. 双臂协作关节空间直线规划同步运动（movL_KeepJA + setPln_Cart_AB）
-        showcase_pln_joint_to_joints_linear_two_arms.py
-### 31. 双臂协作笛卡尔空间直线规划同步运动（movLA + setPln_Cart_AB）
-        showcase_pln_cartesian_linear_two_arms.py
-### 32. 双臂协作多点直线规划同步运动（multi_movL + setPln_Cart_AB）
-        showcase_pln_multi_segment_linear_two_arms.py
+### 29. 立场控制
+        showcase_force_field_control.py
+### 30. 运动过程中，停止运动案例（非急停，非下使能）
+        showcase_stop_run_AB.py
 
 ## 五. 计算showcases
 
@@ -173,3 +167,14 @@
 
 ### 10.在线多点规划，控制器以50HZ执行
             showcase_pln_cart_multi-segment_positionMode.py
+
+# 建议运行顺序：11->12->13->14
+### 11. 双臂协作关节空间同步规划运动（setPln_joint_AB）
+        showcase_pln_joint_to_joint_two_arms.py
+### 12. 双臂协作关节空间直线规划同步运动（movL_KeepJA + setPln_Cart_AB）
+        showcase_pln_joint_to_joints_linear_two_arms.py
+### 13. 双臂协作笛卡尔空间直线规划同步运动（movLA + setPln_Cart_AB）
+        showcase_pln_cartesian_linear_two_arms.py
+### 14. 双臂协作多点直线规划同步运动（multi_movL + setPln_Cart_AB）
+        showcase_pln_multi_segment_linear_two_arms.py
+

@@ -1152,7 +1152,6 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 	CRobot::OnSetTrajRun_B();
 	if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 	{
-		printf("2\n");
 		return false;
 	}
 

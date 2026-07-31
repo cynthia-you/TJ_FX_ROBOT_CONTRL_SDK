@@ -3710,7 +3710,13 @@ bool CRobot::OnSetSend()
 
 bool CRobot::OnUpdateSystem(char *local_path)
 {
-	if (!m_InsRobot->SendFile(local_path, (char *)"/home/FUSION/Tmp/ctrl_package.tar"))
+	const char *remote_path = "/home/FUSION/Tmp/ctrl_package.tar";
+	size_t len = strlen(local_path);
+	if (len >= 4 && strcmp(local_path + len - 4, ".ota") == 0)
+	{
+		remote_path = "/home/FUSION/Tmp/ctrl_package.ota";
+	}
+	if (!m_InsRobot->SendFile(local_path, (char *)remote_path))
 	{
 		return false;
 	}

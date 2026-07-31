@@ -180,6 +180,10 @@
 
 ## 20. 机械臂末端以给定的力和扭矩运动到给定的位置距离和姿态距离,可实时触发调整力的方向和大小。
             showcase_Force_field_Control.cpp
+## 21. OTA
+            showcase_ota_transfer.cpp
+## 22.系统升级
+            showcase_update_system.cpp
     
 # 六、 控制SDK简明式接口案例
             showcase_new_control_sdk_usage.cpp
