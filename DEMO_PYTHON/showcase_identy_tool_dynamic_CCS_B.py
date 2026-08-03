@@ -39,13 +39,15 @@ def collect_identy_data(robot_id, pvt_file, pvt_id, save_path):
     if robot_id == 'A':
         idx = [0, 1, 2, 3, 4, 5, 6,
                50, 51, 52, 53, 54, 55, 56,
-               76, 0, 0, 0, 0, 0, 0,
+               sdk_collect_data_tag_idx, 0, 0, 0, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0]
+   
     elif robot_id == 'B':
+        b_tag_idx=sdk_collect_data_tag_idx+100
         idx = [100, 101, 102, 103, 104, 105, 106,
                150, 151, 152, 153, 154, 155, 156,
-               176, 0, 0, 0, 0, 0, 0,
+               b_tag_idx, 0, 0, 0, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0]
     else:
@@ -80,20 +82,14 @@ def collect_identy_data(robot_id, pvt_file, pvt_id, save_path):
     processed_data=[]
     with open(save_path, 'r') as file:
         lines = file.readlines()
-        # 删除首行
     lines = lines[1:]
     for i, line in enumerate(lines):
-        # 移除行末的换行符并按'$'分割
         parts = line.strip().split('$')
-        # 提取每个字段的数字部分（去掉非数字前缀）
         numbers = []
         for part in parts:
-            if part:  # 忽略空字符串
-                # 找到最后一个空格后的数字部分
+            if part:  
                 num_str = part.split()[-1]
                 numbers.append(num_str)
-
-        # 删除前两列（索引0和1），保留剩余列
         if len(numbers) >= 2:
             numbers = numbers[2:]
         processed_data.append(numbers)
@@ -184,6 +180,12 @@ if __name__=="__main__":
 
     '''初始化机器人接口'''
     robot = Marvin_Robot()
+
+
+    sdk_collect_data_tag_idx=76
+    sdk_version=robot.SDK_version()
+    if sdk_version>100343007:
+        sdk_collect_data_tag_idx=66
 
     '''如果选择在线采集数据并辨识
      一定注意函数内部的提示,要三次流程分别反注释运行

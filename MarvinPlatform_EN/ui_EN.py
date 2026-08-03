@@ -6262,6 +6262,10 @@ class App:
 
     def load_tool_dyn_to_tool_api(self, robot_id, which_combox):
         try:
+            if not isinstance(self.tools_cfg, dict):
+                print(f"工具配置未正确加载: self.tools_cfg={self.tools_cfg!r}")
+                messagebox.showerror("Error", "Tool configuration is not loaded. Please reconnect the robot first.")
+                return
             # 获取工具动力学参数值
             if hasattr(self, 'entry_tool_dyn'):
                 tool_dyn_value = self.entry_tool_dyn.get()
@@ -6286,6 +6290,9 @@ class App:
                     if robot_id == 'A':
                         if which_combox == 'up_arm0':
                             selected_tool = self.tool_select_combobox_1.get()
+                            if not selected_tool:
+                                messagebox.showerror("Error", "Please select a tool first.")
+                                return
                             # 将字符串转换为列表
                             dyn_list = [float(x) for x in result.split(',')]
                             print(f'*****{dyn_list}')
@@ -6299,6 +6306,9 @@ class App:
                     elif robot_id == 'B':
                         if which_combox == 'up_arm1':
                             selected_tool = self.tool_select_combobox_11.get()
+                            if not selected_tool:
+                                messagebox.showerror("Error", "Please select a tool first.")
+                                return
                             # 将字符串转换为列表
                             dyn_list = [float(x) for x in result.split(',')]
                             self.tools_cfg["arm1"][selected_tool]["dyn"] = dyn_list
@@ -6420,7 +6430,16 @@ class App:
                 '''tool '''
                 robot.receive_file(self.tools_cfg_path, '/home/fusion/tools_cfg.json')
                 time.sleep(0.5)
-                self.tools_cfg=load_or_create_tools_config(self.tools_cfg_path)
+                _cfg_result = load_or_create_tools_config(self.tools_cfg_path)
+                if _cfg_result is False:
+                    try:
+                        with open(self.tools_cfg_path, 'r', encoding='utf-8') as f:
+                            self.tools_cfg = json.load(f)
+                    except Exception as e:
+                        print(f"Reloading configuration file failed: {e}")
+                        self.tools_cfg = {}
+                else:
+                    self.tools_cfg = _cfg_result
                 last_arm0_tool = None
                 last_arm1_tool = None
                 if self.tools_cfg:
@@ -6749,10 +6768,13 @@ def load_or_create_tools_config(file_path):
                 print(f"文件内容为空，已写入默认配置: {file_path}")
                 return False
 
-            # 解析JSON
             config = json.loads(content)
+            if not isinstance(config, dict):
+                print(f"配置文件格式无效（应为JSON对象），使用默认配置替换: {file_path}")
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(tools_cfg, f, indent=4, ensure_ascii=False)
+                return False
 
-            # 检查必需的结构
             required_keys = ["arm0", "arm1", "current_tool"]
             for key in required_keys:
                 if key not in config:
@@ -6765,6 +6787,12 @@ def load_or_create_tools_config(file_path):
             tool_names = ["tool-1", "tool-2", "tool-3", "tool-4", "tool-5"]
             for arm_key in ["arm0", "arm1"]:
                 if arm_key in config:
+                    # 确保该机械臂的值也是一个字典（防止为 true/false/数字 等）
+                    if not isinstance(config[arm_key], dict):
+                        print(f"配置中 {arm_key} 格式无效（应为JSON对象），使用默认配置替换")
+                        with open(file_path, 'w', encoding='utf-8') as f:
+                            json.dump(tools_cfg, f, indent=4, ensure_ascii=False)
+                        return False
                     for tool_name in tool_names:
                         if tool_name not in config[arm_key]:
                             print(f"配置中 {arm_key} 缺少工具 {tool_name}，使用默认配置替换")
