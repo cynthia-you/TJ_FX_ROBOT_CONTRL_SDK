@@ -791,7 +791,7 @@ robot.send_cmd()
              ARM_ERR_InvalidPVT = 3,//"PVT异常"  				1) PVT模式内部读取数据错误，长度不符, 2) 位置模式时linux系统调度导致PSI进程和SI进程数据交互错误
              ARM_ERR_RequestPositionMode = 4,//"请求进位置失败" 	1) 伺服初始化状态错误，2) 伺服状态正在切换，3) 编码器状态错误，4) 伺服反馈状态切换失败，5) 处于急停状态，6) 100341版本以前原因同6
              ARM_ERR_PositionModeOK = 5,//"进位置失败" 			1) 伺服反馈切换运行模式失败，2) 电机状态错误，3) 控制器系统内存状态错误，4) 控制器内部手臂数量设置错误
-             ARM_ERR_RequestSensorMode = 6,//"请求进扭矩失败" 	1) 未设置工具动力学参数，2) 手臂与外界环境处于硬接触状态，3) 其他原因同4、5
+             ARM_ERR_RequestSensorMode = 6,//"请求进扭矩失败" 	1)未设置工具动力学参数；2)轴外力检测不通过（日志查看）；3)内外编检查不通过；4)其他原因同4、5
              ARM_ERR_SensorModeOK = 7,//"进扭矩失败" 			原因同4、5
              ARM_ERR_RequestEnableServo = 8,//"请求上伺服失败" 	原因同4、5
              ARM_ERR_EnableServoOK = 9,//"上伺服失败" 			原因同4、5
