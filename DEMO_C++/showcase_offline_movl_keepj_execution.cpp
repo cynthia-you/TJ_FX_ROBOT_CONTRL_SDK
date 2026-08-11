@@ -235,58 +235,58 @@ int main()
     print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "current joints of arm A");
 
     // [阶段三｜步骤 9] 加载配置并初始化运动学计算接口
-    FX_INT32L i = 0;
-    FX_INT32L j = 0;
+    int i = 0;
+    int j = 0;
     // 关闭运动学打印日志
     bool log_switch = false;
     FX_LOG_SWITCH(log_switch);
     // 定义运动学参数存储区
-    FX_INT32L TYPE[2];
-    FX_DOUBLE GRV[2][3];
-    FX_DOUBLE DH[2][8][4];
-    FX_DOUBLE PNVA[2][7][4];
-    FX_DOUBLE BD[2][4][3];
+    int TYPE[2];
+    double GRV[2][3];
+    double DH[2][8][4];
+    double PNVA[2][7][4];
+    double BD[2][4][3];
 
-    FX_DOUBLE Mass[2][7];
-    FX_DOUBLE MCP[2][7][3];
-    FX_DOUBLE I[2][7][6];
+    double Mass[2][7];
+    double MCP[2][7][3];
+    double I[2][7][6];
 
     // 注意：配置错误可能不会立即报错，但会导致运动学计算结果错误。
     // // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
     // // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg；
     // // srs机型为srs.MvKDCfg.
     // 同时需要确认 arm_type 对应左臂（0）还是右臂（1）。
-    if (LOADMvCfg((char *)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_FALSE)
+    if (LOADMvCfg((char *)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == false)
     {
         printf("Load CFG Error\n");
         return -1;
     }
     // 初始化机器人类型、DH 参数及运动限制
-    if (FX_Robot_Init_Type(0, TYPE[0]) == FX_FALSE)
+    if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
         return -1;
     }
-    if (FX_Robot_Init_Kine(0, DH[0]) == FX_FALSE)
+    if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
         return -1;
     }
-    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == FX_FALSE)
+    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
         return -1;
     }
 
     // [阶段三｜步骤 10] 定义起点和终点关节构型
-    FX_DOUBLE angle1[7] = {-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995};
-    FX_DOUBLE angle2[7] = {-26.908, -91.109, 74.502, -88.083, -93.599, 17.151, -13.602};
+    double angle1[7] = {-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995};
+    double angle2[7] = {-26.908, -91.109, 74.502, -88.083, -93.599, 17.151, -13.602};
 
     // [阶段三｜步骤 11] 生成离线规划文件 movl_keepj.txt，规划频率以500Hz为例
     char op[] = "movl_keepj.txt";
     char *path = op;
     long freq = 500;
-    if (FX_Robot_PLN_MOVL_KeepJ(0, angle1, angle2, 100, 100, freq, path) == FX_FALSE)
+    if (FX_Robot_PLN_MOVL_KeepJ(0, angle1, angle2, 100, 100, freq, path) == false)
     {
         printf("MOVL KeepJ Error\n");
     }

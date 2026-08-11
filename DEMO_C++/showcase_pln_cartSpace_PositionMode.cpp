@@ -237,76 +237,76 @@ int main()
     SLEEP(50);
 
     // [阶段二｜步骤 7] 加载配置并初始化运动学计算接口
-    FX_INT32L i = 0;
-    FX_INT32L j = 0;
+    int i = 0;
+    int j = 0;
     // 关闭打印日志
     bool log_switch = false;
     FX_LOG_SWITCH(log_switch);
     // 导入运动学参数
-    FX_INT32L TYPE[2];
-    FX_DOUBLE GRV[2][3];
-    FX_DOUBLE DH[2][8][4];
-    FX_DOUBLE PNVA[2][7][4];
-    FX_DOUBLE BD[2][4][3];
+    int TYPE[2];
+    double GRV[2][3];
+    double DH[2][8][4];
+    double PNVA[2][7][4];
+    double BD[2][4][3];
 
-    FX_DOUBLE Mass[2][7];
-    FX_DOUBLE MCP[2][7][3];
-    FX_DOUBLE I[2][7][6];
+    double Mass[2][7];
+    double MCP[2][7][3];
+    double I[2][7][6];
 
     // 注意：配置文件必须与实际机器人型号和版本一致，否则计算结果可能错误。
     // 确认arm_type是左臂0 还是右臂1
     // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
     // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg；
     // srs机型为srs.MvKDCfg.
-    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_FALSE)
+    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == false)
     {
         printf("Load CFG Error\n");
         return -1;
     }
     // 初始化运动学参数
-    if (FX_Robot_Init_Type(0, TYPE[0]) == FX_FALSE)
+    if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
         return -1;
     }
-    if (FX_Robot_Init_Kine(0, DH[0]) == FX_FALSE)
+    if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
         return -1;
     }
-    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == FX_FALSE)
+    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
         return -1;
     }
     // [阶段二｜步骤 8] 通过正运动学计算起点末端位姿
-    FX_DOUBLE jv[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
-    for (FX_INT32 i = 0; i < 7; i++)
+    double jv[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
+    for (int i = 0; i < 7; i++)
     {
         jv[i] = joints_a[i];
     }
-    Matrix4 kine_pg;
-    if (FX_Robot_Kine_FK(0, jv, kine_pg) == FX_FALSE)
+    double kine_pg[4][4];
+    if (FX_Robot_Kine_FK(0, jv, kine_pg) == false)
     {
         printf("Forward Kinematics Error\n");
         return -1;
     }
 
     // [阶段二｜步骤 9] 将起点位姿转换为 XYZABC
-    Vect6 xyzabc = {0};
-    if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == FX_FALSE)
+    double xyzabc[6] = {0};
+    if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == false)
     {
         printf("matrix to xyzabc failed.");
         return -1;
     }
-    Vect6 start = {0.0};
+    double start[6] = {0.0};
     for (i = 0; i < 6; i++)
     {
         start[i] = xyzabc[i];
     }
 
     // [阶段三｜步骤 10] 定义边长 200 mm 的 YZ 平面矩形
-    Vect6 end = {0.0};
+    double end[6] = {0.0};
     for (i = 0; i < 6; i++)
     {
         end[i] = xyzabc[i];
@@ -316,7 +316,7 @@ int main()
     // [阶段三｜步骤 11] 规划矩形第一条边，规划频率为 50 Hz
     CPointSet pset_movla;
     long freq = 50;
-    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla) == FX_FALSE)
+    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla) == false)
     {
         printf("MOVLA Error\n");
         return -1;
@@ -356,7 +356,7 @@ int main()
         jv[5] = joint1[5];
         jv[6] = joint1[6];
 
-        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla1) == FX_FALSE)
+        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla1) == false)
         {
             printf("MOVLA Error\n");
             return -1;
@@ -394,7 +394,7 @@ int main()
         jv[5] = joint2[5];
         jv[6] = joint2[6];
 
-        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla2) == FX_FALSE)
+        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla2) == false)
         {
             printf("MOVLA Error\n");
             return -1;
@@ -433,7 +433,7 @@ int main()
         jv[5] = joint3[5];
         jv[6] = joint3[6];
 
-        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla3) == FX_FALSE)
+        if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla3) == false)
         {
             printf("MOVLA Error\n");
             return -1;

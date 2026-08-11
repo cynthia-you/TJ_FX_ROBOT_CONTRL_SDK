@@ -742,11 +742,13 @@ FX_BOOL FX_Robot_Tool_Set(FX_INT32L RobotSerial, Matrix4 tool)
 	FX_PGMatrixInv(pRobot->m_KineBase.m_Tool, pRobot->m_KineBase.m_InvTool);
 
 	if (FX_LOG_TAG)
+	{
 		printf("EG:TOOL=[%lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf]\n",
 			   pRobot->m_KineBase.m_Tool[0][0], pRobot->m_KineBase.m_Tool[0][1], pRobot->m_KineBase.m_Tool[0][2], pRobot->m_KineBase.m_Tool[0][3],
 			   pRobot->m_KineBase.m_Tool[1][0], pRobot->m_KineBase.m_Tool[1][1], pRobot->m_KineBase.m_Tool[1][2], pRobot->m_KineBase.m_Tool[1][3],
 			   pRobot->m_KineBase.m_Tool[2][0], pRobot->m_KineBase.m_Tool[2][1], pRobot->m_KineBase.m_Tool[2][2], pRobot->m_KineBase.m_Tool[2][3],
 			   pRobot->m_KineBase.m_Tool[3][0], pRobot->m_KineBase.m_Tool[3][1], pRobot->m_KineBase.m_Tool[3][2], pRobot->m_KineBase.m_Tool[3][3]);
+	}
 	return FX_TRUE;
 }
 
@@ -768,11 +770,13 @@ FX_BOOL FX_Robot_Tool_Rmv(FX_INT32L RobotSerial)
 	FX_IdentM44(pRobot->m_KineBase.m_InvTool);
 
 	if (FX_LOG_TAG)
+	{
 		printf("EG:TOOL=[%lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf]\n",
 			   pRobot->m_KineBase.m_Tool[0][0], pRobot->m_KineBase.m_Tool[0][1], pRobot->m_KineBase.m_Tool[0][2], pRobot->m_KineBase.m_Tool[0][3],
 			   pRobot->m_KineBase.m_Tool[1][0], pRobot->m_KineBase.m_Tool[1][1], pRobot->m_KineBase.m_Tool[1][2], pRobot->m_KineBase.m_Tool[1][3],
 			   pRobot->m_KineBase.m_Tool[2][0], pRobot->m_KineBase.m_Tool[2][1], pRobot->m_KineBase.m_Tool[2][2], pRobot->m_KineBase.m_Tool[2][3],
 			   pRobot->m_KineBase.m_Tool[3][0], pRobot->m_KineBase.m_Tool[3][1], pRobot->m_KineBase.m_Tool[3][2], pRobot->m_KineBase.m_Tool[3][3]);
+	}
 	return FX_TRUE;
 }
 
@@ -806,11 +810,13 @@ FX_BOOL FX_Robot_UserFrame_Set(FX_INT32L RobotSerial, Matrix4 userframe)
 	FX_PGMatrixInv(pRobot->m_KineBase.m_UserFrame, pRobot->m_KineBase.m_InvUserFrame);
 
 	if (FX_LOG_TAG)
+	{
 		printf("EG:UserFrame=[%lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf]\n",
 			   pRobot->m_KineBase.m_UserFrame[0][0], pRobot->m_KineBase.m_UserFrame[0][1], pRobot->m_KineBase.m_UserFrame[0][2], pRobot->m_KineBase.m_UserFrame[0][3],
 			   pRobot->m_KineBase.m_UserFrame[1][0], pRobot->m_KineBase.m_UserFrame[1][1], pRobot->m_KineBase.m_UserFrame[1][2], pRobot->m_KineBase.m_UserFrame[1][3],
 			   pRobot->m_KineBase.m_UserFrame[2][0], pRobot->m_KineBase.m_UserFrame[2][1], pRobot->m_KineBase.m_UserFrame[2][2], pRobot->m_KineBase.m_UserFrame[2][3],
 			   pRobot->m_KineBase.m_UserFrame[3][0], pRobot->m_KineBase.m_UserFrame[3][1], pRobot->m_KineBase.m_UserFrame[3][2], pRobot->m_KineBase.m_UserFrame[3][3]);
+	}
 	return FX_TRUE;
 }
 
@@ -832,11 +838,13 @@ FX_BOOL FX_Robot_UserFrame_Rmv(FX_INT32L RobotSerial)
 	FX_IdentM44(pRobot->m_KineBase.m_InvUserFrame);
 
 	if (FX_LOG_TAG)
+	{
 		printf("EG:UserFrame=[%lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf\n %lf %lf %lf %lf]\n",
 			   pRobot->m_KineBase.m_UserFrame[0][0], pRobot->m_KineBase.m_UserFrame[0][1], pRobot->m_KineBase.m_UserFrame[0][2], pRobot->m_KineBase.m_UserFrame[0][3],
 			   pRobot->m_KineBase.m_UserFrame[1][0], pRobot->m_KineBase.m_UserFrame[1][1], pRobot->m_KineBase.m_UserFrame[1][2], pRobot->m_KineBase.m_UserFrame[1][3],
 			   pRobot->m_KineBase.m_UserFrame[2][0], pRobot->m_KineBase.m_UserFrame[2][1], pRobot->m_KineBase.m_UserFrame[2][2], pRobot->m_KineBase.m_UserFrame[2][3],
 			   pRobot->m_KineBase.m_UserFrame[3][0], pRobot->m_KineBase.m_UserFrame[3][1], pRobot->m_KineBase.m_UserFrame[3][2], pRobot->m_KineBase.m_UserFrame[3][3]);
+	}
 	return FX_TRUE;
 }
 
@@ -1624,14 +1632,6 @@ FX_BOOL FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
 	}
 
 	// Transform EE TCP to wrist center TCP
-	for (i = 0; i < 4; i++)
-	{
-		for (j = 0; j < 4; j++)
-		{
-			printf("%f ", pRobot->m_KineBase.m_InvUserFrame[i][j]);
-		}
-		printf("\n");
-	}
 	FX_MMM44(pRobot->m_KineBase.m_InvUserFrame, solve_para->m_Input_IK_TargetTCP, m_flan_uf);
 	FX_MMM44(m_flan_uf, pRobot->m_KineBase.m_InvTool, m_flan);
 	FX_MMM44(m_flan, pRobot->m_KineBase.m_InvFlange, m_wrist);

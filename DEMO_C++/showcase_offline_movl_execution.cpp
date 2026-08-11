@@ -240,21 +240,21 @@ int main()
     // -------------------------------------------------------------------------
     // [阶段四｜步骤 10] 加载机型配置并初始化运动学计算接口
     // -------------------------------------------------------------------------
-    FX_INT32L i = 0;
-    FX_INT32L j = 0;
+    int i = 0;
+    int j = 0;
     // 关闭运动学打印日志
     bool log_switch = false;
     FX_LOG_SWITCH(log_switch);
     // 定义运动学参数存储区
-    FX_INT32L TYPE[2];
-    FX_DOUBLE GRV[2][3];
-    FX_DOUBLE DH[2][8][4];
-    FX_DOUBLE PNVA[2][7][4];
-    FX_DOUBLE BD[2][4][3];
+    int TYPE[2];
+    double GRV[2][3];
+    double DH[2][8][4];
+    double PNVA[2][7][4];
+    double BD[2][4][3];
 
-    FX_DOUBLE Mass[2][7];
-    FX_DOUBLE MCP[2][7][3];
-    FX_DOUBLE I[2][7][6];
+    double Mass[2][7];
+    double MCP[2][7][3];
+    double I[2][7][6];
 
     // 注意：配置文件与实际机型不匹配时，程序可能正常运行但计算结果错误。
     // 配置文件参考：
@@ -263,52 +263,52 @@ int main()
     //   - CCS 3 kg 版本：ccs_m3.MvKDCfg
     //   - SRS 机型：srs.MvKDCfg
     // 同时需要确认 arm_type 对应左臂（0）还是右臂（1）。
-    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_FALSE)
+    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == false)
     {
         printf("Load CFG Error\n");
         return -1;
     }
     // 初始化机器人类型、DH 参数及运动限制参数
-    if (FX_Robot_Init_Type(0, TYPE[0]) == FX_FALSE)
+    if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
         return -1;
     }
-    if (FX_Robot_Init_Kine(0, DH[0]) == FX_FALSE)
+    if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
         return -1;
     }
-    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == FX_FALSE)
+    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
         return -1;
     }
 
     // [阶段四｜步骤 11] 通过正运动学计算起点的末端位姿矩阵
-    FX_DOUBLE jv[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
-    Matrix4 kine_pg;
-    if (FX_Robot_Kine_FK(0, jv, kine_pg) == FX_FALSE)
+    double jv[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
+    double kine_pg[4][4] = {0};
+    if (FX_Robot_Kine_FK(0, jv, kine_pg) == false)
     {
         printf("Forward Kinematics Error\n");
         return -1;
     }
 
     // [阶段四｜步骤 12] 将起点位姿矩阵转换为 XYZABC
-    Vect6 xyzabc = {0};
-    if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == FX_FALSE)
+    double xyzabc[6] = {0};
+    if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == false)
     {
         printf("matrix to xyzabc failed.");
         return -1;
     }
-    Vect6 start = {0.0};
+    double start[6] = {0.0};
     for (i = 0; i < 6; i++)
     {
         start[i] = xyzabc[i];
     }
 
     // [阶段四｜步骤 13] 定义直线终点：末端沿 X 方向移动 50 mm
-    Vect6 end = {0.0};
+    double end[6] = {0.0};
     for (i = 0; i < 6; i++)
     {
         end[i] = xyzabc[i];
@@ -318,7 +318,7 @@ int main()
     // [阶段四｜步骤 14] 执行 MOVL 离线规划并生成 movl.txt
     char *path = (char *)"movl.txt";
     long freq = 500;
-    if (FX_Robot_PLN_MOVL(0, start, end, jv, 100, 100, freq, path) == FX_FALSE)
+    if (FX_Robot_PLN_MOVL(0, start, end, jv, 100, 100, freq, path) == false)
     {
         printf("MOVL offline Error\n");
         return -1;

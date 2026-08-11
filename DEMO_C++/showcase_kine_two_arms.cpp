@@ -72,7 +72,7 @@ void KineTwoArmsDemo()
     // 注意：配置文件与实际机型不匹配时，程序可能正常运行但计算结果错误。
     // CCS 6 kg、CCS 3 kg 和 SRS 机型应分别选择对应的 MvKDCfg 文件。
     // 同时需要确认 arm_type 对应左臂（0）还是右臂（1）。
-    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
+    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == true)
     {
         printf("Robot Load CFG Success\n");
     }
@@ -84,7 +84,7 @@ void KineTwoArmsDemo()
 
     // [阶段一｜步骤 3] 初始化双臂运动学参数
     printf("A arm\n");
-    if (FX_Robot_Init_Type(0, TYPE[0]) == FX_FALSE)
+    if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
     }
@@ -93,7 +93,7 @@ void KineTwoArmsDemo()
         printf("Robot Init Type Success\n");
     }
 
-    if (FX_Robot_Init_Kine(0, DH[0]) == FX_FALSE)
+    if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
     }
@@ -102,7 +102,7 @@ void KineTwoArmsDemo()
         printf("Robot Init DH Parameters Success\n");
     }
 
-    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == FX_FALSE)
+    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
     }
@@ -112,7 +112,7 @@ void KineTwoArmsDemo()
     }
 
     printf("B arm\n");
-    if (FX_Robot_Init_Type(1, TYPE[1]) == FX_FALSE)
+    if (FX_Robot_Init_Type(1, TYPE[1]) == false)
     {
         printf("Robot Init Type Error\n");
     }
@@ -121,7 +121,7 @@ void KineTwoArmsDemo()
         printf("Robot Init Type Success\n");
     }
 
-    if (FX_Robot_Init_Kine(1, DH[1]) == FX_FALSE)
+    if (FX_Robot_Init_Kine(1, DH[1]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
     }
@@ -130,7 +130,7 @@ void KineTwoArmsDemo()
         printf("Robot Init DH Parameters Success\n");
     }
 
-    if (FX_Robot_Init_Lmt(1, PNVA[1], BD[1]) == FX_FALSE)
+    if (FX_Robot_Init_Lmt(1, PNVA[1], BD[1]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
     }
@@ -150,12 +150,12 @@ void KineTwoArmsDemo()
     }
     tool1[0][3] += 100;
 
-    if (FX_Robot_Tool_Set(0, tool1) == FX_FALSE)
+    if (FX_Robot_Tool_Set(0, tool1) == false)
     {
         printf("Robot Set Arm0 Tool Error\n");
     }
 
-    if (FX_Robot_Tool_Set(1, tool2) == FX_FALSE)
+    if (FX_Robot_Tool_Set(1, tool2) == false)
     {
         printf("Robot Set Arm1 Tool Error\n");
     }
@@ -170,12 +170,12 @@ void KineTwoArmsDemo()
     }
     user_frame1_[2][3] -= 1000;
 
-    if (FX_Robot_UserFrame_Set(0, user_frame1_) == FX_FALSE)
+    if (FX_Robot_UserFrame_Set(0, user_frame1_) == false)
     {
         printf("Robot Set Arm0 UserFrame Error\n");
     }
 
-    if (FX_Robot_UserFrame_Set(1, user_frame2_) == FX_FALSE)
+    if (FX_Robot_UserFrame_Set(1, user_frame2_) == false)
     {
         printf("Robot Set Arm1 UserFrame Error\n");
     }
@@ -184,7 +184,7 @@ void KineTwoArmsDemo()
     printf("A arm\n");
     double jv[7] = {10, 20, 30, 40, 50, 10, 10};
     double kine_pg[4][4];
-    if (FX_Robot_Kine_FK(0, jv, kine_pg) == FX_FALSE)
+    if (FX_Robot_Kine_FK(0, jv, kine_pg) == false)
     {
         printf("Robot Forward Kinematics Error\n");
     }
@@ -197,7 +197,7 @@ void KineTwoArmsDemo()
     printf("B arm\n");
     double jv1[7] = {10, 20, 30, 40, 50, 10, 0};
     double kine_pg1[4][4];
-    if (FX_Robot_Kine_FK(1, jv1, kine_pg1) == FX_FALSE)
+    if (FX_Robot_Kine_FK(1, jv1, kine_pg1) == false)
     {
         printf("Robot Forward Kinematics Error\n");
     }
@@ -224,7 +224,7 @@ void KineTwoArmsDemo()
         sp.m_Input_IK_RefJoint[i] = jv[i];
     }
 
-    if (FX_Robot_Kine_IK(0, &sp) == FX_FALSE)
+    if (FX_Robot_Kine_IK(0, &sp) == false)
     {
         printf("Robot Inverse Kinamatics Error\n");
     }
@@ -249,7 +249,7 @@ void KineTwoArmsDemo()
         sp1.m_Input_IK_RefJoint[i] = jv1[i];
     }
 
-    if (FX_Robot_Kine_IK(1, &sp1) == FX_FALSE)
+    if (FX_Robot_Kine_IK(1, &sp1) == false)
     {
         printf("Robot Inverse Kinamatics Error\n");
     }

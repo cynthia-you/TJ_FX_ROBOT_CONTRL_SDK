@@ -236,79 +236,79 @@ int main()
     SLEEP(50);
 
     // [阶段二｜步骤 7] 加载右臂配置并初始化运动学计算接口
-    FX_INT32L i = 0;
-    FX_INT32L j = 0;
+    int i = 0;
+    int j = 0;
     // 关闭打印日志
     bool log_switch = false;
     FX_LOG_SWITCH(log_switch);
     // 导入运动学参数
-    FX_INT32L TYPE[2];
-    FX_DOUBLE GRV[2][3];
-    FX_DOUBLE DH[2][8][4];
-    FX_DOUBLE PNVA[2][7][4];
-    FX_DOUBLE BD[2][4][3];
+    int TYPE[2];
+    double GRV[2][3];
+    double DH[2][8][4];
+    double PNVA[2][7][4];
+    double BD[2][4][3];
 
-    FX_DOUBLE Mass[2][7];
-    FX_DOUBLE MCP[2][7][3];
-    FX_DOUBLE I[2][7][6];
+    double Mass[2][7];
+    double MCP[2][7][3];
+    double I[2][7][6];
 
     // 注意：配置文件必须与实际机器人型号和版本一致，否则计算结果可能错误。
     // 确认arm_type是左臂0 还是右臂1
     // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
     // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg；
     // srs机型为srs.MvKDCfg.
-    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_FALSE)
+    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == false)
     {
         printf("Load CFG Error\n");
         return -1;
     }
     // 初始化运动学参数
-    if (FX_Robot_Init_Type(1, TYPE[1]) == FX_FALSE)
+    if (FX_Robot_Init_Type(1, TYPE[1]) == false)
     {
         printf("Robot Init Type Error\n");
         return -1;
     }
-    if (FX_Robot_Init_Kine(1, DH[1]) == FX_FALSE)
+    if (FX_Robot_Init_Kine(1, DH[1]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
         return -1;
     }
-    if (FX_Robot_Init_Lmt(1, PNVA[1], BD[1]) == FX_FALSE)
+    if (FX_Robot_Init_Lmt(1, PNVA[1], BD[1]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
         return -1;
     }
     // [阶段二｜步骤 8] 通过正运动学计算起点末端位姿
-    FX_DOUBLE jv[7] = {-90.0, 35.0, 0.0, -105.0, 130.0, 0.0, 0.0};
-    Matrix4 kine_pg;
-    if (FX_Robot_Kine_FK(1, jv, kine_pg) == FX_FALSE)
+    double jv[7] = {-90.0, 35.0, 0.0, -105.0, 130.0, 0.0, 0.0};
+    double kine_pg[4][4];
+    if (FX_Robot_Kine_FK(1, jv, kine_pg) == false)
     {
         printf("Forward Kinematics Error\n");
         return -1;
     }
 
     // [阶段二｜步骤 9] 将起点位姿转换为 XYZABC
-    Vect6 xyzabc = {0};
-    if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == FX_FALSE)
+    double xyzabc[6] = {0};
+    if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == false)
     {
         printf("matrix to xyzabc failed.");
         return -1;
     }
-    Vect6 start = {0.0};
+    double start[6] = {0.0};
     for (i = 0; i < 6; i++)
     {
         start[i] = xyzabc[i];
     }
 
     // [阶段三｜步骤 10] 定义目标末端位姿
-    Vect6 end = {0.0};
-    Matrix4 pg_end = {
+    double end[6] = {0.0};
+    double pg_end[4][4] = {
         {0.67886967, -0.71212705, -0.17891636, 11.97283},
         {0.19112802, 0.40665334, -0.89336618, -383.75744},
         {0.70894716, 0.57228328, 0.41217207, 703.32845},
         {0, 0, 0, 1}};
 
-    if (FX_Matrix42XYZABCDEG(pg_end, end) == FX_FALSE)
+    if (FX_Matrix42XYZABCDEG(pg_end, end) == false)
     {
         printf("matrix to xyzabc failed.");
         return -1;
@@ -318,7 +318,7 @@ int main()
     CPointSet pset_movt;
     pset_movt.OnEmpty();
     long freq = 50;
-    if (FX_Robot_PLN_MOV_Target(1, start, end, jv, 100, 100, freq, &pset_movt) == FX_FALSE)
+    if (FX_Robot_PLN_MOV_Target(1, start, end, jv, 100, 100, freq, &pset_movt) == false)
     {
         printf("MOVL Target Error\n");
         return -1;

@@ -233,57 +233,57 @@ int main()
     SLEEP(200);
 
     // [阶段三｜步骤 9] 加载配置并初始化运动学计算接口
-    FX_INT32L i = 0;
-    FX_INT32L j = 0;
+    int i = 0;
+    int j = 0;
     // 关闭运动学打印日志
     bool log_switch = false;
     FX_LOG_SWITCH(log_switch);
     // 导入运动学参数
-    FX_INT32L TYPE[2];
-    FX_DOUBLE GRV[2][3];
-    FX_DOUBLE DH[2][8][4];
-    FX_DOUBLE PNVA[2][7][4];
-    FX_DOUBLE BD[2][4][3];
+    int TYPE[2];
+    double GRV[2][3];
+    double DH[2][8][4];
+    double PNVA[2][7][4];
+    double BD[2][4][3];
 
-    FX_DOUBLE Mass[2][7];
-    FX_DOUBLE MCP[2][7][3];
-    FX_DOUBLE I[2][7][6];
+    double Mass[2][7];
+    double MCP[2][7][3];
+    double I[2][7][6];
 
     // 注意：配置文件必须与实际机器人型号和版本一致，否则计算结果可能错误。
     // 确认arm_type是左臂0 还是右臂1
     // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
     // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg；
     // srs机型为srs.MvKDCfg.
-    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_FALSE)
+    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == false)
     {
         printf("Load CFG Error\n");
         return -1;
     }
     // 初始化运动学参数
-    if (FX_Robot_Init_Type(0, TYPE[0]) == FX_FALSE)
+    if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
         return -1;
     }
-    if (FX_Robot_Init_Kine(0, DH[0]) == FX_FALSE)
+    if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
         return -1;
     }
-    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == FX_FALSE)
+    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
         return -1;
     }
 
     // [阶段三｜步骤 10] 定义起点和终点关节构型
-    FX_DOUBLE angle1[7] = {-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995};
-    FX_DOUBLE angle2[7] = {-26.908, -91.109, 74.502, -88.083, -93.599, 17.151, -13.602};
+    double angle1[7] = {-5.918, -35.767, 49.494, -68.112, -90.699, 49.211, -23.995};
+    double angle2[7] = {-26.908, -91.109, 74.502, -88.083, -93.599, 17.151, -13.602};
 
     // [阶段四｜步骤 11] 以500Hz生成在线轨迹，并以 50 Hz 下发
     CPointSet pset_movl_keepja;
     long freq = 500;
-    if (FX_Robot_PLN_MOVL_KeepJA(0, angle1, angle2, 100, 100, freq, &pset_movl_keepja) == FX_FALSE)
+    if (FX_Robot_PLN_MOVL_KeepJA(0, angle1, angle2, 100, 100, freq, &pset_movl_keepja) == false)
     {
         printf("MOVL KeepJA Error\n");
         return -1;

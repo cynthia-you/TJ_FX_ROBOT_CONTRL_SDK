@@ -188,25 +188,25 @@ int main()
     printf("------------------------------\n");
 
     // ===================== 导入 & 初始化运动学参数 =====================
-    FX_INT32L i = 0;
-    FX_INT32L j = 0;
+    int i = 0;
+    int j = 0;
 
-    FX_INT32L TYPE[2] = {0};
-    FX_DOUBLE GRV[2][3] = {0};
-    FX_DOUBLE DH[2][8][4] = {0};
-    FX_DOUBLE PNVA[2][7][4] = {0};
-    FX_DOUBLE BD[2][4][3] = {0};
+    int TYPE[2] = {0};
+    double GRV[2][3] = {0};
+    double DH[2][8][4] = {0};
+    double PNVA[2][7][4] = {0};
+    double BD[2][4][3] = {0};
 
-    FX_DOUBLE Mass[2][7] = {0};
-    FX_DOUBLE MCP[2][7][3] = {0};
-    FX_DOUBLE I[2][7][6] = {0};
+    double Mass[2][7] = {0};
+    double MCP[2][7][3] = {0};
+    double I[2][7][6] = {0};
 
     // 配置导入 !!! 非常重要！！！ 使用前，请一定确认机型，导入正确的配置文件config_path，文件导错，看起来运行正常，但是值错误！！！
     // 确认arm_type是左臂0 还是右臂1
     // ccs 6公斤的机型的有两个版本: 3.1(计算配置文件为ccs_m6_31.MvKDCfg), 4.0(计算配置文件为ccs_m6_40.MvKDCfg)，两个版本的参数不一样请确认版本后选择参数.
     // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg；
     // srs机型为srs.MvKDCfg.
-    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
+    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == true)
     {
         printf("Robot Load CFG Success\n");
     }
@@ -218,7 +218,7 @@ int main()
     }
     printf("------------------------------\n");
 
-    if (FX_Robot_Init_Type(0, TYPE[0]) == FX_FALSE)
+    if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
         return 0;
@@ -228,7 +228,7 @@ int main()
         printf("Robot Init Type Success\n");
     }
 
-    if (FX_Robot_Init_Kine(0, DH[0]) == FX_FALSE)
+    if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
         return 0;
@@ -238,7 +238,7 @@ int main()
         printf("Robot Init DH Parameters Success\n");
     }
 
-    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == FX_FALSE)
+    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
         return 0;
@@ -250,7 +250,7 @@ int main()
     printf("------------------------------\n");
 
     // ===================== 工具设置（单位阵） =====================
-    Matrix4 tool;
+    double tool[4][4] = {0};
     for (i = 0; i < 4; i++)
     {
         for (j = 0; j < 4; j++)
@@ -259,7 +259,7 @@ int main()
         }
     }
 
-    if (FX_Robot_Tool_Set(0, tool) == FX_FALSE)
+    if (FX_Robot_Tool_Set(0, tool) == false)
     {
         printf("Robot Set Tool Error\n");
     }
@@ -267,7 +267,7 @@ int main()
     {
         printf("Robot Set Tool Success\n");
     }
-    if (FX_Robot_Tool_Rmv(0) == FX_FALSE)
+    if (FX_Robot_Tool_Rmv(0) == false)
     {
         printf("Robot Remove Tool Error\n");
     }
@@ -282,8 +282,8 @@ int main()
     // 先刷新一次订阅
     OnGetBuf(&dcss);
 
-    FX_DOUBLE jv[7] = {0};  // 当前关节角
-    FX_DOUBLE tau[7] = {0}; // 当前关节力矩/扭矩（你的 Python 里叫 m_EST_Joint_Force）
+    double jv[7] = {0};  // 当前关节角
+    double tau[7] = {0}; // 当前关节力矩/扭矩（你的 Python 里叫 m_EST_Joint_Force）
 
     for (int k = 0; k < 7; ++k)
     {
@@ -308,8 +308,8 @@ int main()
     printf("------------------------------\n");
 
     // ===================== 力矩 -> 末端六维力/力矩 =====================
-    Vect6 EE_Torque; // 输出的末端六维力矩
-    if (FX_Robot_JntTau2EETau(0, jv, tau, EE_Torque) == FX_FALSE)
+    double EE_Torque[6] = {0}; // 输出的末端六维力矩
+    if (FX_Robot_JntTau2EETau(0, jv, tau, EE_Torque) == false)
     {
         printf("Robot JntTau2EETau Error, singularity exists\n");
     }

@@ -59,19 +59,19 @@ void ikNspTwoArmsDemo()
         }
     };
 
-    FX_INT32L i = 0;
-    FX_INT32L j = 0;
+    int i = 0;
+    int j = 0;
 
     // [阶段一｜步骤 1] 定义双臂运动学参数
-    FX_INT32L TYPE[2];
-    FX_DOUBLE GRV[2][3];
-    FX_DOUBLE DH[2][8][4];
-    FX_DOUBLE PNVA[2][7][4];
-    FX_DOUBLE BD[2][4][3];
+    int TYPE[2];
+    double GRV[2][3];
+    double DH[2][8][4];
+    double PNVA[2][7][4];
+    double BD[2][4][3];
 
-    FX_DOUBLE Mass[2][7];
-    FX_DOUBLE MCP[2][7][3];
-    FX_DOUBLE I[2][7][6];
+    double Mass[2][7];
+    double MCP[2][7][3];
+    double I[2][7][6];
 
     // [阶段一｜步骤 2] 加载机型配置
     // 注意：配置文件与实际机型不匹配时，程序可能正常运行但计算结果错误。
@@ -79,7 +79,7 @@ void ikNspTwoArmsDemo()
     // // ccs 3公斤的机型的计算配置文件为ccs_m3.MvKDCfg；
     // // srs机型为srs.MvKDCfg.
     // 同时需要确认 arm_type 对应左臂（0）还是右臂（1）。
-    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == FX_TRUE)
+    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == true)
     {
         printf("oad CFG Success\n");
     }
@@ -91,7 +91,7 @@ void ikNspTwoArmsDemo()
 
     // [阶段一｜步骤 3] 初始化双臂运动学参数
     printf("A arm\n");
-    if (FX_Robot_Init_Type(0, TYPE[0]) == FX_FALSE)
+    if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Init Type Error\n");
     }
@@ -100,7 +100,7 @@ void ikNspTwoArmsDemo()
         printf("Init Type Success\n");
     }
 
-    if (FX_Robot_Init_Kine(0, DH[0]) == FX_FALSE)
+    if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("nit DH Parameters Error\n");
     }
@@ -109,7 +109,7 @@ void ikNspTwoArmsDemo()
         printf("Init DH Parameters Success\n");
     }
 
-    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == FX_FALSE)
+    if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Init Limit Parameters Error\n");
     }
@@ -119,7 +119,7 @@ void ikNspTwoArmsDemo()
     }
 
     printf("B arm\n");
-    if (FX_Robot_Init_Type(1, TYPE[1]) == FX_FALSE)
+    if (FX_Robot_Init_Type(1, TYPE[1]) == false)
     {
         printf("Robot Init Type Error\n");
     }
@@ -128,7 +128,7 @@ void ikNspTwoArmsDemo()
         printf("Robot Init Type Success\n");
     }
 
-    if (FX_Robot_Init_Kine(1, DH[1]) == FX_FALSE)
+    if (FX_Robot_Init_Kine(1, DH[1]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
     }
@@ -137,7 +137,7 @@ void ikNspTwoArmsDemo()
         printf("Robot Init DH Parameters Success\n");
     }
 
-    if (FX_Robot_Init_Lmt(1, PNVA[1], BD[1]) == FX_FALSE)
+    if (FX_Robot_Init_Lmt(1, PNVA[1], BD[1]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
     }
@@ -153,9 +153,9 @@ void ikNspTwoArmsDemo()
     // 说明：以满意构型的臂角矩阵 X 方向作为零空间引导，再调整臂角。
     // -------------------------------------------------------------------------
     // [阶段二｜步骤 4] 计算左臂目标位置和姿态矩阵
-    FX_DOUBLE target_joints_A[7] = {21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68};
-    Matrix4 target_pose_A;
-    if (FX_Robot_Kine_FK(0, target_joints_A, target_pose_A) == FX_FALSE)
+    double target_joints_A[7] = {21.8, -41.0, -4.74, -63.67, 10.15, 14.72, 7.68};
+    double target_pose_A[4][4] = {0};
+    if (FX_Robot_Kine_FK(0, target_joints_A, target_pose_A) == false)
     {
         printf("FK Error\n");
     }
@@ -166,10 +166,10 @@ void ikNspTwoArmsDemo()
     }
 
     // [阶段二｜步骤 5] 设置左臂工作参考构型
-    FX_DOUBLE jv_benchmark_A[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
-    Matrix4 kine_pg_bm_A;
+    double jv_benchmark_A[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
+    double kine_pg_bm_A[4][4] = {0};
     Matrix3 nsp_bm_A;
-    if (FX_Robot_Kine_FK_NSP(0, jv_benchmark_A, kine_pg_bm_A, nsp_bm_A) == FX_FALSE)
+    if (FX_Robot_Kine_FK_NSP(0, jv_benchmark_A, kine_pg_bm_A, nsp_bm_A) == false)
     {
         printf("FK_NSP Error\n");
     }
@@ -200,7 +200,7 @@ void ikNspTwoArmsDemo()
     sp.m_Input_IK_ZSPPara[2] = nsp_bm_A[2][0];
 
     // [阶段二｜步骤 7] 求解左臂零空间约束逆运动学
-    if (FX_Robot_Kine_IK(0, &sp) == FX_FALSE)
+    if (FX_Robot_Kine_IK(0, &sp) == false)
     {
         printf("IK Error\n");
     }
@@ -208,8 +208,8 @@ void ikNspTwoArmsDemo()
     {
         printf("IK Success\n");
         print_array(sp.m_Output_RetJoint, 7, "IK result under reference joints");
-        printf("ik 当前位姿是否超出位置可达空间（False：未超出；True：超出）: %d\n", sp.m_Output_IsOutRange);
-        printf("ik 各关节是否发生奇异（False：未奇异；True：奇异）:  %d, %d, %d, %d, %d, %d, %d\n",
+        printf("ik whether current pose exceeds reachable workspace (False: no; True: yes): %d\n", sp.m_Output_IsOutRange);
+        printf("ik whether each joint is singular (False: no; True: yes):  %d, %d, %d, %d, %d, %d, %d\n",
                sp.m_Output_IsDeg[0],
                sp.m_Output_IsDeg[1],
                sp.m_Output_IsDeg[2],
@@ -217,8 +217,8 @@ void ikNspTwoArmsDemo()
                sp.m_Output_IsDeg[4],
                sp.m_Output_IsDeg[5],
                sp.m_Output_IsDeg[6]);
-        printf("ik 是否有关节超出位置正负限制（False：未超出；True：超出）:%d\n", sp.m_Output_IsJntExd);
-        printf("ik 各关节是否超出位置正负限制（False：未超出；True：超出）:  %d, %d, %d, %d, %d, %d, %d\n",
+        printf("ik whether any joint exceeds position limit (False: no; True: yes):%d\n", sp.m_Output_IsJntExd);
+        printf("ik whether each joint exceeds position limit (False: no; True: yes):  %d, %d, %d, %d, %d, %d, %d\n",
                sp.m_Output_JntExdTags[0],
                sp.m_Output_JntExdTags[1],
                sp.m_Output_JntExdTags[2],
@@ -226,14 +226,14 @@ void ikNspTwoArmsDemo()
                sp.m_Output_JntExdTags[4],
                sp.m_Output_JntExdTags[5],
                sp.m_Output_JntExdTags[6]);
-        print_array(sp.m_Output_RunLmtP, 7, "ik 各关节正限制: ");
-        print_array(sp.m_Output_RunLmtN, 7, "ik 各关节负限制: ");
+        print_array(sp.m_Output_RunLmtP, 7, "ik positive joint limits: ");
+        print_array(sp.m_Output_RunLmtN, 7, "ik negative joint limits: ");
         printf("number of ik results:%ld\n", sp.m_OutPut_Result_Num);
     }
 
     // [阶段二｜步骤 8] 调整左臂臂角
     sp.m_Input_ZSP_Angle = 15; // 左臂向上调整 15°
-    if (FX_Robot_Kine_IK_NSP(0, &sp) == FX_FALSE)
+    if (FX_Robot_Kine_IK_NSP(0, &sp) == false)
     {
         printf("IK_NSP Error\n");
     }
@@ -251,9 +251,9 @@ void ikNspTwoArmsDemo()
     // 说明：右臂臂角方向与左臂相反，向上调整时使用负角度。
     // -------------------------------------------------------------------------
     // [阶段三｜步骤 9] 计算右臂目标位置和姿态矩阵
-    FX_DOUBLE target_joints_B[7] = {-21.8, -41.0, 4.75, -63.67, -10.15, 14.72, -7.68};
-    Matrix4 target_pose_B;
-    if (FX_Robot_Kine_FK(0, target_joints_B, target_pose_B) == FX_FALSE)
+    double target_joints_B[7] = {-21.8, -41.0, 4.75, -63.67, -10.15, 14.72, -7.68};
+    double target_pose_B[4][4] = {0};
+    if (FX_Robot_Kine_FK(0, target_joints_B, target_pose_B) == false)
     {
         printf("FK Error\n");
     }
@@ -264,10 +264,10 @@ void ikNspTwoArmsDemo()
     }
 
     // [阶段三｜步骤 10] 设置右臂工作参考构型
-    FX_DOUBLE jv_benchmark_B[7] = {-44.04, -62.57, 8.92, -57.21, -1.45, -4.39, -2.1};
-    Matrix4 kine_pg_bm_B;
+    double jv_benchmark_B[7] = {-44.04, -62.57, 8.92, -57.21, -1.45, -4.39, -2.1};
+    double kine_pg_bm_B[4][4] = {0};
     Matrix3 nsp_bm_B;
-    if (FX_Robot_Kine_FK_NSP(0, jv_benchmark_B, kine_pg_bm_B, nsp_bm_B) == FX_FALSE)
+    if (FX_Robot_Kine_FK_NSP(0, jv_benchmark_B, kine_pg_bm_B, nsp_bm_B) == false)
     {
         printf("FK_NSP Error\n");
     }
@@ -298,7 +298,7 @@ void ikNspTwoArmsDemo()
     sp1.m_Input_IK_ZSPPara[2] = nsp_bm_B[2][0];
 
     // [阶段三｜步骤 12] 求解右臂零空间约束逆运动学
-    if (FX_Robot_Kine_IK(0, &sp1) == FX_FALSE)
+    if (FX_Robot_Kine_IK(0, &sp1) == false)
     {
         printf("IK Error\n");
     }
@@ -306,8 +306,8 @@ void ikNspTwoArmsDemo()
     {
         printf("IK Success\n");
         print_array(sp1.m_Output_RetJoint, 7, "IK result under reference joints");
-        printf("ik 当前位姿是否超出位置可达空间（False：未超出；True：超出）: %d\n", sp1.m_Output_IsOutRange);
-        printf("ik 各关节是否发生奇异（False：未奇异；True：奇异）: %d, %d, %d, %d, %d, %d, %d\n",
+        printf("ik whether current pose exceeds reachable workspace (False: no; True: yes): %d\n", sp1.m_Output_IsOutRange);
+        printf("ik whether each joint is singular (False: no; True: yes): %d, %d, %d, %d, %d, %d, %d\n",
                sp1.m_Output_IsDeg[0],
                sp1.m_Output_IsDeg[1],
                sp1.m_Output_IsDeg[2],
@@ -315,8 +315,8 @@ void ikNspTwoArmsDemo()
                sp1.m_Output_IsDeg[4],
                sp1.m_Output_IsDeg[5],
                sp1.m_Output_IsDeg[6]);
-        printf("ik 是否有关节超出位置正负限制（False：未超出；True：超出）:%d\n", sp1.m_Output_IsJntExd);
-        printf("ik 各关节是否超出位置正负限制（False：未超出；True：超出）:  %d, %d, %d, %d, %d, %d, %d\n",
+        printf("ik whether any joint exceeds position limit (False: no; True: yes):%d\n", sp1.m_Output_IsJntExd);
+        printf("ik whether each joint exceeds position limit (False: no; True: yes):  %d, %d, %d, %d, %d, %d, %d\n",
                sp1.m_Output_JntExdTags[0],
                sp1.m_Output_JntExdTags[1],
                sp1.m_Output_JntExdTags[2],
@@ -324,14 +324,14 @@ void ikNspTwoArmsDemo()
                sp1.m_Output_JntExdTags[4],
                sp1.m_Output_JntExdTags[5],
                sp1.m_Output_JntExdTags[6]);
-        print_array(sp1.m_Output_RunLmtP, 7, "ik 各关节正限制: ");
-        print_array(sp1.m_Output_RunLmtN, 7, "ik 各关节负限制: ");
+        print_array(sp1.m_Output_RunLmtP, 7, "ik positive joint limits: ");
+        print_array(sp1.m_Output_RunLmtN, 7, "ik negative joint limits: ");
         printf("number of ik results:%ld\n", sp1.m_OutPut_Result_Num);
     }
 
     // [阶段三｜步骤 13] 调整右臂臂角
     sp1.m_Input_ZSP_Angle = -15; // 右臂向上调整 15°
-    if (FX_Robot_Kine_IK_NSP(0, &sp1) == FX_FALSE)
+    if (FX_Robot_Kine_IK_NSP(0, &sp1) == false)
     {
         printf("IK_NSP Error\n");
     }

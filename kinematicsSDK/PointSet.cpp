@@ -164,6 +164,7 @@ bool CPointSet::OnGetSubAVG(long serial, long start, long end, double &ret_avg)
 		return false;
 	}
 	tv /= dnum;
+	ret_avg = tv;
 	return true;
 }
 
