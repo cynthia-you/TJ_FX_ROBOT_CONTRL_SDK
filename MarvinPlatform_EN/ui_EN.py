@@ -149,6 +149,18 @@ class EmergencyStopButton:
         self.create_button_image()
 
 class App:
+    USER_DATA_CATEGORIES = [
+        ("ARM0 6FT sensor data (116)", 116, "A"),
+        ("ARM0 joint gravity comp torque (117)", 117, "A"),
+        ("ARM0 tool dynamics params (118)", 118, "A"),
+        ("ARM1 6FT sensor data (216)", 216, "B"),
+        ("ARM1 joint gravity comp torque (217)", 217, "B"),
+        ("ARM1 tool dynamics params (218)", 218, "B"),
+        ("IMU acceleration (300)", 300, "AB"),
+        ("IMU angle RPY (301)", 301, "AB"),
+        ("IMU angular velocity (302)", 302, "AB"),
+    ]
+
     def __init__(self, root):
         self.root = root
         self.root.title("MarvinPlatform")
@@ -237,6 +249,8 @@ class App:
         self.create_left_arm_components()
         self.create_separator()
         self.create_right_arm_components()
+        self.create_separator()
+        self.create_user_specified_data_components()
         self.create_emergency_stop_components()
         self.create_status_bar()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -1483,6 +1497,247 @@ class App:
             command=self.emergency_stop_action,
         )
         self.right_emergency_btn.canvas.pack(side="left", padx=5, pady=(10, 10))
+
+    def create_user_specified_data_components(self):
+        """在右臂下方创建“用户自定义数据”设置与反馈面板"""
+        user_data_container = tk.Frame(self.scrollable_frame, bg="white", pady=5)
+        user_data_container.pack(fill="x", pady=(0, 10))
+
+        user_data_frame = ttk.LabelFrame(
+            user_data_container,
+            text="User Specified Data",
+            padding=10,
+            relief=tk.GROOVE,
+            borderwidth=2,
+            style="MyCustom.TLabelframe"
+        )
+        user_data_frame.pack(fill="x")
+
+        # 第一行：设置（仅数据类别下拉框 + Set 按钮）
+        set_row = tk.Frame(user_data_frame, bg="white")
+        set_row.pack(fill="x", pady=(0, 5))
+
+        tk.Label(set_row, text="Data Category:", font=('Arial', 9), bg="white").pack(side="left", padx=(0, 5))
+        self.user_data_category_var = tk.StringVar()
+        self.user_data_category_var.set(self.USER_DATA_CATEGORIES[0][0])
+        self.user_data_category_combobox = ttk.Combobox(
+            set_row,
+            textvariable=self.user_data_category_var,
+            values=[item[0] for item in self.USER_DATA_CATEGORIES],
+            state="readonly",
+            width=48
+        )
+        self.user_data_category_combobox.pack(side="left", padx=(0, 10))
+
+        self.user_data_set_btn = tk.Button(
+            set_row,
+            text="Set",
+            width=8,
+            command=self.set_user_specified_data,
+            bg="#2196F3",
+            fg="white",
+            font=("Arial", 9, "bold")
+        )
+        self.user_data_set_btn.pack(side="left")
+
+        # 第二行：反馈
+        feedback_row = tk.Frame(user_data_frame, bg="white")
+        feedback_row.pack(fill="x", pady=(5, 0))
+
+        tk.Label(feedback_row, text="Feedback (est_joint_firc_dot):", font=('Arial', 9), bg="white").pack(side="left", padx=(0, 5))
+        self.user_data_refresh_btn = tk.Button(
+            feedback_row,
+            text="Refresh",
+            width=8,
+            command=self.refresh_user_specified_data,
+            font=("Arial", 9)
+        )
+        self.user_data_refresh_btn.pack(side="left", padx=(0, 10))
+
+        self.user_data_feedback_text = tk.Text(
+            feedback_row,
+            height=2,
+            width=70,
+            font=('Arial', 9),
+            bg='#fafafa',
+            relief=tk.SUNKEN,
+            bd=1,
+            wrap=tk.WORD
+        )
+        self.user_data_feedback_text.pack(side="left", fill="x", expand=True)
+        self.user_data_feedback_text.insert("1.0", "No data")
+        self.user_data_feedback_text.config(state="disabled")
+
+        # 第三行：完整数据实时刷新显示
+        full_row = tk.Frame(user_data_frame, bg="white")
+        full_row.pack(fill="both", expand=True, pady=(5, 0))
+        tk.Label(full_row, text="Live Data:", font=('Arial', 9, 'bold'),
+                 bg="white").pack(anchor="w", pady=(0, 2))
+        self.full_data_scroll_y = ttk.Scrollbar(full_row, orient=tk.VERTICAL)
+        self.full_data_scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
+        self.full_data_text = tk.Text(
+            full_row,
+            height=12,
+            font=('Consolas', 8),
+            bg='#1e1e1e',
+            fg='#d4d4d4',
+            relief=tk.SUNKEN,
+            bd=1,
+            wrap=tk.NONE,
+            yscrollcommand=self.full_data_scroll_y.set
+        )
+        self.full_data_text.pack(side=tk.LEFT, fill="both", expand=True)
+        self.full_data_scroll_y.config(command=self.full_data_text.yview)
+        self.full_data_text.insert("1.0", "Waiting for data...")
+        self.full_data_text.config(state="disabled")
+
+    def _get_user_data_selection(self):
+        selected = self.user_data_category_var.get()
+        for name, value, arm in self.USER_DATA_CATEGORIES:
+            if name == selected:
+                return value, arm
+        return None, None
+
+    def set_user_specified_data(self):
+        try:
+            if not self.connected:
+                messagebox.showerror('Error', 'Please connect robot')
+                return
+            data_category, arm = self._get_user_data_selection()
+            if data_category is None or arm is None:
+                messagebox.showerror('Error', f'Invalid data category: {self.user_data_category_var.get()}')
+                return
+            ok = robot.set_user_specified_data(arm, data_category)
+            if ok:
+                messagebox.showinfo('Success',
+                                    f'Set user specified data: arm={arm}, category={data_category}')
+            else:
+                messagebox.showerror('Error',
+                                     f'Set user specified data failed: arm={arm}, category={data_category}')
+        except Exception as e:
+            messagebox.showerror('Error', f'Set user specified data failed: {str(e)}')
+
+    def refresh_user_specified_data(self):
+        """刷新用户自定义数据通道的反馈数据（est_joint_firc_dot），按类别的 arm 映射取对应输出"""
+        try:
+            if not self.connected:
+                self._set_user_data_feedback_text('No data (robot not connected)')
+                return
+            _, arm = self._get_user_data_selection()
+            if arm is None:
+                self._set_user_data_feedback_text('No data (invalid category)')
+                return
+            outputs = self.result.get('outputs', []) if isinstance(self.result, dict) else []
+            if not outputs:
+                self._set_user_data_feedback_text('No data')
+                return
+
+            def fmt(out):
+                vals = out.get('est_joint_firc_dot', [])
+                return ', '.join(f'{v:.4f}' for v in vals)
+
+            if arm == 'A':
+                text = f'A: {fmt(outputs[0])}'
+            elif arm == 'B':
+                text = f'B: {fmt(outputs[1])}' if len(outputs) > 1 else 'B: No data'
+            else:  # AB
+                part_a = f'A: {fmt(outputs[0])}'
+                part_b = f'B: {fmt(outputs[1])}' if len(outputs) > 1 else 'B: No data'
+                text = f'{part_a}\n{part_b}'
+            self._set_user_data_feedback_text(text)
+        except Exception as e:
+            self._set_user_data_feedback_text(f'Refresh failed: {str(e)}')
+
+    def _set_user_data_feedback_text(self, text):
+        """安全地更新反馈文本框"""
+        self.user_data_feedback_text.config(state="normal")
+        self.user_data_feedback_text.delete("1.0", tk.END)
+        self.user_data_feedback_text.insert("1.0", str(text))
+        self.user_data_feedback_text.config(state="disabled")
+
+    def update_full_data_display(self):
+        """实时刷新显示完整的 self.result 数据（紧凑布局：标量/短数组一行显示）"""
+        try:
+            if not hasattr(self, 'full_data_text') or not isinstance(self.result, dict):
+                return
+            try:
+                yview = self.full_data_text.yview()
+            except Exception:
+                yview = (0.0, 1.0)
+
+            def fmt_arr(vals, per_line=7):
+                """短数组一行显示，长数组每 per_line 个一行"""
+                vals = list(vals)
+                if len(vals) <= per_line:
+                    return '[' + ', '.join(f'{v:.4f}' if isinstance(v, float) else str(v) for v in vals) + ']'
+                lines = []
+                for i in range(0, len(vals), per_line):
+                    chunk = vals[i:i + per_line]
+                    lines.append('  ' + ', '.join(f'{v:.4f}' if isinstance(v, float) else str(v) for v in chunk))
+                return '[\n' + ',\n'.join(lines) + '\n]'
+
+            def fmt_val(v):
+                if isinstance(v, float):
+                    return f'{v:.4f}'
+                if isinstance(v, (list, tuple)):
+                    return fmt_arr(v)
+                return str(v)
+
+            lines = []
+
+            # states：每条一行
+            states = self.result.get('states', [])
+            if states:
+                lines.append('=== states ===')
+                for idx, st in enumerate(states):
+                    lines.append(f'[{idx}] cur_state={fmt_val(st.get("cur_state"))}, '
+                                 f'cmd_state={fmt_val(st.get("cmd_state"))}, '
+                                 f'err_code={fmt_val(st.get("err_code"))}')
+
+            # outputs：每个臂一段，字段尽量一行
+            outputs = self.result.get('outputs', [])
+            if outputs:
+                lines.append('')
+                lines.append('=== outputs ===')
+                for idx, out in enumerate(outputs):
+                    lines.append(f'-- arm[{idx}] frame_serial={fmt_val(out.get("frame_serial"))} '
+                                 f'tip_di={fmt_val(out.get("tip_di"))} '
+                                 f'low_speed_flag={fmt_val(out.get("low_speed_flag"))}')
+                    for key, val in out.items():
+                        if key in ('frame_serial', 'tip_di', 'low_speed_flag'):
+                            continue
+                        lines.append(f'   {key}: {fmt_val(val)}')
+
+            # inputs：同 outputs
+            inputs = self.result.get('inputs', [])
+            if inputs:
+                lines.append('')
+                lines.append('=== inputs ===')
+                for idx, inp in enumerate(inputs):
+                    lines.append(f'-- arm[{idx}]')
+                    for key, val in inp.items():
+                        lines.append(f'   {key}: {fmt_val(val)}')
+
+            # 其他顶层字段
+            shown = {'states', 'outputs', 'inputs'}
+            extra = [k for k in self.result.keys() if k not in shown]
+            if extra:
+                lines.append('')
+                lines.append('=== other ===')
+                for k in extra:
+                    lines.append(f'{k}: {fmt_val(self.result.get(k))}')
+
+            text = '\n'.join(lines)
+            self.full_data_text.config(state="normal")
+            self.full_data_text.delete("1.0", tk.END)
+            self.full_data_text.insert("1.0", text)
+            self.full_data_text.config(state="disabled")
+            try:
+                self.full_data_text.yview_moveto(yview[0])
+            except Exception:
+                pass
+        except Exception:
+            pass
 
     def show_more_features(self):
         """显示更多功能菜单"""
@@ -6639,6 +6894,7 @@ class App:
         self.result = result
         self.root.after(0, self.update_ui)
         self.root.after(0, self.update_6d)
+        self.root.after(0, self.update_full_data_display)
 
     def toggle_display_mode(self):
         """切换数据显示模式"""

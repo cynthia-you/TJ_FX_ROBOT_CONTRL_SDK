@@ -26,15 +26,18 @@
     请检查以下文件是否为为本机编译：
         libKine.dll
         libMarvinSDK.dll
+        libInterfCheck.dll
 
         libKine.so
         libMarvinSDK.so
+        libInterfCheck.so
 
     请检查以下头文件是否存在：
         FXDG.h
         FxRobot.h
         MarvinSDK.h
         PointSet.h
+        Interference.h        #干涉检测(碰撞检测)接口头文件
 
 ## 2.1 编译控制库和运动计算库方法
 ## 2.1.1使用自动化编译脚本：
@@ -116,6 +119,17 @@
     g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj.exe -L. -lKine -lMarvinSDK
     offline_movl_keepj.exe 
 
+## 3.3 干涉检测(碰撞检测)库示例
+    干涉检测库依赖运动学库(libKine), 需同时链接:
+    linux示例:
+    g++ showcase_drag_interference.cpp -o showcase_drag_interference -L. -lKine -lMarvinSDK -lInterfCheck -Wl,-rpath=.
+    ./showcase_drag_interference
+
+    windows示例:
+    g++ showcase_drag_interference.cpp -o showcase_drag_interference.exe -L. -lKine -lMarvinSDK -lInterfCheck
+    showcase_drag_interference.exe
+
+
 
 # 四. 控制showcases
 ## 0. 检查SDK类型兼容性
@@ -187,6 +201,11 @@
     
 # 六、 控制SDK简明式接口案例
             showcase_new_control_sdk_usage.cpp
+
+
+# 七、 干涉检测(碰撞检测)showcases
+## 1. 双臂进入关节拖动模式, 获取当前关节做碰撞检测
+            showcase_drag_interference.cpp
 
 
 # 五. 计算showcases

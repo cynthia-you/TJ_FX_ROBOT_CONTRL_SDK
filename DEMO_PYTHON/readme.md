@@ -28,22 +28,30 @@
     |————SDK_PYTHON
             |————fx_kine.py #计算接口
             |————fx_robot.py #控制接口
+            |————fx_interference.py #干涉检测(碰撞检测)接口
             |————libKine.dll #windows下计算库动态库
             |————libKine.so #linux下计算库动态库
             |————libMarvinSDK.dll #windows下控制库动态库
             |————libMarvinSDK.so #linux下控制库动态库
+            |————libInterfCheck.dll #windows下干涉检测库动态库
+            |————libInterfCheck.so #linux下干涉检测库动态库
 
     注意：请检查SDK_PYTHON下动态库是否为最新编译
 
 ## 三、 SDK库
     SDK_PYTHON为天机双臂机器人和人形机器人基于python开发的SDK，其分为:
         控制SDK：SDK_PYTHON/fx_robot.py 
-        和运动学计算的SDK:SDK_PYTHON/fx_kine.py
+        运动学计算的SDK:SDK_PYTHON/fx_kine.py
+        和干涉检测(碰撞检测)SDK:SDK_PYTHON/fx_interference.py
 
 
 ### 3.1使用自动化编译脚本：
-        master分支下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
-        master分支下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
+        master分支下marvinSDK_windows_100343.bat运行可自动编译C++和python调用的dll文件(含干涉检测库libInterfCheck.dll)
+        master分支下marvinSDK_ubuntu_100343.sh运行可自动编译C++和python调用的so文件(含干涉检测库libInterfCheck.so)
+
+        单独编译干涉检测库可使用:
+            interferenceCheck_windows.bat  #编译libInterfCheck.dll
+            interferenceCheck_ubuntu.sh    #编译libInterfCheck.so
 
 ### 3.2.1 编译so动态库:
     linux设备编译:
@@ -136,7 +144,11 @@
 ### 30. 运动过程中，停止运动案例（非急停，非下使能）
         showcase_stop_run_AB.py
 
-## 五. 计算showcases
+## 五、 干涉检测(碰撞检测)showcases
+### 1. 双臂进入关节拖动模式, 获取当前关节做碰撞检测(对应DEMO_C++/showcase_drag_interference.cpp)
+        showcase_drag_interference.py
+
+## 六. 计算showcases
 
 ### 1. 计算SDK 功能模块完整演示
             showcase_kinematics_all_functions.py

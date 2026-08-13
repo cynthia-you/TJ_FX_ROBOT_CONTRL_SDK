@@ -1,0 +1,18 @@
+<I,17>
+<S,BASE_FL>:father is <S,WORLD> Set as	<m3,1,0,0,	0,0,1,	0,0,0>  
+<S,LA_J1>:father is <S,BASE_FL> Set as	<m3,1,0,0,	0,1,0,	0,158.6,0>  
+<S,LA_J2>:father is <S,LA_J1> Set as	<m3,1,0,0,	0,-1,0,	0,0,0> 
+<S,LA_J3>:father is <S,LA_J2> Set as	<m3,1,0,0,	0, 1,0,	0,0,0> 
+<S,LA_J4>:father is <S,LA_J3> Set as	<m3,1,0,0,	0,-1,0,	18,0,264>  
+<S,LA_J5>:father is <S,LA_J4> Set as	<m3,1,0,0,	0,1,0,	-18,264,0> 
+<S,LA_J6>:father is <S,LA_J5> Set as	<m3,1,0,0,	0,-1,0,	0,0,0> 
+<S,LA_J7>:father is <S,LA_J6> Set as	<m3,0,1,0,	1,0,0,	0,0,0> 
+<S,LA_FL>:father is <S,LA_J7> Set as	<m3,0,0,1,	1,0,0,	87,0,0> 
+<S,RA_J1>:father is <S,BASE_FL> Set as	<m3,1,0,0,	0,-1,0,	0,-158.6,0> 
+<S,RA_J2>:father is <S,RA_J1> Set as	<m3,1,0,0,	0,-1,0,	0,0,0> 
+<S,RA_J3>:father is <S,RA_J2> Set as	<m3,1,0,0,	0, 1,0,	0,0,0> 
+<S,RA_J4>:father is <S,RA_J3> Set as	<m3,1,0,0,	0,-1,0,	18,0,264>  
+<S,RA_J5>:father is <S,RA_J4> Set as	<m3,1,0,0,	0,1,0,	-18,264,0> 
+<S,RA_J6>:father is <S,RA_J5> Set as	<m3,1,0,0,	0,-1,0,	0,0,0> 
+<S,RA_J7>:father is <S,RA_J6> Set as	<m3,0,1,0,	1,0,0,	0,0,0> 
+<S,RA_FL>:father is <S,RA_J7> Set as	<m3,0,0,1,	1,0,0,	87,0,0> 
