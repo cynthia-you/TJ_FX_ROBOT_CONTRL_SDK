@@ -1,6 +1,7 @@
 #include "ACB.h"
 #include <cstring>
 #include <string>
+#include <thread>
 
 // On Linux/ARM, shared memory accesses need explicit memory ordering.
 // x86's TSO model makes plain loads/stores safe on Windows.
@@ -11,6 +12,8 @@
 #define CGACB_STORE(p, v) (*(p) = (v))
 #define CGACB_LOAD(p)     (*(p))
 #endif
+
+#define ACB_MAX_ITEM_RATIO 2
 
 
 /////////////////////////////////////////////////////////////////////
@@ -31,8 +34,8 @@ CGACB::CGACB()
 	buf_serial_ = 0;
 
 	item_num = 0;
+	max_item_size_ = 0;
 }
-
 CGACB::~CGACB()
 {
 	if (init_tag_ == true)
@@ -52,6 +55,8 @@ void CGACB::OnSetBuf(unsigned char * buf,long size)
 
 	CGACB_STORE(write_pos_, 1);
 	CGACB_STORE(read_pos_, 0);
+
+	max_item_size_ = size_ / ACB_MAX_ITEM_RATIO;
 }
 bool CGACB::WriteBuf(unsigned char* data_ptr, long size_int)
 {
@@ -59,7 +64,11 @@ bool CGACB::WriteBuf(unsigned char* data_ptr, long size_int)
 	{
 		return false;
 	}
-	
+	if (max_item_size_ > 0 && size_int > max_item_size_)
+	{
+		return false;
+	}
+
 	long emptysize;
 	long wpos = CGACB_LOAD(write_pos_);
 	long rpos = CGACB_LOAD(read_pos_);
@@ -178,9 +187,15 @@ long CGACB::ReadBuf(unsigned char* data_ptr, long size_int)
 	rpos++;
 	rpos %= size_;
 	sizetmp += base_[rpos];
+	if (sizetmp <= 0 || (max_item_size_ > 0 && sizetmp > max_item_size_))
+	{
+		CGACB_STORE(read_pos_, wpos);
+		item_num = 0;
+		return -3;  
+	}
 	if (size_int < sizetmp)
 	{
-		return -2;
+		return -2; 
 	}
 
 	rpos++;
@@ -231,6 +246,12 @@ long CGACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long
 	rpos++;
 	rpos %= size_;
 	sizetmp += base_[rpos];
+	if (sizetmp <= 0 || (max_item_size_ > 0 && sizetmp > max_item_size_))
+	{
+		CGACB_STORE(read_pos_, wpos);
+		item_num = 0;
+		return -3;
+	}
 	if (size_int < sizetmp)
 	{
 		return -2;
@@ -313,6 +334,10 @@ long CGACB::PeekBuf(unsigned char* data_ptr, long size_int)
 	rpos++;
 	rpos %= size_;
 	sizetmp += base_[rpos];
+	if (sizetmp <= 0 || (max_item_size_ > 0 && sizetmp > max_item_size_))
+	{
+		return -3;
+	}
 	if (size_int < sizetmp)
 	{
 		return -2;
@@ -361,6 +386,10 @@ long CGACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long
 	rpos++;
 	rpos %= size_;
 	sizetmp += base_[rpos];
+	if (sizetmp <= 0 || (max_item_size_ > 0 && sizetmp > max_item_size_))
+	{
+		return -3;
+	}
 	if (size_int < sizetmp)
 	{
 		return -2;
@@ -413,7 +442,7 @@ bool CGACB::Empty()
 	if (init_tag_ == false)
 	{
 		return false;
-	}	
+	}
 
 	CGACB_STORE(read_pos_, 0);
 	CGACB_STORE(write_pos_, 1);
@@ -432,20 +461,17 @@ CACB::CACB()
 {
 	init_tag_ = false;
 	base_ = NULL;
-	item_num = 0;
-
 	size_ = 10240;
 	base_ = (unsigned char*)malloc(size_);
+	state_.write_lock.store(0, std::memory_order_relaxed);
+	state_.read_lock.store(0, std::memory_order_relaxed);
+	state_.write_pos.store(1, std::memory_order_relaxed);
+	state_.read_pos.store(0, std::memory_order_relaxed);
+	state_.item_num.store(0, std::memory_order_relaxed);
+	state_.buf_serial.store(0, std::memory_order_relaxed);
+	max_item_size_ = size_ / ACB_MAX_ITEM_RATIO;
 
 	init_tag_ = true;
-	write_pos_ = 1;
-	read_pos_ = 0;
-
-	write_lock_ = 0;
-	read_lock_ = 0;
-	buf_serial_ = 0;
-
-	item_num = 0;
 }
 
 CACB::~CACB()
@@ -457,7 +483,31 @@ CACB::~CACB()
 }
 long CACB::OnGetStoreNum()
 {
-	return item_num;
+	return state_.item_num.load(std::memory_order_acquire);
+}
+
+bool CACB::AcquireLock(std::atomic<unsigned char> &lock)
+{
+	unsigned char expected = 0;
+	while (!lock.compare_exchange_weak(expected, 1,
+		std::memory_order_acquire, std::memory_order_relaxed))
+	{
+		expected = 0;
+		std::this_thread::yield();
+	}
+	return true;
+}
+void CACB::ReleaseLock(std::atomic<unsigned char> &lock)
+{
+	lock.store(0, std::memory_order_release);
+}
+
+long CACB::ResyncBadHead(long wpos, long rpos)
+{
+	(void)rpos;  // 直接对齐写指针, rpos 仅用于日志/调试
+	state_.read_pos.store(wpos, std::memory_order_release);
+	state_.item_num.store(0, std::memory_order_release);
+	return -3;
 }
 
 bool CACB::WriteBuf(unsigned char* data_ptr, long size_int)
@@ -466,17 +516,18 @@ bool CACB::WriteBuf(unsigned char* data_ptr, long size_int)
 	{
 		return false;
 	}
-	if (write_lock_ != 0)
+	if (max_item_size_ > 0 && size_int > max_item_size_)
 	{
 		return false;
 	}
-	write_lock_ = 1;
+
+	AcquireLock(state_.write_lock);
 
 	long emptysize;
-	long wpos = write_pos_;
-	long rpos = read_pos_;
+	long wpos = state_.write_pos.load(std::memory_order_acquire);
+	long rpos = state_.read_pos.load(std::memory_order_acquire);
 
-	unsigned long tmpserial = buf_serial_;
+	unsigned long tmpserial = state_.buf_serial.load(std::memory_order_relaxed);
 	tmpserial++;
 	if (tmpserial >= 100000000)
 	{
@@ -488,7 +539,7 @@ bool CACB::WriteBuf(unsigned char* data_ptr, long size_int)
 		emptysize = rpos - wpos - 1;
 		if (emptysize < size_int + 6)
 		{
-			write_lock_ = 0;
+			ReleaseLock(state_.write_lock);
 			return false;
 		}
 		base_[wpos] = (unsigned char)(size_int / 256);
@@ -502,11 +553,11 @@ bool CACB::WriteBuf(unsigned char* data_ptr, long size_int)
 		memcpy(&base_[wpos + 6], data_ptr, size_int);
 		wpos += 6;
 		wpos += size_int;
-		write_pos_ = wpos;
+		state_.write_pos.store(wpos, std::memory_order_release);
 
-		buf_serial_ = tmpserial;
-		write_lock_ = 0;
-		item_num++;
+		state_.buf_serial.store(tmpserial, std::memory_order_relaxed);
+		state_.item_num.fetch_add(1, std::memory_order_release);
+		ReleaseLock(state_.write_lock);
 		return true;
 	}
 	else
@@ -516,7 +567,7 @@ bool CACB::WriteBuf(unsigned char* data_ptr, long size_int)
 
 		if (emptysize < size_int + 6)
 		{
-			write_lock_ = 0;
+			ReleaseLock(state_.write_lock);
 			return false;
 		}
 
@@ -563,11 +614,11 @@ bool CACB::WriteBuf(unsigned char* data_ptr, long size_int)
 		}
 		wpos += size_int;
 		wpos %= size_;
-		write_pos_ = wpos;
+		state_.write_pos.store(wpos, std::memory_order_release);
 
-		buf_serial_ = tmpserial;
-		write_lock_ = 0;
-		item_num++;
+		state_.buf_serial.store(tmpserial, std::memory_order_relaxed);
+		state_.item_num.fetch_add(1, std::memory_order_release);
+		ReleaseLock(state_.write_lock);
 		return true;
 	}
 }
@@ -578,19 +629,15 @@ long CACB::ReadBuf(unsigned char* data_ptr, long size_int)
 	{
 		return -1;
 	}
-	if (read_lock_ != 0)
-	{
-		return -1;
-	}
-	read_lock_ = 1;
+	AcquireLock(state_.read_lock);
 
-	long wpos = write_pos_;
-	long rpos = read_pos_;
+	long wpos = state_.write_pos.load(std::memory_order_acquire);
+	long rpos = state_.read_pos.load(std::memory_order_acquire);
 	rpos++;
 	rpos %= size_;
 	if (rpos == wpos)
 	{
-		read_lock_ = 0;
+		ReleaseLock(state_.read_lock);
 		return 0;
 	}
 
@@ -599,9 +646,16 @@ long CACB::ReadBuf(unsigned char* data_ptr, long size_int)
 	rpos++;
 	rpos %= size_;
 	sizetmp += base_[rpos];
+
+	if (sizetmp <= 0 || (max_item_size_ > 0 && sizetmp > max_item_size_))
+	{
+		long ret = ResyncBadHead(wpos, rpos);
+		ReleaseLock(state_.read_lock);
+		return ret; 
+	}
 	if (size_int < sizetmp)
 	{
-		read_lock_ = 0;
+		ReleaseLock(state_.read_lock);
 		return -2;
 	}
 
@@ -626,10 +680,10 @@ long CACB::ReadBuf(unsigned char* data_ptr, long size_int)
 	}
 	rpos += (sizetmp - 1);
 	rpos %= size_;
-	read_pos_ = rpos;
-	read_lock_ = 0;
+	state_.read_pos.store(rpos, std::memory_order_release);
+	ReleaseLock(state_.read_lock);
 
-	item_num--;
+	state_.item_num.fetch_sub(1, std::memory_order_release);
 	return sizetmp;
 }
 
@@ -639,19 +693,15 @@ long CACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long&
 	{
 		return -1;
 	}
-	if (read_lock_ != 0)
-	{
-		return -1;
-	}
-	read_lock_ = 1;
+	AcquireLock(state_.read_lock);
 
-	long wpos = write_pos_;
-	long rpos = read_pos_;
+	long wpos = state_.write_pos.load(std::memory_order_acquire);
+	long rpos = state_.read_pos.load(std::memory_order_acquire);
 	rpos++;
 	rpos %= size_;
 	if (rpos == wpos)
 	{
-		read_lock_ = 0;
+		ReleaseLock(state_.read_lock);
 		return 0;
 	}
 
@@ -660,9 +710,15 @@ long CACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long&
 	rpos++;
 	rpos %= size_;
 	sizetmp += base_[rpos];
+	if (sizetmp <= 0 || (max_item_size_ > 0 && sizetmp > max_item_size_))
+	{
+		long ret = ResyncBadHead(wpos, rpos);
+		ReleaseLock(state_.read_lock);
+		return ret;
+	}
 	if (size_int < sizetmp)
 	{
-		read_lock_ = 0;
+		ReleaseLock(state_.read_lock);
 		return -2;
 	}
 
@@ -704,9 +760,9 @@ long CACB::ReadBufWithSer(unsigned char* data_ptr, long size_int, unsigned long&
 	}
 	rpos += (sizetmp - 1);
 	rpos %= size_;
-	read_pos_ = rpos;
-	read_lock_ = 0;
-	item_num--;
+	state_.read_pos.store(rpos, std::memory_order_release);
+	ReleaseLock(state_.read_lock);
+	state_.item_num.fetch_sub(1, std::memory_order_release);
 	return sizetmp;
 }
 
@@ -719,30 +775,25 @@ long CACB::PeekBuf(unsigned char* data_ptr, long size_int)
 
 	if (size_int == 0 || data_ptr == NULL)
 	{
-		long wpos = write_pos_;
-		long rpos = read_pos_;
+		long wpos = state_.write_pos.load(std::memory_order_acquire);
+		long rpos = state_.read_pos.load(std::memory_order_acquire);
 		rpos++;
 		rpos %= size_;
 		if (rpos == wpos)
 		{
-			read_lock_ = 0;
 			return 0;
 		}
 		return 1;
 	}
-	if (read_lock_ != 0)
-	{
-		return -1;
-	}
-	read_lock_ = 1;
+	AcquireLock(state_.read_lock);
 
-	long wpos = write_pos_;
-	long rpos = read_pos_;
+	long wpos = state_.write_pos.load(std::memory_order_acquire);
+	long rpos = state_.read_pos.load(std::memory_order_acquire);
 	rpos++;
 	rpos %= size_;
 	if (rpos == wpos)
 	{
-		read_lock_ = 0;
+		ReleaseLock(state_.read_lock);
 		return 0;
 	}
 
@@ -751,9 +802,14 @@ long CACB::PeekBuf(unsigned char* data_ptr, long size_int)
 	rpos++;
 	rpos %= size_;
 	sizetmp += base_[rpos];
+	if (sizetmp <= 0 || (max_item_size_ > 0 && sizetmp > max_item_size_))
+	{
+		ReleaseLock(state_.read_lock);
+		return -3;
+	}
 	if (size_int < sizetmp)
 	{
-		read_lock_ = 0;
+		ReleaseLock(state_.read_lock);
 		return -2;
 	}
 
@@ -777,7 +833,7 @@ long CACB::PeekBuf(unsigned char* data_ptr, long size_int)
 		memcpy(data_ptr, &base_[rpos], sizetmp);
 	}
 
-	read_lock_ = 0;
+	ReleaseLock(state_.read_lock);
 	return sizetmp;
 }
 
@@ -787,19 +843,15 @@ long CACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long&
 	{
 		return -1;
 	}
-	if (read_lock_ != 0)
-	{
-		return -1;
-	}
-	read_lock_ = 1;
+	AcquireLock(state_.read_lock);
 
-	long wpos = write_pos_;
-	long rpos = read_pos_;
+	long wpos = state_.write_pos.load(std::memory_order_acquire);
+	long rpos = state_.read_pos.load(std::memory_order_acquire);
 	rpos++;
 	rpos %= size_;
 	if (rpos == wpos)
 	{
-		read_lock_ = 0;
+		ReleaseLock(state_.read_lock);
 		return 0;
 	}
 
@@ -808,9 +860,14 @@ long CACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long&
 	rpos++;
 	rpos %= size_;
 	sizetmp += base_[rpos];
+	if (sizetmp <= 0 || (max_item_size_ > 0 && sizetmp > max_item_size_))
+	{
+		ReleaseLock(state_.read_lock);
+		return -3;
+	}
 	if (size_int < sizetmp)
 	{
-		read_lock_ = 0;
+		ReleaseLock(state_.read_lock);
 		return -2;
 	}
 
@@ -852,8 +909,8 @@ long CACB::PeekBufWithSer(unsigned char* data_ptr, long size_int, unsigned long&
 	}
 	rpos += (sizetmp - 1);
 	rpos %= size_;
-	read_pos_ = rpos;
-	read_lock_ = 0;
+	state_.read_pos.store(rpos, std::memory_order_release);
+	ReleaseLock(state_.read_lock);
 	return sizetmp;
 }
 
@@ -863,21 +920,16 @@ bool CACB::Empty()
 	{
 		return false;
 	}
-	if (read_lock_ != 0 || write_lock_ != 0)
-	{
-		return false;
-	}
 
-	read_lock_ = 1;
-	write_lock_ = 1;
+	AcquireLock(state_.read_lock);
+	AcquireLock(state_.write_lock);
 
-	read_pos_ = 0;
-	write_pos_ = 1;
+	state_.read_pos.store(0, std::memory_order_release);
+	state_.write_pos.store(1, std::memory_order_release);
+	state_.item_num.store(0, std::memory_order_release);
 
-	write_lock_ = 0;
-	read_lock_ = 0;
-
-	item_num = 0;
+	ReleaseLock(state_.write_lock);
+	ReleaseLock(state_.read_lock);
 
 	return true;
 }

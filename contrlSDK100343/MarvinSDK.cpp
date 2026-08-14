@@ -3811,7 +3811,6 @@ bool OnGetRobotName(char *robotName)
 bool OnReset6DofForceSensor(char arm)
 {
 	char name[30];
-	long vers = 0;
 	memset(name, 0, 30);
 	if (arm == 'A')
 	{

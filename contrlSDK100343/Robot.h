@@ -19,7 +19,7 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
-#define SDK_VERSION 100343013
+#define SDK_VERSION 100343014
 
 class CRobot
 {

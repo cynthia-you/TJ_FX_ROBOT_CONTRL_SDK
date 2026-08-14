@@ -3,6 +3,16 @@
 #include <atomic>
 #include "CmplOpt.h"
 
+struct ACB_AtomicState
+{
+    std::atomic<unsigned char> write_lock;   
+    std::atomic<unsigned char> read_lock;    
+    std::atomic<long>          write_pos;    
+    std::atomic<long>          read_pos;     
+    std::atomic<long>          item_num;     
+    std::atomic<unsigned long> buf_serial;   
+};
+
 class CACB
 {
 public:
@@ -18,14 +28,14 @@ public:
 
 protected:
     bool init_tag_;
-    long write_pos_;
-    long read_pos_;
-    unsigned char write_lock_;
-    unsigned char read_lock_;
-    unsigned long buf_serial_;
+    ACB_AtomicState state_;          
     unsigned char *base_;
     long size_;
-    long item_num;
+    long max_item_size_;            
+
+    bool AcquireLock(std::atomic<unsigned char> &lock);
+    void ReleaseLock(std::atomic<unsigned char> &lock);
+    long ResyncBadHead(long wpos, long rpos);
 };
 
 // Supports cross-process sharing
@@ -48,10 +58,11 @@ protected:
     long *write_pos_;
     long *read_pos_;
     unsigned long buf_serial_;
+    long item_num;
+    long max_item_size_;             // 单条记录合法长度上限
 
     unsigned char *base_;
     long size_;
-    long item_num;
 };
 
 #endif

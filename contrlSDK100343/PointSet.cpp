@@ -148,7 +148,6 @@ bool CPointSet::OnGetSubAVG(long serial, long start, long end, double &ret_avg)
 	double tv = 0;
 
 	long i;
-	long tp = 0;
 	for (i = start; i <= end; i++)
 	{
 		double *v = this->OnGetPoint(i);
