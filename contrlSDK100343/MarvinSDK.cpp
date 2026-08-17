@@ -3842,6 +3842,7 @@ bool OnSetSystemTime(int year, int month, int day, int hour, int minute, int sec
 	t.tm_hour = hour;
 	t.tm_min = minute;
 	t.tm_sec = second;
+	t.tm_isdst = -1;
 	errno = 0;
 	mktime(&t);
 

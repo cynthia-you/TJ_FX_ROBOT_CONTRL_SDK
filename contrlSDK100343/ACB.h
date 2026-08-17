@@ -59,7 +59,7 @@ protected:
     long *read_pos_;
     unsigned long buf_serial_;
     long item_num;
-    long max_item_size_;             // 单条记录合法长度上限
+    long max_item_size_;          
 
     unsigned char *base_;
     long size_;

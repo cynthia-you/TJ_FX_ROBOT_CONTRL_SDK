@@ -143,7 +143,9 @@
         showcase_force_field_control.py
 ### 30. 运动过程中，停止运动案例（非急停，非下使能）
         showcase_stop_run_AB.py
-
+### 31. 阻抗刚度阻尼数据回读
+        showcase_validate_stiffness_info.cpp
+        
 ## 五、 干涉检测(碰撞检测)showcases
 ### 1. 双臂进入关节拖动模式, 获取当前关节做碰撞检测(对应DEMO_C++/showcase_drag_interference.cpp)
         showcase_drag_interference.py

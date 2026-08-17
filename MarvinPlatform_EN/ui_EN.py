@@ -1924,7 +1924,7 @@ class App:
         button_w = 10
         hidden_window = tk.Toplevel(self.root)
         hidden_window.title("System Upgrade")
-        hidden_window.geometry("800x500")
+        hidden_window.geometry("800x800")
         hidden_window.configure(bg="white")
         hidden_window.transient(self.root)
         hidden_window.resizable(True, True)
@@ -1979,6 +1979,15 @@ class App:
                          text='The system update package file selected is: *.MV_SYS_UPDATE', bg='white')
         label.pack(padx=5, pady=10)
 
+        state_a_frame3 = tk.Frame(hidden_window, bg="white")
+        state_a_frame3.pack(fill="x", pady=5)
+        reboot_a_button = tk.Button(state_a_frame3, text="Reboot", width=20,
+                                           command=self.reboot_now, bg="#42B7ED",
+                                           fg="#151513",
+                                           font=("Arial", 10, "bold")).pack(side='left', expand=True)
+
+
+
         '''机器人IP配置'''
         ip_title_frame = tk.Frame(hidden_window, bg="white")
         ip_title_frame.pack(fill="x", padx=5, pady=(25, 10))
@@ -1999,6 +2008,26 @@ class App:
                  text="Format: x.y.z.w (e.g. 192.168.1.190). Netmask fixed 255.255.255.0, gateway x.y.z.1",
                  bg="white", fg="gray").pack(padx=5, pady=5)
 
+        '''CONTROLLER TIME SETTING'''
+        settime_title_frame = tk.Frame(hidden_window, bg="white")
+        settime_title_frame.pack(fill="x", padx=5, pady=(25, 10))
+        settime_title_label = tk.Label(settime_title_frame, text="Set Robot Time", bg="#2196F3",
+                                    fg="white", font=("Arial", 10, "bold"))
+        settime_title_label.pack(fill='x', expand=True)
+
+        settime_frame = tk.Frame(hidden_window, bg="white")
+        settime_frame.pack(fill="x", pady=5)
+        tk.Label(settime_frame, text="Set robot time as:", bg="white").pack(side='left', padx=(5, 5))
+        self.robot_st_entry = tk.StringVar()
+        ttk.Entry(settime_frame, textvariable=self.robot_st_entry, width=50).pack(side='left', padx=5)
+        tk.Button(settime_frame, text="Set Time", width=10, command=self.set_robot_time).pack(side='left', padx=5)
+
+        st_hint_frame = tk.Frame(hidden_window, bg="white")
+        st_hint_frame.pack(fill="x", pady=2)
+        tk.Label(st_hint_frame,
+                    text="Format: 2000,01,1,1,30,00 ( year, month,day, hour, minute, second)",
+                    bg="white", fg="gray").pack(padx=5, pady=5)
+
     def validate_robot_ip(self, ip_str):
         """校验 IPv4 地址，过滤非法/保留地址。返回 (ok, octets|None, reason)"""
         if not ip_str:
@@ -2011,10 +2040,9 @@ class App:
         for o in octets:
             if int(o) > 255:
                 return False, None, f"Octet {o} exceeds 255."
-            if o != str(int(o)):  # 拒绝前导零，如 01
+            if o != str(int(o)): 
                 return False, None, f"Octet {o} has a leading zero."
         o1, o2, o3, o4 = [int(o) for o in octets]
-        # 过滤非法/保留地址
         if o1 == 0:
             return False, None, "IP cannot start with 0 (e.g. 0.0.0.0)."
         if o1 == 127:
@@ -2039,7 +2067,6 @@ class App:
             address_str = f"{o1}.{o2}.{o3}.{o4}"
             netmask_str = "255.255.255.0"
             gateway_str = f"{o1}.{o2}.{o3}.1"
-            # 生成 Debian interfaces 配置（与 C++ OnSetIP 逻辑一致）
             content = (
                 "auto lo\n"
                 "iface lo inet loopback\n"
@@ -2054,10 +2081,8 @@ class App:
                 "bridge_fd 0\n"
                 "dns-nameservers 8.8.8.8\n"
             )
-            # 写入本地配置文件（newline='' 保持纯 \n，对应 C++ 的 "wb" 二进制写入）
             with open('TargetIP.CFG', 'w', newline='', encoding='utf-8') as f:
                 f.write(content)
-            # 上传到机器人（C++ 中每个路径发送两次属于冗余，各发一次即可）
             tag1 = robot.send_file('TargetIP.CFG', '/mnt/FUSION/Tmp/interfaces')
             tag2 = robot.send_file('TargetIP.CFG', '/mnt/FUSION/Tmp/interfacesbk')
             if tag1 and tag2:
@@ -2067,6 +2092,26 @@ class App:
                 messagebox.showerror('Error', 'Send File Error')
         except Exception as e:
             messagebox.showerror('Error', f"Set IP failed: {str(e)}")
+
+    
+    def set_robot_time(self):
+        try:
+            if not self.connected:
+                messagebox.showerror('Error', 'Please connect robot')
+                return
+            time_str = self.robot_st_entry.get()
+            time_info=time_str.split(',')
+            directions = [int(value.strip()) for value in time_info]
+            ret=robot.set_system_time(directions[0],directions[1],directions[2],directions[3],directions[4],directions[5])
+            if ret:
+                messagebox.showinfo('Success',
+                                    f"Set rebot time success.")
+            else:
+                messagebox.showerror('Error', 'Set time failed, please try again')
+            
+        except Exception as e:
+            messagebox.showerror('Error', f"Set robot time failed: {str(e)}")
+           
 
     def compare_parameters_dialog(self):
         robot.receive_file('robot.ini', "/home/FUSION/Config/cfg/robot.ini")
@@ -2512,6 +2557,19 @@ class App:
                         messagebox.showinfo('Success', 'The system files have been uploaded. Please restart the controller to update automatically.')
                     else:
                         messagebox.showinfo('Error', 'System file upload failed, please upload again.')
+        else:
+            messagebox.showerror('Error', 'Please connect robot')
+
+    def reboot_now(self):
+        if self.connected:
+            result = messagebox.askokcancel("Confirm", "Controller system will reboot now")
+            if result:
+               
+                tag1 = robot.reboot()
+                if tag1:
+                    messagebox.showinfo('Success', 'The system will reboot now.')
+                else:
+                    messagebox.showinfo('Error', 'System reboot failed, please try reboot again.')
         else:
             messagebox.showerror('Error', 'Please connect robot')
 
