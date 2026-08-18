@@ -308,7 +308,7 @@ class Marvin_Kine:
 
     def load_config(self, arm_type: int, config_path: str):
         ''' 使用前，请一定确认机型，导入正确的配置文件。导入机械臂配置信息
-        :param srm_type: 选择左臂还是右臂, 左臂:0, 右臂:1
+        :param arm_type: 选择左臂还是右臂, 左臂:0, 右臂:1
         :param config_path: 本地机械臂配置文件a.MvKDCfg, 可相对路径.
         • a.MvKDCfg文件中包含与运动学、动力学计算相关的双臂参数，进行计算之前需要导入机械臂配置相关文件
         • TYPE=1007，Pilot-SRS机型（双臂为MARVIN）；TYPE=1017，Pilot-CCS机型双臂为MARVIN）！
