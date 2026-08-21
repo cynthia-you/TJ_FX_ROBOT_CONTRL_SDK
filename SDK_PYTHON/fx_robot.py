@@ -3352,7 +3352,9 @@ arm_err_code={
     '11':"下伺服失败",
     '12':"内部错",
     '13':"急停",
-    '14':"配置文件选择了浮动基座选项，但是UMI设置在配置文件未开"
+    '14':"配置文件选择了浮动基座选项，但是UMI设置在配置文件未开",
+    '15':"PDO数据异常",
+    '16':"手臂为虚拟轴",
 }
 
 arm_err_code_EN={
@@ -3369,7 +3371,9 @@ arm_err_code_EN={
 '11':"Failed to request servo down",
 '12':"Internal error",
 '13':"Emergency stop",
-'14':"Floating base option selected in configuration file, but UMI setting not enabled in configuration file"
+'14':"Floating base option selected in configuration file, but UMI setting not enabled in configuration file",
+'15':"PDO abnormal",
+'16':"Arm is virtual",
 }
 
 fault_code_dict_CN = {

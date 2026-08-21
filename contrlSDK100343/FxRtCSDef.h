@@ -224,6 +224,8 @@ typedef enum
 	ARM_ERR_InvalidSubState = 12,	  //"内部错"
 	ARM_ERR_Emcy = 13,				  //"急停"
 	ARM_DYNA_FLOAT_NO_GYRO = 14,	  //"配置文件选择了浮动基座选项，但是UMI设置在配置文件未开"
+	ARM_ERR_PdoAbnormal = 15,         //PDO数据异常
+    ARM_ERR_AxisIsVirtual = 16,       //手臂为虚拟轴
 } ArmError;
 #pragma pack(pop)
 #endif
