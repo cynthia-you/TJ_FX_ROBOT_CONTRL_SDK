@@ -157,8 +157,9 @@ protected:
 	FX_UINT32 miss_cnt;
 	FX_INT32 old_serial;
 	std::atomic<FX_BOOL> m_LinkTag;
-	std::atomic<bool> m_recv_stop{false};  
-	std::atomic<long> m_recv_active{0};    
+	std::atomic<bool> m_recv_stop{false};
+	std::atomic<long> m_recv_active{0};
+	std::atomic<long> m_tick_miss_cnt{0}; 
 	FX_BOOL old_serial_tag;
 
 	FX_BOOL m_VersionMatchTag;
@@ -172,7 +173,7 @@ protected:
 #endif
 	FX_BOOL m_LastGatherTag;
 #ifdef CMPL_LIN
-	timer_t robot_timer;
+	pthread_t robot_timer_thread;
 #endif
 	DCSS m_DCSS;
 

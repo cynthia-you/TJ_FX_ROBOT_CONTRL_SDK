@@ -287,9 +287,48 @@ void CALLBACK CallBackFunc2(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PT
 }
 #endif
 #ifdef CMPL_LIN
-void CallBackFunc(union sigval v)
+void *RobotTimerThreadFunc(void *arg)
 {
-	CRobot::OnTimerTick();
+	CRobot *robot = static_cast<CRobot *>(arg);
+	if (robot == NULL)
+	{
+		return NULL;
+	}
+	struct sched_param sp;
+	memset(&sp, 0, sizeof(sp));
+	sp.sched_priority = 80;  
+	if (sched_setscheduler(0, SCHED_FIFO, &sp) != 0)
+	{
+	}
+	struct timespec next;
+	clock_gettime(CLOCK_MONOTONIC, &next);
+	const long PERIOD_NS = 1000000;   // 1ms
+
+	while (!robot->m_recv_stop.load())
+	{
+		next.tv_nsec += PERIOD_NS;
+		if (next.tv_nsec >= 1000000000L)
+		{
+			next.tv_nsec -= 1000000000L;
+			next.tv_sec++;
+		}
+		struct timespec remain = next;
+		while (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &remain, NULL) == -1
+			&& errno == EINTR)
+		{
+			remain = next;
+			if (robot->m_recv_stop.load())
+			{
+				return NULL;
+			}
+		}
+		if (robot->m_recv_stop.load())
+		{
+			return NULL;
+		}
+		CRobot::OnTimerTick();
+	}
+	return NULL;
 }
 #endif
 
@@ -299,16 +338,21 @@ void CRobot::OnTimerTick()
 	{
 		return;
 	}
-	m_InsRobot->m_recv_active.fetch_add(1);
+	long expected = 0;
+	if (!m_InsRobot->m_recv_active.compare_exchange_strong(expected, 1))
+	{
+		m_InsRobot->m_tick_miss_cnt.fetch_add(1);
+		return;
+	}
 	if (m_InsRobot->m_recv_stop.load())
 	{
-		m_InsRobot->m_recv_active.fetch_sub(1);
+		m_InsRobot->m_recv_active.store(0);
 		return;
 	}
 	m_InsRobot->DoRecv();
 	m_InsRobot->DoSend();
 	m_InsRobot->DoCnt();
-	m_InsRobot->m_recv_active.fetch_sub(1);
+	m_InsRobot->m_recv_active.store(0);
 }
 
 bool CRobot::OnOpenShareCh(char *shm_name)
@@ -373,7 +417,7 @@ CRobot::CRobot()
 #endif
 
 #ifdef CMPL_LIN
-	robot_timer = 0;
+	robot_timer_thread = 0;
 #endif
 	memset(&m_DCSS, 0, sizeof(DCSS));
 	m_LastGatherTag = FX_FALSE;
@@ -427,11 +471,10 @@ bool CRobot::OnRelease()
 
 #endif
 #ifdef CMPL_LIN
-	if (m_InsRobot->robot_timer != 0)
+	if (m_InsRobot->robot_timer_thread != 0)
 	{
-		timer_delete(m_InsRobot->robot_timer);
-		SLEEP(10);
-		m_InsRobot->robot_timer = 0;
+		pthread_join(m_InsRobot->robot_timer_thread, NULL);
+		m_InsRobot->robot_timer_thread = 0;
 	}
 	if (m_InsRobot->m_LinkTag == FX_TRUE)
 	{
@@ -561,11 +604,12 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 	m_InsRobot->m_LinkTag = FX_TRUE;
 	{
 		int _localLen = sizeof(m_InsRobot->_local);
+		int Len = 0;
 #ifdef CMPL_WIN
-		int Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr *)&m_InsRobot->_local, &_localLen);
+		Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr *)&m_InsRobot->_local, &_localLen);
 #endif
 #ifdef CMPL_LIN
-		int Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr *)&m_InsRobot->_local, (socklen_t *)&_localLen);
+		Len = recvfrom(m_InsRobot->_local_sock, m_InsRobot->recvbuf, 2000, 0, (struct sockaddr *)&m_InsRobot->_local, (socklen_t *)&_localLen);
 #endif
 		while (Len > 0)
 		{
@@ -583,28 +627,11 @@ bool CRobot::OnLinkTo(FX_UCHAR ip1, FX_UCHAR ip2, FX_UCHAR ip3, FX_UCHAR ip4)
 #endif
 #ifdef CMPL_LIN
 	{
-		struct sigevent evp;
-		struct itimerspec ts;
-		int ret;
-		memset(&evp, 0, sizeof(evp));
-		evp.sigev_value.sival_ptr = &m_InsRobot->robot_timer;
-		evp.sigev_notify = SIGEV_THREAD;
-		evp.sigev_notify_function = CallBackFunc;
-		evp.sigev_value.sival_int = 0;
-		ret = timer_create(CLOCK_REALTIME, &evp, &m_InsRobot->robot_timer);
-		if (ret)
-		{
-			return false;
-		}
-		ts.it_interval.tv_sec = 0;
-		ts.it_interval.tv_nsec = 1000000;
-		ts.it_value.tv_sec = 0;
-		ts.it_value.tv_nsec = 1000000;
-		ret = timer_settime(m_InsRobot->robot_timer, TIMER_ABSTIME, &ts, NULL);
-		if (ret)
-		{
-			return false;
-		}
+		m_InsRobot->m_recv_stop.store(false);
+		pthread_attr_t attr;
+		pthread_attr_init(&attr);
+		pthread_create(&m_InsRobot->robot_timer_thread, &attr, RobotTimerThreadFunc, m_InsRobot);
+		pthread_attr_destroy(&attr);
 	}
 #endif
 	// m_InsRobot->ReadPendingData();
@@ -1448,11 +1475,12 @@ void CRobot::DoRecv()
 		return;
 	}
 	_localLen = sizeof(_local);
+	int Len = 0;
 #ifdef CMPL_WIN
-	int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr *)&_local, &_localLen);
+	Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr *)&_local, &_localLen);
 #endif
 #ifdef CMPL_LIN
-	int Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr *)&_local, (socklen_t *)&_localLen);
+	Len = recvfrom(_local_sock, recvbuf, 2000, 0, (struct sockaddr *)&_local, (socklen_t *)&_localLen);
 #endif
 	while (Len > 0)
 	{
