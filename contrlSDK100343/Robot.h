@@ -134,8 +134,8 @@ public:
 #endif
 
 protected:
-	bool m_ch_send_a_tag;
-	bool m_ch_send_b_tag;
+	std::atomic<bool> m_ch_send_a_tag{false};
+	std::atomic<bool> m_ch_send_b_tag{false};
 
 	bool m_send_lock;
 	CRobot();

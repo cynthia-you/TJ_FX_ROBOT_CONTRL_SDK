@@ -74,23 +74,30 @@ long CRobot::OnGetChDataA(unsigned char data_ptr[256], long *ret_ch)
 	memcpy(data_ptr, t.m_Data, copy_len);
 	if (m_InsRobot->m_LocalLogTag == true)
 	{
-		printf("[Marvin SDK]: Get 485 of A arm: \nchannel =%ld\n", *ret_ch);
-		printf("data:\n");
-		for (int i = 0; i < 256; ++i)
+		if (t.m_Size < 0 || t.m_Size > 256)
 		{
-			printf("%02x ", data_ptr[i]);
-
-			if ((i + 1) % 16 == 0)
+			printf("[Marvin SDK]: Get 485 of A arm: \nchannel =%ld\n", *ret_ch);
+			printf("data:\n");
+			for (int i = 0; i < 256; ++i)
 			{
-				printf("  ");
-				for (int j = i - 15; j <= i; j++)
+				printf("%02x ", data_ptr[i]);
+
+				if ((i + 1) % 16 == 0)
 				{
-					printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
+					printf("  ");
+					for (int j = i - 15; j <= i; j++)
+					{
+						printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
+					}
+					printf("\n");
 				}
-				printf("\n");
 			}
+			printf("\ndata size=%d \n", t.m_Size);
 		}
-		printf("\ndata size=%d \n", t.m_Size);
+		else
+		{
+			printf("[Marvin SDK]: Get 485 of A arm: channel=%ld size=%d\n", *ret_ch, (int)t.m_Size);
+		}
 	}
 	return copy_len;
 }
@@ -155,22 +162,29 @@ long CRobot::OnGetChDataB(unsigned char data_ptr[256], long *ret_ch)
 	memcpy(data_ptr, t.m_Data, copy_len);
 	if (m_InsRobot->m_LocalLogTag == true)
 	{
-		printf("[Marvin SDK]: Get 485 of B arm: \nchannel =%ld\n", *ret_ch);
-		printf("data:\n");
-		for (int i = 0; i < 256; ++i)
+		if (t.m_Size < 0 || t.m_Size > 256)
 		{
-			printf("%02x ", data_ptr[i]);
-			if ((i + 1) % 16 == 0)
+			printf("[Marvin SDK]: Get 485 of B arm: \nchannel =%ld\n", *ret_ch);
+			printf("data:\n");
+			for (int i = 0; i < 256; ++i)
 			{
-				printf("  ");
-				for (int j = i - 15; j <= i; j++)
+				printf("%02x ", data_ptr[i]);
+				if ((i + 1) % 16 == 0)
 				{
-					printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
+					printf("  ");
+					for (int j = i - 15; j <= i; j++)
+					{
+						printf("%c", (data_ptr[j] >= 32 && data_ptr[j] <= 126) ? data_ptr[j] : '.');
+					}
+					printf("\n");
 				}
-				printf("\n");
 			}
+			printf("\ndata size=%d \n", t.m_Size);
 		}
-		printf("\ndata size=%d \n", t.m_Size);
+		else
+		{
+			printf("[Marvin SDK]: Get 485 of B arm: channel=%ld size=%d\n", *ret_ch, (int)t.m_Size);
+		}
 	}
 	return copy_len;
 }
@@ -1554,11 +1568,19 @@ void CRobot::DoRecv()
 				{
 					if (tddss.m_CH == 1)
 					{
-						m_ACB1.WriteBuf((unsigned char *)&tddss, sizeof(DDSS));
+						bool wok = m_ACB1.WriteBuf((unsigned char *)&tddss, sizeof(DDSS));
+						if (!wok && m_InsRobot->m_LocalLogTag == true)
+						{
+							printf("[Marvin SDK]: WARN A arm 485 ring full, frame dropped (CH1)\n");
+						}
 					}
 					if (tddss.m_CH == 2)
 					{
-						m_ACB2.WriteBuf((unsigned char *)&tddss, sizeof(DDSS));
+						bool wok = m_ACB2.WriteBuf((unsigned char *)&tddss, sizeof(DDSS));
+						if (!wok && m_InsRobot->m_LocalLogTag == true)
+						{
+							printf("[Marvin SDK]: WARN B arm 485 ring full, frame dropped (CH2)\n");
+						}
 					}
 				}
 			}

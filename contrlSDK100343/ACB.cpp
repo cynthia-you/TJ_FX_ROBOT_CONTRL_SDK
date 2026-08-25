@@ -461,7 +461,7 @@ CACB::CACB()
 {
 	init_tag_ = false;
 	base_ = NULL;
-	size_ = 10240;
+	size_ = 25600;
 	base_ = (unsigned char*)malloc(size_);
 	state_.write_lock.store(0, std::memory_order_relaxed);
 	state_.read_lock.store(0, std::memory_order_relaxed);
