@@ -806,6 +806,8 @@ robot.send_cmd()
              ARM_ERR_Emcy = 13, //"急停"
              ARM_DYNA_FLOAT_NO_GYRO = 14,//"配置文件选择了浮动基座选项，但是实际没有IMU硬件接入控制器"
              ARM_ERR_PdoAbnormal = 15, //"PDO工作不正常"
+            ARM_ERR_AxisIsVirtual = 16,       //手臂为虚拟轴,虚拟轴是因为控制器启动时未能在程序启动时检测到从站，检测手臂是否与控制器同时上电,
+
 
 
     python：订阅数据a_state=sub_data["states"][0]["cur_state"]的值可以看到当前伺服状态：
@@ -822,21 +824,22 @@ robot.send_cmd()
 
 
         订阅数据a_state=sub_data["states"][0]["err_code"]的值可以看到当前机械臂的错误状态：
-             ARM_ERR_BusPhysicAbnoraml = 1, //"总线拓扑异常"
-             ARM_ERR_ServoError = 2,//"伺服故障"
-             ARM_ERR_InvalidPVT = 3,//"PVT异常"
-             ARM_ERR_RequestPositionMode = 4,//"请求进位置失败"
-             ARM_ERR_PositionModeOK = 5,//"进位置失败"
-             ARM_ERR_RequestSensorMode = 6,//"请求进扭矩失败"
-             ARM_ERR_SensorModeOK = 7,//"进扭矩失败"
-             ARM_ERR_RequestEnableServo = 8,//"请求上伺服失败"
-             ARM_ERR_EnableServoOK = 9,//"上伺服失败"
-             ARM_ERR_RequestDisableServo = 10, //"请求下伺服失败
-             ARM_ERR_DisableServoOK = 11, //"下伺服失败"
-             ARM_ERR_InvalidSubState = 12, //"内部错"
+             ARM_ERR_BusPhysicAbnoraml = 1, //"总线拓扑异常" 	EtherCAT通讯处于断开状态等错误状态
+             ARM_ERR_ServoError = 2,//"伺服故障"  				1) 某个轴处于故障状态, 2) 轴参数配置错误, 3) 轴通讯错误
+             ARM_ERR_InvalidPVT = 3,//"PVT异常"  				1) PVT模式内部读取数据错误，长度不符, 2) 位置模式时linux系统调度导致PSI进程和SI进程数据交互错误
+             ARM_ERR_RequestPositionMode = 4,//"请求进位置失败" 	1) 伺服初始化状态错误，2) 伺服状态正在切换，3) 编码器状态错误，4) 伺服反馈状态切换失败，5) 处于急停状态，6) 100341版本以前原因同6
+             ARM_ERR_PositionModeOK = 5,//"进位置失败" 			1) 伺服反馈切换运行模式失败，2) 电机状态错误，3) 控制器系统内存状态错误，4) 控制器内部手臂数量设置错误
+             ARM_ERR_RequestSensorMode = 6,//"请求进扭矩失败" 	1)未设置工具动力学参数；2)轴外力检测不通过（日志查看）；3)内外编检查不通过；4)其他原因同4、5
+             ARM_ERR_SensorModeOK = 7,//"进扭矩失败" 			原因同4、5
+             ARM_ERR_RequestEnableServo = 8,//"请求上伺服失败" 	原因同4、5
+             ARM_ERR_EnableServoOK = 9,//"上伺服失败" 			原因同4、5
+
+             ARM_ERR_RequestDisableServo = 10, //"请求下伺服失败 原因同4、5
+             ARM_ERR_DisableServoOK = 11, //"下伺服失败" 		原因同4、5
+             ARM_ERR_InvalidSubState = 12, //"内部错" 			1) 操作系统内存错误，调度错误，2) 变量值计算错误，3) 某些内存指针为空
              ARM_ERR_Emcy = 13, //"急停"
-             ARM_DYNA_FLOAT_NO_GYRO = 14,//"配置文件选择了浮动基座选项，但是UMI设置在配置文件未开",
-             ARM_ERR_PdoAbnormal = 15,         //PDO数据异常
+             ARM_DYNA_FLOAT_NO_GYRO = 14,//"配置文件选择了浮动基座选项，但是实际没有IMU硬件接入控制器"
+             ARM_ERR_PdoAbnormal = 15, //"PDO工作不正常"
              ARM_ERR_AxisIsVirtual = 16,       //手臂为虚拟轴,虚拟轴是因为控制器启动时未能在程序启动时检测到从站，检测手臂是否与控制器同时上电,
 
         获取错误用error_codes=get_servo_error_code('A')

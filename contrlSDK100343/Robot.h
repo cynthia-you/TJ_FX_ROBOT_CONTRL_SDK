@@ -129,6 +129,10 @@ public:
 
 	bool m_LocalLogTag;
 
+#ifdef CMPL_LIN
+	friend void *RobotTimerThreadFunc(void *arg);
+#endif
+
 protected:
 	bool m_ch_send_a_tag;
 	bool m_ch_send_b_tag;
@@ -176,6 +180,7 @@ protected:
 	pthread_t robot_timer_thread;
 #endif
 	DCSS m_DCSS;
+	std::mutex m_dcss_mutex;
 
 	DCSS m_DCSS_Send;
 	FX_UCHAR m_RunState;

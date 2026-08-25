@@ -835,14 +835,14 @@ class App:
         self.left_force_entry = tk.Entry(force_row, width=5, font=('Arial', 9), justify='center')
         self.left_force_entry.pack(side="left")
         self.left_force_entry.insert(0, "10") #最大不超过60N
-        tk.Label(force_row, text="1N-60N", font=('Arial', 9),bg='white').pack(side="left", padx=(0, 10))
+        tk.Label(force_row, text="1N~50N", font=('Arial', 9),bg='white').pack(side="left", padx=(0, 10))
 
         # 调节量
         tk.Label(force_row, text="Adjust:", font=('Arial', 9),bg='white' ).pack(side="left", padx=(0, 0))
         self.left_force_adj_entry = tk.Entry(force_row, width=5, font=('Arial', 9), justify='center')
         self.left_force_adj_entry.pack(side="left")
         self.left_force_adj_entry.insert(0, "50") #最大不超过50mm
-        tk.Label(force_row, text="1mm-50mm", font=('Arial', 9),bg='white').pack(side="left", padx=(0, 10))
+        tk.Label(force_row, text="1mm~200mm", font=('Arial', 9),bg='white').pack(side="left", padx=(0, 10))
 
         self.left_force_dir_btn1 = tk.Button(
             force_row,
@@ -1359,14 +1359,14 @@ class App:
         self.right_force_entry = tk.Entry(force_row, width=5, font=('Arial', 9), justify='center')
         self.right_force_entry.pack(side="left")
         self.right_force_entry.insert(0, "10")  # 最大不超过60N
-        tk.Label(force_row, text="1N-60N", font=('Arial', 9),bg='white').pack(side="left", padx=(0, 10))
+        tk.Label(force_row, text="1N~50N", font=('Arial', 9),bg='white').pack(side="left", padx=(0, 10))
 
         # 调节量
         tk.Label(force_row, text="Adjust:", font=('Arial', 9),bg='white').pack(side="left", padx=(0, 0))
         self.right_force_adj_entry = tk.Entry(force_row, width=5, font=('Arial', 9), justify='center')
         self.right_force_adj_entry.pack(side="left")
         self.right_force_adj_entry.insert(0, "50")  # 最大不超过50mm
-        tk.Label(force_row, text="1mm-50mm", font=('Arial', 9),bg='white').pack(side="left", padx=(0, 10))
+        tk.Label(force_row, text="1mm~200mm", font=('Arial', 9),bg='white').pack(side="left", padx=(0, 10))
 
         self.right_force_dir_btn1 = tk.Button(
             force_row,

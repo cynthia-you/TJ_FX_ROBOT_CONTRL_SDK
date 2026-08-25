@@ -536,6 +536,7 @@ bool CRobot::OnGetBuf(DCSS *ret)
 	{
 		return false;
 	}
+	std::lock_guard<std::mutex> lk(m_InsRobot->m_dcss_mutex);
 	memcpy(ret, &m_InsRobot->m_DCSS, sizeof(m_DCSS));
 	return true;
 }
@@ -1494,7 +1495,10 @@ void CRobot::DoRecv()
 				}
 
 				DCSS *p = (DCSS *)&recvbuf[2];
-				memcpy(&m_DCSS, p, sizeof(m_DCSS));
+				{
+					std::lock_guard<std::mutex> lk(m_dcss_mutex);
+					memcpy(&m_DCSS, p, sizeof(m_DCSS));
+				}
 				m_send_response_recv_tag = m_DCSS.m_Out[0].m_pad[0];
 				if (m_InsRobot->m_GatherTag == 1)
 				{
