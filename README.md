@@ -806,7 +806,7 @@ robot.send_cmd()
              ARM_ERR_Emcy = 13, //"急停"
              ARM_DYNA_FLOAT_NO_GYRO = 14,//"配置文件选择了浮动基座选项，但是实际没有IMU硬件接入控制器"
              ARM_ERR_PdoAbnormal = 15, //"PDO工作不正常"
-            ARM_ERR_AxisIsVirtual = 16,       //手臂为虚拟轴,虚拟轴是因为控制器启动时未能在程序启动时检测到从站，检测手臂是否与控制器同时上电,
+             ARM_ERR_AxisIsVirtual = 16,       //手臂为虚拟轴,虚拟轴是因为控制器启动时未能在程序启动时检测到从站，检测手臂是否与控制器同时上电,
 
 
 
@@ -857,6 +857,17 @@ robot.send_cmd()
         注意看控制模组提供的指令协议：
             32位 CANID 如果为0x01, 按HEX发送为：01 00 00 00
             64位 CANID 如果为0x01, 按HEX发送为：01 00
+
+    8 工具动力学辨识问题：
+        问题一： 轨迹正常运行，但是辨识结果报错，显示：ret=4, 采集时间不够，缺少有效数据。
+        解决方法：这是控制器系统和SDK兼容导致，100343007以上系统 + 100343007以上SDK可解决
+
+        问题二：加载轨迹后不运行，控制器显示：Load /home/FUSION/Config/pvt/user0/*.txt to memory failed 以及 no pvt file[0] to run
+        解决方法：轨迹文件是否在winodws上打开过，行尾换行符变成了CRLF（windows系统换行符）， 请将文件行尾符换成LF (linux换行符)
+
+    9 PVT轨迹运行问题：加载轨迹后不运行，控制器显示：Load /home/FUSION/Config/pvt/user0/*.txt to memory failed 以及 no pvt file[0] to run
+
+        解决方法：轨迹文件是否在winodws上打开过，行尾换行符变成了CRLF（windows系统换行符）， 请将文件行尾符换成LF (linux换行符)
 
 ## 📄 许可证
 
