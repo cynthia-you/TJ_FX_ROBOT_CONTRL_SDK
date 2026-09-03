@@ -2337,6 +2337,13 @@ FX_VOID FX_SPMatInv77(Matrix7 orgm, Matrix7 invm)
 	LDLT(orgm, L, D);
 	for (i = 0; i < DOF; i++)
 	{
+		// Guard against zero/near-zero pivot (singular matrix) to avoid
+		// division by zero; the result is unusable in that case but we keep
+		// the value finite rather than producing Inf/NaN.
+		if (FX_Fabs(D[i]) < FXARM_MICRO)
+		{
+			D[i] = (D[i] >= 0.0) ? FXARM_MICRO : -FXARM_MICRO;
+		}
 		D[i] = 1 / D[i];
 	}
 	for (i = 0; i < DOF; ++i)

@@ -1,5 +1,5 @@
 #include "O3Polynorm.h"
-#include "math.h"
+#include "FXMath.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -44,7 +44,7 @@ bool CO3Polynorm::CalXPara(double x[4],double ret_XPara[10])
 	double d =  A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) -
 				A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) +
 				A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]) ;
-	if (fabs(d) < 0.000000000001)
+	if (FX_Fabs(d) < 0.000000000001)
 	{
 		return false;
 	}

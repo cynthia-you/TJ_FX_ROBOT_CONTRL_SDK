@@ -50,6 +50,9 @@ extern "C"
 	/////Joint Torque to EE Torque Mapping
 	FX_BOOL FX_Robot_JntTau2EETau(FX_INT32L RobotSerial, Vect7 q, Vect7 Joint_Torque, Vect6 EE_Torque);
 
+	/////EE Linear Velocity Calculation
+	FX_DOUBLE FX_Robot_CalEELinerVel(FX_INT32L RobotSerial, Vect7 joint, Vect7 angvel);
+
 	////Parameters Identification
 	FX_INT32 FX_Robot_Iden_LoadDyn(FX_INT32 Type, FX_CHAR *path, FX_DOUBLE *mass, Vect3 mr, Vect6 I);
 	////////////////////////////////////////////////////////////////////////////////////////////////

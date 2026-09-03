@@ -4129,6 +4129,56 @@ FX_BOOL FX_Robot_JntTau2EETau(FX_INT32L RobotSerial, Vect7 q, Vect7 Joint_Torque
 
 	return FX_Robot_Solve66_GaussJordan(JJt, rhs, EE_Torque);
 }
+
+FX_DOUBLE FX_Robot_CalEELinerVel(FX_INT32L RobotSerial, Vect7 joint, Vect7 angvel)
+{
+	// Input joint angles (unit: degrees) and joint velocities (unit: degrees/second)
+	// Compute the resultant EE linear velocity using the Jacobian matrix (unit: millimeters/second).
+	if (FX_LOG_TAG)
+		FX_LOG_INFO("[FxRobot - FX_Robot_CalEELinerVel]\n");
+
+	FX_INT32L i = 0;
+	FX_INT32L k = 0;
+	FX_DOUBLE vel[3] = {0};
+	FX_DOUBLE ret = 0.0;
+
+	if (RobotSerial < 0 || RobotSerial >= MAX_RUN_ROBOT_NUM)
+	{
+		if (FX_LOG_TAG)
+			FX_LOG_INFO("FX_Robot_CalEELinerVel: invalid RobotSerial\n");
+		return -1;
+	}
+
+	FX_Jacobi jcb;
+	if (FX_Robot_Kine_Jacb(RobotSerial, joint, &jcb) == FX_FALSE)
+	{
+		return -1;
+	}
+
+	Matrix4 tcp;
+	Vect3 r_ = {0};
+	if (FX_Robot_Kine_FK(RobotSerial, joint, tcp) == FX_FALSE)
+	{
+		return -1;
+	}
+	r_[0] = tcp[0][3];
+	r_[1] = tcp[1][3];
+	r_[2] = tcp[2][3];
+
+	Vect6 tmp_vel_ = {0};
+	FX_MVM677(jcb.m_Jcb, joint, tmp_vel_);
+
+	Vect3 angle_vel_ = {0};
+	FX_VectCross(&tmp_vel_[3], r_, angle_vel_);
+	FX_Vect3Add(&tmp_vel_[0], angle_vel_, r_);
+
+	ret = FX_Sqrt(r_[0] * r_[0] + r_[1] * r_[1] + r_[2] * r_[2]);
+
+	if (FX_LOG_TAG)
+		printf("EG:EE_LinearVel=%lf mm/s\n", ret);
+	return ret;
+}
+
 ////Parameters Identification
 FX_INT32 FX_Robot_Iden_LoadDyn(FX_INT32 TYPE, FX_CHAR *path, FX_DOUBLE *mass, Vect3 mr, Vect6 I)
 {

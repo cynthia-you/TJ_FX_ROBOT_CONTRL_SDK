@@ -100,7 +100,7 @@ FX_BOOL IsZeroL(FX_DOUBLE v)
 	if (v <= FXARM_EPS_L && v >= -FXARM_EPS_L)
 	{
 		return FX_TRUE;
-}
+	}
 	return FX_FALSE;
 }
 
@@ -291,12 +291,22 @@ FX_DOUBLE FX_ATan2(FX_DOUBLE dy, FX_DOUBLE dx)
 	{
 		tr = r * FXARM_R2D;
 		ser_pos = tr * 10;
-		while (FX_ATAN2_CPD_X[ser_pos] > tr)
+		// FX_ATAN2_CPD_X has 451 entries (indices 0..450); keep ser_pos in
+		// [0,449] so ser_pos+1 stays within bounds under floating-point drift.
+		if (ser_pos < 0)
+		{
+			ser_pos = 0;
+		}
+		if (ser_pos > 449)
+		{
+			ser_pos = 449;
+		}
+		while (ser_pos > 0 && FX_ATAN2_CPD_X[ser_pos] > tr)
 		{
 			ser_pos--;
 		}
 
-		while (FX_ATAN2_CPD_X[ser_pos + 1] < tr)
+		while (ser_pos < 449 && FX_ATAN2_CPD_X[ser_pos + 1] < tr)
 		{
 			ser_pos++;
 		}
