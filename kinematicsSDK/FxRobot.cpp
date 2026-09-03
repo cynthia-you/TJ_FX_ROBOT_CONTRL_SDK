@@ -624,7 +624,7 @@ FX_BOOL FX_Robot_Kine_Piolt(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_DOUBL
 	FX_PGMult(pRobot->m_KineBase.m_JointPG[5], pRobot->m_KineBase.m_AxisRotTip[6], pRobot->m_KineBase.m_JointPG[6]);
 	FX_PGMult(pRobot->m_KineBase.m_JointPG[6], pRobot->m_KineBase.m_Flange, pRobot->m_KineBase.m_FlangeTip);
 	FX_PGMult(pRobot->m_KineBase.m_FlangeTip, pRobot->m_KineBase.m_Tool, pRobot->m_KineBase.m_TCP);
-	FX_PGMult(pRobot->m_KineBase.m_UserFrame, pRobot->m_KineBase.m_TCP, pgos);
+	FX_PGMult(pRobot->m_KineBase.m_InvUserFrame, pRobot->m_KineBase.m_TCP, pgos);
 	// FX_M44Copy(pRobot->m_KineBase.m_TCP, pgos);
 
 	return FX_TRUE;
@@ -1632,7 +1632,7 @@ FX_BOOL FX_InvKine_Pilot(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
 	}
 
 	// Transform EE TCP to wrist center TCP
-	FX_MMM44(pRobot->m_KineBase.m_InvUserFrame, solve_para->m_Input_IK_TargetTCP, m_flan_uf);
+	FX_MMM44(pRobot->m_KineBase.m_UserFrame, solve_para->m_Input_IK_TargetTCP, m_flan_uf);
 	FX_MMM44(m_flan_uf, pRobot->m_KineBase.m_InvTool, m_flan);
 	FX_MMM44(m_flan, pRobot->m_KineBase.m_InvFlange, m_wrist);
 
