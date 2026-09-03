@@ -158,7 +158,7 @@
 ### 2. 计算逆解失败总结
             showcase_ik_failed_conclusion.py
 
-### 3. 两条手臂同时计算
+### 3. 两条手臂在三种情景下同时计算正解和逆解
             showcase_kine_two_arms.py
 
 ### 4. CCS右臂工具动力学辨识演示脚本

@@ -155,27 +155,39 @@ initial_kine(robot_type: int, dh: list, pnva: list, j67: list)
             bool
         '''
 
-### （4）工具设置
-设置工具的运动学参数
+### （4）工具和用户坐标系的设置
+若末端带有负载，对各关节参数初始化后，需要对工具进行设置
 set_tool_dyn(dyn: list)
+    '''
+    工具运动学设置
+    :param tool_mat: list(4,4) 工具的运动学信息，齐次变换矩阵，相对末端法兰的旋转和平移，请确认法兰坐标系。
+    :return:bool
+    '''
+
 移除工具的运动学参数
 remove_tool_kine()
+    '''
+    移除工具动力学设置
+    :return:bool
+    '''
 
+用户坐标系的设置,若需要在工件坐标系或其他自定义坐标系下进行运动学计算，在各关节参数初始化后，需要设置用户坐标系。
+set_user_frame_kine(user_mat: list)
+    '''
+    :param user_mat: list(4,4) 用户坐标系相对于机器人基座坐标系的齐次变换矩阵。
+    :return:bool
+    '''
 
-    • 若末端带有负载，对各关节参数初始化后，需要对工具进行设置
+用户坐标系移除，恢复使用机器人基座坐标系作为运动学计算的参考坐标系
+remove_user_frame_kine()
+    '''用户坐标系的移除,恢复使用机器人基座坐标系作为运动学计算的参考坐标系
+    :return:bool
+    '''
 
-
-    '''工具运动学设置
-        :param tool_mat: list(4,4) 工具的运动学信息，齐次变换矩阵，相对末端法兰的旋转和平移，请确认法兰坐标系。
-        :return:bool
-        '''
-
-    '''移除工具动力学设置
-        :return:bool
-        '''
-
-
-
+请特别注意：
+    不设置工具坐标系及用户坐标系，正运动学求解是法兰末端基于机械臂基座的位姿矩阵，逆运动学同理；
+    只设置工具坐标系，不设置用户坐标系，正运动学求解是工具末端基于机械臂基座的位姿矩阵，逆运动学同理；
+    同时设置工具坐标系及用户坐标系，正运动学求解是工具末端基于用户坐标系的位姿矩阵，逆运动学同理。
 
 ### （5）计算正运动学
 fk(joints: list)
@@ -496,6 +508,24 @@ mov_target(self,
         :return: (点集列表, pset指针) 维度根据实际规划确定
         """
 
+### （20）关节扭矩映射到末端扭矩
+jnt_tau_to_ee_tau(q: list, joint_torque: list):
+    '''关节力矩映射到末端力矩
+    :param q: list(7,), 当前关节角度（单位：度）
+    :param joint_torque: list(7,), 各关节力矩（单位：N·m）
+    :return:
+        成功：末端力矩 list(6,), [Fx, Fy, Fz, Tx, Ty, Tz]（单位：N / N·m）
+        失败：False
+    '''
+       
+### （21）关节值和关节速度换算为末端线速度
+cal_ee_linear_vel(self, joints: list, angvel: list):
+    '''计算末端线速度
+    :param joints: list(7,), 当前关节角度（单位：degree）
+    :param angvel: list(7,), 各关节角速度（单位：degrees/second）
+    :return:
+        末端线速度大小（millimeters/second）
+    '''
 ## 三、案例脚本
 [showcase for python](DEMO_PYTHON/readme.md)
 

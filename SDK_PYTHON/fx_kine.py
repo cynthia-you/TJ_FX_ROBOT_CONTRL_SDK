@@ -123,6 +123,9 @@ class Marvin_Kine:
         self.kine.FX_Robot_Tool_Set.argtypes = [c_int32, (c_double * 4) * 4]
         self.kine.FX_Robot_Tool_Set.restype = c_bool
 
+        self.kine.FX_Robot_UserFrame_Set.argtypes = [c_int32, (c_double * 4) * 4]
+        self.kine.FX_Robot_UserFrame_Set.restype = c_bool
+
         self.kine.FX_Robot_Kine_FK_NSP.argtypes = [c_int32,
                                                    ctypes.POINTER(ctypes.c_double * 7),
                                                    ctypes.POINTER((ctypes.c_double * 4) * 4),
@@ -199,6 +202,25 @@ class Marvin_Kine:
         ctypes.c_void_p                     # ret_pset
         ]
         self.kine.FX_Robot_PLN_MOV_Target_C.restype = ctypes.c_bool
+
+        # Joint Torque to EE Torque Mapping
+        if hasattr(self.kine, 'FX_Robot_JntTau2EETau'):
+            self.kine.FX_Robot_JntTau2EETau.argtypes = [
+                c_int32,  # RobotSerial
+                c_double * 7,  # q (关节角度，单位：度)
+                c_double * 7,  # Joint_Torque (关节力矩，单位：N·m)
+                c_double * 6  # EE_Torque (输出：末端力矩，单位：N·m)
+            ]
+            self.kine.FX_Robot_JntTau2EETau.restype = c_bool
+
+        # EE Linear Velocity Calculation
+        if hasattr(self.kine, 'FX_Robot_CalEELinerVel'):
+            self.kine.FX_Robot_CalEELinerVel.argtypes = [
+                c_int32,  # RobotSerial
+                c_double * 7,  # joint (关节角度，单位：度)
+                c_double * 7  # angvel (各关节角速度，单位：rad/s)
+            ]
+            self.kine.FX_Robot_CalEELinerVel.restype = c_double
 
     def create_point_set(self, point_type: int = 6) -> ctypes.c_void_p:
         """创建CPointSet对象"""
@@ -475,6 +497,49 @@ class Marvin_Kine:
             return True
         else:
             logger.error('remove tool kinematics info failed!')
+            return False
+
+    def set_user_frame_kine(self, user_mat: list):
+        '''用户坐标系的设置,若需要在工件坐标系或其他自定义坐标系下进行运动学计算，在各关节参数初始化后，需要设置用户坐标系。
+        :param user_mat: list(4,4) 用户坐标系相对于机器人基座坐标系的齐次变换矩阵。
+        :return:bool
+        '''
+        if len(user_mat) != 4:
+            raise ValueError("user_mat  must be 4 rows")
+        else:
+            for i in range(len(user_mat)):
+                if len(user_mat[i]) != 4:
+                    raise ValueError("user_mat  must be 4 columns")
+        Serial = ctypes.c_int32(self.robot_tag)
+
+        TOOL = ((c_double * 4) * 4)()
+        for i in range(4):
+            for j in range(4):
+                TOOL[i][j] = user_mat[i][j]
+
+        '''set user frame'''
+        success1 = self.kine.FX_Robot_UserFrame_Set(Serial, TOOL)
+        if success1:
+            logger.info('set user frame info successful')
+            return True
+        else:
+            logger.error('set user frame info failed!')
+            return False
+
+    def remove_user_frame_kine(self):
+        '''用户坐标系的移除,恢复使用机器人基座坐标系作为运动学计算的参考坐标系
+        :return:bool
+        '''
+        Serial = ctypes.c_int32(self.robot_tag)
+        '''remove user frame '''
+        self.kine.FX_Robot_UserFrame_Rmv.argtypes = [c_int32]
+        self.kine.FX_Robot_UserFrame_Rmv.restype = c_bool
+        success1 = self.kine.FX_Robot_UserFrame_Rmv(Serial)
+        if success1:
+            logger.info('remove user frame  info successful')
+            return True
+        else:
+            logger.error('remove user frame  info failed!')
             return False
 
     def fk(self,joints: list):
@@ -1269,6 +1334,59 @@ class Marvin_Kine:
                 return "ret=3,配置文件被修改"
             elif ret_int==4:
                 return 'ret=4, 采集时间不够，缺少有效数据'
+
+    def jnt_tau_to_ee_tau(self, q: list, joint_torque: list):
+        '''关节力矩映射到末端力矩
+        :param q: list(7,), 当前关节角度（单位：度）
+        :param joint_torque: list(7,), 各关节力矩（单位：N·m）
+        :return:
+            成功：末端力矩 list(6,), [Fx, Fy, Fz, Tx, Ty, Tz]（单位：N / N·m）
+            失败：False
+        '''
+        if len(q) != 7:
+            raise ValueError("q must be (7,)")
+        if len(joint_torque) != 7:
+            raise ValueError("joint_torque must be (7,)")
+
+        Serial = ctypes.c_int32(self.robot_tag)
+        q_arr = (ctypes.c_double * 7)(*q)
+        tau_arr = (ctypes.c_double * 7)(*joint_torque)
+        ee_tau_arr = (ctypes.c_double * 6)(0, 0, 0, 0, 0, 0)
+
+        if not hasattr(self.kine, 'FX_Robot_JntTau2EETau'):
+            logger.error("FX_Robot_JntTau2EETau not found in libKine, please update libKine.dll/.so")
+            return False
+        success = self.kine.FX_Robot_JntTau2EETau(Serial, q_arr, tau_arr, ee_tau_arr)
+        if not success:
+            logger.error("JntTau to EETau Error")
+            return False
+        else:
+            ee_tau = [ee_tau_arr[i] for i in range(6)]
+            logger.info(f"JntTau to EETau Success, EE_Torque:{ee_tau}")
+            return ee_tau
+
+    def cal_ee_linear_vel(self, joints: list, angvel: list):
+        '''计算末端线速度
+        :param joints: list(7,), 当前关节角度（单位：degree）
+        :param angvel: list(7,), 各关节角速度（单位：degrees/second）
+        :return:
+            末端线速度大小（millimeters/second）
+        '''
+        if len(joints) != 7:
+            raise ValueError("joints must be (7,)")
+        if len(angvel) != 7:
+            raise ValueError("angvel must be (7,)")
+
+        Serial = ctypes.c_int32(self.robot_tag)
+        joints_arr = (ctypes.c_double * 7)(*joints)
+        angvel_arr = (ctypes.c_double * 7)(*angvel)
+
+        if not hasattr(self.kine, 'FX_Robot_CalEELinerVel'):
+            logger.error("FX_Robot_CalEELinerVel not found in libKine, please update libKine.dll/.so")
+            return None
+        ee_vel = self.kine.FX_Robot_CalEELinerVel(Serial, joints_arr, angvel_arr)
+        logger.info(f"CalEE Linear Velocity: {ee_vel}")
+        return ee_vel
 
 def convert_to_8x8_matrix(flat_list):
     if len(flat_list) != 64:
