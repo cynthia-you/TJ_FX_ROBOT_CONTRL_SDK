@@ -423,11 +423,6 @@ bool OnSetJointKD_A(double K[7], double D[7])
 			printf("[WARNING] OnSetJointKD_A: D[%d] is negative (%f), set to 0\n", i, D[i]);
 			D[i] = 0.0;
 		}
-		else if (D[i] > 1.0)
-		{
-			printf("[WARNING] OnSetJointKD_A: D[%d] exceeds 1 (%f), set to 1\n", i, D[i]);
-			D[i] = 1.0;
-		}
 	}
 	return CRobot::OnSetJointKD_A(K, D);
 }
@@ -463,11 +458,6 @@ bool OnSetCartKD_A(double K[7], double D[7], int type)
 		{
 			printf("[WARNING] OnSetCartKD_A: D[%d] is negative (%f), set to 0\n", i, D[i]);
 			D[i] = 0.0;
-		}
-		else if (D[i] > 1.0)
-		{
-			printf("[WARNING] OnSetCartKD_A: D[%d] exceeds 1 (%f), set to 1\n", i, D[i]);
-			D[i] = 1.0;
 		}
 	}
 	if (type != 2)
@@ -687,11 +677,6 @@ bool OnSetJointKD_B(double K[7], double D[7])
 			printf("[WARNING] OnSetJointKD_B: D[%d] is negative (%f), set to 0\n", i, D[i]);
 			D[i] = 0.0;
 		}
-		else if (D[i] > 1.0)
-		{
-			printf("[WARNING] OnSetJointKD_B: D[%d] exceeds 1 (%f), set to 1\n", i, D[i]);
-			D[i] = 1.0;
-		}
 	}
 	return CRobot::OnSetJointKD_B(K, D);
 }
@@ -727,11 +712,6 @@ bool OnSetCartKD_B(double K[7], double D[7], int type)
 		{
 			printf("[WARNING] OnSetCartKD_B: D[%d] is negative (%f), set to 0\n", i, D[i]);
 			D[i] = 0.0;
-		}
-		else if (D[i] > 1.0)
-		{
-			printf("[WARNING] OnSetCartKD_B: D[%d] exceeds 1 (%f), set to 1\n", i, D[i]);
-			D[i] = 1.0;
 		}
 	}
 	if (type != 2)
@@ -2416,10 +2396,6 @@ bool SetImpCartMode(char arm, int velRatio, int AccRatio, double K[7], double D[
 
 bool SetImpForceMode(char arm, double fxDir[6], double fcAdjLmt)
 {
-	// 先检查是否静止，非静止不让切扭矩模式
-	// 再检查是否是是扭矩模式，是否是力阻抗
-	// 非力阻抗，设速度和KD，再切力阻抗
-	// 已经是力阻抗，设力控参数
 	double fcCtrlPara[7] = {0.0};
 	if (!ValidateArm(arm))
 	{

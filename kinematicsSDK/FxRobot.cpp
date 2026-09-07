@@ -4136,10 +4136,6 @@ FX_DOUBLE FX_Robot_CalEELinerVel(FX_INT32L RobotSerial, Vect7 joint, Vect7 angve
 	// Compute the resultant EE linear velocity using the Jacobian matrix (unit: millimeters/second).
 	if (FX_LOG_TAG)
 		FX_LOG_INFO("[FxRobot - FX_Robot_CalEELinerVel]\n");
-
-	FX_INT32L i = 0;
-	FX_INT32L k = 0;
-	FX_DOUBLE vel[3] = {0};
 	FX_DOUBLE ret = 0.0;
 
 	if (RobotSerial < 0 || RobotSerial >= MAX_RUN_ROBOT_NUM)
