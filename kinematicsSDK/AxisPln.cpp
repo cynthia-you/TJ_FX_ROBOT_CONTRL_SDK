@@ -978,6 +978,7 @@ bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6
 	out.OnInit(PotT_9d);
 	double tmp[9] = {0};
 
+<<<<<<< Updated upstream
 	for (i = 0; i < max_num; i++)
 	{
 		double *p = ret[max_num_axis].OnGetPoint(i);
@@ -989,14 +990,64 @@ bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6
 		}
 		FX_QuaternionSlerp(Q_start, Q_end, ratio, &tmp[3]);
 
+=======
+	// for (i = 0; i < max_num; i++)
+	// {
+	// 	double *p = ret[max_num_axis].OnGetPoint(i);
+	// 	double ratio = p[0]/axis_len[max_num_axis];
+
+	// 	for(j = 0;j < 3; j++)
+	// 	{
+	// 		tmp[j] = start_pos[j] * (1-ratio) + end_pos[j] * ratio;
+	// 	}
+	// 	FX_QuaternionSlerp(Q_start,Q_end,ratio,&tmp[3]);
+
+	// 	out.OnSetPoint(tmp);
+	// }
+
+	// tmp test for 5000 points
+	double ratio = 0.0;
+	double ratio1 = 0.0;
+	for (i = 0; i < 5000; i++)
+	{
+		double target_ratio = i / (5000 - 1.0);
+		double tmp_pos[2][3] = {0};
+		for (int k = 0; k < max_num-1; k++)
+		{
+			double *p = ret[max_num_axis].OnGetPoint(k);
+			double *p1 = ret[max_num_axis].OnGetPoint(k+1);
+			ratio = p[0]/axis_len[max_num_axis];
+			ratio1 = p1[0]/axis_len[max_num_axis];
+			for(j = 0;j < 3; j++)
+			{
+				tmp_pos[0][j] = start_pos[j] * (1-ratio) + end_pos[j] * ratio;
+			}
+			for(j = 0;j < 3; j++)
+			{
+				tmp_pos[1][j] = start_pos[j] * (1-ratio1) + end_pos[j] * ratio1;
+			}
+			if(ratio <= target_ratio && target_ratio <= ratio1)
+			{
+				break;
+			}
+		}
+		//interpolation
+		double alpha = (target_ratio - ratio)/(ratio1 - ratio);
+		for(j = 0;j < 3; j++)
+		{
+			tmp[j] = tmp_pos[0][j] + alpha * (tmp_pos[1][j] - tmp_pos[0][j]);
+		}
+		
+		FX_QuaternionSlerp(Q_start,Q_end,target_ratio,&tmp[3]);
+>>>>>>> Stashed changes
 		out.OnSetPoint(tmp);
 	}
 
 	// set 3 same point
-	for (i = 0; i < 3; i++)
-	{
-		out.OnSetPoint(tmp);
-	}
+	// for (i = 0; i < 3; i++)
+	// {
+	// 	out.OnSetPoint(tmp);
+	// }
 	long final_num = out.OnGetPointNum();
 	if (final_num >= 5000)
 	{
@@ -1008,6 +1059,10 @@ bool CAxisPln::OnMovL(long RobotSerial, double ref_joints[7], double start_pos[6
 	{
 		char *path1 = (char *)"generate_xyzq.txt";
 		out.OnSave(path1);
+	}
+
+	{
+		//check 
 	}
 
 	////////////////////InvKine//////////////
