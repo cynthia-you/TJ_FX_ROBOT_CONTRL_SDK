@@ -247,10 +247,10 @@ int main()
         for (long joint = 0; joint < 7; joint++)
         {
             fb_joints0[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
-            fb_joints0[joint] = dcss.m_Out[1].m_FB_Joint_Pos[joint];
+            fb_joints1[joint] = dcss.m_Out[1].m_FB_Joint_Pos[joint];
         }
         SLEEP(1);
-    } while (!checkJointsReached(initial_pos, fb_joints0) and !checkJointsReached(initial_pos, fb_joints1));
+    } while (!checkJointsReached(initial_pos, fb_joints0) or !checkJointsReached(initial_pos, fb_joints1));
 
     // [阶段三｜步骤 8] 设置规划器速度和加速度比例，取值范围为 0～1
     double vel_ratio = 0.2;
@@ -266,7 +266,7 @@ int main()
     do
     {
         OnGetBuf(&dcss);
-    } while (dcss.m_Out[0].m_TrajState != 0 and dcss.m_Out[1].m_TrajState != 0);
+    } while (dcss.m_Out[0].m_TrajState != 0 or dcss.m_Out[1].m_TrajState != 0);
 
     // 打印当前关节位置
     print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "current joints of arm A");
@@ -288,7 +288,7 @@ int main()
     do
     {
         OnGetBuf(&dcss);
-    } while (dcss.m_Out[0].m_TrajState != 0 and dcss.m_Out[1].m_TrajState != 0);
+    } while (dcss.m_Out[0].m_TrajState != 0 or dcss.m_Out[1].m_TrajState != 0);
 
     OnGetBuf(&dcss);
     print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "current joints of arm A");
