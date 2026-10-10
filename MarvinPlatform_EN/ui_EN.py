@@ -6928,6 +6928,8 @@ class App:
             if self.data_subscriber:
                 self.data_subscriber.stop()
                 self.data_subscriber = None
+                
+            robot.release_robot()
 
             # 重置数据
             self.result = {
@@ -6970,6 +6972,7 @@ class App:
                     ]
             }
             self.update_ui()
+            
 
     def update_data(self, result):
         """更新订阅的数据"""
