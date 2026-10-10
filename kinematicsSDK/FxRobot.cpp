@@ -6,6 +6,8 @@
 #include <inttypes.h>
 #include "AxisPln.h"
 #include "LoadIdenPub.h"
+#include <ctype.h>
+#include <string.h>
 
 #define FX_LOG_INFO(format) printf(format)
 FX_BOOL FX_LOG_TAG = FX_TRUE;
@@ -4175,21 +4177,178 @@ FX_DOUBLE FX_Robot_CalEELinerVel(FX_INT32L RobotSerial, Vect7 joint, Vect7 angve
 	return ret;
 }
 
-////Parameters Identification
+static void trim(char *s)
+{
+    char *end;
+    while (isspace((unsigned char)*s)) s++;
+    end = s + strlen(s);
+    while (end > s && isspace((unsigned char)end[-1])) end--;
+    *end = '\0';
+}
+
+int ReadIniValue(const char *path, const char *section,
+                const char *key, char *out, int outSize)
+{
+
+    FILE *fp = fopen(path, "r");
+    if (!fp)
+    {
+        printf("[Error]: Cannot open file:%s\n", path);
+		if (remove(path) == 0)
+		{
+			printf("[Error]: delet file:%s\n", path);
+		}
+        return -1;
+    }
+	else
+	{
+		printf("[Marvin SDK]: Recv file from host:%s\n", path);
+	}
+    char line[512];
+    int inSection = 0;
+    int found = 0;
+
+    while (fgets(line, sizeof(line), fp))
+    {
+        trim(line);
+        if (line[0] == '\0' || line[0] == ';' || line[0] == '#')
+            continue;                      
+
+        if (line[0] == '[') 
+        {
+            char sec[128];
+            char *end = strchr(line, ']');
+            if (!end) continue;
+            long len = end - line - 1;
+            if (len >= (long)sizeof(sec)) len = sizeof(sec) - 1;
+            memcpy(sec, line + 1, len);
+            sec[len] = '\0';
+            trim(sec);
+            inSection = (strcmp(sec, section) == 0);
+            continue;
+        }
+
+        if (!inSection)
+            continue;
+
+        char *eq = strchr(line, '=');
+        if (!eq)
+            continue;
+        *eq = '\0';
+        char k[128], v[256];
+        strncpy(k, line, sizeof(k) - 1);  k[sizeof(k) - 1] = '\0';
+        strncpy(v, eq + 1, sizeof(v) - 1); v[sizeof(v) - 1] = '\0';
+        trim(k);
+        trim(v);
+
+        if (strcmp(k, key) == 0)
+        {
+            strncpy(out, v, outSize - 1);
+            out[outSize - 1] = '\0';
+            found = 1;
+            break;
+        }
+    }
+
+    fclose(fp);
+    return found;
+}
+
+bool ReadDValue(const char *path, const char *section, const char *key, char *out,
+				const char *section2, const char *key2, char *out2){
+
+	const char *local_path = path;
+	FILE *file = fopen(local_path, "r");
+	if (!file)
+	{
+		printf("[Error]: Cannot open file:%s\n", local_path);
+		if (remove(local_path) == 0)
+		{
+			printf("[Error]: delet file:%s\n", local_path);
+		}
+		return false;
+	}
+	if( ReadIniValue(path, section, key, out, sizeof(out)) == 1 && 
+	ReadIniValue(path, section2, key2, out2, sizeof(out2)) == 1){
+		printf("[Marvin SDK]: Read D value from robot.ini successfully\n");
+		return true;
+	}
+	else{	
+		printf("[Error]: Read D value from robot.ini failed\n");
+		if (remove(local_path) == 0)
+		{
+			printf("[Error]: delet file:%s\n", local_path);
+		}
+		return false;
+	}
+}
+
+FX_INT32 FX_Robot_Iden_LoadDyn_M20(FX_CHAR *path_ini, FX_INT32 TYPE, FX_CHAR *path, FX_DOUBLE *mass, Vect3 mr, Vect6 I)
+{
+	if (FX_LOG_TAG)
+		FX_LOG_INFO("[FxRobot - FX_Robot_Iden_LoadDyn_M20]\n");
+
+	LoadDynamicPara DynPara;
+
+	IdenCalParaCfg Idfcfg={0.0, 0.0};
+	char    name_flange_d[30] = ""; 
+    char    name_link4_d[30] = "";
+	if(TYPE == 0){
+		if(ReadDValue( path_ini, "R.A0.L4.DH", "D", name_link4_d, "R.A0.FLANGE", "D", name_flange_d) == FX_FALSE){
+			printf("FX_Robot_Iden_LoadDyn: ReadDhValue failed\n");
+			return -1;
+		}
+	}
+	else{
+		if(ReadDValue( path_ini, "R.A1.L4.DH", "D", name_link4_d, "R.A0.FLANGE", "D", name_flange_d) == FX_FALSE){
+			printf("FX_Robot_Iden_LoadDyn: ReadDhValue failed\n");
+			return -1;
+		}
+	}
+	Idfcfg.l4 = strtod(name_link4_d, nullptr);
+	Idfcfg.l7 = strtod(name_flange_d, nullptr);
+	printf("FX_Robot_Iden_LoadDyn: l4=%lf, l7=%lf\n", Idfcfg.l4, Idfcfg.l7);
+	FX_INT32 ret = OnCalLoadDyn(Idfcfg, &DynPara, TYPE, path);
+
+	*mass = DynPara.m;
+
+	mr[0] = DynPara.r[0];
+	mr[1] = DynPara.r[1];
+	mr[2] = DynPara.r[2];
+
+	I[0] = DynPara.I[0];
+	I[1] = DynPara.I[1];
+	I[2] = DynPara.I[2];
+	I[3] = DynPara.I[3];
+	I[4] = DynPara.I[4];
+	I[5] = DynPara.I[5];
+
+	if (FX_LOG_TAG)
+		printf("FX_Robot_Iden_LoadDyn ret=%d\n", ret);
+
+	return ret;
+}
+
 FX_INT32 FX_Robot_Iden_LoadDyn(FX_INT32 TYPE, FX_CHAR *path, FX_DOUBLE *mass, Vect3 mr, Vect6 I)
 {
 	if (FX_LOG_TAG)
 		FX_LOG_INFO("[FxRobot - FX_Robot_Iden_LoadDyn]\n");
 
 	LoadDynamicPara DynPara;
-	//	FX_INT32 robotType = 1;
-
-	//	if (Type == FX_ROBOT_TYPE_PILOT_CCS)
-	//	{
-	//		ISCCS = FX_TRUE;
-	//	}
-
-	FX_INT32 ret = OnCalLoadDyn(&DynPara, TYPE, path);
+	IdenCalParaCfg Idfcfg={0.0, 0.0};
+	if(TYPE == 1){
+		Idfcfg.l4 = 314.0;
+		Idfcfg.l7 = 95.0 ;
+	}
+	else if(TYPE == 2){
+		Idfcfg.l4 = 280.0;
+		Idfcfg.l7 = 160.0;
+	}
+	else{
+		printf("FX_Robot_Iden_LoadDyn: Invalid TYPE =%d\n", TYPE);
+		return -1;
+	}
+	FX_INT32 ret = OnCalLoadDyn(Idfcfg, &DynPara, TYPE, path);
 
 	*mass = DynPara.m;
 

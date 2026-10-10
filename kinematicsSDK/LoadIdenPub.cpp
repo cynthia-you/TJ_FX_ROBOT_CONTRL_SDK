@@ -425,7 +425,7 @@ LoadIdenErrCode OnCalLoadTor_7_MarvinSRS(LoadTor* tor, FX_INT32 isNoLoad, const 
 	return LOAD_IDEN_NoErr;
 }
 
-LoadIdenErrCode OnCalLoadDynamic_7_MarvinSRS(LoadDynamic* loadDyn, const char *userPath)
+LoadIdenErrCode OnCalLoadDynamic_7_MarvinSRS(IdenCalParaCfg Idfcfg, LoadDynamic* loadDyn, const char *userPath)
 {
 	cout << "Calculating load data..." << endl;
 	LoadTor loadTor;
@@ -439,8 +439,10 @@ LoadIdenErrCode OnCalLoadDynamic_7_MarvinSRS(LoadDynamic* loadDyn, const char *u
 
 	FX_DOUBLE g = 9.8, pi = 3.1415926;
 	FX_DOUBLE acc = 1000.0 / 180 * pi;
-	FX_DOUBLE l4 = 280.0 / 1000.0;
-	FX_DOUBLE l7 = 160.0 / 1000.0;
+	// FX_DOUBLE l4 = 280.0 / 1000.0;
+	// FX_DOUBLE l7 = 160.0 / 1000.0;
+	FX_DOUBLE l4 = Idfcfg.l4;
+	FX_DOUBLE l7 = Idfcfg.l7;
 	FX_DOUBLE tor4, tor6;
 	const FX_DOUBLE calErr = 0;
 	tor4 = (loadTor.torLoad[0] - loadTor.torNoLoad[0]) + calErr;
@@ -886,7 +888,7 @@ LoadIdenErrCode OnCalLoadTor_7_MarvinCCS(LoadTor* tor, FX_INT32 isNoLoad, const 
 	return LOAD_IDEN_NoErr;
 }
 
-LoadIdenErrCode OnCalLoadDynamic_7_MarvinCCS(LoadDynamic* loadDyn, const char *userPath)
+LoadIdenErrCode OnCalLoadDynamic_7_MarvinCCS(IdenCalParaCfg Idfcfg, LoadDynamic* loadDyn, const char *userPath)
 {
 	cout << "Calculating load data..." << endl;
 	LoadTor loadTor;
@@ -900,8 +902,10 @@ LoadIdenErrCode OnCalLoadDynamic_7_MarvinCCS(LoadDynamic* loadDyn, const char *u
 
 	FX_DOUBLE g = 9.8, pi = 3.1415926;
 	FX_DOUBLE acc = 800.0 / 180 * pi;
-	FX_DOUBLE l4 = 314 / 1000.0;
-	FX_DOUBLE l7 = 95 / 1000.0;
+	// FX_DOUBLE l4 = 314 / 1000.0;
+	// FX_DOUBLE l7 = 95 / 1000.0;
+	FX_DOUBLE l4 = Idfcfg.l4 / 1000.0;
+	FX_DOUBLE l7 = Idfcfg.l7 / 1000.0;
 	FX_DOUBLE tor4, tor6;
 	const FX_DOUBLE calErr = 0;
 	tor4 = (loadTor.torLoad[0] - loadTor.torNoLoad[0]) + calErr;
@@ -982,7 +986,7 @@ LoadIdenErrCode OnCalLoadDynamic_7_MarvinCCS(LoadDynamic* loadDyn, const char *u
 	return LOAD_IDEN_NoErr;
 }
 
-LoadIdenErrCode OnCalLoadDyn(LoadDynamicPara *DynPara, FX_INT32 RobotType,  const FX_CHAR* UserPath)
+LoadIdenErrCode OnCalLoadDyn(IdenCalParaCfg Idfcfg, LoadDynamicPara *DynPara, FX_INT32 RobotType,  const FX_CHAR* UserPath)
 {
 	DynPara->m =    0;
 	DynPara->r[0] = 0;
@@ -1002,34 +1006,22 @@ LoadIdenErrCode OnCalLoadDyn(LoadDynamicPara *DynPara, FX_INT32 RobotType,  cons
 		if (retCode != LOAD_IDEN_NoErr) {
 			return retCode;
 		}
-		retCode = OnCalLoadDynamic_7_MarvinCCS(&dy, UserPath);
+		retCode = OnCalLoadDynamic_7_MarvinCCS(Idfcfg, &dy, UserPath);
 		if (retCode != LOAD_IDEN_NoErr) {
 			return retCode;
 		}
 
-		// if (OnCalLoadTor_7_MarvinCCS(&tor, 1, UserPath) == FX_FALSE) {
-		// 	return FX_FALSE;
-		// }
-		// if (OnCalLoadDynamic_7_MarvinCCS(&dy, UserPath) == FX_FALSE) {
-		// 	return FX_FALSE;
-		// }
 	}
 	else if (2 == RobotType) {
 		retCode = OnCalLoadTor_7_MarvinSRS(&tor, 1, UserPath);
 		if (retCode != LOAD_IDEN_NoErr) {
 			return retCode;
 		}
-		retCode = OnCalLoadDynamic_7_MarvinSRS(&dy, UserPath);
+		retCode = OnCalLoadDynamic_7_MarvinSRS(Idfcfg, &dy, UserPath);
 		if (retCode != LOAD_IDEN_NoErr) {
 			return retCode;
 		}
 
-		// if (OnCalLoadTor_7_MarvinSRS(&tor, 1, UserPath) == FX_FALSE) {
-		// 	return FX_FALSE;
-		// }
-		// if (OnCalLoadDynamic_7_MarvinSRS(&dy, UserPath) == FX_FALSE) {
-		// 	return FX_FALSE;
-		// }
 	}
 	else{
 

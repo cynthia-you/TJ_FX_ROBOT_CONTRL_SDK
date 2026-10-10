@@ -8,6 +8,11 @@ typedef struct
 	FX_DOUBLE I[6];
 } LoadDynamicPara;
 
+typedef struct {
+	FX_DOUBLE l4;
+	FX_DOUBLE l7;
+} IdenCalParaCfg; 
+
 typedef enum
 {
 	LOAD_IDEN_NoErr = 0,			 // No error
@@ -22,7 +27,7 @@ extern "C"
 {
 #endif // __cplusplus
 
-	LoadIdenErrCode OnCalLoadDyn(LoadDynamicPara *DynPara, FX_INT32 RobotType, const FX_CHAR *UserPath);
+	LoadIdenErrCode OnCalLoadDyn(IdenCalParaCfg Idfcfg, LoadDynamicPara *DynPara, FX_INT32 RobotType, const FX_CHAR *UserPath);
 
 #ifdef __cplusplus
 }

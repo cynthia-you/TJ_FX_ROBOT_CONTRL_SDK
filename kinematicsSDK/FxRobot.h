@@ -53,6 +53,9 @@ extern "C"
 	/////EE Linear Velocity Calculation
 	FX_DOUBLE FX_Robot_CalEELinerVel(FX_INT32L RobotSerial, Vect7 joint, Vect7 angvel);
 
+	////M20 Parameters Identification
+	FX_INT32 FX_Robot_Iden_LoadDyn_M20(FX_CHAR *path_ini, FX_INT32 Type, FX_CHAR *path, FX_DOUBLE *mass, Vect3 mr, Vect6 I);
+
 	////Parameters Identification
 	FX_INT32 FX_Robot_Iden_LoadDyn(FX_INT32 Type, FX_CHAR *path, FX_DOUBLE *mass, Vect3 mr, Vect6 I);
 	////////////////////////////////////////////////////////////////////////////////////////////////

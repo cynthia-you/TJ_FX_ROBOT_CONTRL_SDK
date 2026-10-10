@@ -6138,8 +6138,8 @@ class App:
         # 机型选择下拉框
         self.type_select_combobox_1 = ttk.Combobox(
             identy_tool_frame,
-            values=["CCS", "SRS"],
-            width=5,
+            values=["CCS", "SRS", "CCS_M20"],
+            width=10,
             state="readonly"
         )
         self.type_select_combobox_1.current(0)
@@ -6735,7 +6735,31 @@ class App:
     def tool_dyn_identy(self):
         print(f"ccs srs:{self.type_select_combobox_1.get()}")
         print(f"tool data:{self.save_tool_data_path}")
-        if self.type_select_combobox_1.get() == 'CCS':
+        if self.type_select_combobox_1.get() == 'CCS_M20':
+            # M20 辨识：先选择配置文件（.ini），再调用 identify_tool_dyn_m20
+            ini_path = filedialog.askopenfilename(
+                defaultextension=".ini",
+                filetypes=[("ini files", "*.ini"), ("All files", "*.*")],
+                title="Select the M20 identification configuration file."
+            )
+            if not ini_path:
+                print("M20 identification cancelled: no ini file selected")
+                return
+            print(f"M20 ini config:{ini_path}")
+            identy_results = kk1.identify_tool_dyn_m20(ipath_ini=ini_path, robot_type=1, ipath=self.save_tool_data_path)
+            if type(identy_results) == str:
+                print('error:', identy_results)
+                messagebox.showerror('wrong', f'Tool dynamics parameter identification error message:{identy_results}')
+            else:
+                print(f' identy_results:{identy_results}')
+                tool_dyn_text = ""
+                for i in range(10):
+                    tool_dyn_text += f"{identy_results[i]:.3f}, "
+                tool_dyn_text = tool_dyn_text.rstrip(", ")
+                self.entry_tool_dyn.set(tool_dyn_text)
+                messagebox.showinfo('success', 'Tool dynamics parameter identification completed')
+
+        elif self.type_select_combobox_1.get() == 'CCS':
             identy_results = kk1.identify_tool_dyn(robot_type=1, ipath=self.save_tool_data_path)
             if type(identy_results) == str:
                 print('error:', identy_results)

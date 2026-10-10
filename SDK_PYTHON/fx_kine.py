@@ -191,6 +191,18 @@ class Marvin_Kine:
         ]
         self.kine.FX_Robot_Iden_LoadDyn.restype = c_int
 
+        # M20 Parameters Identification
+        if hasattr(self.kine, 'FX_Robot_Iden_LoadDyn_M20'):
+            self.kine.FX_Robot_Iden_LoadDyn_M20.argtypes = [
+                c_char_p,  # path_ini (配置文件路径)
+                c_int,  # Type (机型类型)
+                c_char_p,  # path (采集数据文件路径)
+                POINTER(c_double),  # mass (输出：质量)
+                POINTER(c_double * 3),  # mr (输出：一阶矩 mcp*3)
+                POINTER(c_double * 6)  # I (输出：惯量 i*6)
+            ]
+            self.kine.FX_Robot_Iden_LoadDyn_M20.restype = c_int
+
         self.kine.FX_Robot_PLN_MOV_Target_C.argtypes = [
         ctypes.c_int32,                     # RobotSerial
         ctypes.POINTER(ctypes.c_double),    # Start_XYZABC (6个double)
@@ -1326,6 +1338,86 @@ class Marvin_Kine:
         else:
             logger.error('Identify tool dynamics failed!')
             logger.error(f'identify_tool_dyn 返回错误码:{ret_int}\n ret=1, 计算错误，需重新采集数据计算\n ret=2,打开采集数据文件错误，须检查采样文件\n ret=3,配置文件被修改\n ret=4, 采集时间不够，缺少有效数据')
+            if ret_int==1:
+                return 'ret=1, 计算错误，需重新采集数据计算'
+            elif ret_int==2:
+                return 'ret=2,打开采集数据文件错误，须检查采样文件'
+            elif ret_int==3:
+                return "ret=3,配置文件被修改"
+            elif ret_int==4:
+                return 'ret=4, 采集时间不够，缺少有效数据'
+
+    def identify_tool_dyn_m20(self, ipath_ini: str, robot_type: int, ipath: str):
+        '''M20 工具动力学参数辨识
+        :param ipath_ini: string, 配置文件（.ini）路径
+        :param robot_type: int . 1:CCS机型，2:SRS机型
+        :param ipath: string, 相对路径导入工具辨识轨迹数据。
+        :return:
+            辨识成功，返回一个长度为10的list:
+                        m,mcp*3,i*6
+            辨识失败，返回错误类型：
+                    ret=1, 计算错误，需重新采集数据计算；
+                    ret=2,打开采集数据文件错误，须检查采样文件；
+                    ret=3,配置文件被修改；
+                    ret=4, 采集时间不够，缺少有效数据
+
+        '''
+        if type(robot_type) != int:
+            raise ValueError("robot_type must be int type")
+
+        if not os.path.exists(ipath_ini):
+            raise ValueError(f"no {ipath_ini}, pls check!")
+
+        if not os.path.exists(ipath):
+            raise ValueError(f"no {ipath}, pls check!")
+
+        if robot_type==1:
+            print(f'CCS tool identy (M20)')
+        elif robot_type==2:
+            print(f'SRS tool identy (M20)')
+
+        ini_path_char = ctypes.c_char_p(ipath_ini.encode('utf-8'))
+        robot_type_ = c_int(robot_type)
+        iden_path = ipath.encode('utf-8')
+        path_char = ctypes.c_char_p(iden_path)
+
+        mm_ptr = pointer(c_double(0))
+        mcp_ptr = (c_double * 3)()
+        ii_ptr = (c_double * 6)()
+
+        ret_int = self.kine.FX_Robot_Iden_LoadDyn_M20(
+            ini_path_char,
+            robot_type_,
+            path_char,
+            mm_ptr,
+            mcp_ptr,
+            ii_ptr
+        )
+        if ret_int==0:
+            logger.info('Identify tool dynamics successful (M20)')
+
+            dyn_para=[]
+            m_val = mm_ptr.contents.value
+            mcp_list = [mcp_ptr[i] for i in range(3)]
+            ii_list = [ii_ptr[i] for i in range(6)]
+            'ixx iyy izz ixy ixz iyz'
+
+            dyn_para.append(m_val)
+            for i in mcp_list:
+                dyn_para.append(i)
+
+            dyn_para.append(ii_list[0])
+            dyn_para.append(ii_list[3])
+            dyn_para.append(ii_list[4])
+            dyn_para.append(ii_list[1])
+            dyn_para.append(ii_list[5])
+            dyn_para.append(ii_list[2])
+
+            logger.info(f'tool dynamics[m,mx,my,mz,ixx,ixy,ixz,iyy,iyz,izz]: {dyn_para}')
+            return dyn_para
+        else:
+            logger.error('Identify tool dynamics failed! (M20)')
+            logger.error(f'identify_tool_dyn_m20 返回错误码:{ret_int}\n ret=1, 计算错误，需重新采集数据计算\n ret=2,打开采集数据文件错误，须检查采样文件\n ret=3,配置文件被修改\n ret=4, 采集时间不够，缺少有效数据')
             if ret_int==1:
                 return 'ret=1, 计算错误，需重新采集数据计算'
             elif ret_int==2:

@@ -13,3 +13,4 @@ DEMO_PYTHON/*.txt
 DEMO_PYTHON/*.csv
 debug/
 my_folder/
+TargetIP.CFG
