@@ -15,7 +15,7 @@
 #endif
 
 // =============================================================================
-// 示例说明：双臂同步直线规划（躯干固定）并在位置模式下执行
+// 示例说明：双臂同步直线规划并在位置模式下执行
 //
 // 整体流程：
 //   阶段一：连接与双臂状态检查
@@ -30,18 +30,18 @@
 //     8. 通过正运动学计算双臂起点末端位姿并转换为 XYZABC。
 //   阶段三：双臂同步直线规划
 //     9. 填写双臂同步规划参数结构体。
-//    10. 调用 FX_Robot_PLN_MOVL_DualArm_FixBody 生成双臂同步轨迹。
+//    10. 调用 FX_Robot_PLN_MOVL_Arms_Synchronous 生成双臂同步轨迹。
 //   阶段四：轨迹执行与资源释放
 //    11. 使用 CoRunPlnCart 同时下发双臂规划点并开始运动。
 //    12. 等待双臂轨迹执行完成。
 //    13. 任务结束后下使能并释放机器人连接。
 //
 // 注意：
-// 1. FX_Robot_PLN_MOVL_DualArm_FixBody 以较长一侧手臂的路径长度为主轴，
+// 1. FX_Robot_PLN_MOVL_Arms_Synchronous 以较长一侧手臂的路径长度为主轴，
 //    双臂按相同的时间比例同步运动，运动过程中躯干（机体）保持固定。
 // 2. World_Co_Flag 为 false 时，双臂位姿分别基于各自机械臂基坐标系给定；
 //    为 true 时，双臂位姿基于机体坐标系给定，需同时提供 Skye_Body_Start_PRR。
-// 3. 本示例的 libKine 库需为包含 FX_Robot_PLN_MOVL_DualArm_FixBody 接口的
+// 3. 本示例的 libKine 库需为包含 FX_Robot_PLN_MOVL_Arms_Synchronous 接口的
 //    新编译版本，详见 readme.md 中 2.1 编译方法。
 // =============================================================================
 
@@ -393,9 +393,9 @@ int main()
     // [阶段三｜步骤 10] 生成双臂同步直线轨迹
     CPointSet pset_arm0;
     CPointSet pset_arm1;
-    if (FX_Robot_PLN_MOVL_DualArm_FixBody(&aspp, &pset_arm0, &pset_arm1) == false)
+    if (FX_Robot_PLN_MOVL_Arms_Synchronous(&aspp, &pset_arm0, &pset_arm1) == false)
     {
-        printf("FX_Robot_PLN_MOVL_DualArm_FixBody Error\n");
+        printf("FX_Robot_PLN_MOVL_Arms_Synchronous Error\n");
         OnRelease();
         return -1;
     }

@@ -4046,15 +4046,15 @@ FX_VOID FX_CalArmBaseLR(FX_DOUBLE body[3], Matrix4 pgL, Matrix4 pgR)
 	FX_MMM44(m, ArmR_Set, pgR);
 }
 
-FX_BOOL FX_Robot_PLN_MOVL_DualArm_FixBody(ArmsSynchronousPlanningParams *ASPP, CPointSet *Arm0_Pln_Path, CPointSet *Arm1_Pln_Path)
+FX_BOOL FX_Robot_PLN_MOVL_Arms_Synchronous(ArmsSynchronousPlanningParams *ASPP, CPointSet *Arm0_Pln_Path, CPointSet *Arm1_Pln_Path)
 {
 	if (FX_LOG_TAG)
-		FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL_DualArm_FixBody]\n");
+		FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL_Arms_Synchronous]\n");
 
 	if (ASPP == NULL || Arm0_Pln_Path == NULL || Arm1_Pln_Path == NULL)
 	{
 		if (FX_LOG_TAG)
-			FX_LOG_INFO("FX_Robot_PLN_MOVL_DualArm_FixBody: Input pointer is NULL\n");
+			FX_LOG_INFO("FX_Robot_PLN_MOVL_Arms_Synchronous: Input pointer is NULL\n");
 		return FX_FALSE;
 	}
 
@@ -4111,7 +4111,7 @@ FX_BOOL FX_Robot_PLN_MOVL_DualArm_FixBody(ArmsSynchronousPlanningParams *ASPP, C
 	else
 	{
 		if (FX_LOG_TAG)
-			FX_LOG_INFO("FX_Robot_PLN_MOVL_DualArm_FixBody: Joint Over Limit or Over Reachable Space. Check Parameters.\n");
+			FX_LOG_INFO("FX_Robot_PLN_MOVL_Arms_Synchronous: Joint Over Limit or Over Reachable Space. Check Parameters.\n");
 		return FX_FALSE;
 	}
 

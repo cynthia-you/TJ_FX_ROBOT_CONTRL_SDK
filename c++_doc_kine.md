@@ -581,7 +581,7 @@ FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_J
         成功：True/1; 失败：False/0 
 
 ###    21.双臂协同直线规划
-FX_BOOL FX_Robot_PLN_MOVL_DualArm_FixBody(ArmsSynchronousPlanningParams *ASPP, CPointSet *Arm0_Pln_Path, CPointSet *Arm1_Pln_Path);
+FX_BOOL FX_Robot_PLN_MOVL_Arms_Synchronous(ArmsSynchronousPlanningParams *ASPP, CPointSet *Arm0_Pln_Path, CPointSet *Arm1_Pln_Path);
 
     • 输入包含双臂信息的结构体，输出双臂的点位缓存函数
     输入：

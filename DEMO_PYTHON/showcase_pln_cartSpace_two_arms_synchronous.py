@@ -1,20 +1,19 @@
 import os
 import sys
-import ctypes
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 current_file_path = os.path.abspath(__file__)
 current_path = os.path.dirname(current_file_path)
-from SDK_PYTHON.fx_kine import Marvin_Kine
+from SDK_PYTHON.fx_kine import Marvin_Kine, ArmsSynchronousPlanningParams
 from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS, check_joints_accuracy_with_tolerance
 import time
 import logging
 
 '''#################################################################
-该DEMO 为双臂同步直线规划（躯干固定）并在位置模式下执行演示
-对应 C++ 示例: DEMO_C++/showcase_pln_cartSpace_DualArm_FixBody.cpp
+该DEMO 为双臂同步直线规划并在位置模式下执行演示
+对应 C++ 示例: DEMO_C++/showcase_pln_cartSpace_two_arms_synchronous.cpp
 
 使用逻辑
     阶段一：连接与双臂状态检查
@@ -30,7 +29,7 @@ import logging
         通过正运动学计算双臂起点末端位姿并转换为 XYZABC
     阶段三：双臂同步直线规划
         填写双臂同步规划参数结构体 ArmsSynchronousPlanningParams
-        调用 FX_Robot_PLN_MOVL_DualArm_FixBody 生成双臂同步轨迹
+        调用 movL_synchronous 生成双臂同步轨迹
     阶段四：轨迹执行与资源释放
         等待双臂上一段轨迹结束
         通过 setPln_Cart_AB 同时下发双臂规划点位并开始运动
@@ -38,38 +37,13 @@ import logging
         任务完成, 下使能, 释放连接
 
     说明：
-    1. FX_Robot_PLN_MOVL_DualArm_FixBody 以较长一侧手臂的路径长度为主轴，
+    1. movL_synchronously 以较长一侧手臂的路径长度为主轴，
        双臂按相同的时间比例同步运动，运动过程中躯干（机体）保持固定。
     2. World_Co_Flag 为 False 时，双臂位姿分别基于各自机械臂基坐标系给定；
        为 True 时，双臂位姿基于机体坐标系给定，需同时提供 Skye_Body_Start_PRR。
-    3. 本示例的 libKine 库需为包含 FX_Robot_PLN_MOVL_DualArm_FixBody 接口的
+    3. 本示例的 libKine 库需为包含 FX_Robot_PLN_MOVL_Arms_Synchronous 接口的
        新编译版本，详见 readme.md 中 2.1 编译方法。
 '''################################################################
-
-
-class ArmsSynchronousPlanningParams(ctypes.Structure):
-    """对应 kinematicsSDK/FXKineCommon.h 中的 ArmsSynchronousPlanningParams 结构体（默认对齐）"""
-    _fields_ = [
-        ("Skye_Body_Start_PRR", ctypes.c_double * 3),   # 机体俯仰、横滚及高度（度、度、毫米）
-        # //////////Arm0（左臂 A 臂）
-        ("Arm0_Start_XYZABC", ctypes.c_double * 6),
-        ("Arm0_End_XYZABC", ctypes.c_double * 6),
-        ("Arm0_Ref_Joints", ctypes.c_double * 7),
-        ("Arm0_ZSP_Type", ctypes.c_int32),              # 逆解零空间约束类型：0 与参考关节角欧式距离最近
-        ("Arm0_ZSP_Para", ctypes.c_double * 6),
-        # //////////Arm1（右臂 B 臂）
-        ("Arm1_Start_XYZABC", ctypes.c_double * 6),
-        ("Arm1_End_XYZABC", ctypes.c_double * 6),
-        ("Arm1_Ref_Joints", ctypes.c_double * 7),
-        ("Arm1_ZSP_Type", ctypes.c_int32),
-        ("Arm1_ZSP_Para", ctypes.c_double * 6),
-        # //////////Common
-        ("Freq", ctypes.c_int32),                       # 规划频率，与 setPln_Cart_AB 下发频率匹配
-        ("Vel", ctypes.c_double),                       # 直线规划速度，单位 mm/s（范围 0.1 ~ 500）
-        ("Acc", ctypes.c_double),                       # 直线规划加速度，单位 mm/s^2（范围 0.1 ~ 500）
-        ("Sync_Type", ctypes.c_int32),
-        ("World_Co_Flag", ctypes.c_ubyte),              # False: 各臂基坐标系; True: 机体坐标系
-    ]
 
 
 logging.basicConfig(format='%(message)s')
@@ -226,7 +200,6 @@ logger.info(f'start XYZABC of arm B={[round(v, 2) for v in xyzabc_B]}')
 # [阶段三｜步骤 9] 填写双臂同步规划参数结构体
 # 目标：双臂末端各沿自身基坐标系 Z 轴正方向下探 100 mm
 aspp = ArmsSynchronousPlanningParams()
-ctypes.memset(ctypes.byref(aspp), 0, ctypes.sizeof(aspp))
 
 # World_Co_Flag 为 False 时，位姿基于各自机械臂基坐标系给定，Skye_Body_Start_PRR 不生效；
 # 若需基于机体坐标系给定双臂位姿，请将 World_Co_Flag 置 True(1)，
@@ -257,38 +230,13 @@ aspp.Vel = 50.0  # 直线规划速度，单位 mm/s（范围 0.1 ~ 500）
 aspp.Acc = 100.0  # 直线规划加速度，单位 mm/s^2（范围 0.1 ~ 500）
 
 # [阶段三｜步骤 10] 生成双臂同步直线轨迹
-# FX_Robot_PLN_MOVL_DualArm_FixBody 不区分机械臂序号（内部使用双臂已初始化的运动学参数），
-# Python SDK 暂未封装该接口，此处直接通过 libKine 的导出函数调用
-kine_lib = kk1.kine
-kine_lib.FX_Robot_PLN_MOVL_DualArm_FixBody.argtypes = [
-    ctypes.POINTER(ArmsSynchronousPlanningParams),  # ASPP
-    ctypes.c_void_p,                                # Arm0_Pln_Path
-    ctypes.c_void_p                                 # Arm1_Pln_Path
-]
-kine_lib.FX_Robot_PLN_MOVL_DualArm_FixBody.restype = ctypes.c_bool
-
-pset_arm0 = kk1.create_point_set(7)
-if not pset_arm0:
-    logger.error('Failed to create CPointSet object of arm0')
-    robot.release_robot()
-    exit(-1)
-pset_arm1 = kk2.create_point_set(7)
-if not pset_arm1:
-    logger.error('Failed to create CPointSet object of arm1')
-    kk1.destroy_point_set(pset_arm0)
+# movL_synchronous 不区分机械臂序号（内部使用双臂已初始化的运动学参数）
+points_arm0, pset_arm0, points_arm1, pset_arm1 = kk1.movL_synchronous(aspp, dimension=7)
+if not points_arm0 or not points_arm1:
+    logger.error('movL_synchronous Error')
     robot.release_robot()
     exit(-1)
 
-success = kine_lib.FX_Robot_PLN_MOVL_DualArm_FixBody(ctypes.byref(aspp), pset_arm0, pset_arm1)
-if not success:
-    logger.error('FX_Robot_PLN_MOVL_DualArm_FixBody Error')
-    kk1.destroy_point_set(pset_arm0)
-    kk2.destroy_point_set(pset_arm1)
-    robot.release_robot()
-    exit(-1)
-
-points_arm0 = kk1.get_point_set_data(pset_arm0, 7)
-points_arm1 = kk2.get_point_set_data(pset_arm1, 7)
 logger.info(f'pln points of arm A:{len(points_arm0)}, arm B:{len(points_arm1)}')
 
 # 保存 arm0 规划点，对应 C++ 示例中 pset_arm0.OnSave("arm0.txt")

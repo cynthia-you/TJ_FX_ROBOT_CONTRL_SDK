@@ -526,6 +526,31 @@ cal_ee_linear_vel(self, joints: list, angvel: list):
     :return:
         末端线速度大小（millimeters/second）
     '''
+
+### （22）双臂协同直线规划（躯干固定）
+movL_synchronous(self, aspp: ArmsSynchronousPlanningParams, dimension: int = 7)
+        -> tuple[List[List[float]], ctypes.c_void_p, List[List[float]], ctypes.c_void_p]:
+
+        """
+        双臂同步直线规划，运动过程中躯干（机体）保持固定
+
+        :param aspp: 双臂同步规划参数，ArmsSynchronousPlanningParams 对象或同名字段的 dict。
+                     结构体定义与 C++ 接口一致，包含 Skye_Body_Start_PRR、双臂起止位姿、
+                     参考关节角、ZSP 参数、Freq/Vel/Acc、Sync_Type、World_Co_Flag。
+        :param dimension: 输出点集维度，默认 7（双臂关节角度）
+        :return: (arm0_data, arm0_pset, arm1_data, arm1_pset)
+                 其中 pset 是点集句柄（ctypes.c_void_p），
+                 调用者必须在使用完毕后调用 self.destroy_point_set(pset) 释放。
+                 失败时返回 ([], None, [], None)
+
+        特别提示:
+            1. 该接口不区分机械臂序号，内部使用已初始化的双臂运动学参数，
+               调用前需分别完成左臂(arm_type=0)与右臂(arm_type=1)的运动学初始化。
+            2. 以较长一侧手臂的路径长度为主轴，双臂按相同时间比例同步运动。
+            3. World_Co_Flag 为 False 时，双臂位姿分别基于各自机械臂基坐标系给定；
+               为 True 时，双臂位姿基于机体坐标系给定，需同时提供 Skye_Body_Start_PRR。
+            4. 需要 libKine 库为包含 movL_synchronously 接口的新版本。
+        """
 ## 三、案例脚本
 [showcase for python](DEMO_PYTHON/readme.md)
 

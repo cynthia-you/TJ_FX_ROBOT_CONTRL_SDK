@@ -20,7 +20,7 @@ if not getattr(sys, 'frozen', False):
     if str(root_dir) not in sys.path:
         sys.path.insert(0, str(root_dir))
 from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS, arm_err_code,arm_err_code_EN,tools_cfg
-from SDK_PYTHON.fx_kine import Marvin_Kine
+from SDK_PYTHON.fx_kine import Marvin_Kine, ArmsSynchronousPlanningParams
 
 def get_app_dir():
     if getattr(sys, 'frozen', False):
@@ -5393,6 +5393,119 @@ class App:
         tk.Button(multi_btn_row, text="Break", width=10, font=("Arial", 11, "bold"), bg="#FFF68F",
                   command=self.stop_motion).pack(side="left", padx=10)
 
+        # linear synchronous
+        dual_arm_frame = ttk.LabelFrame(cartesian_frame, text="Linear(arms synchronous)", padding=10,
+                                        relief=tk.GROOVE, borderwidth=2, style="MyCustom.TLabelframe")
+        dual_arm_frame.pack(fill="x", padx=5, pady=(10, 5))
+
+        # ---------- Arm0 ----------
+        dual_arm0_row = tk.Frame(dual_arm_frame, bg="white")
+        dual_arm0_row.pack(fill="x", pady=2)
+        tk.Label(dual_arm0_row, text="LeftArm", bg="#D8F4F3", width=8).pack(side="left", padx=2)
+        tk.Label(dual_arm0_row, text="Start XYZABC", bg="white", width=10).pack(side="left", padx=(5, 0))
+        self.dual_start_arm0_entry = tk.Entry(dual_arm0_row, width=50)
+        self.dual_start_arm0_entry.pack(side="left", padx=2)
+        self.dual_start_arm0_entry.insert(0, "509.734, 233.609, 365.948, -169.144, 55.011, -146.752")
+        tk.Button(dual_arm0_row, text="GetCur",
+                  command=lambda: self.pln_get_cur_xyzabc_dual('Arm0')).pack(side="left", padx=2)
+        tk.Label(dual_arm0_row, text="End XYZABC", bg="white", width=10).pack(side="left", padx=(5, 0))
+        self.dual_end_arm0_entry = tk.Entry(dual_arm0_row, width=50)
+        self.dual_end_arm0_entry.pack(side="left", padx=2)
+        self.dual_end_arm0_entry.insert(0, "509.734, 233.609, 265.948, -169.144, 55.011, -146.752")
+
+        dual_arm0_row1 = tk.Frame(dual_arm_frame, bg="white")
+        dual_arm0_row1.pack(fill="x", pady=(2, 10))
+        tk.Label(dual_arm0_row1, text="Ref joints", bg="white", width=10).pack(side="left", padx=(50, 0))
+        self.dual_ref_arm0_entry = tk.Entry(dual_arm0_row1, width=50)
+        self.dual_ref_arm0_entry.pack(side="left", padx=2)
+        self.dual_ref_arm0_entry.insert(0, "17.470, -43.308, 11.804, -79.761, -10.700, -2.874, 9.134")
+        tk.Button(dual_arm0_row1, text="GetCur",
+                  command=lambda: self.pln_get_cur_joints_dual_ref('Arm0')).pack(side="left", padx=2)
+        tk.Label(dual_arm0_row1, text="ZSP Type", bg="white", width=8).pack(side="left", padx=(10, 0))
+        self.dual_zsp_type_arm0_entry = tk.Entry(dual_arm0_row1, width=4)
+        self.dual_zsp_type_arm0_entry.pack(side="left", padx=2)
+        self.dual_zsp_type_arm0_entry.insert(0, "0")
+        tk.Label(dual_arm0_row1, text="ZSP Params", bg="white", width=10).pack(side="left", padx=(10, 0))
+        self.dual_zsp_params_arm0_entry = tk.Entry(dual_arm0_row1, width=24)
+        self.dual_zsp_params_arm0_entry.pack(side="left", padx=2)
+        self.dual_zsp_params_arm0_entry.insert(0, "0, 0, 0, 0, 0, 0")
+
+        # ---------- Arm1 ----------
+        dual_arm1_row = tk.Frame(dual_arm_frame, bg="white")
+        dual_arm1_row.pack(fill="x", pady=2)
+        tk.Label(dual_arm1_row, text="RightArm", bg="#F4E4D8", width=8).pack(side="left", padx=2)
+        tk.Label(dual_arm1_row, text="Start XYZABC", bg="white", width=10).pack(side="left", padx=(5, 0))
+        self.dual_start_arm1_entry = tk.Entry(dual_arm1_row, width=50)
+        self.dual_start_arm1_entry.pack(side="left", padx=2)
+        self.dual_start_arm1_entry.insert(0, "509.734, -233.609, 365.948, 169.144, 55.011, 146.752")
+        tk.Button(dual_arm1_row, text="GetCur",
+                  command=lambda: self.pln_get_cur_xyzabc_dual('Arm1')).pack(side="left", padx=2)
+        tk.Label(dual_arm1_row, text="End XYZABC", bg="white", width=10).pack(side="left", padx=(5, 0))
+        self.dual_end_arm1_entry = tk.Entry(dual_arm1_row, width=50)
+        self.dual_end_arm1_entry.pack(side="left", padx=2)
+        self.dual_end_arm1_entry.insert(0, "509.734, -233.609, 265.948, 169.144, 55.011, 146.752")
+
+        dual_arm1_row1 = tk.Frame(dual_arm_frame, bg="white")
+        dual_arm1_row1.pack(fill="x", pady=(2, 10))
+        tk.Label(dual_arm1_row1, text="Ref joints", bg="white", width=10).pack(side="left", padx=(50, 0))
+        self.dual_ref_arm1_entry = tk.Entry(dual_arm1_row1, width=50)
+        self.dual_ref_arm1_entry.pack(side="left", padx=2)
+        self.dual_ref_arm1_entry.insert(0, "-17.470, -43.308, -11.804, -79.761, 10.700, -2.874, -9.134")
+        tk.Button(dual_arm1_row1, text="GetCur",
+                  command=lambda: self.pln_get_cur_joints_dual_ref('Arm1')).pack(side="left", padx=2)
+        tk.Label(dual_arm1_row1, text="ZSP Type", bg="white", width=8).pack(side="left", padx=(10, 0))
+        self.dual_zsp_type_arm1_entry = tk.Entry(dual_arm1_row1, width=4)
+        self.dual_zsp_type_arm1_entry.pack(side="left", padx=2)
+        self.dual_zsp_type_arm1_entry.insert(0, "0")
+        tk.Label(dual_arm1_row1, text="ZSP Params", bg="white", width=10).pack(side="left", padx=(10, 0))
+        self.dual_zsp_params_arm1_entry = tk.Entry(dual_arm1_row1, width=24)
+        self.dual_zsp_params_arm1_entry.pack(side="left", padx=2)
+        self.dual_zsp_params_arm1_entry.insert(0, "0, 0, 0, 0, 0, 0")
+
+        # ---------- Common parameters ----------
+        dual_params_row = tk.Frame(dual_arm_frame, bg="white")
+        dual_params_row.pack(fill="x", pady=5)
+        tk.Label(dual_params_row, text="Common Parameters:", bg="white", font=("Arial", 9, "bold")).pack(
+            side="left", padx=10)
+        tk.Label(dual_params_row, text="Freq", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
+        self.dual_freq_entry = tk.Entry(dual_params_row, width=6)
+        self.dual_freq_entry.pack(side="left", padx=2)
+        self.dual_freq_entry.insert(0, "50")
+        tk.Label(dual_params_row, text="((1000%freq==0))", bg="white", fg="gray", font=("Arial", 7)).pack(
+            side="left", padx=(0, 5))
+        tk.Label(dual_params_row, text="Vel", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
+        self.dual_vel_entry = tk.Entry(dual_params_row, width=6)
+        self.dual_vel_entry.pack(side="left", padx=2)
+        self.dual_vel_entry.insert(0, "50")
+        tk.Label(dual_params_row, text="(0.1-500)", bg="white", fg="gray", font=("Arial", 7)).pack(
+            side="left", padx=(0, 5))
+        tk.Label(dual_params_row, text="Acc", bg="white", font=("Arial", 9)).pack(side="left", padx=(5, 2))
+        self.dual_acc_entry = tk.Entry(dual_params_row, width=6)
+        self.dual_acc_entry.pack(side="left", padx=2)
+        self.dual_acc_entry.insert(0, "100")
+        tk.Label(dual_params_row, text="(0.1-500)", bg="white", fg="gray", font=("Arial", 7)).pack(
+            side="left", padx=2)
+
+        dual_body_row = tk.Frame(dual_arm_frame, bg="white")
+        dual_body_row.pack(fill="x", pady=(0, 5))
+        self.dual_world_flag_var = tk.IntVar(value=0)
+        tk.Checkbutton(dual_body_row, text="World coordinate (body frame)", variable=self.dual_world_flag_var,
+                       bg="white", font=("Arial", 9)).pack(side="left", padx=(30, 5))
+        tk.Label(dual_body_row, text="Body PRR (pitch, roll, height)", bg="white", width=26).pack(
+            side="left", padx=(10, 0))
+        self.dual_body_prr_entry = tk.Entry(dual_body_row, width=24)
+        self.dual_body_prr_entry.pack(side="left", padx=2)
+        self.dual_body_prr_entry.insert(0, "0, 0, 0")
+
+        dual_btn_row = tk.Frame(dual_arm_frame, bg="white")
+        dual_btn_row.pack(pady=5, anchor="center")
+        tk.Button(dual_btn_row, text="Clear params", width=10, font=("Arial", 11, "bold"), bg="#E6E6FA",
+                  command=self.clear_dual_arm_inputs).pack(side="left", padx=10)
+        tk.Button(dual_btn_row, text="Run", width=10, font=("Arial", 11, "bold"), bg="#A2CD5A",
+                  command=self.pln_run_dual_arm_fix_body).pack(side="left", padx=10)
+        tk.Button(dual_btn_row, text="Break", width=10, font=("Arial", 11, "bold"), bg="#FFF68F",
+                  command=self.stop_motion).pack(side="left", padx=10)
+
     def pln_get_cur_joints(self, obj):
         try:
             if obj == 'Arm0':
@@ -6099,6 +6212,149 @@ class App:
             messagebox.showinfo("Success",
                                 f"Planning of of left arm and right arm completed")
             return
+
+    def pln_get_cur_xyzabc_dual(self, obj):
+        try:
+            if obj == 'Arm0':
+                raw = self.left_cartesian_text.get("1.0", "end-1c")
+                dest = self.dual_start_arm0_entry
+                label = 'Arm0'
+            elif obj == 'Arm1':
+                raw = self.right_cartesian_text.get("1.0", "end-1c")
+                dest = self.dual_start_arm1_entry
+                label = 'Arm1'
+            else:
+                return
+
+            values = [float(p) for p in raw.split(",") if p.strip()]
+            if len(values) != 6:
+                messagebox.showerror('Error', f'Invalid xyzabc data for {label}')
+                return
+
+            dest.delete(0, tk.END)
+            dest.insert(0, ", ".join(f"{v:.3f}" for v in values))
+        except (KeyError, IndexError, TypeError, ValueError) as e:
+            messagebox.showerror('Error', f'Failed to get xyzabc positions: {e}')
+
+    def pln_get_cur_joints_dual_ref(self, obj):
+        try:
+            if obj == 'Arm0':
+                pose = self.result['outputs'][0]['fb_joint_pos']
+                dest = self.dual_ref_arm0_entry
+            elif obj == 'Arm1':
+                pose = self.result['outputs'][1]['fb_joint_pos']
+                dest = self.dual_ref_arm1_entry
+            else:
+                return
+
+            if pose and len(pose) == 7:
+                dest.delete(0, tk.END)
+                dest.insert(0, ", ".join(f"{v:.3f}" for v in pose))
+            else:
+                messagebox.showerror('Error', f'Invalid joint data for {obj}')
+        except (KeyError, IndexError, TypeError) as e:
+            messagebox.showerror('Error', f'Failed to get joint positions: {e}')
+
+    def clear_dual_arm_inputs(self):
+        for entry in [self.dual_start_arm0_entry, self.dual_end_arm0_entry, self.dual_ref_arm0_entry,
+                      self.dual_start_arm1_entry, self.dual_end_arm1_entry, self.dual_ref_arm1_entry,
+                      self.dual_body_prr_entry]:
+            original = entry.get()
+            if ',' in original:
+                entry.delete(0, tk.END)
+                entry.insert(0, ', '.join(["0.0"] * len(original.split(','))))
+            else:
+                entry.delete(0, tk.END)
+                entry.insert(0, "0.0")
+
+        for entry in [self.dual_zsp_params_arm0_entry, self.dual_zsp_params_arm1_entry]:
+            entry.delete(0, tk.END)
+            entry.insert(0, "0, 0, 0, 0, 0, 0")
+
+    def pln_run_dual_arm_fix_body(self):
+        def parse_values(s, num, name):
+            parts = [p for p in s.split(',') if p.strip()]
+            if len(parts) != num:
+                raise ValueError(f"{name} need {num} values, actual:{len(parts)}")
+            return [float(p.strip()) for p in parts]
+
+        try:
+            start0 = parse_values(self.dual_start_arm0_entry.get().strip(), 6, 'Arm0 start xyzabc')
+            end0 = parse_values(self.dual_end_arm0_entry.get().strip(), 6, 'Arm0 end xyzabc')
+            ref0 = parse_values(self.dual_ref_arm0_entry.get().strip(), 7, 'Arm0 ref joints')
+            zsp_params0 = parse_values(self.dual_zsp_params_arm0_entry.get().strip(), 6, 'Arm0 zsp params')
+            start1 = parse_values(self.dual_start_arm1_entry.get().strip(), 6, 'Arm1 start xyzabc')
+            end1 = parse_values(self.dual_end_arm1_entry.get().strip(), 6, 'Arm1 end xyzabc')
+            ref1 = parse_values(self.dual_ref_arm1_entry.get().strip(), 7, 'Arm1 ref joints')
+            zsp_params1 = parse_values(self.dual_zsp_params_arm1_entry.get().strip(), 6, 'Arm1 zsp params')
+            body_prr = parse_values(self.dual_body_prr_entry.get().strip(), 3, 'Body PRR')
+            zsp_type0 = int(self.dual_zsp_type_arm0_entry.get().strip())
+            zsp_type1 = int(self.dual_zsp_type_arm1_entry.get().strip())
+            freq = int(self.dual_freq_entry.get().strip())
+            vel = float(self.dual_vel_entry.get().strip())
+            acc = float(self.dual_acc_entry.get().strip())
+            world_co_flag = bool(self.dual_world_flag_var.get())
+        except ValueError as e:
+            messagebox.showerror("value error", f"parse parameters failed: {e}")
+            return
+
+        if freq <= 0 or 1000 % freq != 0:
+            messagebox.showerror("value error", "1000%freq==0 and freq>0")
+            return
+        if not (0.1 <= vel <= 500):
+            messagebox.showerror("value error", "vel range [0.1, 500]")
+            return
+        if not (0.1 <= acc <= 500):
+            messagebox.showerror("value error", "acc range [0.1, 500]")
+            return
+        if all(abs(v) < 1e-6 for v in ref0):
+            messagebox.showwarning('value error', "reference joints of left arm can not be all zero")
+            return
+        if all(abs(v) < 1e-6 for v in ref1):
+            messagebox.showwarning('value error', "reference joints of right arm can not be all zero")
+            return
+        if all(abs(v) < 1e-6 for v in start0) and all(abs(v) < 1e-6 for v in end0) and \
+                all(abs(v) < 1e-6 for v in start1) and all(abs(v) < 1e-6 for v in end1):
+            messagebox.showerror("value error", "start and end in same pose, can not run planning")
+            return
+
+        aspp = ArmsSynchronousPlanningParams(
+            Skye_Body_Start_PRR=body_prr,
+            Arm0_Start_XYZABC=start0, Arm0_End_XYZABC=end0, Arm0_Ref_Joints=ref0,
+            Arm0_ZSP_Type=zsp_type0, Arm0_ZSP_Para=zsp_params0,
+            Arm1_Start_XYZABC=start1, Arm1_End_XYZABC=end1, Arm1_Ref_Joints=ref1,
+            Arm1_ZSP_Type=zsp_type1, Arm1_ZSP_Para=zsp_params1,
+            Freq=freq, Vel=vel, Acc=acc, Sync_Type=0, World_Co_Flag=world_co_flag)
+
+        try:
+            points0, pset0, points1, pset1 = kk1.movL_synchronous(aspp, dimension=7)
+        except Exception as e:
+            messagebox.showerror("Error", f"dual-arm synchronous planning failed: {e}")
+            return
+
+        if pset0 is None or pset1 is None:
+            messagebox.showerror("Error", "dual-arm synchronous planning failed, please check parameters")
+            return
+
+        try:
+            ret = robot.setPln_Cart_AB(pset0, pset1)
+            if not ret:
+                messagebox.showerror("Failed!",
+                                     "set planning of left arm and right arm failed, please check data")
+                return
+            time.sleep(0.2)
+            '''等待双臂规划运行结束'''
+            while True:
+                data = robot.subscribe(dcss)
+                time.sleep(0.2)
+                if data['outputs'][0]['traj_state'] == b'\x00' and data['outputs'][1]['traj_state'] == b'\x00':
+                    break
+            messagebox.showinfo("Success",
+                                f"Dual-arm synchronous planning completed, "
+                                f"left arm {len(points0)} points, right arm {len(points1)} points")
+        finally:
+            kk1.destroy_point_set(pset0)
+            kk2.destroy_point_set(pset1)
 
     def stop_motion(self):
         if not robot.stopPln_AB():

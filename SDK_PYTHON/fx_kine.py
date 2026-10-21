@@ -215,6 +215,15 @@ class Marvin_Kine:
         ]
         self.kine.FX_Robot_PLN_MOV_Target_C.restype = ctypes.c_bool
 
+        # Dual-Arms Synchronous Motion Planning with Fixed Body
+        if hasattr(self.kine, 'FX_Robot_PLN_MOVL_Arms_Synchronous'):
+            self.kine.FX_Robot_PLN_MOVL_Arms_Synchronous.argtypes = [
+                ctypes.POINTER(ArmsSynchronousPlanningParams),  # ASPP
+                ctypes.c_void_p,                                # Arm0_Pln_Path
+                ctypes.c_void_p                                 # Arm1_Pln_Path
+            ]
+            self.kine.FX_Robot_PLN_MOVL_Arms_Synchronous.restype = ctypes.c_bool
+
         # Joint Torque to EE Torque Mapping
         if hasattr(self.kine, 'FX_Robot_JntTau2EETau'):
             self.kine.FX_Robot_JntTau2EETau.argtypes = [
@@ -1167,6 +1176,62 @@ class Marvin_Kine:
             self.destroy_point_set(pset)
             raise e
 
+    def movL_synchronous(self, aspp: 'ArmsSynchronousPlanningParams',
+                             dimension: int = 7) -> tuple[List[List[float]], ctypes.c_void_p,
+                                                           List[List[float]], ctypes.c_void_p]:
+        '''双臂协同直线规划（躯干固定），返回双臂的规划点集
+
+        :param aspp: 双臂同步规划参数，ArmsSynchronousPlanningParams 对象或同名字段的 dict
+        :param dimension: 输出点集维度，默认 7（双臂关节角度）
+        :return: (arm0_data, arm0_pset, arm1_data, arm1_pset)
+                 其中 pset 是点集句柄（ctypes.c_void_p），
+                 调用者必须在使用完毕后调用 self.destroy_point_set(pset) 释放。
+                 失败时返回 ([], None, [], None)
+
+        特别提示:
+            1. 该接口不区分机械臂序号，内部使用已初始化的双臂运动学参数，
+               调用前需分别完成左臂(arm_type=0)与右臂(arm_type=1)的运动学初始化。
+            2. 以较长一侧手臂的路径长度为主轴，双臂按相同时间比例同步运动，
+               运动过程中躯干（机体）保持固定。
+            3. World_Co_Flag 为 False 时，双臂位姿分别基于各自机械臂基坐标系给定；
+               为 True 时，双臂位姿基于机体坐标系给定，需同时提供 Skye_Body_Start_PRR。
+            4. 需要 libKine 库为包含 FX_Robot_PLN_MOVL_DualArm_FixBody 接口的新版本。
+        '''
+        if not hasattr(self.kine, 'FX_Robot_PLN_MOVL_Arms_Synchronous'):
+            raise RuntimeError('FX_Robot_PLN_MOVL_Arms_Synchronous is not exported by current libKine')
+
+        if isinstance(aspp, dict):
+            aspp = ArmsSynchronousPlanningParams(**aspp)
+        if not isinstance(aspp, ArmsSynchronousPlanningParams):
+            raise TypeError('aspp must be an ArmsSynchronousPlanningParams or dict')
+
+        pset_arm0 = self.create_point_set(dimension)
+        pset_arm1 = self.create_point_set(dimension)
+        if not pset_arm0 or not pset_arm1:
+            self.destroy_point_set(pset_arm0)
+            self.destroy_point_set(pset_arm1)
+            raise RuntimeError("Failed to create CPointSet object")
+
+        try:
+            success = self.kine.FX_Robot_PLN_MOVL_Arms_Synchronous(
+                ctypes.byref(aspp),
+                pset_arm0,
+                pset_arm1
+            )
+            if not success:
+                self.destroy_point_set(pset_arm0)
+                self.destroy_point_set(pset_arm1)
+                return [], None, [], None
+            data_arm0 = self.get_point_set_data(pset_arm0, dimension)
+            data_arm1 = self.get_point_set_data(pset_arm1, dimension)
+            logger.info(f'Plan MOVL arms synchronous successful, got {len(data_arm0)} and '
+                        f'{len(data_arm1)} points')
+            return data_arm0, pset_arm0, data_arm1, pset_arm1
+        except Exception as e:
+            self.destroy_point_set(pset_arm0)
+            self.destroy_point_set(pset_arm1)
+            raise e
+
     def multi_movL_set_start(self, ref_joints: List[float], start_xyzabc: List[float],
                              end_xyzabc: List[float], allow_range: float, zsp_type: int,
                              zsp_para: List[float], vel: float, acc: float, freq: int) -> bool:
@@ -1559,6 +1624,56 @@ class Matrix8(Structure):
 
     def __str__(self):
         return str(self.to_list())
+
+class ArmsSynchronousPlanningParams(Structure):
+    """双臂同步直线规划参数，对应 kinematicsSDK/FXKineCommon.h 中的同名结构体（默认对齐）
+
+    可直接按字段名构造，例如：
+        aspp = ArmsSynchronousPlanningParams(
+            Arm0_Start_XYZABC=[...], Arm0_End_XYZABC=[...], Arm0_Ref_Joints=[...],
+            Arm0_ZSP_Type=0,
+            Arm1_Start_XYZABC=[...], Arm1_End_XYZABC=[...], Arm1_Ref_Joints=[...],
+            Arm1_ZSP_Type=0,
+            Freq=50, Vel=50.0, Acc=100.0, World_Co_Flag=False)
+    未指定的字段默认清零。
+    """
+    _fields_ = [
+        ("Skye_Body_Start_PRR", FX_DOUBLE * 3),   # 机体俯仰、横滚及高度（度、度、毫米）
+        # //////////Arm0（左臂 A 臂）
+        ("Arm0_Start_XYZABC", FX_DOUBLE * 6),     # 起始点笛卡尔位姿（mm、度）
+        ("Arm0_End_XYZABC", FX_DOUBLE * 6),       # 结束点笛卡尔位姿
+        ("Arm0_Ref_Joints", FX_DOUBLE * 7),       # 逆解参考构型（单位：度）
+        ("Arm0_ZSP_Type", FX_INT32L),             # 逆解零空间约束类型
+        ("Arm0_ZSP_Para", FX_DOUBLE * 6),         # 逆解零空间参数
+        # //////////Arm1（右臂 B 臂）
+        ("Arm1_Start_XYZABC", FX_DOUBLE * 6),
+        ("Arm1_End_XYZABC", FX_DOUBLE * 6),
+        ("Arm1_Ref_Joints", FX_DOUBLE * 7),
+        ("Arm1_ZSP_Type", FX_INT32L),
+        ("Arm1_ZSP_Para", FX_DOUBLE * 6),
+        # //////////Common
+        ("Freq", FX_INT32L),                      # 规划频率（Hz）
+        ("Vel", FX_DOUBLE),                       # 规划速度（mm/s）
+        ("Acc", FX_DOUBLE),                       # 规划加速度（mm/s^2）
+        ("Sync_Type", FX_INT32L),                 # 协同类型，暂不需要设置
+        ("World_Co_Flag", FX_BOOL),               # False: 各臂基坐标系; True: 机体坐标系
+    ]
+
+    def __init__(self, **kwargs):
+        super().__init__()
+        ctypes.memset(ctypes.byref(self), 0, ctypes.sizeof(self))
+        field_types = dict(self._fields_)
+        for key, value in kwargs.items():
+            if key not in field_types:
+                raise ValueError(f'unknown field for ArmsSynchronousPlanningParams: {key}')
+            field_type = field_types[key]
+            if isinstance(field_type, type) and issubclass(field_type, ctypes.Array):
+                if len(value) != field_type._length_:
+                    raise ValueError(f'{key} requires exactly {field_type._length_} values')
+                setattr(self, key, field_type(*value))
+            else:
+                setattr(self, key, value)
+
 
 class FX_InvKineSolvePara(ctypes.Structure):
     _fields_ = [

@@ -182,7 +182,8 @@
 ### 10.在线多点规划，控制器以50HZ执行
             showcase_pln_cart_multi-segment_positionMode.py
 
-# 建议运行顺序：11->12->13->14
+
+# 建议运行顺序：11->12->13->14->15
 ### 11. 双臂协作关节空间同步规划运动（setPln_joint_AB）
         showcase_pln_joint_to_joint_two_arms.py
 ### 12. 双臂协作关节空间直线规划同步运动（movL_KeepJA + setPln_Cart_AB）
@@ -191,4 +192,6 @@
         showcase_pln_cartesian_linear_two_arms.py
 ### 14. 双臂协作多点直线规划同步运动（multi_movL + setPln_Cart_AB）
         showcase_pln_multi_segment_linear_two_arms.py
+### 15. 双臂轴同步规划运动（movL_synchronous + setPln_Cart_AB）
+        showcase_pln_cartSpace_two_arms_synchronous.py
 
