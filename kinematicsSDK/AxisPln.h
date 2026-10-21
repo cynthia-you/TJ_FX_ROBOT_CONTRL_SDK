@@ -29,6 +29,9 @@ public:
 	bool OnMovL_ZSP(long RobotSerial, double ref_joints[7], double start_pos[6], double end_pos[6], double vel, double acc, double jerk, long ZSP_type, double ZSP_para[6], double Allow_Range, long Point_State);
 	bool OnSendPoints(CPointSet *out);
 
+	// Dual-Arms Synchronous Motion Planning with Fixed Body
+	bool OnMovL_DualArm_FixBody(ArmsSynchronousPlanningParams *ASPP, CPointSet *Arm0_Pln_Path, CPointSet *Arm1_Pln_Path);
+
 	CPointSet m_output_pset;
 	bool Overlap_Tag;
 	long Overlap_Num;
@@ -66,6 +69,9 @@ protected:
 	double m_Joint_Acc_Lmt[7];
 
 	bool OnGetRatioByCntScale(long total_cnt, long cur_cnt, double &ratio1, double &ratio2);
+
+	double OnGetLength(double start_pos[6], double end_pos[6], Quaternion Q_start, Quaternion Q_end);
+	long OnXYZQ2Joint(ArmsSynchronousPlanningParams *ASPP, CPointSet *cartesian_traj, CPointSet *output, long RobotSerial);
 };
 
 class CAxisJointPln

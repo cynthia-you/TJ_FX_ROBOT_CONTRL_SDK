@@ -189,6 +189,9 @@
 ## 18. 笛卡尔空间以规划方式下发指令，中断规划运行
             showcase_pln_cartSpace_PositionMode_with_break.cpp
 
+## 18.1 双臂同步直线规划（躯干固定），双臂同时下发达规划点并执行
+            showcase_pln_cartSpace_DualArm_FixBody.cpp
+
 ## 19. 工具笛卡尔阻抗控制案列
             showcase_torque_EefCart_impedance.cpp
 

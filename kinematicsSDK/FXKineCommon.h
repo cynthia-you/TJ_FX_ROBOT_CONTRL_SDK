@@ -98,6 +98,29 @@ enum FX_MOVL_POINT_STATE
 	FX_MOVL_NEXT = 82,
 };
 
+struct ArmsSynchronousPlanningParams
+{
+	Vect3 Skye_Body_Start_PRR;
+	//////////Arm0
+	Vect6 Arm0_Start_XYZABC;
+	Vect6 Arm0_End_XYZABC;
+	Vect7 Arm0_Ref_Joints;
+	FX_INT32L Arm0_ZSP_Type;
+	Vect6 Arm0_ZSP_Para;
+	//////////Arm1
+	Vect6 Arm1_Start_XYZABC;
+	Vect6 Arm1_End_XYZABC;
+	Vect7 Arm1_Ref_Joints;
+	FX_INT32L Arm1_ZSP_Type;
+	Vect6 Arm1_ZSP_Para;
+	//////////Common
+	FX_INT32L Freq;
+	FX_DOUBLE Vel;
+	FX_DOUBLE Acc;
+	FX_INT32L Sync_Type;
+	FX_BOOL World_Co_Flag;
+};
+
 typedef struct
 {
 	/////////////////////////////// Kinematic

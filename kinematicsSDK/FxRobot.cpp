@@ -4009,6 +4009,115 @@ FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_J
 	return FX_FALSE;
 }
 
+/////Dual-Arms Synchronous Motion Planning with Fixed Body
+// Calculate the left/right arm base poses from the body posture [lift, pitch, rotation].
+// Lift is in millimeters, angles are in degrees.
+FX_VOID FX_CalArmBaseLR(FX_DOUBLE body[3], Matrix4 pgL, Matrix4 pgR)
+{
+	const FX_DOUBLE dArm2Pitch = 433.5;
+	const FX_DOUBLE dShoulder = 230.5;
+
+	Matrix4 m = {{0}};
+	FX_RotEuler_XYZ(0, -body[1], body[2], m);
+	FX_DOUBLE dx = m[0][2];
+	FX_DOUBLE dz = m[2][2];
+
+	m[0][3] += dx * dArm2Pitch;
+	m[2][3] += dz * dArm2Pitch + body[0];
+
+	Matrix4 ArmL_Set = {{0}};
+	Matrix4 ArmR_Set = {{0}};
+	FX_IdentM44(ArmL_Set);
+	FX_IdentM44(ArmR_Set);
+
+	ArmL_Set[1][1] = 0;
+	ArmL_Set[1][2] = 1;
+	ArmL_Set[1][3] = dShoulder;
+	ArmL_Set[2][1] = -1;
+	ArmL_Set[2][2] = 0;
+
+	ArmR_Set[1][1] = 0;
+	ArmR_Set[1][2] = -1;
+	ArmR_Set[1][3] = -dShoulder;
+	ArmR_Set[2][1] = 1;
+	ArmR_Set[2][2] = 0;
+
+	FX_MMM44(m, ArmL_Set, pgL);
+	FX_MMM44(m, ArmR_Set, pgR);
+}
+
+FX_BOOL FX_Robot_PLN_MOVL_DualArm_FixBody(ArmsSynchronousPlanningParams *ASPP, CPointSet *Arm0_Pln_Path, CPointSet *Arm1_Pln_Path)
+{
+	if (FX_LOG_TAG)
+		FX_LOG_INFO("[FxRobot - FX_Robot_PLN_MOVL_DualArm_FixBody]\n");
+
+	if (ASPP == NULL || Arm0_Pln_Path == NULL || Arm1_Pln_Path == NULL)
+	{
+		if (FX_LOG_TAG)
+			FX_LOG_INFO("FX_Robot_PLN_MOVL_DualArm_FixBody: Input pointer is NULL\n");
+		return FX_FALSE;
+	}
+
+	// Convert the world-frame target poses to arm-base-frame poses
+	if (ASPP->World_Co_Flag)
+	{
+		Matrix4 Left_Arm_Start_EE = {{0}};
+		Matrix4 Left_Arm_End_EE = {{0}};
+		FX_XYZABC2Matrix4DEG(ASPP->Arm0_Start_XYZABC, Left_Arm_Start_EE);
+		FX_XYZABC2Matrix4DEG(ASPP->Arm0_End_XYZABC, Left_Arm_End_EE);
+
+		Matrix4 Right_Arm_Start_EE = {{0}};
+		Matrix4 Right_Arm_End_EE = {{0}};
+		FX_XYZABC2Matrix4DEG(ASPP->Arm1_Start_XYZABC, Right_Arm_Start_EE);
+		FX_XYZABC2Matrix4DEG(ASPP->Arm1_End_XYZABC, Right_Arm_End_EE);
+
+		Matrix4 Shoulder_left = {{0}};
+		Matrix4 Shoulder_right = {{0}};
+		FX_CalArmBaseLR(ASPP->Skye_Body_Start_PRR, Shoulder_left, Shoulder_right);
+
+		Matrix4 Shoulder_left_inv = {{0}};
+		Matrix4 Shoulder_right_inv = {{0}};
+		MatrixInv44(Shoulder_left, Shoulder_left_inv);
+		MatrixInv44(Shoulder_right, Shoulder_right_inv);
+
+		Matrix4 Left_Arm_Start_Base = {{0}};
+		Matrix4 Left_Arm_End_Base = {{0}};
+		FX_MMM44(Shoulder_left_inv, Left_Arm_Start_EE, Left_Arm_Start_Base);
+		FX_MMM44(Shoulder_left_inv, Left_Arm_End_EE, Left_Arm_End_Base);
+
+		Matrix4 Right_Arm_Start_Base = {{0}};
+		Matrix4 Right_Arm_End_Base = {{0}};
+		FX_MMM44(Shoulder_right_inv, Right_Arm_Start_EE, Right_Arm_Start_Base);
+		FX_MMM44(Shoulder_right_inv, Right_Arm_End_EE, Right_Arm_End_Base);
+
+		FX_Matrix42XYZABCDEG(Left_Arm_Start_Base, ASPP->Arm0_Start_XYZABC);
+		FX_Matrix42XYZABCDEG(Left_Arm_End_Base, ASPP->Arm0_End_XYZABC);
+		FX_Matrix42XYZABCDEG(Right_Arm_Start_Base, ASPP->Arm1_Start_XYZABC);
+		FX_Matrix42XYZABCDEG(Right_Arm_End_Base, ASPP->Arm1_End_XYZABC);
+	}
+
+	// Both arms share the same kinematics model, so use arm0's joint limits for VA check
+	FX_Robot *pRobot = (FX_Robot *)&m_Robot[0];
+
+	CAxisPln Spln;
+	Spln.OnSetPNVA(pRobot->m_Lmt.m_JLmtPos_P, pRobot->m_Lmt.m_JLmtPos_N, pRobot->m_Lmt.m_JLmtVel, pRobot->m_Lmt.m_JLmtAcc);
+	Spln.OnSetFreq(ASPP->Freq);
+	FX_BOOL result = Spln.OnMovL_DualArm_FixBody(ASPP, Arm0_Pln_Path, Arm1_Pln_Path);
+
+	if (result != FX_FALSE)
+	{
+		return FX_TRUE;
+	}
+	else
+	{
+		if (FX_LOG_TAG)
+			FX_LOG_INFO("FX_Robot_PLN_MOVL_DualArm_FixBody: Joint Over Limit or Over Reachable Space. Check Parameters.\n");
+		return FX_FALSE;
+	}
+
+	return FX_FALSE;
+}
+
 /////Joint Torque to EE Torque Mapping
 FX_BOOL FX_Robot_Solve66_GaussJordan(const Matrix6 A, const Vect6 b, Vect6 x)
 {

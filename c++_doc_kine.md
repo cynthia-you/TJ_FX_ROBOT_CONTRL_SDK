@@ -159,6 +159,7 @@ FX_BOOL  FX_Robot_Tool_Set(FX_INT32L RobotSerial, Matrix4 tool)
     输出：
         成功：True/1; 失败：False/0
     • 设置工具后，正解结果为工具TCP相对于基座的平移和旋转。
+    • 工具坐标系设置对运动规划接口生效，设置工具坐标系后，运动规划相关接口输入的位姿需给工具末端的位姿
 
 FX_BOOL  FX_Robot_Tool_Rmv(FX_INT32L RobotSerial)
 
@@ -181,6 +182,7 @@ FX_BOOL FX_Robot_UserFrame_Set(FX_INT32L RobotSerial, Matrix4 userframe)
 
     • 设置用户坐标系后，正解结果为末端法兰或工具 TCP 相对于用户坐标系的平移和旋转；逆解输入位姿也应表示为相对于用户坐标系的位姿。
     • 若同时设置了工具坐标系，则工具设置和用户坐标系设置同时生效。
+    • 用户坐标系设置对运动规划接口生效，设置用户坐标系后，运动规划相关接口输入的位姿需基于用户坐标系给定
 
 FX_BOOL FX_Robot_UserFrame_Rmv(FX_INT32L RobotSerial)
 
@@ -289,6 +291,34 @@ FX_BOOL  FX_Robot_Kine_IK_NSP(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_
         成功：True/1; 失败：False/0
 
 
+###    8.1 锁定第一关节的逆运动学
+FX_BOOL  FX_InvKine_Pilot_LockJ1(FX_INT32L RobotSerial, FX_InvKineSolvePara *solve_para)
+
+    • 输入RobotSerial（参数含义参考初始化参数部分）及solve_para结构体，输出包含在solve_para中
+    • 功能：在给定目标位姿下，第一关节固定为参考角 m_Input_IK_RefJoint[0]，求解其余六个自由度。
+      不需要（也不可以）指定零空间参数，冗余自由度的分配由接口内部自动完成。
+    输入：
+        1. FX_INT32L RobotSerial：0，左臂；1，右臂
+        2. solve_para结构体：
+            Matrix4    m_Input_IK_TargetTCP：目标末端位姿矩阵：4×4齐次变换矩阵
+            Vect7      m_Input_IK_RefJoint ：各关节参考角（单位：度）。其中 m_Input_IK_RefJoint[0]
+                                           即为锁定的第一关节角；其余元素用于多解时选择最近的解。
+                                           注意：m_Input_IK_RefJoint[0] 必须与目标位姿一致
+                                           （例如取当前关节角），否则该 J1 下可能不存在解。
+            FX_INT32L  m_Input_IK_ZSPType ：无需输入（内部不使用零空间指定约束）
+    输出：
+        成功：True/1; 失败：False/0
+        输出项与 FX_Robot_Kine_IK 相同（m_Output_RetJoint、m_Output_IsOutRange、m_Output_IsDeg 等）。
+    失败情况：
+        1. 目标位姿超出机器人可达空间
+        2. 锁定的第一关节角与目标位姿不一致（该 J1 下无解）
+        3. 参考构型处零空间求解退化
+
+    • 实现说明：该位姿的解族由臂角参数唯一确定，第一关节角是臂角的连续函数；
+      接口内部通过一维扫描+二分法求 J1(臂角)=参考角的根，再以该臂角求出全部关节角，
+      并对结果做 J1 一致性及正运动学校验，保证解的正确性。
+
+
 ###    9. 计算雅可比矩阵
 FX_BOOL  FX_Robot_Kine_Jacb(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_Jacobi* jcb)
 
@@ -299,6 +329,17 @@ FX_BOOL  FX_Robot_Kine_Jacb(FX_INT32L RobotSerial, FX_DOUBLE joints[7], FX_Jacob
         3. jcb 初始化为0的7的雅可比矩阵
     输出：
         成功：True/1; 失败：False/0
+
+###    9.1 计算末端合成线速度
+FX_DOUBLE  FX_Robot_CalEELinerVel(FX_INT32L RobotSerial, Vect7 joint, Vect7 angvel)
+
+    • 输入各关节角度及各关节角速度，基于雅可比矩阵计算末端合成线速度
+    输入：
+        1. FX_INT32L RobotSerial：0，左臂；1，右臂
+        2. joint ：各关节角度，单位：度
+        3. angvel ：各关节角速度，单位：度/秒
+    返回值：
+        末端合成线速度（线速度矢量的模长），单位：毫米/秒；计算失败时返回 -1
 
 ###    10. 直线规划（MOVL）
 FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, FX_INT8* OutPutPath)
@@ -538,6 +579,42 @@ FX_BOOL FX_Robot_PLN_MOVJ(FX_INT32L RobotSerial, Vect7 Start_Joints, Vect7 End_J
         8. CPointSet* ret_pset 点位缓存类函数
     输出：
         成功：True/1; 失败：False/0 
+
+###    21.双臂协同直线规划
+FX_BOOL FX_Robot_PLN_MOVL_DualArm_FixBody(ArmsSynchronousPlanningParams *ASPP, CPointSet *Arm0_Pln_Path, CPointSet *Arm1_Pln_Path);
+
+    • 输入包含双臂信息的结构体，输出双臂的点位缓存函数
+    输入：
+        ArmsSynchronousPlanningParams *ASPP：详细信息如下所示
+    输出：
+        1.CPointSet *Arm0_Pln_Path：包含左臂路径信息的点位缓存类函数
+        2.CPointSet *Arm1_Pln_Path：包含右臂路径信息的点位缓存类函数
+        
+### 逆解结构体数据介绍
+    该结构体用于双臂协同规划接口中输入双臂规划信息。
+    struct ArmsSynchronousPlanningParams
+    {
+        Vect3 Skye_Body_Start_PRR;    //Skye构型身体初始姿态
+        //////////Arm0
+        Vect6 Arm0_Start_XYZABC;     //左臂规划起始点笛卡尔空间位姿（单位：mm/度，下列笛卡尔空间位姿单位与此相同）
+        Vect6 Arm0_End_XYZABC;       //左臂规划结束点笛卡尔空间位姿
+        Vect7 Arm0_Ref_Joints;       //左臂规划逆运动学解算参考构型（与起始关节点位相同）
+        FX_INT32L Arm0_ZSP_Type;     //左臂逆运动学零空间类型
+        Vect6 Arm0_ZSP_Para;         //左臂逆运动学零空间参数（设置ZSP类型后生效，不设置类型该参数不生效）
+        //////////Arm1
+        Vect6 Arm1_Start_XYZABC;     //右臂规划起始点笛卡尔空间位姿
+        Vect6 Arm1_End_XYZABC;       //右臂规划结束点笛卡尔空间位姿
+        Vect7 Arm1_Ref_Joints;       //右臂规划逆运动学解算参考构型（与起始关节点位相同）
+        FX_INT32L Arm1_ZSP_Type;     //右臂逆运动学零空间类型
+        Vect6 Arm1_ZSP_Para;         //右臂逆运动学零空间参数（设置ZSP类型后生效，不设置类型该参数不生效）
+        //////////Common
+        FX_INT32L Freq;              //规划频率（单位：Hz）
+        FX_DOUBLE Vel;               //规划速度（mm/s）
+        FX_DOUBLE Acc;               //规划加速度（mm/s^2）
+        FX_INT32L Sync_Type;         //协同类型，暂不需要设置（目前仅开放同时启停的协作类型，后续陆续添加替他类型）
+        FX_BOOL World_Co_Flag;       
+        //0：起始结束点笛卡尔位姿基于双臂基坐标系表示 1：位姿基于世界坐标系表示，设置为一是需要设置Skye_Body_Start_PRR参数
+    };
 
 # 二、案例脚本
 ## C++开发的使用编译见：

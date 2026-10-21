@@ -1919,6 +1919,286 @@ bool CAxisPln::OnSendPoints(CPointSet *out)
 	return true;
 }
 
+// Dual-Arms Synchronous Motion Planning with Fixed Body
+double CAxisPln::OnGetLength(double start_pos[6], double end_pos[6], Quaternion Q_start, Quaternion Q_end)
+{
+	long i = 0;
+	// XYZ Offset
+	double xyz_len_square_ = 0.0;
+	double diff = 0.0;
+
+	for (i = 0; i < 3; i++)
+	{
+		diff = end_pos[i] - start_pos[i];
+		xyz_len_square_ += diff * diff;
+	}
+	// Cuter Euler-Angle based on Base_Coordinate
+	FX_ABC2Quaternions(start_pos, Q_start);
+	FX_ABC2Quaternions(end_pos, Q_end);
+
+	// Calculate Quaternions Angle
+	double cosangle = Q_start[0] * Q_end[0] + Q_start[1] * Q_end[1] +
+					  Q_start[2] * Q_end[2] + Q_start[3] * Q_end[3];
+	if (cosangle < 0.0)
+	{
+		cosangle = -cosangle;
+		Q_end[0] = -Q_end[0];
+		Q_end[1] = -Q_end[1];
+		Q_end[2] = -Q_end[2];
+		Q_end[3] = -Q_end[3];
+	}
+
+	if (fabs(cosangle) > 1.0)
+	{
+		cosangle /= fabs(cosangle);
+	}
+	double qangle = acos(cosangle) * 2 * FXARM_R2D;
+
+	return sqrt(xyz_len_square_ + qangle * qangle);
+}
+
+long CAxisPln::OnXYZQ2Joint(ArmsSynchronousPlanningParams *ASPP, CPointSet *cartesian_traj, CPointSet *output, long RobotSerial)
+{
+	////////////////////InvKine//////////////
+	FX_InvKineSolvePara sp;
+	long i = 0;
+	long j = 0;
+	double Init_Ref_joints[7] = {0};
+
+	if (RobotSerial == 0)
+	{
+		// Left Arm
+		sp.m_Input_IK_ZSPType = ASPP->Arm0_ZSP_Type;
+		for (i = 0; i < 6; i++)
+		{
+			sp.m_Input_IK_ZSPPara[i] = ASPP->Arm0_ZSP_Para[i];
+		}
+		for (i = 0; i < 7; i++)
+		{
+			Init_Ref_joints[i] = ASPP->Arm0_Ref_Joints[i];
+			sp.m_Input_IK_RefJoint[i] = ASPP->Arm0_Ref_Joints[i];
+		}
+		sp.m_Input_ZSP_Angle = 0.0;
+	}
+	else
+	{
+		// Right Arm
+		sp.m_Input_IK_ZSPType = ASPP->Arm1_ZSP_Type;
+		for (i = 0; i < 6; i++)
+		{
+			sp.m_Input_IK_ZSPPara[i] = ASPP->Arm1_ZSP_Para[i];
+		}
+		for (i = 0; i < 7; i++)
+		{
+			Init_Ref_joints[i] = ASPP->Arm1_Ref_Joints[i];
+			sp.m_Input_IK_RefJoint[i] = ASPP->Arm1_Ref_Joints[i];
+		}
+		sp.m_Input_ZSP_Angle = 0.0;
+	}
+
+	double tmppoints[8] = {0};
+	double TCP[4][4] = {{0}};
+	double ret_joints[9] = {0};
+	// initial
+	for (i = 0; i < 4; i++)
+	{
+		for (j = 0; j < 4; j++)
+		{
+			TCP[i][j] = 0;
+		}
+	}
+
+	long final_num = cartesian_traj->OnGetPointNum();
+	for (i = 0; i < final_num; i++)
+	{
+		double *pp = cartesian_traj->OnGetPoint(i);
+		tmppoints[0] = pp[0];
+		tmppoints[1] = pp[1];
+		tmppoints[2] = pp[2];
+		tmppoints[3] = pp[3];
+		tmppoints[4] = pp[4];
+		tmppoints[5] = pp[5];
+		tmppoints[6] = pp[6];
+		tmppoints[7] = pp[7];
+
+		FX_Quaternions2ABCMatrix(&tmppoints[3], &tmppoints[0], TCP);
+		for (long dof = 0; dof < 4; dof++)
+		{
+			for (j = 0; j < 4; j++)
+			{
+				sp.m_Input_IK_TargetTCP[dof][j] = TCP[dof][j];
+			}
+		}
+
+		if (i == 0)
+		{
+			for (j = 0; j < 7; j++)
+			{
+				sp.m_Input_IK_RefJoint[j] = Init_Ref_joints[j];
+			}
+		}
+		else
+		{
+			for (j = 0; j < 7; j++)
+			{
+				sp.m_Input_IK_RefJoint[j] = ret_joints[j];
+			}
+		}
+
+		if (FX_Robot_Kine_IK(RobotSerial, &sp) == false)
+		{
+			return 2;
+		}
+
+		// Error feedback
+		for (long kk = 0; kk < 7; kk++)
+		{
+			if (sp.m_Output_JntExdTags[kk] == FX_TRUE)
+			{
+				printf("OnMovL_DualArm_FixBody: IK result exceeds joint limit at joint=%ld\n", kk + 1);
+				return 3;
+			}
+		}
+
+		if (sp.m_Output_IsOutRange == FX_TRUE)
+		{
+			printf("OnMovL_DualArm_FixBody: target pose exceeds reachable workspace\n");
+			return 4;
+		}
+
+		ret_joints[0] = sp.m_Output_RetJoint[0];
+		ret_joints[1] = sp.m_Output_RetJoint[1];
+		ret_joints[2] = sp.m_Output_RetJoint[2];
+		ret_joints[3] = sp.m_Output_RetJoint[3];
+		ret_joints[4] = sp.m_Output_RetJoint[4];
+		ret_joints[5] = sp.m_Output_RetJoint[5];
+		ret_joints[6] = sp.m_Output_RetJoint[6];
+
+		output->OnSetPoint(ret_joints);
+	}
+
+	return 1;
+}
+
+bool CAxisPln::OnMovL_DualArm_FixBody(ArmsSynchronousPlanningParams *ASPP, CPointSet *Arm0_Pln_Path, CPointSet *Arm1_Pln_Path)
+{
+	long i = 0;
+	long j = 0;
+	CPointSet com_axis;
+
+	// Determine master and slave arm based on motion length
+	Quaternion Q_Start_Left = {0};
+	Quaternion Q_End_Left = {0};
+	Quaternion Q_Start_Right = {0};
+	Quaternion Q_End_Right = {0};
+	double left_len = OnGetLength(ASPP->Arm0_Start_XYZABC, ASPP->Arm0_End_XYZABC, Q_Start_Left, Q_End_Left);
+	double right_len = OnGetLength(ASPP->Arm1_Start_XYZABC, ASPP->Arm1_End_XYZABC, Q_Start_Right, Q_End_Right);
+
+	double com_axis_len_ = (left_len > right_len) ? left_len : right_len;
+	double jerk = ASPP->Acc * 5.0;
+	OnPln(0, com_axis_len_, ASPP->Vel, ASPP->Acc, jerk, &com_axis);
+
+	long num_points = com_axis.OnGetPointNum();
+	if (num_points >= 5000)
+	{
+		printf("Generated more than 5,000 points. Please try reducing the planning distance or increasing VA.");
+		return false;
+	}
+	printf("OnMovL_DualArm_FixBody: Composite axis length = %lf with %ld points\n", com_axis_len_, num_points);
+
+	// Cut Cartesian trajectory
+	CPointSet cartesian_traj_left;
+	CPointSet cartesian_traj_right;
+	cartesian_traj_left.OnInit(PotT_7d); // Position & Quaternion
+	cartesian_traj_left.OnEmpty();
+	cartesian_traj_right.OnInit(PotT_7d); // Position & Quaternion
+	cartesian_traj_right.OnEmpty();
+
+	double pose_left[7] = {0};
+	double pose_right[7] = {0};
+	for (i = 0; i < num_points; i++)
+	{
+		double *vel_data = com_axis.OnGetPoint(i);
+		double ratio = vel_data[0] / com_axis_len_;
+
+		for (j = 0; j < 3; j++)
+		{
+			pose_left[j] = ASPP->Arm0_Start_XYZABC[j] * (1 - ratio) + ASPP->Arm0_End_XYZABC[j] * ratio;
+			pose_right[j] = ASPP->Arm1_Start_XYZABC[j] * (1 - ratio) + ASPP->Arm1_End_XYZABC[j] * ratio;
+		}
+
+		FX_QuaternionSlerp(Q_Start_Left, Q_End_Left, ratio, &pose_left[3]);
+		FX_QuaternionSlerp(Q_Start_Right, Q_End_Right, ratio, &pose_right[3]);
+
+		cartesian_traj_left.OnSetPoint(pose_left);
+		cartesian_traj_right.OnSetPoint(pose_right);
+	}
+
+	// Add two extra waypoints
+	for (i = 0; i < 2; i++)
+	{
+		cartesian_traj_left.OnSetPoint(pose_left);
+		cartesian_traj_right.OnSetPoint(pose_right);
+	}
+
+	Arm0_Pln_Path->OnInit(PotT_7d);
+	Arm0_Pln_Path->OnEmpty();
+	Arm1_Pln_Path->OnInit(PotT_7d);
+	Arm1_Pln_Path->OnEmpty();
+	long arm0_ret = OnXYZQ2Joint(ASPP, &cartesian_traj_left, Arm0_Pln_Path, 0);
+	if (arm0_ret != 1)
+	{
+		switch (arm0_ret)
+		{
+		case 3:
+			printf("OnMovL_DualArm_FixBody: Left arm IK exceeds joint limit.\n");
+			break;
+		case 4:
+			printf("OnMovL_DualArm_FixBody: Left arm target pose exceeds reachable workspace.\n");
+			break;
+		case 2:
+		default:
+			printf("OnMovL_DualArm_FixBody: Left arm IK failed.\n");
+			break;
+		}
+		return false;
+	}
+
+	long arm1_ret = OnXYZQ2Joint(ASPP, &cartesian_traj_right, Arm1_Pln_Path, 1);
+	if (arm1_ret != 1)
+	{
+		switch (arm1_ret)
+		{
+		case 3:
+			printf("OnMovL_DualArm_FixBody: Right arm IK exceeds joint limit.\n");
+			break;
+		case 4:
+			printf("OnMovL_DualArm_FixBody: Right arm target pose exceeds reachable workspace.\n");
+			break;
+		case 2:
+		default:
+			printf("OnMovL_DualArm_FixBody: Right arm IK failed.\n");
+			break;
+		}
+		return false;
+	}
+
+	// VA check
+	OnMovCheckVA(Arm0_Pln_Path, m_cycle, m_Joint_Acc_Lmt, m_Joint_Vel_Lmt);
+	OnMovCheckVA(Arm1_Pln_Path, m_cycle, m_Joint_Acc_Lmt, m_Joint_Vel_Lmt);
+
+	// save
+	if (0)
+	{
+		char *path1 = (char *)"left_joints.txt";
+		char *path2 = (char *)"right_joints.txt";
+		Arm0_Pln_Path->OnSave(path1);
+		Arm1_Pln_Path->OnSave(path2);
+	}
+
+	return true;
+}
+
 /////////////////////////////////////////////
 CAxisJointPln::CAxisJointPln()
 {
