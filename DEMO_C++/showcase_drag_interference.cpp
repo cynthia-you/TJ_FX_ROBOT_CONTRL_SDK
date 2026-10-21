@@ -118,7 +118,7 @@ int main()
     OnSetTargetState_B(3);
     OnSetImpType_B(1);
     OnSetSend();
-    SLEEP(500);
+    SLEEP(1000);
 
     // ===== 6. 进入关节拖动模式(进拖动前必须先进关节阻抗) =====
     OnClearSet();

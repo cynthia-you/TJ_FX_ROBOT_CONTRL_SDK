@@ -176,7 +176,7 @@ int main()
     OnClearSet();
     OnSetTargetState_A(1);
     OnSetSend();
-    SLEEP(200);
+    SLEEP(1000);
 
     // 设置左臂速度和加速度限制并发送指令
     OnClearSet();
@@ -201,7 +201,7 @@ int main()
     OnSetTargetState_A(3);
     OnSetImpType_A(3);
     OnSetSend();
-    SLEEP(200);
+    SLEEP(1000);
 
     // 设置末端力控参数：Z方向力控
     double fcCtrlPara[7] = {0.0};

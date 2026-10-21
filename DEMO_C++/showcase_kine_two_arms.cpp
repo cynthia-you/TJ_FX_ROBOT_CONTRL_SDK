@@ -1,6 +1,7 @@
 #include "FxRobot.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // =============================================================================
 // 示例说明：演示双臂运动学接口的初始化、坐标配置、正解和逆解
@@ -83,6 +84,7 @@ void KineTwoArmsDemo()
     else
     {
         printf("Robot Load CFG Error\n");
+        return;
     }
     printf("------------------------------\n");
 
@@ -91,6 +93,7 @@ void KineTwoArmsDemo()
     if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
+        return;
     }
     else
     {
@@ -100,6 +103,7 @@ void KineTwoArmsDemo()
     if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
+        return;
     }
     else
     {
@@ -109,6 +113,7 @@ void KineTwoArmsDemo()
     if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
+        return;
     }
     else
     {
@@ -119,6 +124,7 @@ void KineTwoArmsDemo()
     if (FX_Robot_Init_Type(1, TYPE[1]) == false)
     {
         printf("Robot Init Type Error\n");
+        return;
     }
     else
     {
@@ -128,6 +134,7 @@ void KineTwoArmsDemo()
     if (FX_Robot_Init_Kine(1, DH[1]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
+        return;
     }
     else
     {
@@ -137,6 +144,7 @@ void KineTwoArmsDemo()
     if (FX_Robot_Init_Lmt(1, PNVA[1], BD[1]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
+        return;
     }
     else
     {
@@ -191,6 +199,7 @@ void KineTwoArmsDemo()
     if (FX_Robot_Kine_FK(0, jv, kine_pg) == false)
     {
         printf("Robot Forward Kinematics Error\n");
+        return;
     }
     else
     {
@@ -204,6 +213,7 @@ void KineTwoArmsDemo()
     if (FX_Robot_Kine_FK(1, jv1, kine_pg1) == false)
     {
         printf("Robot Forward Kinematics Error\n");
+        return;
     }
     else
     {
@@ -214,7 +224,12 @@ void KineTwoArmsDemo()
 
     // [阶段三｜步骤 7] 根据目标位姿计算双臂逆运动学
     printf("A arm\n");
+    // 结构体使用前清零，并显式设置零空间类型和求解容差，避免读取未初始化内存
     FX_InvKineSolvePara sp;
+    memset(&sp, 0, sizeof(sp));
+    sp.m_Input_IK_ZSPType = 0;
+    sp.m_DGR1 = 10;
+    sp.m_DGR2 = 10;
     for (i = 0; i < 4; i++)
     {
         for (j = 0; j < 4; j++)
@@ -239,7 +254,12 @@ void KineTwoArmsDemo()
     }
 
     printf("B arm\n");
+    // 结构体使用前清零，并显式设置零空间类型和求解容差，避免读取未初始化内存
     FX_InvKineSolvePara sp1;
+    memset(&sp1, 0, sizeof(sp1));
+    sp1.m_Input_IK_ZSPType = 0;
+    sp1.m_DGR1 = 10;
+    sp1.m_DGR2 = 10;
     for (i = 0; i < 4; i++)
     {
         for (j = 0; j < 4; j++)

@@ -20,7 +20,7 @@ def collect_identy_data(robot_id, pvt_file, pvt_id, save_path):
     robot.clear_set()
     robot.set_state(arm=robot_id, state=2)  # PVT， 自己的速度和加速度，不受外部控制。
     robot.send_cmd()
-    time.sleep(0.5)
+    time.sleep(1)
 
     '''订阅数据查看是否设置'''
     sub_data = robot.subscribe(dcss)

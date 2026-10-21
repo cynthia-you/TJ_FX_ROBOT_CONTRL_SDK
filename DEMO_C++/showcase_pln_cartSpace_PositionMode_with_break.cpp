@@ -2,7 +2,6 @@
 #include "FxRobot.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "unistd.h"
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -214,7 +213,7 @@ int main()
     OnClearSet();
     OnSetTargetState_A(1);
     OnSetSend();
-    SLEEP(50);
+    SLEEP(1000);
 
     // 读取并打印控制参数，查看设置是否成功
     OnGetBuf(&dcss);
@@ -261,22 +260,26 @@ int main()
     if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == false)
     {
         printf("Load CFG Error\n");
+        OnRelease();
         return -1;
     }
     // 初始化运动学参数
     if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
+        OnRelease();
         return -1;
     }
     if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
+        OnRelease();
         return -1;
     }
     if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
+        OnRelease();
         return -1;
     }
     // [阶段二｜步骤 8] 通过正运动学计算起点末端位姿
@@ -289,6 +292,7 @@ int main()
     if (FX_Robot_Kine_FK(0, jv, kine_pg) == false)
     {
         printf("Forward Kinematics Error\n");
+        OnRelease();
         return -1;
     }
 
@@ -297,6 +301,7 @@ int main()
     if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == false)
     {
         printf("matrix to xyzabc failed.");
+        OnRelease();
         return -1;
     }
     double start[6] = {0.0};
@@ -316,9 +321,10 @@ int main()
     // [阶段三｜步骤 11] 生成 50 Hz 在线直线轨迹
     CPointSet pset_movla;
     long freq = 50;
-    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 1000, 1000, freq, &pset_movla) == false)
+    if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla) == false)
     {
         printf("MOVLA Error\n");
+        OnRelease();
         return -1;
     }
 
@@ -328,6 +334,7 @@ int main()
         if (!OnSetPlnCart_A(&pset_movla))
         {
             printf("Failed to run MOVLA plan\n");
+            OnRelease();
             return -1;
         }
 
@@ -336,7 +343,25 @@ int main()
 
         // [阶段三｜步骤 13] 中断当前规划执行
         OnStopPlnJoint_A();
-        SLEEP(200);
+
+        // 等待机械臂停稳（m_LowSpdFlag 置 1 表示停止运动），带超时保护
+        int wait_ms = 0;
+        do
+        {
+            OnGetBuf(&dcss);
+            SLEEP(1);
+            wait_ms++;
+        } while (dcss.m_Out[0].m_LowSpdFlag != 1 && wait_ms < 5000);
+
+        // 中断后机械臂停在轨迹中间，下一轮直接重发从原始起点规划的整条轨迹
+        // 存在与实际位置不一致的跳变风险；如需严格连续，应从当前位置重新 FK/规划。
+        // 此处保持原演示语义：重发同一条轨迹（控制器从当前位置执行）。
+        printf("round %d stopped at joints:", i);
+        for (int k = 0; k < 7; k++)
+        {
+            printf("%.2lf ", dcss.m_Out[0].m_FB_Joint_Pos[k]);
+        }
+        printf("\n");
     }
 
     // [阶段四｜步骤 14] 任务结束：下使能并释放连接
@@ -347,5 +372,5 @@ int main()
     SLEEP(50);
 
     OnRelease();
-    return 1;
+    return 0;
 }

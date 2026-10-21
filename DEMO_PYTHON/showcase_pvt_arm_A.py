@@ -68,11 +68,36 @@ else:
 robot.log_switch('1') #全局日志开："1", 关："0"
 robot.local_log_switch('1') # 主要日志开："1", 关："0"
 
+robot.clear_set()
+robot.set_vel_acc(arm='A', velRatio=50, AccRatio=50)
+timeout = robot.send_cmd_wait_response(100)
+logger.info(f'set A arm vel&acc, 100ms timeout: {timeout} ms')
+
+robot.clear_set()
+robot.set_state(arm='A', state=1)
+timeout = robot.send_cmd_wait_response(100)
+logger.info(f'set A arm position mode, 100ms timeout: {timeout} ms')
+
+time.sleep(1)
+sub_data = robot.subscribe(dcss)
+logger.info('-----------\nA arm:')
+logger.info(f'current state{sub_data["states"][0]["cur_state"]}')
+logger.info(f'arm error code:{sub_data["states"][0]["err_code"]}')
+
+start_joints_A = [0]*7
+
+robot.clear_set()
+robot.set_joint_cmd_pose(arm='A', joints=start_joints_A)
+robot.send_cmd()
+logger.info(f'set A arm initial pos')
+
+time.sleep(3)
+
 '''设置PVT模式'''
 robot.clear_set()
 robot.set_state(arm='A',state=2)#PVT， 自己的速度和加速度，不受外部控制。
 robot.send_cmd()
-time.sleep(0.5)
+time.sleep(1)
 
 '''订阅数据查看是否设置'''
 sub_data=robot.subscribe(dcss)

@@ -2,7 +2,6 @@
 #include "MarvinSDK.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "unistd.h"
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -121,11 +120,12 @@ int main()
 
         if (motion_tag > 0)
         {
-            std::cout << "success:机器人连接成功!" << std::endl;
+            std::cout << "success:Robot connected!" << std::endl;
         }
         else
         {
-            std::cerr << "failed:机器人连接失败!" << std::endl;
+            std::cerr << "failed:Connection failed!" << std::endl;
+            OnRelease();
             return -1;
         }
     }
@@ -148,7 +148,7 @@ int main()
     OnClearSet();
     OnSetTargetState_A(1);
     OnSetSend();
-    SLEEP(50);
+    SLEEP(1000);
 
     // 读取并打印控制参数
     OnGetBuf(&dcss);
@@ -157,7 +157,7 @@ int main()
     printf("CMD of vel and acc:%d %d\n", dcss.m_In[0].m_Joint_Vel_Ratio, dcss.m_In[0].m_Joint_Acc_Ratio);
 
     // [阶段二｜步骤 5] 运动至规划起点
-    double joints_a[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
+    double joints_a[7] = {39.595015,-62.257979,0.000000,-57.210696, -5.308524,-4.515829,5.730452};
     OnClearSet();
     OnSetJointCmdPos_A(joints_a);
     OnSetSend();
@@ -199,31 +199,36 @@ int main()
     if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == false)
     {
         printf("Load CFG Error\n");
+        OnRelease();
         return -1;
     }
     // 初始化运动学参数
     if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
+        OnRelease();
         return -1;
     }
     if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
+        OnRelease();
         return -1;
     }
     if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
+        OnRelease();
         return -1;
     }
 
     // [阶段二｜步骤 7] 通过正运动学计算起点末端位姿
-    double jv[7] = {44.04, -62.57, -8.92, -57.21, 1.45, -4.39, 2.1};
+    double jv[7] = {39.595015,-62.257979,0.000000,-57.210696, -5.308524,-4.515829,5.730452};
     double kine_pg[4][4];
     if (FX_Robot_Kine_FK(0, jv, kine_pg) == false)
     {
         printf("Forward Kinematics Error\n");
+        OnRelease();
         return -1;
     }
 
@@ -232,6 +237,7 @@ int main()
     if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == false)
     {
         printf("matrix to xyzabc failed.");
+        OnRelease();
         return -1;
     }
 
@@ -254,40 +260,58 @@ int main()
     ret_pset1.OnEmpty();
     long freq = 50;
     // 设置第一段起点和终点
-    if (FX_Robot_PLN_Set_MOVL_Start(0, jv, start, end, 5.0, 1, zsp_p, 1000, 2000, freq) == false)
+    if (FX_Robot_PLN_Set_MOVL_Start(0, jv, start, end, 5.0, 1, zsp_p, 100, 100, freq) == false)
     {
         printf("MOVL Start Error\n");
+        OnRelease();
         return -1;
     }
 
     // 输入第二个目标点
     end[1] -= 200;
-    if (FX_Robot_PLN_Set_MOVL_Next_Point(0, end, 5.0, 1, zsp_p, 1000, 2000) == false)
+    if (FX_Robot_PLN_Set_MOVL_Next_Point(0, end, 5.0, 1, zsp_p, 100, 100) == false)
     {
-        printf("----------------------------\n");
+        printf("MOVL Next Point Error\n");
+        OnRelease();
+        return -1;
     }
 
     // 输入第三个目标点
     end[2] -= 200;
-    if (FX_Robot_PLN_Set_MOVL_Next_Point(0, end, 5.0, 1, zsp_p, 1000, 2000) == false)
+    if (FX_Robot_PLN_Set_MOVL_Next_Point(0, end, 5.0, 1, zsp_p, 100, 100) == false)
     {
-        printf("----------------------------\n");
+        printf("MOVL Next Point Error\n");
+        OnRelease();
+        return -1;
     }
 
     // 输入第n个目标点
     end[1] += 200;
-    if (FX_Robot_PLN_Set_MOVL_Next_Point(0, end, 5.0, 1, zsp_p, 1000, 2000) == false)
+    if (FX_Robot_PLN_Set_MOVL_Next_Point(0, end, 5.0, 1, zsp_p, 100, 100) == false)
     {
-        printf("----------------------------\n");
+        printf("MOVL Next Point Error\n");
+        OnRelease();
+        return -1;
     }
 
-    //
+    // 获取整条多段直线轨迹
     if (FX_Robot_PLN_Get_MOVL_Path(0, &ret_pset1) == false)
     {
-        printf("----------------------------\n");
+        printf("Get MOVL Path Error\n");
+        OnRelease();
+        return -1;
     }
 
+    char* a = (char*)"find_start.txt";
+    ret_pset1.OnSave(a);
+
     long num = ret_pset1.OnGetPointNum();
+    if (num <= 0)
+    {
+        printf("MOVL path is empty, abort\n");
+        OnRelease();
+        return -1;
+    }
     double *p = ret_pset1.OnGetPoint(num - 1);
     jv[0] = p[0];
     jv[1] = p[1];
@@ -311,17 +335,29 @@ int main()
     }
 
     // return 0;
-    // [阶段四｜步骤 12] 等待轨迹执行完成
+    // [阶段四｜步骤 12] 等待轨迹执行完成，带超时保护
     SLEEP(200);
-    do
     {
-        OnGetBuf(&dcss);
-        SLEEP(1);
-        for (long joint = 0; joint < 7; joint++)
+        int wait_ms = 0;
+        bool done = false;
+        do
         {
-            fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
+            OnGetBuf(&dcss);
+            SLEEP(1);
+            wait_ms++;
+            for (long joint = 0; joint < 7; joint++)
+            {
+                fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
+            }
+            done = (dcss.m_Out[0].m_LowSpdFlag == 1 || checkJointsReached(jv, fb_joints));
+        } while (!done && wait_ms < 60000);
+        if (!done)
+        {
+            printf("wait traj finish timeout\n");
+            OnRelease();
+            return -1;
         }
-    } while (!(dcss.m_Out[0].m_LowSpdFlag == 1 || checkJointsReached(jv, fb_joints)));
+    }
 
     // [阶段四｜步骤 13] 任务结束：下使能并释放连接
 FAIL_STEP:

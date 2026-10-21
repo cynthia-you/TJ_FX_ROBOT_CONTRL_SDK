@@ -99,7 +99,7 @@ logger.info(f'set position mode, 100ms 内测到的执行的响应延迟是 ：{
 
 
 '''订阅数据查看是否设置'''
-time.sleep(0.2)
+time.sleep(1)
 sub_data=robot.subscribe(dcss)
 logger.info('-----------\nA arm:')
 logger.info(f'current state{sub_data["states"][0]["cur_state"]}')

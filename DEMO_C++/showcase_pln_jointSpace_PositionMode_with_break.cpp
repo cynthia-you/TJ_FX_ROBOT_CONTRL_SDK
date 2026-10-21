@@ -1,7 +1,6 @@
 #include "MarvinSDK.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "unistd.h"
 #include <iostream>
 #include <cstdlib>
 #include <time.h>
@@ -181,7 +180,7 @@ int main()
     OnClearSet();
     OnSetJointLmt_A(vel, acc);
     return_delay=OnSetSendWaitResponse(wait_respond_time);
-    printf(" cmd delay in 100ms is:%d\n", return_delay);
+    printf(" cmd delay in 100ms is:%ld\n", return_delay);
     SLEEP(100);
 
 
@@ -190,11 +189,14 @@ int main()
     OnClearSet();;
     OnSetTargetState_A(1);
     return_delay1=OnSetSendWaitResponse(wait_respond_time);
-    printf(" cmd delay in 100ms is:%d\n", return_delay1);
+    printf(" cmd delay in 100ms is:%ld\n", return_delay1);
+    SLEEP(1000);
 
     if (OnInitPlnLmt((char*)"ccs_m6_40.MvKDCfg")!=true)
     {
         printf("load cfg failed!\n");
+        OnRelease();
+        return -1;
     }else{
         printf("load NPVA success!\n");
     }
@@ -204,18 +206,28 @@ int main()
     OnClearSet();
     OnSetJointCmdPos_A(initial_pos);
     return_delay1 = OnSetSendWaitResponse(wait_respond_time);
-    printf(" cmd delay in 100ms is:%d\n", return_delay1);
+    printf(" cmd delay in 100ms is:%ld\n", return_delay1);
     // 等待到达工作起点并进入稳定状态
     SLEEP(3000);
 
     double fb_joints[7]={0.0};
+    int wait_ms = 0;
+    bool reached = false;
     do {
         OnGetBuf(&dcss);
         for (long joint = 0; joint < 7; joint++) {
             fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
         }
         SLEEP(1);
-    } while (!checkJointsReached(initial_pos, fb_joints));
+        wait_ms++;
+        reached = checkJointsReached(initial_pos, fb_joints);
+    } while (!reached && wait_ms < 60000);
+    if (!reached)
+    {
+        printf("wait arm reach initial position timeout\n");
+        OnRelease();
+        return -1;
+    }
 
 
     // [阶段二｜步骤 8] 设置规划器速度和加速度比例，取值范围为 0～1
@@ -225,21 +237,37 @@ int main()
     long j=0;
     double start_joints[7]={0};
     double stop_joints[7]={0,0,30,0,0,0,0};
+
+    // 首轮规划起点使用当前反馈位置
+    for (int k = 0; k < 7; k++)
+    {
+        start_joints[k] = dcss.m_Out[0].m_FB_Joint_Pos[k];
+    }
     print_array(start_joints, 7, "start joints of arm A");
     print_array(stop_joints, 7, "stop joints of arm A");
 
     for (j = 0; j < 5; j++)
     {
         printf("---iter---:%ld\n",j);
-        // 刷新直到轨迹状态为0
+        // 刷新直到轨迹状态为0，带超时保护
+        int wait_ms = 0;
         do {
             OnGetBuf(&dcss);
-        } while (dcss.m_Out[0].m_TrajState != 0);
+            SLEEP(1);
+            wait_ms++;
+        } while (dcss.m_Out[0].m_TrajState != 0 && wait_ms < 60000);
+        if (wait_ms >= 60000)
+        {
+            printf("wait previous traj finish timeout\n");
+            OnRelease();
+            return -1;
+        }
 
         // [阶段三｜步骤 9] 使用规划接口下发关节目标
         if (OnSetPlnJoint_A(start_joints, stop_joints, vel_ratio, acc_ratio) != true)
         {
             printf("A arm pln failed at iteration %ld!\n", j);
+            OnRelease();
             return -1;
         }
 
@@ -248,9 +276,26 @@ int main()
 
         // [阶段三｜步骤 10] 中断当前规划执行
         OnStopPlnJoint_A();
-        SLEEP(200);
-        // 打印当前关节位置
+
+        // 等待机械臂停稳（m_LowSpdFlag 置 1 表示停止运动），带超时保护
+        wait_ms = 0;
+        do
+        {
+            OnGetBuf(&dcss);
+            SLEEP(1);
+            wait_ms++;
+        } while (dcss.m_Out[0].m_LowSpdFlag != 1 && wait_ms < 5000);
+
+        // 重新读取反馈，打印中断时的关节位置
+        OnGetBuf(&dcss);
         print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "arm A break at:");
+
+        // 中断后机械臂停在中间位置，下一轮规划起点必须从当前反馈位置填充，
+        // 避免规划起点与实际位置不一致导致的执行跳变
+        for (int k = 0; k < 7; k++)
+        {
+            start_joints[k] = dcss.m_Out[0].m_FB_Joint_Pos[k];
+        }
     }
 
 
@@ -262,5 +307,5 @@ int main()
     OnSetSend();
     SLEEP(50);
     OnRelease();
-    return 1;
+    return 0;
 }

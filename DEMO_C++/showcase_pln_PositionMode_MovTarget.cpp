@@ -2,7 +2,6 @@
 #include "FxRobot.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "unistd.h"
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -166,6 +165,7 @@ int main()
     }
 
     // [阶段一｜步骤 3] 检查帧序号更新，确认 UDP 数据通道正常
+    // 本示例只控制 B 臂，统一使用 m_Out[1] 的帧序号判断
     int motion_tag = 0;
     int frame_update = 0;
 
@@ -174,8 +174,7 @@ int main()
         OnGetBuf(&dcss);
         std::cout << "connect frames:" << dcss.m_Out[1].m_OutFrameSerial << std::endl;
 
-        if (dcss.m_Out[0].m_OutFrameSerial != 0 &&
-            frame_update != dcss.m_Out[1].m_OutFrameSerial)
+        if (frame_update != dcss.m_Out[1].m_OutFrameSerial)
         {
             motion_tag++;
             frame_update = dcss.m_Out[1].m_OutFrameSerial;
@@ -260,22 +259,26 @@ int main()
     if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == false)
     {
         printf("Load CFG Error\n");
+        OnRelease();
         return -1;
     }
     // 初始化运动学参数
     if (FX_Robot_Init_Type(1, TYPE[1]) == false)
     {
         printf("Robot Init Type Error\n");
+        OnRelease();
         return -1;
     }
     if (FX_Robot_Init_Kine(1, DH[1]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
+        OnRelease();
         return -1;
     }
     if (FX_Robot_Init_Lmt(1, PNVA[1], BD[1]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
+        OnRelease();
         return -1;
     }
     // [阶段二｜步骤 8] 通过正运动学计算起点末端位姿
@@ -284,6 +287,7 @@ int main()
     if (FX_Robot_Kine_FK(1, jv, kine_pg) == false)
     {
         printf("Forward Kinematics Error\n");
+        OnRelease();
         return -1;
     }
 
@@ -292,6 +296,7 @@ int main()
     if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == false)
     {
         printf("matrix to xyzabc failed.");
+        OnRelease();
         return -1;
     }
     double start[6] = {0.0};
@@ -311,6 +316,7 @@ int main()
     if (FX_Matrix42XYZABCDEG(pg_end, end) == false)
     {
         printf("matrix to xyzabc failed.");
+        OnRelease();
         return -1;
     }
 
@@ -321,10 +327,17 @@ int main()
     if (FX_Robot_PLN_MOV_Target(1, start, end, jv, 100, 100, freq, &pset_movt) == false)
     {
         printf("MOVL Target Error\n");
+        OnRelease();
         return -1;
     }
 
     long num1 = pset_movt.OnGetPointNum();
+    if (num1 <= 0)
+    {
+        printf("MOV Target path is empty, abort\n");
+        OnRelease();
+        return -1;
+    }
     double *joint1 = pset_movt.OnGetPoint(num1 - 1);
     jv[0] = joint1[0];
     jv[1] = joint1[1];
@@ -345,7 +358,7 @@ int main()
     }
     SLEEP(20);
 
-    // 等待目标运动完成
+    // 等待目标运动完成，带超时保护（tim2 超过 150 次约 30 s 视为超时）
     do
     {
         OnGetBuf(&dcss);
@@ -355,13 +368,23 @@ int main()
             fb_joints[joint] = dcss.m_Out[1].m_FB_Joint_Pos[joint];
         }
         tim2++;
-        if (tim2 > 30)
+        if (tim2 > 150)
         {
+            printf("wait MOV Target finish timeout\n");
             break;
         }
     } while (!checkJointsReached(jv, fb_joints) || dcss.m_Out[1].m_TrajState != 0);
 
 EAIT:
+    // 超时或下发失败时不得立即下使能：先确认轨迹已停止（必要时调用停止接口），再下使能
+    OnGetBuf(&dcss);
+    if (dcss.m_Out[1].m_TrajState != 0)
+    {
+        printf("traj still running at exit, stop planning first\n");
+        OnStopPlnJoint_B();
+        SLEEP(500);
+    }
+
     // [阶段四｜步骤 13] 任务结束：下使能并释放连接
     SLEEP(200);
     OnClearSet();
@@ -370,5 +393,5 @@ EAIT:
     SLEEP(200);
 
     OnRelease();
-    return 1;
+    return 0;
 }

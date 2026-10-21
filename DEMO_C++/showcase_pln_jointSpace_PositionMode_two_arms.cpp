@@ -1,7 +1,6 @@
 #include "MarvinSDK.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "unistd.h"
 #include <iostream>
 #include <cstdlib>
 #include <time.h>
@@ -209,7 +208,7 @@ int main()
     OnSetJointLmt_A(vel, acc);
     OnSetJointLmt_B(vel, acc);
     return_delay = OnSetSendWaitResponse(wait_respond_time);
-    printf(" cmd delay in 100ms is:%d\n", return_delay);
+    printf(" cmd delay in 100ms is:%ld\n", return_delay);
     SLEEP(100);
 
     // [阶段二｜步骤 6] 设置双臂位置模式
@@ -218,8 +217,8 @@ int main()
     OnSetTargetState_A(1);
     OnSetTargetState_B(1);
     return_delay1 = OnSetSendWaitResponse(wait_respond_time);
-    printf(" cmd delay in 100ms is:%d\n", return_delay1);
-    SLEEP(100);
+    printf(" cmd delay in 100ms is:%ld\n", return_delay1);
+    SLEEP(1000);
 
     if (OnInitPlnLmt((char *)"ccs_m6_40.MvKDCfg") != true)
     {
@@ -236,11 +235,14 @@ int main()
     OnSetJointCmdPos_A(initial_pos);
     OnSetJointCmdPos_B(initial_pos);
     return_delay1 = OnSetSendWaitResponse(wait_respond_time);
-    printf(" cmd delay in 100ms is:%d\n", return_delay1);
+    printf(" cmd delay in 100ms is:%ld\n", return_delay1);
     SLEEP(3000);
 
     double fb_joints0[7] = {0.0};
     double fb_joints1[7] = {0.0};
+    int wait_ms = 0;
+    bool reached = false;
+    // 等待双臂都运动到零位（任一臂未到位则继续等待），带超时保护
     do
     {
         OnGetBuf(&dcss);
@@ -250,7 +252,15 @@ int main()
             fb_joints1[joint] = dcss.m_Out[1].m_FB_Joint_Pos[joint];
         }
         SLEEP(1);
-    } while (!checkJointsReached(initial_pos, fb_joints0) or !checkJointsReached(initial_pos, fb_joints1));
+        wait_ms++;
+        reached = checkJointsReached(initial_pos, fb_joints0) && checkJointsReached(initial_pos, fb_joints1);
+    } while (!reached && wait_ms < 60000);
+    if (!reached)
+    {
+        std::cerr << "failed:arms reach initial position timeout" << std::endl;
+        OnRelease();
+        return -1;
+    }
 
     // [阶段三｜步骤 8] 设置规划器速度和加速度比例，取值范围为 0～1
     double vel_ratio = 0.2;
@@ -262,11 +272,27 @@ int main()
     double stop_joints0[7] = {17.470, -43.308, 11.804, -79.761, -10.700, -2.874, 9.134};
     double stop_joints1[7] = {-17.470, -43.308, -11.804, -79.761, 10.700, -2.874, -9.134};
 
-    // 等待上一段轨迹结束
+    // 从反馈位置填充双臂规划起点（必须与实际位置一致，不能用硬编码全 0）
+    for (long joint = 0; joint < 7; joint++)
+    {
+        start_joints0[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
+        start_joints1[joint] = dcss.m_Out[1].m_FB_Joint_Pos[joint];
+    }
+
+    // 等待上一段轨迹结束（双臂都结束才继续），带超时保护
+    wait_ms = 0;
     do
     {
         OnGetBuf(&dcss);
-    } while (dcss.m_Out[0].m_TrajState != 0 or dcss.m_Out[1].m_TrajState != 0);
+        SLEEP(1);
+        wait_ms++;
+    } while ((dcss.m_Out[0].m_TrajState != 0 || dcss.m_Out[1].m_TrajState != 0) && wait_ms < 60000);
+    if (wait_ms >= 60000)
+    {
+        std::cerr << "failed:wait previous traj finish timeout" << std::endl;
+        OnRelease();
+        return -1;
+    }
 
     // 打印当前关节位置
     print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "current joints of arm A");
@@ -281,14 +307,25 @@ int main()
     if (CoRunPlnJoint(start_joints0, stop_joints0, start_joints1, stop_joints1, vel_ratio, acc_ratio) != true)
     {
         printf("AB arm pln failed at iteration %ld!\n", j);
+        OnRelease();
         return -1;
     }
 
-    // [阶段四｜步骤 10] 等待双臂轨迹执行完成
+    // [阶段四｜步骤 10] 等待双臂轨迹执行完成（双臂都完成才继续），带超时保护
+    wait_ms = 0;
     do
     {
         OnGetBuf(&dcss);
-    } while (dcss.m_Out[0].m_TrajState != 0 or dcss.m_Out[1].m_TrajState != 0);
+        SLEEP(1);
+        wait_ms++;
+    } while ((dcss.m_Out[0].m_TrajState != 0 || dcss.m_Out[1].m_TrajState != 0) && wait_ms < 60000);
+    if (wait_ms >= 60000)
+    {
+        // 超时不得直接下使能（避免运动中断使能），释放连接并退出
+        std::cerr << "failed:wait dual arm traj finish timeout" << std::endl;
+        OnRelease();
+        return -1;
+    }
 
     OnGetBuf(&dcss);
     print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "current joints of arm A");
@@ -302,5 +339,5 @@ int main()
     OnSetSend();
     SLEEP(50);
     OnRelease();
-    return 1;
+    return 0;
 }

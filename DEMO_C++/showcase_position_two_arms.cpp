@@ -164,7 +164,7 @@ int main()
     OnSetTargetState_B(1) ;
     OnSetJointLmt_B(10, 10) ;
     OnSetSend();
-    SLEEP(200);
+    SLEEP(1000);
 
 
     //订阅查看设置是否成功

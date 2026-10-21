@@ -1,6 +1,7 @@
 #include "FxRobot.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // =============================================================================
 // 示例说明：集中演示直线轨迹的在线、离线及保持关节构型规划接口
@@ -82,6 +83,7 @@ void RobotPLNDemo()
     else
     {
         printf("Robot Load CFG Error\n");
+        return;
     }
     printf("------------------------------\n");
 
@@ -89,6 +91,7 @@ void RobotPLNDemo()
     if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
+        return;
     }
     else
     {
@@ -98,6 +101,7 @@ void RobotPLNDemo()
     if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
+        return;
     }
     else
     {
@@ -107,6 +111,7 @@ void RobotPLNDemo()
     if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
+        return;
     }
     else
     {
@@ -173,7 +178,11 @@ void RobotPLNDemo()
 
     char *pvt_file = (char *)"test.txt";
 
-    pset_movl.OnLoadFast(pvt_file);
+    if (pset_movl.OnLoadFast(pvt_file) == false)
+    {
+        printf("MOVL offline load Error\n");
+        return;
+    }
 
     int point_num = 0;
     point_num = pset_movl.OnGetPointNum();
@@ -182,11 +191,12 @@ void RobotPLNDemo()
     for (long tag = 0; tag < point_num; tag += 10) // 500 Hz 轨迹下采样为 50 Hz
     {
         double *pvv = pset_movl.OnGetPoint(tag);
-        print_array(pvv, 7, "MOVL offline pvt point");
-        if (pvv = NULL)
+        if (pvv == NULL)
         {
             printf("MOVL offline pln Error\n");
+            return;
         }
+        print_array(pvv, 7, "MOVL offline pvt point");
     }
     printf("------------------------------\n");
 
@@ -209,11 +219,12 @@ void RobotPLNDemo()
     for (long tag = 0; tag < point_num1; tag += 10) // 500 Hz 轨迹下采样为 50 Hz
     {
         double *pvv1 = pset_movla.OnGetPoint(tag);
-        print_array(pvv1, 7, "MOVLA online pvt point");
-        if (pvv1 = NULL)
+        if (pvv1 == NULL)
         {
             printf("MOVLA online pln Error\n");
+            return;
         }
+        print_array(pvv1, 7, "MOVLA online pvt point");
     }
     printf("------------------------------\n");
 
@@ -238,20 +249,25 @@ void RobotPLNDemo()
 
     char *pvt_file1 = (char *)"testkeepj.txt";
 
-    pset_movl_keepj.OnLoadFast(pvt_file1);
+    if (pset_movl_keepj.OnLoadFast(pvt_file1) == false)
+    {
+        printf("MOVL_KEEPJ offline load Error\n");
+        return;
+    }
 
     int point_num2 = 0;
     point_num2 = pset_movl_keepj.OnGetPointNum();
     printf("[OFFLINE] MOVL number of pvt points:%d\n", point_num2);
 
-    for (long tag = 0; tag < point_num2; tag += 20)
+    for (long tag = 0; tag < point_num2; tag += 10) // 500 Hz 轨迹下采样为 50 Hz
     {
         double *pvv2 = pset_movl_keepj.OnGetPoint(tag);
-        print_array(pvv2, 7, "MOVL_KEEPJ offline pvt point");
-        if (pvv2 = NULL)
+        if (pvv2 == NULL)
         {
             printf("MOVL_KEEPJ offline pln Error\n");
+            return;
         }
+        print_array(pvv2, 7, "MOVL_KEEPJ offline pvt point");
     }
     printf("------------------------------\n");
 
@@ -271,14 +287,15 @@ void RobotPLNDemo()
     point_num3 = pset_movl_keepja.OnGetPointNum();
     printf("[ONLINE] MOVL_KEEPJA  number of online pvt points:%d\n", point_num3);
 
-    for (long tag = 0; tag < point_num3; tag += 20)
+    for (long tag = 0; tag < point_num3; tag += 10) // 500 Hz 轨迹下采样为 50 Hz
     {
         double *pvv3 = pset_movl_keepja.OnGetPoint(tag);
-        print_array(pvv3, 7, "MOVL_KEEPJA online pvt point");
-        if (pvv3 = NULL)
+        if (pvv3 == NULL)
         {
             printf("MOVL_KEEPJA online pln Error\n");
+            return;
         }
+        print_array(pvv3, 7, "MOVL_KEEPJA online pvt point");
     }
     printf("------------------------------\n");
 }

@@ -73,7 +73,7 @@ robot.set_state(arm='B', state=1)
 timeout = robot.send_cmd_wait_response(100)
 logger.info(f'set A&B arm position mode, 100ms timeout: {timeout} ms')
 
-time.sleep(0.2)
+time.sleep(1)
 sub_data = robot.subscribe(dcss)
 logger.info('-----------\nA arm:')
 logger.info(f'current state{sub_data["states"][0]["cur_state"]}')

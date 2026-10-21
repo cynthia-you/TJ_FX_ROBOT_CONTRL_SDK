@@ -72,7 +72,7 @@ robot.clear_set()
 robot.set_state(arm='A',state=1)#state=1位置模式
 robot.set_vel_acc(arm='A',velRatio=10, AccRatio=10)
 robot.send_cmd()
-time.sleep(0.5)
+time.sleep(1)
 
 '''机器人运动前开始设置保存数据'''
 cols=7

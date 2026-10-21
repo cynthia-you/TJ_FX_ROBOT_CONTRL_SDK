@@ -105,7 +105,7 @@ robot.set_impedance_type(arm='A', type=1)  # 1=关节阻抗
 robot.set_state(arm='B', state=3)
 robot.set_impedance_type(arm='B', type=1)
 robot.send_cmd()
-time.sleep(0.5)
+time.sleep(1)
 
 # ===== 6. 进入关节拖动模式(进拖动前必须先进关节阻抗) =====
 robot.clear_set()

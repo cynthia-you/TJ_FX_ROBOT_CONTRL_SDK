@@ -1,7 +1,6 @@
 #include "MarvinSDK.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "unistd.h"
 #include <iostream>
 #include <cstdlib>
 #include <time.h>
@@ -206,21 +205,22 @@ int main()
     OnClearSet();
     OnSetJointLmt_A(vel, acc);
     return_delay = OnSetSendWaitResponse(wait_respond_time);
-    printf(" cmd delay in 100ms is:%d\n", return_delay);
+    printf(" cmd delay in 100ms is:%ld\n", return_delay);
     SLEEP(100);
 
     // [阶段一｜步骤 6] 设置位置模式
     long return_delay1 = 0;
     OnClearSet();
-    ;
     OnSetTargetState_A(1);
     return_delay1 = OnSetSendWaitResponse(wait_respond_time);
-    printf(" cmd delay in 100ms is:%d\n", return_delay1);
-    SLEEP(100);
+    printf(" cmd delay in 100ms is:%ld\n", return_delay1);
+    SLEEP(1000);
 
     if (OnInitPlnLmt((char *)"ccs_m6_40.MvKDCfg") != true)
     {
         printf("load cfg failed!\n");
+        OnRelease();
+        return -1;
     }
     else
     {
@@ -232,10 +232,12 @@ int main()
     OnClearSet();
     OnSetJointCmdPos_A(initial_pos);
     return_delay1 = OnSetSendWaitResponse(wait_respond_time);
-    printf(" cmd delay in 100ms is:%d\n", return_delay1);
+    printf(" cmd delay in 100ms is:%ld\n", return_delay1);
     SLEEP(3000);
 
     double fb_joints[7] = {0.0};
+    int wait_ms = 0;
+    bool reached = false;
     do
     {
         OnGetBuf(&dcss);
@@ -244,7 +246,15 @@ int main()
             fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
         }
         SLEEP(1);
-    } while (!checkJointsReached(initial_pos, fb_joints));
+        wait_ms++;
+        reached = checkJointsReached(initial_pos, fb_joints);
+    } while (!reached && wait_ms < 60000);
+    if (!reached)
+    {
+        printf("wait arm reach initial position timeout\n");
+        OnRelease();
+        return -1;
+    }
 
     // [阶段二｜步骤 8] 设置规划器速度和加速度比例，取值范围为 0～1
     double vel_ratio = 0.2;
@@ -257,11 +267,20 @@ int main()
     for (j = 0; j < 5; j++)
     {
         printf("---iter---:%ld\n", j);
-        // [阶段三｜步骤 9] 等待上一段轨迹结束
+        // [阶段三｜步骤 9] 等待上一段轨迹结束，带超时保护
+        int wait_ms = 0;
         do
         {
             OnGetBuf(&dcss);
-        } while (dcss.m_Out[0].m_TrajState != 0);
+            SLEEP(1);
+            wait_ms++;
+        } while (dcss.m_Out[0].m_TrajState != 0 && wait_ms < 60000);
+        if (wait_ms >= 60000)
+        {
+            printf("wait previous traj finish timeout\n");
+            OnRelease();
+            return -1;
+        }
 
         // 打印当前关节位置
         print_array(dcss.m_Out[0].m_FB_Joint_Pos, 7, "current joints of arm A");
@@ -282,10 +301,13 @@ int main()
         if (OnSetPlnJoint_A(start_joints, stop_joints, vel_ratio, acc_ratio) != true)
         {
             printf("A arm pln failed at iteration %ld!\n", j);
+            OnRelease();
             return -1;
         }
 
-        // 等待轨迹规划完成
+        // 等待轨迹规划完成，带超时保护
+        bool reached = false;
+        wait_ms = 0;
         do
         {
             OnGetBuf(&dcss);
@@ -294,22 +316,41 @@ int main()
                 fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
             }
             SLEEP(1);
-        } while (!checkJointsReached(stop_joints, fb_joints));
+            wait_ms++;
+            reached = checkJointsReached(stop_joints, fb_joints);
+        } while (!reached && wait_ms < 60000);
+        if (!reached)
+        {
+            printf("wait pln traj reach target timeout\n");
+            OnRelease();
+            return -1;
+        }
 
-        // 刷新直到轨迹状态为0
+        // 刷新直到轨迹状态为0，带超时保护
+        wait_ms = 0;
         do
         {
             OnGetBuf(&dcss);
-        } while (dcss.m_Out[0].m_TrajState != 0);
+            SLEEP(1);
+            wait_ms++;
+        } while (dcss.m_Out[0].m_TrajState != 0 && wait_ms < 60000);
+        if (wait_ms >= 60000)
+        {
+            printf("wait traj state idle timeout\n");
+            OnRelease();
+            return -1;
+        }
 
         // [阶段三｜步骤 10] 直接下发关节命令，用于效果对比
         stop_joints[3] += 20;
         OnClearSet();
         OnSetJointCmdPos_A(stop_joints);
         return_delay1 = OnSetSendWaitResponse(wait_respond_time);
-        printf(" cmd delay in 100ms is:%d\n", return_delay1);
+        printf(" cmd delay in 100ms is:%ld\n", return_delay1);
 
-        // 等待运动完成
+        // 等待运动完成，带超时保护
+        reached = false;
+        wait_ms = 0;
         do
         {
             OnGetBuf(&dcss);
@@ -318,7 +359,15 @@ int main()
                 fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
             }
             SLEEP(1);
-        } while (!checkJointsReached(stop_joints, fb_joints));
+            wait_ms++;
+            reached = checkJointsReached(stop_joints, fb_joints);
+        } while (!reached && wait_ms < 60000);
+        if (!reached)
+        {
+            printf("wait direct cmd reach target timeout\n");
+            OnRelease();
+            return -1;
+        }
     }
 
     // [阶段四｜步骤 11] 任务结束：下使能并释放连接
@@ -328,5 +377,5 @@ int main()
     OnSetSend();
     SLEEP(50);
     OnRelease();
-    return 1;
+    return 0;
 }

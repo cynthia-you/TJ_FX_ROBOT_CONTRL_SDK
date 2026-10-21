@@ -84,7 +84,7 @@ robot.clear_set()
 robot.set_state(arm='A',state=3) #torque mode
 robot.set_impedance_type(arm='A',type=1) #type = 1 关节阻抗;type = 2 坐标阻抗;type = 3 力控
 robot.send_cmd()
-time.sleep(0.5)
+time.sleep(1)
 
 
 '''设置拖动模式和参数'''

@@ -178,7 +178,7 @@ int main()
     OnSetTargetState_A(1); // 3:torque mode; 1:position mode
     OnSetJointLmt_A(10, 10);
     OnSetSend();
-    SLEEP(200);
+    SLEEP(1000);
 
     // 订阅查看设置是否成功
     OnGetBuf(&dcss);
@@ -213,7 +213,8 @@ int main()
     else
     {
         printf("Robot Load CFG Error\n");
-        printf(">>> 请确认 ccs_m6.MvKDCfg 是否在可执行程序同目录，或写绝对路径\n");
+        printf(">>> Please ensure that ccs_m6_40.MvKDCfg is located in the same directory as the executable, or provide its absolute path.\n");
+        OnRelease();
         return 0;
     }
     printf("------------------------------\n");
@@ -221,6 +222,7 @@ int main()
     if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
+        OnRelease();
         return 0;
     }
     else
@@ -231,6 +233,7 @@ int main()
     if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
+        OnRelease();
         return 0;
     }
     else
@@ -241,6 +244,7 @@ int main()
     if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
+        OnRelease();
         return 0;
     }
     else
@@ -316,10 +320,9 @@ int main()
     else
     {
         printf("Robot JntTau2EETau Success\n");
+        printf("Fx=%f Fy=%f Fz=%f\n", EE_Torque[0], EE_Torque[1], EE_Torque[2]);
+        printf("Nx=%f Ny=%f Nz=%f\n", EE_Torque[3], EE_Torque[4], EE_Torque[5]);
     }
-
-    printf("Fx=%f Fy=%f Fz=%f\n", EE_Torque[0], EE_Torque[1], EE_Torque[2]);
-    printf("Nx=%f Ny=%f Nz=%f\n", EE_Torque[3], EE_Torque[4], EE_Torque[5]);
     printf("------------------------------\n");
 
     // 任务完成,下使能，释放内存使别的程序或者用户可以连接机器人

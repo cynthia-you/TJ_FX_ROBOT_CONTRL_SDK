@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
+#include <string.h>
 #ifdef _WIN32
 #include <windows.h>
 #define SLEEP(ms) Sleep(ms)
@@ -257,22 +258,26 @@ int main()
     if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == false)
     {
         printf("Load CFG Error\n");
+        OnRelease();
         return -1;
     }
     // 初始化运动学参数
     if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
+        OnRelease();
         return -1;
     }
     if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
+        OnRelease();
         return -1;
     }
     if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
+        OnRelease();
         return -1;
     }
 
@@ -286,6 +291,7 @@ int main()
     if (FX_Robot_PLN_MOVL_KeepJA(0, angle1, angle2, 100, 100, freq, &pset_movl_keepja) == false)
     {
         printf("MOVL KeepJA Error\n");
+        OnRelease();
         return -1;
     }
     int point_num = 0;
@@ -295,6 +301,12 @@ int main()
     for (long tag = 0; tag < point_num; tag += 10) // 500 Hz 轨迹下采样为 50 Hz
     {
         double *pvv = pset_movl_keepja.OnGetPoint(tag);
+        if (pvv == NULL)
+        {
+            printf("MOVL_KEEPJA online pln Error\n");
+            OnRelease();
+            return -1;
+        }
         print_array(pvv, 7, "MOVL_KEEPJA online pvt point");
         joints_[0] = pvv[0];
         joints_[1] = pvv[1];
@@ -303,13 +315,26 @@ int main()
         joints_[4] = pvv[4];
         joints_[5] = pvv[5];
         joints_[6] = pvv[6];
-        if (pvv == NULL)
+        OnClearSet();
+        OnSetJointCmdPos_A(joints_);
+        OnSetSend();
+        SLEEP(20);
+    }
+
+    // 下采样会跳过末尾不足 10 个的点（含轨迹终点），补发最后一个点保证到位
+    if (point_num > 0 && (point_num - 1) % 10 != 0)
+    {
+        double *pvv = pset_movl_keepja.OnGetPoint(point_num - 1);
+        if (pvv != NULL)
         {
-            printf("MOVL_KEEPJA online pln Error\n");
-            return -1;
-        }
-        else
-        {
+            print_array(pvv, 7, "MOVL_KEEPJA online final pvt point");
+            joints_[0] = pvv[0];
+            joints_[1] = pvv[1];
+            joints_[2] = pvv[2];
+            joints_[3] = pvv[3];
+            joints_[4] = pvv[4];
+            joints_[5] = pvv[5];
+            joints_[6] = pvv[6];
             OnClearSet();
             OnSetJointCmdPos_A(joints_);
             OnSetSend();

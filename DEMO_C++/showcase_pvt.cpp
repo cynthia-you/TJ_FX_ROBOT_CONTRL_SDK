@@ -137,7 +137,7 @@ int main()
     OnClearSet();
     OnSetTargetState_A(2) ; //3:torque mode; 1:position mode；2：pvt
     OnSetSend();
-    SLEEP(200);
+    SLEEP(1000);
 
 
     //选择PVT轨迹文件和设置PVT号

@@ -2,6 +2,7 @@
 #include "FxRobot.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // =============================================================================
 // 示例说明：集中演示机器人运动学与轨迹规划相关接口
@@ -93,6 +94,7 @@ void RobotKineDemo()
     else
     {
         printf("Robot Load CFG Error\n");
+        return;
     }
     printf("------------------------------\n");
 
@@ -100,6 +102,7 @@ void RobotKineDemo()
     if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
+        return;
     }
     else
     {
@@ -109,6 +112,7 @@ void RobotKineDemo()
     if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
+        return;
     }
     else
     {
@@ -118,6 +122,7 @@ void RobotKineDemo()
     if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
+        return;
     }
     else
     {
@@ -248,7 +253,12 @@ void RobotKineDemo()
     printf("------------------------------\n");
 
     // [阶段二｜步骤 9] 计算逆运动学
+    // 结构体使用前清零，并显式设置零空间类型和求解容差，避免读取未初始化内存
     FX_InvKineSolvePara sp;
+    memset(&sp, 0, sizeof(sp));
+    sp.m_Input_IK_ZSPType = 0;
+    sp.m_DGR1 = 10;
+    sp.m_DGR2 = 10;
     for (i = 0; i < 4; i++)
     {
         for (j = 0; j < 4; j++)

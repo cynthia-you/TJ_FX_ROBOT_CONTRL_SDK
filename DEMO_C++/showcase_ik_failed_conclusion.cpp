@@ -1,6 +1,7 @@
 #include "FxRobot.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // =============================================================================
 // 示例说明：演示逆运动学求解失败的典型场景及返回结果
@@ -37,13 +38,14 @@ void KineFailedDemo()
     // 参考文件：CCS 6 kg 3.1/4.0 分别使用 ccs_m6_31/40.MvKDCfg，
     // CCS 3 kg 使用 ccs_m3.MvKDCfg，SRS 使用 srs.MvKDCfg。
     // 同时需要确认 arm_type 对应左臂（0）还是右臂（1）。
-    if (LOADMvCfg((char *)"ccs_m6.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == true)
+    if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == true)
     {
         printf("Robot Load CFG Success\n");
     }
     else
     {
         printf("Robot Load CFG Error\n");
+        return;
     }
     printf("------------------------------\n");
 
@@ -51,6 +53,7 @@ void KineFailedDemo()
     if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
+        return;
     }
     else
     {
@@ -60,6 +63,7 @@ void KineFailedDemo()
     if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
+        return;
     }
     else
     {
@@ -69,6 +73,7 @@ void KineFailedDemo()
     if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
+        return;
     }
     else
     {
@@ -89,7 +94,12 @@ void KineFailedDemo()
     printf("------------------------------\n");
 
     // [阶段二｜步骤 3] 失败场景一：关节 4 发生奇异
+    // 结构体使用前清零，并显式设置零空间类型和求解容差，避免读取未初始化内存
     FX_InvKineSolvePara sp;
+    memset(&sp, 0, sizeof(sp));
+    sp.m_Input_IK_ZSPType = 0;
+    sp.m_DGR1 = 10;
+    sp.m_DGR2 = 10;
     for (i = 0; i < 4; i++)
     {
         for (j = 0; j < 4; j++)

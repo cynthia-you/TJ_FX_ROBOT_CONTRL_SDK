@@ -106,7 +106,7 @@ time.sleep(0.2)
 robot.clear_set()
 robot.set_state('A', 1)  # 位置模式
 robot.send_cmd()
-time.sleep(0.2)
+time.sleep(1)
 
 '''位置模式下运动到目标关节位置'''
 robot.clear_set()
@@ -126,7 +126,7 @@ robot.clear_set()
 robot.set_state('A', 3)          # ARM_STATE_TORQ = 3
 robot.set_impedance_type('A', 3)  # Type=3 力控
 robot.send_cmd()
-time.sleep(0.2)
+time.sleep(1)
 
 '''设置末端力控参数: Z 方向力控, 10N'''
 robot.clear_set()

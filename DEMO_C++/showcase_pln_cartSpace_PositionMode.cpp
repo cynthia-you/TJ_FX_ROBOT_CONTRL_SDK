@@ -2,7 +2,6 @@
 #include "FxRobot.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "unistd.h"
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -214,7 +213,7 @@ int main()
     OnClearSet();
     OnSetTargetState_A(1);
     OnSetSend();
-    SLEEP(50);
+    SLEEP(1000);
 
     // 读取并打印控制参数
     OnGetBuf(&dcss);
@@ -261,22 +260,26 @@ int main()
     if (LOADMvCfg((char *)"ccs_m6_40.MvKDCfg", TYPE, GRV, DH, PNVA, BD, Mass, MCP, I) == false)
     {
         printf("Load CFG Error\n");
+        OnRelease();
         return -1;
     }
     // 初始化运动学参数
     if (FX_Robot_Init_Type(0, TYPE[0]) == false)
     {
         printf("Robot Init Type Error\n");
+        OnRelease();
         return -1;
     }
     if (FX_Robot_Init_Kine(0, DH[0]) == false)
     {
         printf("Robot Init DH Parameters Error\n");
+        OnRelease();
         return -1;
     }
     if (FX_Robot_Init_Lmt(0, PNVA[0], BD[0]) == false)
     {
         printf("Robot Init Limit Parameters Error\n");
+        OnRelease();
         return -1;
     }
     // [阶段二｜步骤 8] 通过正运动学计算起点末端位姿
@@ -289,6 +292,7 @@ int main()
     if (FX_Robot_Kine_FK(0, jv, kine_pg) == false)
     {
         printf("Forward Kinematics Error\n");
+        OnRelease();
         return -1;
     }
 
@@ -297,6 +301,7 @@ int main()
     if (FX_Matrix42XYZABCDEG(kine_pg, xyzabc) == false)
     {
         printf("matrix to xyzabc failed.");
+        OnRelease();
         return -1;
     }
     double start[6] = {0.0};
@@ -319,6 +324,7 @@ int main()
     if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla) == false)
     {
         printf("MOVLA Error\n");
+        OnRelease();
         return -1;
     }
 
@@ -326,16 +332,25 @@ int main()
     if (!OnSetPlnCart_A(&pset_movla))
     {
         printf("Failed to run MOVLA plan\n");
+        OnRelease();
         return -1;
     }
     SLEEP(20);
 
-    // 等待到达目标点，再继续规划下一条边
+    // 等待到达目标点，再继续规划下一条边，带超时保护
+    int wait_ms = 0;
     do
     {
         OnGetBuf(&dcss);
         SLEEP(1);
-    } while (dcss.m_Out[0].m_TrajState != 0);
+        wait_ms++;
+    } while (dcss.m_Out[0].m_TrajState != 0 && wait_ms < 60000);
+    if (wait_ms >= 60000)
+    {
+        printf("wait edge1 traj finish timeout\n");
+        OnRelease();
+        return -1;
+    }
 
     // [阶段三｜步骤 12] 规划并执行矩形第二条边
     CPointSet pset_movla1;
@@ -347,6 +362,12 @@ int main()
         end[1] -= 200;
 
         long num1 = pset_movla.OnGetPointNum();
+        if (num1 <= 0)
+        {
+            printf("edge1 path is empty, abort\n");
+            OnRelease();
+            return -1;
+        }
         double *joint1 = pset_movla.OnGetPoint(num1 - 1);
         jv[0] = joint1[0];
         jv[1] = joint1[1];
@@ -359,21 +380,32 @@ int main()
         if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla1) == false)
         {
             printf("MOVLA Error\n");
+            OnRelease();
             return -1;
         }
 
         if (!OnSetPlnCart_A(&pset_movla1))
         {
             printf("Failed to run MOVLA plan\n");
+            OnRelease();
             return -1;
         }
     }
     SLEEP(20);
+    // 带超时保护
+    wait_ms = 0;
     do
     {
         OnGetBuf(&dcss);
         SLEEP(1);
-    } while (dcss.m_Out[0].m_TrajState != 0);
+        wait_ms++;
+    } while (dcss.m_Out[0].m_TrajState != 0 && wait_ms < 60000);
+    if (wait_ms >= 60000)
+    {
+        printf("wait edge2 traj finish timeout\n");
+        OnRelease();
+        return -1;
+    }
 
     CPointSet pset_movla2;
     // [阶段三｜步骤 13] 规划并执行矩形第三条边
@@ -385,6 +417,12 @@ int main()
         end[2] -= 200;
 
         long num2 = pset_movla1.OnGetPointNum();
+        if (num2 <= 0)
+        {
+            printf("edge2 path is empty, abort\n");
+            OnRelease();
+            return -1;
+        }
         double *joint2 = pset_movla1.OnGetPoint(num2 - 1);
         jv[0] = joint2[0];
         jv[1] = joint2[1];
@@ -397,22 +435,33 @@ int main()
         if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla2) == false)
         {
             printf("MOVLA Error\n");
+            OnRelease();
             return -1;
         }
 
         if (!OnSetPlnCart_A(&pset_movla2))
         {
             printf("Failed to run MOVLA plan\n");
+            OnRelease();
             return -1;
         }
     }
 
     SLEEP(20);
+    // 带超时保护
+    wait_ms = 0;
     do
     {
         OnGetBuf(&dcss);
         SLEEP(1);
-    } while (dcss.m_Out[0].m_TrajState != 0);
+        wait_ms++;
+    } while (dcss.m_Out[0].m_TrajState != 0 && wait_ms < 60000);
+    if (wait_ms >= 60000)
+    {
+        printf("wait edge3 traj finish timeout\n");
+        OnRelease();
+        return -1;
+    }
 
     CPointSet pset_movla3;
     // [阶段三｜步骤 14] 规划并执行矩形第四条边
@@ -424,6 +473,12 @@ int main()
         end[1] += 200;
 
         long num3 = pset_movla2.OnGetPointNum();
+        if (num3 <= 0)
+        {
+            printf("edge3 path is empty, abort\n");
+            OnRelease();
+            return -1;
+        }
         double *joint3 = pset_movla2.OnGetPoint(num3 - 1);
         jv[0] = joint3[0];
         jv[1] = joint3[1];
@@ -436,17 +491,25 @@ int main()
         if (FX_Robot_PLN_MOVLA(0, start, end, jv, 100, 100, freq, &pset_movla3) == false)
         {
             printf("MOVLA Error\n");
+            OnRelease();
             return -1;
         }
 
         if (!OnSetPlnCart_A(&pset_movla3))
         {
             printf("Failed to run MOVLA plan\n");
+            OnRelease();
             return -1;
         }
     }
 
     long num4 = pset_movla3.OnGetPointNum();
+    if (num4 <= 0)
+    {
+        printf("edge4 path is empty, abort\n");
+        OnRelease();
+        return -1;
+    }
     double *joint4 = pset_movla3.OnGetPoint(num4 - 1);
     jv[0] = joint4[0];
     jv[1] = joint4[1];
@@ -457,16 +520,26 @@ int main()
     jv[6] = joint4[6];
 
     SLEEP(20);
-    // 等待整条矩形轨迹执行完成
+    // 等待整条矩形轨迹执行完成，带超时保护
+    wait_ms = 0;
+    bool done = false;
     do
     {
         OnGetBuf(&dcss);
         SLEEP(1);
+        wait_ms++;
         for (long joint = 0; joint < 7; joint++)
         {
             fb_joints[joint] = dcss.m_Out[0].m_FB_Joint_Pos[joint];
         }
-    } while (!checkJointsReached(jv, fb_joints));
+        done = checkJointsReached(jv, fb_joints);
+    } while (!done && wait_ms < 60000);
+    if (!done)
+    {
+        printf("wait final traj finish timeout\n");
+        OnRelease();
+        return -1;
+    }
 
     // [阶段四｜步骤 15] 任务结束：下使能并释放连接
     SLEEP(50);
@@ -476,5 +549,5 @@ int main()
     SLEEP(50);
 
     OnRelease();
-    return 1;
+    return 0;
 }

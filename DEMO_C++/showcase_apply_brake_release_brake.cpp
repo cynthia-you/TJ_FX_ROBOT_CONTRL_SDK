@@ -147,7 +147,7 @@ int main()
     OnSetTargetState_A(0);
     OnSetTargetState_B(0);
     OnSetSend();
-    usleep(100000);
+    SLEEP(1000);
 
     // 左臂强制松闸
     char paraName[30] = "BRAK0";
