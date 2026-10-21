@@ -1061,7 +1061,7 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 		}
 		CRobot::OnClearSet();
 		CRobot::OnSetTrajSet_A(ii, relic_num, SendData_A);
-		if (CRobot::OnSetSendWaitResponse(5000) < 0)
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 		{
 			printf("[ERROR] OnSetTrajSet_A: timeout.\n");
 			return false;
@@ -1104,7 +1104,7 @@ bool CoRunPlnCart(void *pset0, void *pset1)
 		}
 		CRobot::OnClearSet();
 		CRobot::OnSetTrajSet_B(iii, relic_num1, SendData_B);
-		if (CRobot::OnSetSendWaitResponse(5000) < 0)
+		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
 		{
 			printf("[ERROR] OnSetTrajSet_B: timeout.\n");
 			return false;
@@ -1631,7 +1631,7 @@ bool RunPVT(char arm, int id)
 		}
 		CRobot::OnClearSet();
 		CRobot::OnSetPVT_A(id);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 		{
 			printf("[ERROR] RunPVT: arm '%c' switch to position failed., timeout.\n", arm);
 			return false;
@@ -1660,7 +1660,7 @@ bool RunPVT(char arm, int id)
 		}
 		CRobot::OnClearSet();
 		CRobot::OnSetPVT_B(id);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 		{
 			printf("[ERROR] RunPVT: arm '%c' switch to position failed., timeout.\n", arm);
 			return false;
@@ -1724,7 +1724,7 @@ bool SetTool(char arm, double kinePara[6], double dynPara[10])
 	{
 		CRobot::OnClearSet();
 		CRobot::OnSetTool_A(kinePara, dynPara);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 		{
 			printf("[ERROR] SetTool: arm '%c' set tool failed, timeout.\n", arm);
 			return false;
@@ -1769,7 +1769,7 @@ bool SetTool(char arm, double kinePara[6], double dynPara[10])
 	{
 		CRobot::OnClearSet();
 		CRobot::OnSetTool_B(kinePara, dynPara);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 		{
 			printf("[ERROR] SetTool: arm '%c' set tool failed, timeout.\n", arm);
 			return false;
@@ -1910,7 +1910,7 @@ bool SetJointMode(char arm, int velRatio, int AccRatio)
 			SLEEP(SLEEP_TIME);
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_A(ARM_STATE_POSITION);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetJointMode: arm '%c' switch to position failed., timeout.\n", arm);
 				return false;
@@ -1958,7 +1958,7 @@ bool SetJointMode(char arm, int velRatio, int AccRatio)
 			SLEEP(SLEEP_TIME);
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_B(ARM_STATE_POSITION);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetJointMode: arm '%c' switch to position failed., timeout.\n", arm);
 				return false;
@@ -2091,7 +2091,7 @@ bool SetImpJointMode(char arm, int velRatio, int AccRatio, double K[7], double D
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_A(ARM_STATE_TORQ);
 			CRobot::OnSetImpType_A(ARM_IMP_JOINT);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetImpJointMode: arm '%c' switch to joint impedance state failed., timeout.\n", arm);
 				return false;
@@ -2142,7 +2142,7 @@ bool SetImpJointMode(char arm, int velRatio, int AccRatio, double K[7], double D
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_B(ARM_STATE_TORQ);
 			CRobot::OnSetImpType_B(ARM_IMP_JOINT);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetImpJointMode: arm '%c' switch to joint impedance state failed., timeout.\n", arm);
 				return false;
@@ -2300,7 +2300,7 @@ bool SetImpCartMode(char arm, int velRatio, int AccRatio, double K[7], double D[
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_A(ARM_STATE_TORQ);
 			CRobot::OnSetImpType_A(ARM_IMP_CART);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetImpCartMode: arm '%c' switch to cartesian impedance state failed., timeout.\n", arm);
 				return false;
@@ -2373,7 +2373,7 @@ bool SetImpCartMode(char arm, int velRatio, int AccRatio, double K[7], double D[
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_B(ARM_STATE_TORQ);
 			CRobot::OnSetImpType_B(ARM_IMP_CART);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetImpCartMode: arm '%c' switch to cartesian impedance state failed., timeout.\n", arm);
 				return false;
@@ -2469,7 +2469,7 @@ bool SetImpForceMode(char arm, double fxDir[6], double fcAdjLmt)
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_A(ARM_STATE_TORQ);
 			CRobot::OnSetImpType_A(ARM_IMP_FORCE);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetImpForceMode: arm '%c' switch to force impedance state failed, timeout.\n", arm);
 				return false;
@@ -2518,7 +2518,7 @@ bool SetImpForceMode(char arm, double fxDir[6], double fcAdjLmt)
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_B(ARM_STATE_TORQ);
 			CRobot::OnSetImpType_B(ARM_IMP_FORCE);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetImpForceMode: arm '%c' switch to force impedance state failed, timeout.\n", arm);
 				return false;
@@ -2584,7 +2584,7 @@ bool SetJointDrag(char arm)
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_A(ARM_STATE_TORQ);
 			CRobot::OnSetImpType_A(ARM_IMP_JOINT);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetJointDrag: arm '%c' switch to joint impedance state failed., timeout.\n", arm);
 				return false;
@@ -2633,7 +2633,7 @@ bool SetJointDrag(char arm)
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_B(ARM_STATE_TORQ);
 			CRobot::OnSetImpType_B(ARM_IMP_JOINT);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetJointDrag: arm '%c' switch to joint impedance state failed., timeout.\n", arm);
 				return false;
@@ -2729,7 +2729,7 @@ bool SetCartDrag(char arm, char type)
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_A(ARM_STATE_TORQ);
 			CRobot::OnSetImpType_A(ARM_IMP_CART);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetJointDrag: arm '%c' switch to joint impedance state failed., timeout.\n", arm);
 				return false;
@@ -2778,7 +2778,7 @@ bool SetCartDrag(char arm, char type)
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_B(ARM_STATE_TORQ);
 			CRobot::OnSetImpType_B(ARM_IMP_CART);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] SetJointDrag: arm '%c' switch to joint impedance state failed., timeout.\n", arm);
 				return false;
@@ -3039,7 +3039,7 @@ bool RunPlnJoint(char arm, double start_joints[7], double stop_joints[7], double
 			SLEEP(SLEEP_TIME);
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_A(ARM_STATE_POSITION);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] RunPlnJoint: arm '%c' switch to position failed., timeout.\n", arm);
 				return false;
@@ -3097,7 +3097,7 @@ bool RunPlnJoint(char arm, double start_joints[7], double stop_joints[7], double
 			SLEEP(SLEEP_TIME);
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_B(ARM_STATE_POSITION);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] RunPlnJoint: arm '%c' switch to position failed., timeout.\n", arm);
 				return false;
@@ -3168,7 +3168,7 @@ bool RunPlnCart(char arm, void *pset)
 			SLEEP(SLEEP_TIME);
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_A(ARM_STATE_POSITION);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] RunPlnCart: arm '%c' switch to position failed., timeout.\n", arm);
 				return false;
@@ -3226,7 +3226,7 @@ bool RunPlnCart(char arm, void *pset)
 			SLEEP(SLEEP_TIME);
 			CRobot::OnClearSet();
 			CRobot::OnSetTargetState_B(ARM_STATE_POSITION);
-			if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+			if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 			{
 				printf("[ERROR] RunPlnCart: arm '%c' switch to position failed., timeout.\n", arm);
 				return false;
@@ -3407,7 +3407,7 @@ bool Disable(char arm)
 	{
 		CRobot::OnClearSet();
 		CRobot::OnSetTargetState_A(0);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 		{
 			printf("[ERROR] Disable: arm '%c' disable failed, timeout.\n", arm);
 			return false;
@@ -3419,7 +3419,7 @@ bool Disable(char arm)
 	{
 		CRobot::OnClearSet();
 		CRobot::OnSetTargetState_B(0);
-		if (CRobot::OnSetSendWaitResponse(TIME_OUT) < 0)
+		if (CRobot::OnSetSendWaitResponse(STATE_TIME_OUT) < 0)
 		{
 			printf("[ERROR] Disable: arm '%c' disable failed, timeout.\n", arm);
 			return false;

@@ -202,7 +202,8 @@ typedef enum
 typedef enum
 {
 	SLEEP_TIME = 10, // sleep time after sendCmd
-	TIME_OUT = 1000, /// internal time_out, for api:OnSetSendWaitResponse
+	STATE_TIME_OUT = 1000, /// internal time_out, for api:OnSetSendWaitResponse
+	TIME_OUT = 50, 
 	ARM_IMP_JOINT = 1,
 	ARM_IMP_CART = 2,
 	ARM_IMP_FORCE = 3,

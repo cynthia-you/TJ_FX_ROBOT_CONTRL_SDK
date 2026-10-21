@@ -3,7 +3,7 @@ chcp 65001 >nul
 echo compile c++ SDK for DEMO_C++...
 del /F /Q contrlSDK\libMarvinSDK.dll 2>nul
 del /F /Q kinematicsSDK\libKine.dll 2>nul
-cd contrlSDK && g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN && cd ..
+cd contrlSDK && g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm && cd ..
 cd kinematicsSDK && g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.dll && cd ..
 copy /Y contrlSDK\libMarvinSDK.dll "DEMO_C++\" >nul
 copy /Y kinematicsSDK\libKine.dll "DEMO_C++\" >nul

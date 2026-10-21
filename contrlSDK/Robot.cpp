@@ -3081,9 +3081,12 @@ long CRobot::OnSetSendWaitResponse(long time_out)
 	m_InsRobot->m_send_response_timeout_cnt = tmp_time_out;
 	m_InsRobot->m_SendTag = 100;
 
-	std::unique_lock<std::mutex> lock(m_InsRobot->m_send_response_mutex);
-	m_InsRobot->m_send_response_cv.wait_for(lock, std::chrono::milliseconds(tmp_time_out), [&]
-											{ return m_InsRobot->m_send_response_timeout_cnt == 0; });
+	long waited_ms = 0;
+	while (m_InsRobot->m_send_response_timeout_cnt.load() > 0 && waited_ms < tmp_time_out)
+	{
+		SLEEP(1);
+		waited_ms++;
+	}
 
 	if (m_InsRobot->m_respones_time_tag == 1)
 	{
