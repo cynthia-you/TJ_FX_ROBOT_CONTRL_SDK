@@ -50,6 +50,9 @@ extern "C"
 	/////Dual-Arms Synchronous Motion Planning with Fixed Body - Cartisian space
 	FX_BOOL FX_Robot_PLN_MOVL_Arms_Synchronous(ArmsSynchronousPlanningParams *ASPP, CPointSet *Arm0_Pln_Path, CPointSet *Arm1_Pln_Path);
 
+	/////EE Linear Velocity Calculation
+	FX_DOUBLE FX_Robot_CalEELinerVel(FX_INT32L RobotSerial, Vect7 joint, Vect7 angvel);
+
 	/////Joint Torque to EE Torque Mapping
 	FX_BOOL FX_Robot_JntTau2EETau(FX_INT32L RobotSerial, Vect7 q, Vect7 Joint_Torque, Vect6 EE_Torque);
 

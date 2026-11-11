@@ -239,7 +239,7 @@ class Marvin_Kine:
             self.kine.FX_Robot_CalEELinerVel.argtypes = [
                 c_int32,  # RobotSerial
                 c_double * 7,  # joint (关节角度，单位：度)
-                c_double * 7  # angvel (各关节角速度，单位：rad/s)
+                c_double * 7  # angvel (各关节角速度，单位：度/秒)
             ]
             self.kine.FX_Robot_CalEELinerVel.restype = c_double
 
@@ -1527,7 +1527,9 @@ class Marvin_Kine:
         :param joints: list(7,), 当前关节角度（单位：degree）
         :param angvel: list(7,), 各关节角速度（单位：degrees/second）
         :return:
-            末端线速度大小（millimeters/second）
+            末端线速度大小（millimeters/second）；计算失败时返回 -1
+        说明：末端点为 TCP（包含通过 set_tool 设置的工具），返回值为线速度矢量的模长，
+              与 set_user_frame 设置的用户坐标系无关。
         '''
         if len(joints) != 7:
             raise ValueError("joints must be (7,)")

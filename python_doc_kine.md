@@ -524,7 +524,9 @@ cal_ee_linear_vel(self, joints: list, angvel: list):
     :param joints: list(7,), 当前关节角度（单位：degree）
     :param angvel: list(7,), 各关节角速度（单位：degrees/second）
     :return:
-        末端线速度大小（millimeters/second）
+        末端线速度大小（millimeters/second）；计算失败时返回 -1
+    说明：末端点为 TCP（包含通过 set_tool 设置的工具），返回值为线速度矢量的模长，
+          与 set_user_frame 设置的用户坐标系无关。
     '''
 
 ### （22）双臂协同直线规划（躯干固定）

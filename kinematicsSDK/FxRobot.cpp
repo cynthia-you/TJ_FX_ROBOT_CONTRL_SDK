@@ -4262,24 +4262,24 @@ FX_DOUBLE FX_Robot_CalEELinerVel(FX_INT32L RobotSerial, Vect7 joint, Vect7 angve
 		return -1;
 	}
 
-	Matrix4 tcp;
-	Vect3 r_ = {0};
-	if (FX_Robot_Kine_FK(RobotSerial, joint, tcp) == FX_FALSE)
+	// Convert joint velocities from degrees/second to radians/second.
+	FX_INT32L i = 0;
+	Vect7 angvel_rad = {0};
+	for (i = 0; i < 7; ++i)
 	{
-		return -1;
+		angvel_rad[i] = angvel[i] * FXARM_D2R;
 	}
-	r_[0] = tcp[0][3];
-	r_[1] = tcp[1][3];
-	r_[2] = tcp[2][3];
 
 	Vect6 tmp_vel_ = {0};
-	FX_MVM677(jcb.m_Jcb, joint, tmp_vel_);
+	FX_MVM677(jcb.m_Jcb, angvel_rad, tmp_vel_);
 
-	Vect3 angle_vel_ = {0};
-	FX_VectCross(&tmp_vel_[3], r_, angle_vel_);
-	FX_Vect3Add(&tmp_vel_[0], angle_vel_, r_);
+	// Convert m/s to mm/s.
+	Vect3 tcp_vel_ = {0};
+	tcp_vel_[0] = tmp_vel_[0] * 1000.0;
+	tcp_vel_[1] = tmp_vel_[1] * 1000.0;
+	tcp_vel_[2] = tmp_vel_[2] * 1000.0;
 
-	ret = FX_Sqrt(r_[0] * r_[0] + r_[1] * r_[1] + r_[2] * r_[2]);
+	ret = FX_Sqrt(tcp_vel_[0] * tcp_vel_[0] + tcp_vel_[1] * tcp_vel_[1] + tcp_vel_[2] * tcp_vel_[2]);
 
 	if (FX_LOG_TAG)
 		printf("EG:EE_LinearVel=%lf mm/s\n", ret);

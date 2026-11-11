@@ -341,6 +341,9 @@ FX_DOUBLE  FX_Robot_CalEELinerVel(FX_INT32L RobotSerial, Vect7 joint, Vect7 angv
     返回值：
         末端合成线速度（线速度矢量的模长），单位：毫米/秒；计算失败时返回 -1
 
+    • 末端点为 TCP，包含通过 FX_Robot_Tool_Set 设置的工具，使用前请先完成运动学初始化，并按需要设置工具。
+    • 返回值为矢量模长，与 FX_Robot_UserFrame_Set 设置的用户坐标系无关。
+
 ###    10. 直线规划（MOVL）
 FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_XYZABC, Vect7 Ref_Joints, FX_DOUBLE Vel, FX_DOUBLE ACC, FX_INT32L Freq, FX_INT8* OutPutPath)
 
@@ -360,7 +363,7 @@ FX_BOOL  FX_Robot_PLN_MOVL(FX_INT32L RobotSerial, Vect6 Start_XYZABC, Vect6 End_
     • FX_Robot_PLN_MOVL的特点在于根据提供的起始目标笛卡尔位姿和终止目标笛卡尔位姿规划一段直线路径点，该接口不约束到达终点时的机器人构型。
     
 
-###    11.直线规划，约束机器人气势和结束的各个关节角度（MOVLJ）
+###    11.直线规划，约束机器人起始和结束的各个关节角度（MOVLJ）
 FX_BOOL  FX_Robot_PLN_MOVL_KeepJ(FX_INT32L RobotSerial, Vect7 startjoints, Vect7 stopjoints, FX_DOUBLE vel, FX_DOUBLE ACC，FX_INT32L Freq,  FX_CHAR* OutPutPath);
 
     • 输入RobotSerial（参数含义参考初始化参数部分）、起始点位姿、结束点位姿、当前位置参考关节角度、直线规划速度及直线规划加速度，输出为包含该段规划的关节点位文件
