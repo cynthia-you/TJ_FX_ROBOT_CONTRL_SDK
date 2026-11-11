@@ -1861,6 +1861,10 @@ class App:
         self.encoder_frame_1 = tk.Label(self.encoder_frame_1, text="Motor encoder zeroing and error clearing", bg="#2196F3",
                                       fg="white", font=("Arial", 10, "bold"))
         self.encoder_frame_1.pack(fill='x')
+
+        self.encoder_tips = tk.Frame(sensor_encoder_window, bg="white")
+        self.encoder_tips.pack(fill="x",padx=5,pady=(10,10))
+        tk.Label(self.encoder_tips,text="Encoder zeroing takes effect only after the entire robot is powered off and restarted",bg="#F0F568",fg="black", font=("Arial", 10, "bold")).pack(fill='x')
         '''left arm'''
         self.motor_frame_1 = tk.Frame(sensor_encoder_window, bg="white")
         self.motor_frame_1.pack(fill="x")
