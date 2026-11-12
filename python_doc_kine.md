@@ -1,10 +1,26 @@
-# 天机-孚晞 MARVIN机器人工具包SDK_PYTHON
+# 天机-孚晞 MARVIN机器人工具包SDK_PYTHON — 计算 SDK
+
 ## 机器人型号： MARVIN人形双臂, 单臂
 ## 版本： 1004
 ## 支持平台： LINUX 及 WINDOWS
 ## LINUX支持： ubuntu18.04 - ubuntu24.04
 ## 更新日期：2026-03
 
+> **本文档解决什么问题**：Python 计算库 `fx_kine.py` 的接口说明——配置加载、正逆解、零空间、雅可比、直线/多段/双臂规划。
+> **不连接机器人**；规划结果交给控制库 `setPln_Cart` / `setPln_Cart_AB` 执行。
+>
+> **使用前提**
+> 1. 选择与机型匹配的 `*.MvKDCfg`（CCS 3.1 / 4.0、CCS 3kg、SRS 不能混用）；
+> 2. 左右臂分别实例化、分别初始化，A=`arm_type 0`，B=`arm_type 1`；
+> 3. 带工具时先 `set_tool_kine()`，否则正逆解到法兰。
+>
+> **建议阅读顺序**
+> 1. §一 初始化与结构体 → §（2）（3）配置与初始化；
+> 2. §（5）~（9）正逆解、零空间、雅可比；
+> 3. §（10）~（22）规划接口，对照 `DEMO_PYTHON/readme.md` 的规划示例。
+>
+> **配套示例**：[DEMO_PYTHON/readme.md](DEMO_PYTHON/readme.md)
+> **AI 代理**：先读 [AI_GUIDE.md](AI_GUIDE.md)；接口名以源码 `SDK_PYTHON/fx_kine.py` 为准。
 
 # 一 、SDK_PYTHON简要介绍
 
@@ -157,7 +173,7 @@ initial_kine(robot_type: int, dh: list, pnva: list, j67: list)
 
 ### （4）工具和用户坐标系的设置
 若末端带有负载，对各关节参数初始化后，需要对工具进行设置
-set_tool_dyn(dyn: list)
+set_tool_kine(tool_mat: list)
     '''
     工具运动学设置
     :param tool_mat: list(4,4) 工具的运动学信息，齐次变换矩阵，相对末端法兰的旋转和平移，请确认法兰坐标系。
@@ -217,7 +233,7 @@ fk_nsp(joints: list)
         '''
 
 ### （7）计算逆运动学
-ik(structure_data):
+ik(solve_para: FX_InvKineSolvePara) -> bool:
 
         '''末端位置和姿态逆解到关节值
         :param 结构体数据
@@ -275,7 +291,7 @@ ik(structure_data):
 
 
 ### （8）计算末端位姿不变、改变零空间（臂角方向）的逆运动学
-ik_nsp(sturcture_data):
+ik_nsp(solve_para: FX_InvKineSolvePara) -> bool:
 
         '''逆解优化：可调整方向,不能单独使用，ik得到的逆运动学解的臂角不满足当前选解需求时使用。
             输入参数：
@@ -314,9 +330,9 @@ joints2JacobMatrix(joints: list)
 ### （10）直线规划（MOVL）
 movL(start_xyzabc: list, end_xyzabc: list, ref_joints: list, vel: float, acc: float, freq_hz:int, save_path)
 
-    • 输出点位频率为500Hz，即每20ms执行一行
+    • 输出点位频率为 500Hz，即每 2ms 执行一行
 
-        '''直线规划，规划文件的频率500Hz，即每2ms执行一行
+        '''直线规划，规划文件的频率 500Hz，即每 2ms 执行一行
         :param start_xyzabc:起始点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
         :param end_xyzabc:结束点末端的位置和姿态：xyz平移单位：mm， abc旋转单位：度。
         :param ref_joints:参考关节构型，也是规划文件的起始点位。

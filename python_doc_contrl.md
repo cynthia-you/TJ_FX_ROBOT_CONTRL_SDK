@@ -1,10 +1,25 @@
-# 天机-孚晞 机器人工具包 SDK_PYTHON
+# 天机-孚晞 机器人工具包 SDK_PYTHON — 控制 SDK
+
 ## 机器人型号： MARVIN人形双臂, 单臂
 ## 版本： 1003
 ## 支持平台： LINUX 及 WINDOWS
 ## LINUX支持： ubuntu18.04 - ubuntu24.04
 ## 更新日期：2026-03
 
+> **本文档解决什么问题**：Python 控制库 `fx_robot.py` 的接口说明——连接、订阅、切模式、下发指令、采集数据。
+> **不包含**：正解/逆解/轨迹规划（见 [python_doc_kine.md](python_doc_kine.md)）。
+>
+> **建议阅读顺序**
+> 1. 第一次使用：先看 [README.md](README.md) 的快速开始，跑通 `DEMO_PYTHON/showcase_position.py`；
+> 2. 再按本文档 §二 查原接口，或按 §三 直接用简明式接口；
+> 3. 需要规划时跳到计算 SDK 文档。
+>
+> **配套示例**：[DEMO_PYTHON/readme.md](DEMO_PYTHON/readme.md)
+> **AI 代理**：先读 [AI_GUIDE.md](AI_GUIDE.md)，不要根据本文档的示例自行推断不存在的接口。
+>
+> **两个类怎么选**
+> - `Marvin_Robot`：原接口，参数设置必须 `clear_set()` → `set_*` → `send_cmd()`；
+> - `Concise_Marvin_Robot`：简明式，一个方法完成“设参数 + 切模式”，推荐业务脚本使用。
 
 # ATTENTION
     1.  请先熟练使用MARVIN_APP或MarvinPlatform软件。操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
@@ -42,10 +57,13 @@
     |————SDK_PYTHON
             |————fx_kine.py #计算接口
             |————fx_robot.py #控制接口
+            |————fx_interference.py #干涉检测接口
             |————libKine.dll #windows下计算库动态库
             |————libKine.so #linux下计算库动态库
             |————libMarvinSDK.dll #windows下控制库动态库
             |————libMarvinSDK.so #linux下控制库动态库
+            |————libInterfCheck.dll #windows下干涉检测动态库
+            |————libInterfCheck.so #linux下干涉检测动态库
 
     注意：请检查SDK_PYTHON下动态库是否为最新编译
 
@@ -254,8 +272,7 @@
         注意，返回字典包括双臂的数据，A索引0，B索引1 
         如：
             1. 读取当前双臂臂的状态和历史关节命令以及获取当前关节角度demo：
-                from fx_robot import Marvin_Robot
-                from structure_data import DCSS
+                from SDK_PYTHON.fx_robot import Marvin_Robot, DCSS
                 import time
                 dcss=DCSS()
                 robot=Marvin_Robot()

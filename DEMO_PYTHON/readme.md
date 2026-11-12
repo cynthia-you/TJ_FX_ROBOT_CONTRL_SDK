@@ -1,197 +1,164 @@
-# ATTENTION
-    1.  请先熟练使用MARVIN_APP或MarvinPlatform软件。操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
-    2.  DEMO_C++/ 和 DEMO_PYTHON/ 下为接口使用DEMO。每个demo顶部有该DEMO的案例说明和使用逻辑，请您一定先阅读，根据现场情况修改后运行。
-        这些demo的使用逻辑和使用参数为研发测试使用开发的，仅供参考，并非实际生产代码。
-            比如:
-                a.速度百分比和加速度百分比为了安全我们都设置为百分之十：10，在您经过丰富的测试后可调到全速100。
-                b.参数设置之间sleep 1秒或者500毫秒， 实际上参数设置之间小睡1毫秒即可。
-                c.设置目标关节后，测试里小睡几秒等机械臂运行到位，而在生产时可以通过循环订阅机械臂当前位置判断是否走到指定点位或者通过订阅低速标志来判断。
-                d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
+# DEMO_PYTHON — Python 示例索引
 
+> 每个示例都可以单独运行。**先读示例文件顶部的注释**，里面写明了使用逻辑、前置条件和安全提示。
+> 示例参数是研发测试值，不是生产参数。
 
+## 运行前检查
 
-## 一、SDK文档
-    请阅读SDK文档，详细全面了解机器人使用逻辑，接口的功能，以及更新和注意事项。
+1. Python ≥ 3.10，能导入 `SDK_PYTHON/fx_robot.py`、`SDK_PYTHON/fx_kine.py`。
+2. `SDK_PYTHON/` 下的 `.dll` / `.so` 是用当前源码编译的最新版本。
+3. 电脑与控制器同网段；示例默认 IP `192.168.1.190`，按现场修改。
+4. `CommonConfig/` 下只有**一个**与机型匹配的 `*.MvKDCfg`。
+5. MarvinPlatform / 其他 SDK 进程已关闭并释放连接。
+6. 机器人周围安全，首次运行使用 10% 速度/加速度。
 
-[SDK首页](../README.md)
+```bash
+cd DEMO_PYTHON
+python showcase_position.py
+```
 
-[C++ 控制SDK 文档](../c++_doc_contrl.md)
-[PYTHON 控制SDK 文档](../python_doc_contrl.md)
+---
 
-[C++ 运动计算SDK 文档]( ../c++_doc_kine.md)
-[PYTHON 运动计算SDK 文档](../python_doc_kine.md)
+## 1. 控制基础
 
-## 二、SDK库文件夹下文件说明
-    SDK_PYTHON文件下文件为：
-    TJ_FX_ROBOT_CONTRL_SDK-master
-    |————DEMO_PYTHON  #SDK在python下的使用案例
-    |————SDK_PYTHON
-            |————fx_kine.py #计算接口
-            |————fx_robot.py #控制接口
-            |————fx_interference.py #干涉检测(碰撞检测)接口
-            |————libKine.dll #windows下计算库动态库
-            |————libKine.so #linux下计算库动态库
-            |————libMarvinSDK.dll #windows下控制库动态库
-            |————libMarvinSDK.so #linux下控制库动态库
-            |————libInterfCheck.dll #windows下干涉检测库动态库
-            |————libInterfCheck.so #linux下干涉检测库动态库
+| 示例 | 内容 | 核心接口 |
+|---|---|---|
+| `showcase_check_sdk_type_compat.py` | 检查 Python 与动态库的类型/字节序兼容性 | `check_sdk_type_compat` |
+| `showcase_position.py` | 双臂关节位置跟随（最基本闭环） | `connect` / `subscribe` / `set_state(1)` / `set_joint_cmd_pose` |
+| `showcase_stop_run_AB.py` | 运动中停止（非急停、非下使能） | `stop_running` |
+| `showcase_collaborative_release.py` | 协作释放（零力状态） | `set_state(4)` |
+| `showcase_apply-brake_release-brake.py` | 强制抱闸 / 松闸 | 抱闸接口 |
+| `showcase_servo_error.py` | 读取并解释伺服错误码 | `get_servo_error_code` |
+| `showcase_servo_reset.py` | 指定关节伺服软复位 | `servo_reset` |
+| `showcase_motor_encoder_clear.py` | 电机编码器清错 / 清零 | 编码器接口 |
+| `showcase_get_set_param.py` | 读取/设置控制器参数（`robot.ini`） | `get_param` / `set_param` / `save_para_file` |
+| `showcase_settime_reboot.py` | 设置系统时间 / 重启控制器 | `set_system_time` / `reboot` |
+| `showcase_check_cmd_delay.py` | 测量指令下发延迟 | `send_cmd_wait_response` |
 
-    注意：请检查SDK_PYTHON下动态库是否为最新编译
+---
 
-## 三、 SDK库
-    SDK_PYTHON为天机双臂机器人和人形机器人基于python开发的SDK，其分为:
-        控制SDK：SDK_PYTHON/fx_robot.py 
-        运动学计算的SDK:SDK_PYTHON/fx_kine.py
-        和干涉检测(碰撞检测)SDK:SDK_PYTHON/fx_interference.py
+## 2. 阻抗、力控与拖动
 
+| 示例 | 内容 | 核心接口 |
+|---|---|---|
+| `showcase_torque_joint_impedance_arm_A.py` | 关节阻抗控制 | `set_state(3)` + `set_impedance_type(1)` + `set_joint_kd_params` |
+| `showcase_torque_cart_impedance_arm_A.py` | 笛卡尔阻抗控制 | `set_impedance_type(2)` + `set_joint_kd_params` |
+| `showcase_cart_impedance_NSP_arm_A.py` | 笛卡尔阻抗 + 零空间约束 | 阻抗 + `ik_nsp` |
+| `showcase_torque_EefCart_impedance_arm_A.py` | 工具末端笛卡尔阻抗 | `set_EefCart_control_params` |
+| `showcase_torque_force_impedance_arm_A.py` | 恒力控制 | `set_force_control_params` / `set_force_cmd` |
+| `showcase_eef_force_control_bsed_on_eef_cart_impedance.py` | 基于末端笛卡尔阻抗的力控 | 末端力控 |
+| `showcase_force_field_control.py` | 力场控制（按方向力+位移） | `ft_arm_control` / `FTCmd` |
+| `showcase_joint_drag_arm_A.py` | 关节拖动 | `set_drag_space(1)` |
+| `showcase_cart_drag_arm_A.py` | 笛卡尔拖动（X/Y/Z/R 单方向） | `set_drag_space(2~5)` |
+| `showcase_drag_JointImpedance_and_save_data_arm_A.py` | 关节拖动并采集数据 | 拖动 + `collect_data` |
+| `showcase_drag_CartImpedance_and_save_data_arm_A.py` | 笛卡尔拖动并采集数据 | 拖动 + `collect_data` |
 
-### 3.1使用自动化编译脚本：
-        master分支下marvinSDK_windows_100343.bat运行可自动编译C++和python调用的dll文件(含干涉检测库libInterfCheck.dll)
-        master分支下marvinSDK_ubuntu_100343.sh运行可自动编译C++和python调用的so文件(含干涉检测库libInterfCheck.so)
+> 切换拖动方向前必须先退出拖动（`set_drag_space(..., 0)`）。
 
-        单独编译干涉检测库可使用:
-            interferenceCheck_windows.bat  #编译libInterfCheck.dll
-            interferenceCheck_ubuntu.sh    #编译libInterfCheck.so
+---
 
-### 3.2.1 编译so动态库:
-    linux设备编译:
-        控制SDK(contrlSDK)，以下方法均可编译: 
-			1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
-			2./contrlSDK/makefile 生成libMarvinSDK.so
-        运动学SDK(kinematicsSDK)，以下方法均可编译: 
-			1. g++ *.cpp  -Wall -w -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
-			2./kinematicsSDK/makefile 生成libKine.so
-	编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
+## 3. 轨迹与数据
 
-### 3.2.2 编译c++调用的dll动态库:
-    1)windows下使用MinGW编译dll动态库:
-			控制SDK(contrlSDK): g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
-            运动学SDK(kinematicsSDK): g++ *.cpp -Wall -w -O2 -fPIC -shared -o libKine.dll
-    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
+| 示例 | 内容 | 核心接口 |
+|---|---|---|
+| `showcase_pvt_arm_A.py` | 上传 PVT 文件、运行指定 ID、采数据 | `send_pvt_file` / `set_pvt_id` / `collect_data` |
+| `showcase_collect_data.py` | 1kHz 数据采集并保存 | `collect_data` / `stop_collect_data` / `save_collected_data_to_path` |
+| `showcase_collect_data_as_csv.py` | 采集并保存 CSV | `save_collected_data_as_csv_to_path` |
+| `showcase_process_collect_data_to_pvt_format.py` | 把拖动采集数据转成 PVT 文件 | PVT 文件格式 |
+| `showcase_set_save_tool.py` | 设置/保存工具运动学与动力学 | `set_tool` / `get_tool_info` |
+| `showcase_identy_tool_dynamic_CCS_B.py` | CCS 右臂工具动力学辨识 | `identify_tool_dyn` |
+| `showcase_identy_tool_dynamic_SRS_B.py` | SRS 右臂工具动力学辨识 | `identify_tool_dyn` |
+| `showcase_jointsTorque2EefTorque.py` | 关节力矩 → 末端六维力 | `jnt_tau_to_ee_tau` |
+| `showcase_validate_get_dcss_data_from_user_inputCMD.py` | 用户自定义数据通道（力/重力/工具/刚度/IMU） | `set_user_specified_data` |
+| `showcase_485_arm_A.py` | 末端 485 通讯 | `set_485_data` / `get_485_data` |
+| `showcase_CAN_arm_A.py` | 末端 CAN/CANFD 通讯 | `set_485_data(..., com=1)` |
 
-			
-### 3.2.3 编译python调用的dll动态库
-    1)linux下编译dll动态库:
-        控制SDK(contrlSDK):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
-        运动学SDK(kinematicsSDK): g++ *.cpp -Wall -w -O2 -fPIC -shared -o libKine.dll 
+---
 
-	2）windows下使用MinGW编译dll动态库：
-			控制SDK（contrlSDK）：g++ *.cpp -Wall -w -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
-			运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -w -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
-    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
+## 4. 规划（单臂）
 
-## 四、 控制showcases
-### 0. 检查SDK类型兼容性
-        showcase_check_sdk_type_compat.py
-### 1.双臂关节位置跟随控制演示
-        showcase_position.py
-### 2. 单臂执行PVT轨迹并保存数据的演示
-        showcase_pvt_arm_A.py
-### 3. 单臂扭矩模式关节阻抗控制演示
-        showcase_torque_joint_impedance_arm_A.py
-### 4. 单臂扭矩模式笛卡尔阻抗控制演示
-        showcase_torque_cart_impedance_arm_A.py
-### 5. 单臂扭矩模式力控演示
-        showcase_torque_force_impedance_arm_A.py
-### 6. 单臂关节阻抗模式拖动手臂演示
-        showcase_joint_drag_arm_A.py
-### 7. 单臂关节阻抗模式拖动手臂并保存数据演示
-        showcase_drag_JointImpedance_and_save_data_arm_A.py
-### 8. 单臂笛卡尔阻抗模式拖动手臂演示
-        showcase_cart_drag_arm_A.py
-### 9. 单臂笛卡尔阻抗模式拖动手臂并保存数据演示
-        showcase_drag_CartImpedance_and_save_data_arm_A.py
-### 10. 保存数据演示
-        showcase_collect_data.py
-### 11. 保存数据为CSV演示
-        showcase_collect_data_as_csv.py
-### 12. 保存工具动力学和运动学信息演示
-        showcase_set_save_tool.py
-### 13. 获取和设置机器人配置参数演示
-        showcase_get_set_param.py
-### 14. 单臂末端485通讯演示
-        showcase_485_arm_A.py
-### 15. 单臂末端CAN/CANFD通讯演示
-        showcase_CAN_arm_A.py
-### 16. 电机清错清零演示
-        showcase_motor_encoder_clear.py
-### 17. 协作释放演示
-        showcase_collaborative_release.py
-### 18. 松闸抱闸演示
-        showcase_apply-brake_release-brake.py
-### 19. 获取伺服错误码及对应错误原因
-        showcase_servo_error.py
-### 20. 拖动保存的轨迹转为PVT文件
-        showcase_process_collect_data_to_pvt_format.py
-### 21. 工具笛卡尔阻抗
-        showcase_torque_EefCart_impedance_arm_A.py
-### 22. 指定关节伺服软复位
-        showcase_servo_reset.py
-### 23. 检查指令下发的延迟时间
-        showcase_check_cmd_delay.py
-### 24. 关节空间以规划方式下发指令，消除抖动
-        showcase_pln_joint_positionMode.py
-### 25. 笛卡尔空间以规划方式下发指令，实现直线约束
-        showcase_pln_cart_positionMode.py
-### 26. 关节空间以规划方式下发指令，并中断运行
-        showcase_pln_joint_positionMode_with_break.py
-### 27. 笛卡尔空间以规划方式下发指令，并中断运行
-        showcase_pln_cart_positionMode_with_break.py
-### 28. 关节力矩转末端六维力
-        showcase_jointsTorque2EefTorque.py
-### 29. 立场控制
-        showcase_force_field_control.py
-### 30. 运动过程中，停止运动案例（非急停，非下使能）
-        showcase_stop_run_AB.py
-### 31. 阻抗刚度阻尼数据回读
-        showcase_validate_stiffness_info.cpp
-        
-## 五、 干涉检测(碰撞检测)showcases
-### 1. 双臂进入关节拖动模式, 获取当前关节做碰撞检测(对应DEMO_C++/showcase_drag_interference.cpp)
-        showcase_drag_interference.py
+| 示例 | 内容 | 核心接口 |
+|---|---|---|
+| `showcase_pln_joint_positionMode.py` | 关节空间规划下发（消抖） | `pln_init` / `setPln_joint` |
+| `showcase_pln_joint_positionMode_with_break.py` | 关节规划 + 中断 | `stopRunPln_joint` |
+| `showcase_pln_cart_positionMode.py` | 笛卡尔直线规划并执行 | `movLA` + `setPln_Cart` |
+| `showcase_pln_cart_positionMode_with_break.py` | 笛卡尔规划 + 中断 | `stopPln_AB` / `stopRunPln_joint` |
+| `showcase_pln_cart_positionmode_collabration.py` | 规划与协作释放配合 | 规划 + `set_state(4)` |
+| `showcase_pln_cart_multi-segment_positionMode.py` | 多段直线规划 | `multi_movL_set_start` / `next_point` / `get_points` |
+| `showcase_pln_mov_target_positionMode.py` | 直线优先、关节兜底 | `mov_target` |
+| `showcase_online_pln_movl.py` | 在线直线规划 + 50Hz 执行 | `movLA` |
+| `showcase_online_pln_movl_keepj.py` | 约束构型的在线直线规划 | `movL_KeepJA` |
+| `showcase_online_pln_movl_with_specific_rot.py` | 固定姿态的在线直线规划 | `movLA` + `calculate_end_xyzabc` |
 
-## 六. 计算showcases
+---
 
-### 1. 计算SDK 功能模块完整演示
-            showcase_kinematics_all_functions.py
+## 5. 规划（双臂）— 建议按顺序阅读
 
-### 2. 计算逆解失败总结
-            showcase_ik_failed_conclusion.py
+| 顺序 | 示例 | 内容 | 核心接口 |
+|---|---|---|---|
+| 1 | `showcase_pln_joint_to_joint_two_arms.py` | 双臂关节空间同时开始（不一定同时结束） | `setPln_joint_AB` |
+| 2 | `showcase_pln_joint_to_joints_linear_two_arms.py` | 关节约束下的双臂直线 | `movL_KeepJA` + `setPln_Cart_AB` |
+| 3 | `showcase_pln_cartesian_linear_two_arms.py` | 双臂笛卡尔直线 | `movLA` + `setPln_Cart_AB` |
+| 4 | `showcase_pln_multi_segment_linear_two_arms.py` | 双臂多段直线 | `multi_movL_*` + `setPln_Cart_AB` |
+| 5 | `showcase_pln_cartSpace_two_arms_synchronous.py` | 双臂同步直线（躯干固定） | `movL_synchronous` + `setPln_Cart_AB` |
 
-### 3. 两条手臂在三种情景下同时计算正解和逆解
-            showcase_kine_two_arms.py
+> 双臂规划需要**两个** `Marvin_Kine` 实例，分别用 `arm_type=0` / `1` 初始化。
 
-### 4. CCS右臂工具动力学辨识演示脚本
-            showcase_identy_tool_dynamic_CCS_B.py
-    
-### 5. SRS右臂工具动力学辨识演示脚本
-            showcase_identy_tool_dynamic_SRS_B.py
+---
 
-### 6. 逆解参考基准
-            showcase_ik_nsp_two_arms.py
-            
-### 7.在线直线规划并以笛卡尔阻抗模式以50HZ频率执行点位
-            showcase_online_pln_movl.py
-            
-### 8.在线直线规划，约束构型并以笛卡尔阻抗模式以50HZ频率执行点位
-            showcase_online_pln_movl_keepj.py
+## 6. 运动学计算
 
-### 9.在线直线规划，约束构型并以笛卡尔阻抗模式以50HZ频率执行点位，定于旋转
-            showcase_online_pln_movl_with_specific_rot.py
+| 示例 | 内容 |
+|---|---|
+| `showcase_kinematics_all_functions.py` | 计算 SDK 全功能串讲（推荐首先运行） |
+| `showcase_kine_two_arms.py` | 双臂正解/逆解对比 |
+| `showcase_ik_failed_conclusion.py` | 逆解失败原因分析 |
+| `showcase_ik_nsp_two_arms.py` | 零空间逆解与参考构型 |
 
-### 10.在线多点规划，控制器以50HZ执行
-            showcase_pln_cart_multi-segment_positionMode.py
+---
 
+## 7. 干涉检测
 
-# 建议运行顺序：11->12->13->14->15
-### 11. 双臂协作关节空间同步规划运动（setPln_joint_AB）
-        showcase_pln_joint_to_joint_two_arms.py
-### 12. 双臂协作关节空间直线规划同步运动（movL_KeepJA + setPln_Cart_AB）
-        showcase_pln_joint_to_joints_linear_two_arms.py
-### 13. 双臂协作笛卡尔空间直线规划同步运动（movLA + setPln_Cart_AB）
-        showcase_pln_cartesian_linear_two_arms.py
-### 14. 双臂协作多点直线规划同步运动（multi_movL + setPln_Cart_AB）
-        showcase_pln_multi_segment_linear_two_arms.py
-### 15. 双臂轴同步规划运动（movL_synchronous + setPln_Cart_AB）
-        showcase_pln_cartSpace_two_arms_synchronous.py
+| 示例 | 内容 |
+|---|---|
+| `showcase_drag_interference.py` | 拖动过程中做双臂碰撞检测 |
 
+---
+
+## 8. 简明式接口
+
+| 示例 | 内容 |
+|---|---|
+| `showcases_new_control_sdk.py` | `Concise_Marvin_Robot` 全流程演示（连接→模式→力控→规划→PVT→拖动） |
+
+---
+
+## 9. 推荐学习顺序
+
+```
+showcase_check_sdk_type_compat.py
+        ↓
+showcase_position.py
+        ↓
+showcase_get_set_param.py / showcase_collect_data.py
+        ↓
+showcase_torque_joint_impedance_arm_A.py
+        ↓
+showcase_pln_joint_positionMode.py
+        ↓
+showcase_pln_cart_positionMode.py
+        ↓
+showcase_pln_cartesian_linear_two_arms.py
+        ↓
+showcase_pln_cartSpace_two_arms_synchronous.py
+```
+
+---
+
+## 相关文档
+
+- [SDK 总览](../README.md)
+- [AI 开发指南](../AI_GUIDE.md)
+- [Python 控制 SDK](../python_doc_contrl.md)
+- [Python 计算 SDK](../python_doc_kine.md)
+- [SDK_PYTHON 包说明](../SDK_PYTHON/readme.md)

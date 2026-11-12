@@ -1,243 +1,209 @@
-# ATTENTION
-    1.  请先熟练使用MARVIN_APP或MarvinPlatform软件。操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
-    2.  DEMO_C++/ 和 DEMO_PYTHON/ 下为接口使用DEMO。每个demo顶部有该DEMO的案例说明和使用逻辑，请您一定先阅读，根据现场情况修改后运行。
-        这些demo的使用逻辑和使用参数为研发测试使用开发的，仅供参考，并非实际生产代码。
-            比如:
-                a.速度百分比和加速度百分比为了安全我们都设置为百分之十：10，在您经过丰富的测试后可调到全速100。
-                b.参数设置之间sleep 1秒或者500毫秒， 实际上参数设置之间小睡1毫秒即可。
-                c.设置目标关节后，测试里小睡几秒等机械臂运行到位，而在生产时可以通过循环订阅机械臂当前位置判断是否走到指定点位或者通过订阅低速标志来判断。
-                d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
-
-# 一、SDK文档
-    请阅读SDK文档，详细全面了解机器人使用逻辑，接口的功能，以及更新和注意事项。
-
-[SDK首页](../README.md)
-
-[C++ 控制SDK 文档](../c++_doc_contrl.md)
-
-[PYTHON 控制SDK 文档](../python_doc_contrl.md)
-
-[C++ 运动计算SDK 文档]( ../c++_doc_kine.md)
-
-[PYTHON 运动计算SDK 文档](../python_doc_kine.md)
-
-# 二、 DEMO_C++/下必要文件
-    
-    请检查以下文件是否为为本机编译：
-        libKine.dll
-        libMarvinSDK.dll
-        libInterfCheck.dll
-
-        libKine.so
-        libMarvinSDK.so
-        libInterfCheck.so
-
-    请检查以下头文件是否存在：
-        FXDG.h
-        FxRobot.h
-        MarvinSDK.h
-        PointSet.h
-        Interference.h        #干涉检测(碰撞检测)接口头文件
-
-## 2.1 编译控制库和运动计算库方法
-## 2.1.1使用自动化编译脚本：
-        master分支下marvinSDK_windows.bat运行可自动编译C++和python调用的dll文件
-        master分支下marvinSDK_ubuntu.sh运行可自动编译C++和python调用的so文件
-
-### 2.1.2 编译so动态库:
-    linux设备编译:
-        控制SDK(contrlSDK)，以下方法均可编译: 
-            1. g++ *.cpp  -Wall -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
-            2./contrlSDK/makefile 生成libMarvinSDK.so
-        运动学SDK(kinematicsSDK)，以下方法均可编译: 
-            1. g++ *.cpp  -Wall -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
-            2./kinematicsSDK/makefile 生成libKine.so
-    编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
-
-### 2.1.3 编译c++调用的dll动态库:
-    1)windows下使用MinGW编译dll动态库:
-            控制SDK(contrlSDK): g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
-            运动学SDK(kinematicsSDK): g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.dll
-    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
-
-            
-### 2.1.4 编译python调用的dll动态库
-    1)linux下编译dll动态库:
-        控制SDK(contrlSDK):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
-        运动学SDK(kinematicsSDK): g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.dll 
-
-    2）windows下使用MinGW编译dll动态库：
-            控制SDK（contrlSDK）：g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
-            运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
-    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
-
-
-
-### 2.1.5 不使用动态库，源码调用
-    使用contrlSDK为例, 假设调用代码文件main.cpp在和 contrlSDK 同级目录文件夹workspace下， 
-    目录树为：
-    ...
-    |---contrlSDK
-    |---workspace
-        |--- main.cpp
-    ...
+# DEMO_C++ — C++ 示例索引
 
+> 示例用于演示接口调用顺序，不是生产代码。运行前先读文件顶部的说明。
+> 默认 IP `192.168.1.190`，示例里的速度/刚度/阻尼均为测试值。
 
-    则编译指令为：
-    1）windows下编译指令：
-    g++ -Wall main.cpp ../contrlSDK/*.cpp -I../contrlSDK -o main.exe -lws2_32 -lwinmm -DCMPL_WIN
+## 一、准备
 
-    2）linux下编译指令：
-    g++ -Wall main.cpp ../contrlSDK/*.cpp -I../contrlSDK -o main -lpthread -lrt -DCMPL_LIN
+`DEMO_C++/` 下需要以下文件（必须与当前源码一起编译）：
 
-    编译完成后，会生成
-    ...
-    |---contrlSDK
-    |---workspace
-        |--- main.cpp
-        |--- main.exe or main
-    ...
+```
+libKine.dll / libKine.so
+libMarvinSDK.dll / libMarvinSDK.so
+libInterfCheck.dll / libInterfCheck.so
 
+FXDG.h
+FxRobot.h
+MarvinSDK.h
+PointSet.h
+Interference.h
+```
 
+检查动态库是否最新：重新运行仓库根目录的自动化脚本。
 
-# 三、 案列使用编译
-## 3.1 linux示例
-    只用到运动学库
-    g++ showcase_kinematics_all_functions.cpp -o kine -L. -lKine -Wl,-rpath=.
-    ./kine
-    
-    控制库和运动学库同时使用
-    g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj -L. -lKine -lMarvinSDK -Wl,-rpath=.
-    ./offline_movl_keepj
+```bash
+# Windows
+marvinSDK_windows_100343.bat
 
-## 3.2 windows示例
-    只用到运动学库
-    g++ showcase_kinematics_all_functions.cpp -o kine.exe -L. -lKine
-    kine.exe
-    
-    控制库和运动学库同时使用
-    g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj.exe -L. -lKine -lMarvinSDK
-    offline_movl_keepj.exe 
+# Linux
+./marvinSDK_ubuntu_100343.sh
+```
 
-## 3.3 干涉检测(碰撞检测)库示例
-    干涉检测库依赖运动学库(libKine), 需同时链接:
-    linux示例:
-    g++ showcase_drag_interference.cpp -o showcase_drag_interference -L. -lKine -lMarvinSDK -lInterfCheck -Wl,-rpath=.
-    ./showcase_drag_interference
+## 二、编译示例
 
-    windows示例:
-    g++ showcase_drag_interference.cpp -o showcase_drag_interference.exe -L. -lKine -lMarvinSDK -lInterfCheck
-    showcase_drag_interference.exe
+### Linux
 
+```bash
+# 只使用计算库
+g++ showcase_kinematics_all_functions.cpp -o kine -L. -lKine -Wl,-rpath=.
+./kine
 
+# 控制库 + 计算库
+g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj \
+    -L. -lKine -lMarvinSDK -Wl,-rpath=.
+./offline_movl_keepj
 
-# 四. 控制showcases
-## 0. 检查SDK类型兼容性
-            showcase_check_sdk_type_compat.cpp
+# 再加干涉检测库
+g++ showcase_drag_interference.cpp -o showcase_drag_interference \
+    -L. -lKine -lMarvinSDK -lInterfCheck -Wl,-rpath=.
+```
+
+### Windows（MinGW）
 
-## 1. 强制抱闸和强制松闸案例
-            showcase_apply_brake_release_brake.cpp
+```bash
+g++ showcase_kinematics_all_functions.cpp -o kine.exe -L. -lKine
+kine.exe
 
-## 2. 机器人进入协作释放案列
-            showcase_collaborative_release.cpp
+g++ showcase_offline_movl_keepj_execution.cpp -o offline_movl_keepj.exe -L. -lKine -lMarvinSDK
+offline_movl_keepj.exe
+```
 
-## 3. 在迪卡尔阻抗模式下,进去迪卡尔Y方向拖动,拖动并保存数据的控制案列
-            showcase_drag_CartImpedance_save_data.cpp
+### 不使用动态库（直接编译源码）
 
-## 4. 拖动控制案例
-            showcase_drag_joint.cpp
+```bash
+# Linux
+g++ -Wall main.cpp ../contrlSDK100343/*.cpp -I../contrlSDK100343 -o main -lpthread -lrt -DCMPL_LIN
 
-## 5. 在关节阻抗模式下,进去关节拖动,拖动并保存数据的控制案列
-            showcase_drag_JointImpedance_save_data.cpp
+# Windows
+g++ -Wall main.cpp ../contrlSDK100343/*.cpp -I../contrlSDK100343 -o main.exe -lws2_32 -lwinmm -DCMPL_WIN
+```
 
-## 6. 获取和设置参数案列
-           showcase_get_set_param_demo.cpp
+---
 
-## 7. 连接检查案列
-            showcase_link_check.cpp
+## 三、控制示例
 
-## 8. 关节位置跟随控制案列
-            showcase_position_two_arms.cpp
+### 3.1 基础与安全
 
-## 9. 跑PVT轨迹并保存数据的案列
-            showcase_pvt.cpp
+| 示例 | 内容 |
+|---|---|
+| `showcase_check_sdk_type_compat.cpp` | 检查 SDK 类型/字节序兼容性 |
+| `showcase_link_check.cpp` | 连接与数据通道检查 |
+| `showcase_get_set_param_demo.cpp` | 读取/设置控制器参数 |
+| `showcase_cmd_delay.cpp` | 指令下发延迟测试 |
+| `showcase_apply_brake_release_brake.cpp` | 强制抱闸 / 松闸 |
+| `showcase_collaborative_release.cpp` | 协作释放（零力） |
+| `showcase_servo_reset.cpp` | 指定关节伺服软复位 |
+| `showcase_validate_stiffness_info.cpp` | 阻抗刚度/阻尼设置与回读 |
 
-## 10. 为笛卡尔阻抗控制案列
-            torque_cart_impedance_demo.cpp
+### 3.2 控制模式
 
-## 11. 为力控案列
-            torque_force_impedance_demo.cpp
-
-## 12. 关节阻抗控制案列
-            torque_joint_impedance_demo.cpp
-
-## 13. 在关节阻抗模式下,进去关节拖动,拖动并保存数据的控制案列
-            showcase_drag_JointImpedance_save_data.cpp
-
-## 14. 检查指令下发的延迟时间
-            showcase_cmd_delay.cpp
-
-## 15. 关节空间以规划方式下发指令，消除抖动
-            showcase_pln_jointSpace_PositionMode.cpp
-
-## 16. 笛卡尔空间以规划方式下发指令，实现直线约束
-            showcase_pln_cartSpace_PositionMode.cpp
-            
-## 17. 关节空间以规划方式下发指令，中断规划运行
-            showcase_pln_jointSpace_PositionMode_with_break.cpp
-
-## 18. 笛卡尔空间以规划方式下发指令，中断规划运行
-            showcase_pln_cartSpace_PositionMode_with_break.cpp
-
-## 18.1 双臂同步直线规划（基座固定），双臂同时下发达规划点并执行
-            showcase_pln_cartSpace_two_arms_synchronous.cpp
-
-## 19. 工具笛卡尔阻抗控制案列
-            showcase_torque_EefCart_impedance.cpp
-
-## 20. 机械臂末端以给定的力和扭矩运动到给定的位置距离和姿态距离,可实时触发调整力的方向和大小。
-            showcase_Force_field_Control.cpp
-## 21. OTA
-            showcase_ota_transfer.cpp
-## 22.系统升级
-            showcase_update_system.cpp
-    
-# 六、 控制SDK简明式接口案例
-            showcase_new_control_sdk_usage.cpp
-
-
-# 七、 干涉检测(碰撞检测)showcases
-## 1. 双臂进入关节拖动模式, 获取当前关节做碰撞检测
-            showcase_drag_interference.cpp
-
-
-# 五. 计算showcases
-
-## 1. 计算SDK 功能模块完整演示
-            showcase_kinematics_all_functions.cpp
-
-## 2. 计算逆解失败总结
-            showcase_ik_failed_conclusion.cpp
-
-## 3. 两条手臂同时计算
-            showcase_kine_two_arms.cpp
-
-## 5. 逆解参考基准
-            showcase_ik_nsp_two_arms.cpp
-            
-## 6. 演示左臂离线和在线规划功能接口：
-            showcase_online_and_offline_pln_all_function.cpp
-
-
-## 7. 左臂关节阻抗50HZ执行离线直线规划文件：
-            showcase_offline_movl_execution.cpp
-
-## 8.左臂关节阻抗50HZ执行在线直线规划点：
-            showcase_online_movla_execution.cpp
-
-## 9.左臂关节阻抗50HZ执行约束构型的离线直线规划文件：
-            showcase_offline_movl_keepj_execution.cpp
-
-## 10. 左臂关节阻抗50HZ执行约束构型的在线直线规划点位：
-            showcase_online_movl_keepja_execution.cpp
-
+| 示例 | 内容 |
+|---|---|
+| `showcase_position_two_arms.cpp` | 双臂位置跟随（最基本） |
+| `showcase_joint_impedance_control.cpp` | 关节阻抗 |
+| `showcase_cartesian_impedance_control.cpp` | 笛卡尔阻抗 |
+| `showcase_eef_cart_impedance.cpp` | 末端工具笛卡尔阻抗 |
+| `showcase_eef_force_control_bsed_on_eef_cart_impedance.cpp` | 基于末端阻抗的力控 |
+| `showcase_Force_field_Control.cpp` | 力场控制 |
+| `showcase_JointTorque2EETorque.cpp` | 关节力矩 → 末端六维力 |
+
+### 3.3 拖动与示教
+
+| 示例 | 内容 |
+|---|---|
+| `showcase_drag_joint.cpp` | 关节拖动 |
+| `showcase_drag_JointImpedance_save_data.cpp` | 关节阻抗拖动并保存数据 |
+| `showcase_drag_CartImpedance_save_data.cpp` | 笛卡尔阻抗拖动并保存数据 |
+
+### 3.4 末端通讯
+
+| 示例 | 内容 |
+|---|---|
+| `showcase_eef_485.cpp` | 末端 485 |
+| `showcase_eef_CAN.cpp` | 末端 CAN/CANFD |
+
+### 3.5 PVT、数据与系统
+
+| 示例 | 内容 |
+|---|---|
+| `showcase_pvt.cpp` | PVT 轨迹运行 |
+| `showcase_validate_get_dcss_data_from_user_inputCMD.cpp` | 用户自定义数据通道 |
+| `showcase_ota_transfer.cpp` | OTA 传输 |
+| `showcase_update_system.cpp` | 系统升级 |
+
+### 3.6 简明式接口
+
+| 示例 | 内容 |
+|---|---|
+| `showcase_new_control_sdk_usage.cpp` | `Concise` 风格 API 全流程 |
+
+---
+
+## 四、规划示例
+
+### 4.1 单臂
+
+| 示例 | 内容 |
+|---|---|
+| `showcase_pln_jointCmd_PositionMode.cpp` | 关节指令 + 位置模式 |
+| `showcase_pln_jointSpace_PositionMode.cpp` | 关节空间规划（消抖） |
+| `showcase_pln_jointSpace_PositionMode_with_break.cpp` | 关节规划 + 中断 |
+| `showcase_pln_cartSpace_PositionMode.cpp` | 笛卡尔直线规划 |
+| `showcase_pln_cartSpace_PositionMode_with_break.cpp` | 笛卡尔规划 + 中断 |
+| `showcase_pln_cartSpace_MultiPoints_PositionMode.cpp` | 多段直线 |
+| `showcase_pln_PositionMode_MovTarget.cpp` | 直线优先、关节兜底 |
+| `showcase_online_movj_execution.cpp` | 在线关节空间规划执行 |
+| `showcase_online_movla_execution.cpp` | 在线直线规划执行 |
+| `showcase_online_movl_keepja_execution.cpp` | 约束构型的在线直线执行 |
+| `showcase_offline_movl_execution.cpp` | 离线直线规划文件执行 |
+| `showcase_offline_movl_keepj_execution.cpp` | 约束构型的离线直线执行 |
+| `showcase_online_and_offline_pln_all_function.cpp` | 在线/离线规划全功能 |
+
+### 4.2 双臂
+
+| 示例 | 内容 |
+|---|---|
+| `showcase_pln_jointSpace_PositionMode_two_arms.cpp` | 双臂关节空间同时开始（不一定同时结束） |
+| `showcase_pln_cartSpace_two_arms_synchronous.cpp` | 双臂同步直线（躯干固定） |
+
+> 双臂同步规划使用 `FX_Robot_PLN_MOVL_Arms_Synchronous`，规划完成后由控制库 `CoRunPlnCart` 同时下发。
+
+---
+
+## 五、计算示例
+
+| 示例 | 内容 |
+|---|---|
+| `showcase_kinematics_all_functions.cpp` | 计算 SDK 全功能（推荐首先运行） |
+| `showcase_kine_two_arms.cpp` | 双臂正解/逆解 |
+| `showcase_ik_failed_conclusion.cpp` | 逆解失败原因 |
+| `showcase_ik_nsp_two_arms.cpp` | 零空间逆解 |
+
+---
+
+## 六、干涉检测示例
+
+| 示例 | 内容 |
+|---|---|
+| `showcase_drag_interference.cpp` | 拖动时做双臂碰撞检测（需链接 `libInterfCheck`） |
+
+---
+
+## 七、推荐运行顺序
+
+```
+showcase_check_sdk_type_compat
+        ↓
+showcase_link_check
+        ↓
+showcase_position_two_arms
+        ↓
+showcase_get_set_param_demo / showcase_cmd_delay
+        ↓
+showcase_joint_impedance_control
+        ↓
+showcase_kinematics_all_functions
+        ↓
+showcase_pln_cartSpace_PositionMode
+        ↓
+showcase_pln_cartSpace_two_arms_synchronous
+```
+
+---
+
+## 相关文档
+
+- [SDK 总览](../README.md)
+- [AI 开发指南](../AI_GUIDE.md)
+- [C++ 控制 SDK](../c++_doc_contrl.md)
+- [C++ 计算 SDK](../c++_doc_kine.md)

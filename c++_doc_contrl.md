@@ -1,10 +1,26 @@
-0# 天机-孚晞 机器人控制工具包 contrlSDK
+# 天机-孚晞 机器人控制工具包 contrlSDK
+
 ## 机器人型号： MARVIN人形双臂, 单臂
 ## 版本： 1003
 ## 支持平台： LINUX 及 WINDOWS
 ## LINUX支持： ubuntu18.04 - ubuntu24.04
 ## 更新日期：2026-03
 
+> **本文档解决什么问题**：C++ 控制库 `libMarvinSDK` 的接口说明——连接、订阅、切模式、下发指令、采集、PVT、末端通讯。
+> **不包含**：正解/逆解/轨迹规划（见 [c++_doc_kine.md](c++_doc_kine.md)）。
+>
+> **两套接口并存**
+> - **原接口**（§二）：所有参数设置必须在 `OnClearSet()` 与 `OnSetSend()` 之间；
+> - **简明式接口**（§三）：一个函数完成“设参数 + 切模式”，内部检查错误，推荐新项目使用。
+>
+> **建议阅读顺序**
+> 1. [README.md](README.md) 快速开始；
+> 2. 本文档 §一 功能总览 → §三 简明式接口；
+> 3. 需要老接口细节时再查 §二；
+> 4. 规划相关跳到计算 SDK 文档。
+>
+> **配套示例**：[DEMO_C++/readme.md](DEMO_C++/readme.md)
+> **AI 代理**：先读 [AI_GUIDE.md](AI_GUIDE.md)。
 
 # ATTENTION
     1.  请先熟练使用MARVIN_APP或MarvinPlatform软件。操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。

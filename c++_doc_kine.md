@@ -1,9 +1,27 @@
 # 天机-孚晞 MARVIN机器人计算SDK
+
 ## 机器人型号： MARVIN人形双臂, 单臂
 ## 版本： 1004
 ## 支持平台： LINUX 及 WINDOWS
 ## LINUX支持： ubuntu18.04 - ubuntu24.04
 ## 更新日期：2026-03
+
+> **本文档解决什么问题**：C++ 计算库 `libKine` 的接口说明——配置加载、正逆解、零空间、雅可比、规划。
+> **不连接机器人**；规划结果 `CPointSet` 交给控制库 `OnSetPlnCart_A/B` 或 `CoRunPlnCart` 执行。
+>
+> **使用前提**
+> 1. 选择与机型匹配的 `*.MvKDCfg`；
+> 2. 左右臂独立初始化：A=`RobotSerial 0`，B=`RobotSerial 1`；
+> 3. 带工具时先设置工具，否则正逆解到法兰。
+>
+> **建议阅读顺序**
+> 1. §1.3 接口详解（0~4：日志、配置、初始化、工具、坐标系）；
+> 2. 5~9：正逆解、零空间、雅可比；
+> 3. 10~21：规划接口；
+> 4. 对照 `DEMO_C++/readme.md` 的计算示例运行。
+>
+> **配套示例**：[DEMO_C++/readme.md](DEMO_C++/readme.md)
+> **AI 代理**：先读 [AI_GUIDE.md](AI_GUIDE.md)。
 
 # 一、接口介绍
     kinematicsSDK 为天机七轴机器人计算运动的接口，主要提供：

@@ -4306,7 +4306,7 @@ class App:
 
     def brake(self, robot_id):
         if self.connected:
-            messagebox.showinfo('Attention', 'Please confirm that the servo parameters are set to 166 hybrid control mode.')
+            # messagebox.showinfo('Attention', 'Please confirm that the servo parameters are set to 166 hybrid control mode.')
             if robot_id == 'A':
                 robot.set_param('int', 'BRAK0', 1)
             elif robot_id == 'B':
@@ -4316,7 +4316,7 @@ class App:
 
     def release_brake(self, robot_id):
         if self.connected:
-            messagebox.showinfo('Attention', 'Please confirm that the servo parameters are set to 166 hybrid control mode.')
+            # messagebox.showinfo('Attention', 'Please confirm that the servo parameters are set to 166 hybrid control mode.')
             if robot_id == 'A':
                 robot.set_param('int', 'BRAK0', 2)
             elif robot_id == 'B':

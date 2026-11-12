@@ -1,55 +1,47 @@
-# ATTENTION
-    1.  请先熟练使用MARVIN_APP或MarvinPlatform软件。操作APP可以让您更加了解marvin机器人的操作使用逻辑，便于后期用代码开发。
-    2.  DEMO_C++/ 和 DEMO_PYTHON/ 下为接口使用DEMO。每个demo顶部有该DEMO的案例说明和使用逻辑，请您一定先阅读，根据现场情况修改后运行。
-        这些demo的使用逻辑和使用参数为研发测试使用开发的，仅供参考，并非实际生产代码。
-            比如:
-                a.速度百分比和加速度百分比为了安全我们都设置为百分之十：10，在您经过丰富的测试后可调到全速100。
-                b.参数设置之间sleep 1秒或者500毫秒， 实际上参数设置之间小睡1毫秒即可。
-                c.设置目标关节后，测试里小睡几秒等机械臂运行到位，而在生产时可以通过循环订阅机械臂当前位置判断是否走到指定点位或者通过订阅低速标志来判断。
-                d.刚度系数和阻尼系数的设置也是参考值，不同的控制器版本可能值会有提升，详询技术人员。
+# kinematicsSDK — 运动学与规划库
 
+> 负责：正解、逆解、零空间、雅可比、直线/多段/双臂规划、工具动力学辨识。
+> **不连接机器人**，只依赖机型配置文件。对应 Python 封装：`SDK_PYTHON/fx_kine.py`。
 
+## 一、目录内容
 
-# 一、SDK文档
-    请阅读SDK文档，详细全面了解机器人使用逻辑，接口的功能，以及更新和注意事项。
+| 文件 | 说明 |
+|---|---|
+| `FxRobot.h` | C++ 接口头文件 |
+| `FXKineCommon.h` | 公共类型与 `ArmsSynchronousPlanningParams` 等结构体 |
+| `AxisPln.cpp/.h` | 规划实现 |
+| `makefile` / `makefile_dll` | Linux 编译脚本 |
 
-[SDK首页](../README.md)
+## 二、编译
 
-[C++ 控制SDK 文档](../c++_doc_contrl.md)
+```bash
+# Linux
+cd kinematicsSDK
+g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.so -lpthread -lrt
 
-[PYTHON 控制SDK 文档](../python_doc_contrl.md)
+# Windows（C++ 用）
+g++ *.cpp -Wall -O2 -shared -o libKine.dll
 
-[C++ 运动计算SDK 文档]( ../c++_doc_kine.md)
+# Windows（Python 用）
+g++ *.cpp -Wall -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC \
+    -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
+```
 
-[PYTHON 运动计算SDK 文档](../python_doc_kine.md)
+编译产物复制到 `SDK_PYTHON/`（Python）或 `DEMO_C++/`（C++）。
 
-# 二、 运动学SDK库文件编译
-    运动学SDK头文件：FxRobot.h
+## 三、使用前必须确认
 
-## 2.1.1 编译so动态库:
-    linux设备编译:
-        控制SDK(contrlSDK100343)，以下方法均可编译: 
-			1. g++ *.cpp -Wall -O2 -fPIC -shared -o libMarvinSDK.so -lpthread -lrt -DCMPL_LIN
-			2./contrlSDK100343/makefile 生成libMarvinSDK.so
-        运动学SDK(kinematicsSDK)，以下方法均可编译: 
-			1. g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.so -lpthread -lrt 
-			2./kinematicsSDK/makefile 生成libKine.so
-	编译的libKine.so 和 libMarvinSDK.so 供编译机器下的下C++和python使用
+1. **机型配置文件正确。** `CommonConfig/*.MvKDCfg`：
+   - CCS 6kg：3.1 用 `ccs_m6_31.MvKDCfg`，4.0 用 `ccs_m6_40.MvKDCfg`；
+   - CCS 3kg：`ccs_m3.MvKDCfg`；
+   - SRS：`srs.MvKDCfg`。
+   - 配置错了可能“运行正常但结果错误”。
+2. **左右臂独立初始化。** A = 0，B = 1；`load_config` 返回的是双臂参数，初始化时取对应索引。
+3. **带工具时先设置工具**，否则正逆解算到法兰而不是 TCP。
 
-## 2.1.2 编译c++调用的dll动态库:
-    1)windows下使用MinGW编译dll动态库:
-			控制SDK(contrlSDK100343): g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -lws2_32 -lwinmm -DCMPL_WIN
-            运动学SDK(kinematicsSDK): g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.dll
-    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下C++使用
+## 四、文档
 
-			
-## 2.1.3 编译python调用的dll动态库
-    1)linux下编译dll动态库:
-        控制SDK(contrlSDK100343):  x86_64-w64-mingw32-g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -DCMPL_WIN -static -static-libgcc -static-libstdc++ -lws2_32 -lpthread -lwinmm
-        运动学SDK(kinematicsSDK): g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.dll 
-
-	2）windows下使用MinGW编译dll动态库：
-			控制SDK（contrlSDK100343）：g++ *.cpp -Wall -O2 -shared -o libMarvinSDK.dll -DBUILDING_DLL -D_WIN32 -DCMPL_WIN -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
-			运动学SDK(kinematicsSDK)：g++ *.cpp -Wall -O2 -shared -o libKine.dll -DBUILDING_DLL -D_WIN32 -fPIC -static -static-libgcc -static-libstdc++ -lws2_32 -lwinmm
-    编译的libKine.dll 和 libMarvinSDK.dll 供WINDOWS下python使用
-
+- [C++ 计算 SDK](../c++_doc_kine.md)
+- [Python 计算 SDK](../python_doc_kine.md)
+- [AI 开发指南](../AI_GUIDE.md)
+- 示例：[DEMO_PYTHON](../DEMO_PYTHON/readme.md) / [DEMO_C++](../DEMO_C++/readme.md)
