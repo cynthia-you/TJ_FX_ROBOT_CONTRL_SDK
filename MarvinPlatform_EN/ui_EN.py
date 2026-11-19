@@ -4789,8 +4789,8 @@ class App:
         self.eef_combo1 = ttk.Combobox(self.eef_frame_1, state="readonly", width=120)
         self.eef_combo1.grid(row=0, column=4, padx=5)
 
-        self.eef_bt_1 = tk.Button(self.eef_frame_1, text="L ARM Receive", command=lambda: self.receive_data_eef('A'))
-        self.eef_bt_1.grid(row=0, column=5, padx=5)
+        # self.eef_bt_1 = tk.Button(self.eef_frame_1, text="L ARM Receive", command=lambda: self.receive_data_eef('A'))
+        # self.eef_bt_1.grid(row=0, column=5, padx=5)
 
         self.eef_frame_1_2 = tk.Frame(parent, bg="white")
         self.eef_frame_1_2.pack(fill="x")
@@ -4844,8 +4844,8 @@ class App:
         self.eef_combo2 = ttk.Combobox(self.eef_frame_2, state="readonly", width=120)
         self.eef_combo2.grid(row=0, column=4, padx=5)
 
-        self.eef_bt_4 = tk.Button(self.eef_frame_2, text="R ARM Receive", command=lambda: self.receive_data_eef('B'))
-        self.eef_bt_4.grid(row=0, column=5, padx=5, pady=5)
+        # self.eef_bt_4 = tk.Button(self.eef_frame_2, text="R ARM Receive", command=lambda: self.receive_data_eef('B'))
+        # self.eef_bt_4.grid(row=0, column=5, padx=5, pady=5)
 
         self.eef_frame_3 = tk.Frame(parent, bg="white")
         self.eef_frame_3.pack(fill="x")
@@ -4861,7 +4861,7 @@ class App:
         self.recv_text1 = scrolledtext.ScrolledText(self.eef_frame_3, width=70, height=8, wrap=tk.WORD)
         self.recv_text1.grid(row=1, column=0, padx=5)
         self.recv_text1.insert(tk.END,
-                               'Usage Tips: First, select the port: CAN/COM1/COM2, \nthen click the "L ARM Receive" button, \nenter the data to send, \n and click the "L ARM Send" button. \nThe received end information will be refreshed and displayed at a 1kHz frequency.')
+                               'Usage Tips: First, select the port: CAN/COM1/COM2, \nadd the command in the list above, \nthen click the "L ARM Send" button. \nThe feedback will be read back within 1 second after sending; \nif nothing is received, "No feedback received within 1 second." is shown.')
 
         # 间隔
         spacer1 = tk.Label(self.eef_frame_3, text="   ", bg='white')
@@ -4874,7 +4874,7 @@ class App:
         self.recv_text2 = scrolledtext.ScrolledText(self.eef_frame_3, width=70, height=8, wrap=tk.WORD)
         self.recv_text2.grid(row=1, column=2, padx=5)
         self.recv_text2.insert(tk.END,
-                                                              'Usage Tips: First, select the port: CAN/COM1/COM2, \nthen click the "R ARM Receive" button, \nenter the data to send, \n and click the "R ARM Send" button. \nThe received end information will be refreshed and displayed at a 1kHz frequency.')
+                                                              'Usage Tips: First, select the port: CAN/COM1/COM2, \nadd the command in the list above, \nthen click the "R ARM Send" button. \nThe feedback will be read back within 1 second after sending; \nif nothing is received, "No feedback received within 1 second." is shown.')
         # 添加状态显示区域
         status_display_frame_7 = tk.Frame(parent, bg="white", padx=10, pady=5)
         status_display_frame_7.pack(fill="x", pady=5)
@@ -4938,18 +4938,17 @@ class App:
                     com = 3
                 # print(f'com:{com}')
                 success, sdk_return = robot.set_485_data(robot_id, sample_data, len(sample_data), com)
-                received_count, received_data = get_received_data()
-                if received_count > 0:
-                    if len(received_data) > 0:
-                        print(f'received_count:{received_count},  eef received:{received_data[0]}')
-                        if robot_id == 'A':
-                            self.recv_text1.delete('1.0', tk.END)
-                            self.recv_text1.insert(tk.END, received_data[0])
-                        if robot_id == 'B':
-                            self.recv_text2.delete('1.0', tk.END)
-                            self.recv_text2.insert(tk.END, received_data[0])
                 if not success:
                     messagebox.showerror('error', f'send data must be hex string of bytes string')
+                    return
+                # 发送后 1 秒内回读反馈：读到就显示数据，超时就提示没收到
+                got, receive_hex_data = read_485_until_data(robot_id, com, f'send-{robot_id}')
+                if robot_id == 'A':
+                    self.recv_text1.delete('1.0', tk.END)
+                    self.recv_text1.insert(tk.END, receive_hex_data if got else 'No feedback received within 1 second.')
+                elif robot_id == 'B':
+                    self.recv_text2.delete('1.0', tk.END)
+                    self.recv_text2.insert(tk.END, receive_hex_data if got else 'No feedback received within 1 second.')
             except Exception as e:
                 messagebox.showerror('error', e)
         else:
@@ -4992,6 +4991,7 @@ class App:
                     com = 3
 
                 tag, receive_hex_data = robot.get_485_data(robot_id, com)
+                print(f"--------{tag, receive_hex_data}")
                 if tag >= 1:
                     if robot_id == 'A':
                         self.recv_text1.delete('1.0', tk.END)
@@ -6786,7 +6786,7 @@ class App:
                 robot.set_pvt_id(robot_id, 97)
                 robot.send_cmd()
 
-                time.sleep(60)  # 模拟跑轨迹时间
+                time.sleep(100)  # 模拟跑轨迹时间
 
                 '''停止采集'''
                 robot.stop_collect_data()
@@ -6877,7 +6877,7 @@ class App:
                 robot.set_pvt_id(robot_id, 97)
                 robot.send_cmd()
 
-                time.sleep(60)  # 模拟跑轨迹时间
+                time.sleep(100)  # 模拟跑轨迹时间
 
                 '''停止采集'''
                 robot.stop_collect_data()
@@ -7525,6 +7525,27 @@ def read_data(robot_id,com):
         except Exception as e:
             # print(f"读取数据错误: {e}")
             time.sleep(0.001)
+
+def read_485_until_data(arm_id, com_id, label, timeout=1.0):
+    '''发完就读：循环读回复，直到读到数据为止（或超时）。读到数据后由调用方决定是否延时。
+
+    :param arm_id: 机械手臂ID "A" 或 "B"
+    :param com_id: 信息来源，1:CAN端; 2:com1; 3:com2
+    :param label: 日志标签
+    :param timeout: 超时时间（秒），默认 1.0
+    :return: (bool, str) 是否读到数据 / 读到的 HEX 数据（超时时为 None）
+    '''
+    t0 = time.perf_counter()
+    while True:
+        tag, receive_hex_data = robot.get_485_data(arm_id, com_id)
+        if tag is not None and tag >= 1:
+            print(f"[{label}] received hex data:{receive_hex_data}")
+            return True, receive_hex_data
+        if time.perf_counter() - t0 > timeout:
+            print(f"[{label}] read timeout, no data received")
+            return False, None
+        time.sleep(0.001)   # 短暂让出CPU后再读
+
 
 def get_received_data():
     '''获取接收到的数据并计数'''
