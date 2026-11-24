@@ -1,8 +1,10 @@
 # 天机-孚晞 MARVIN 机器人 SDK
 
 > 面向 MARVIN 人形双臂 / 单臂机器人的上位机开发包：**控制** + **运动学规划** + **干涉检测**。
+
 > 支持 C++ / Python，Windows / Linux（x86_64 已验证）。
 
+> AI / 自动化开发 [跳转至11章](README.md#L362)
 ---
 
 ## 0. 30 秒了解
@@ -367,6 +369,10 @@ g++ *.cpp -Wall -O2 -fPIC -shared -o libKine.so -lpthread -lrt
 - `subscribe()` 返回字典的完整字段；
 - 安全约束、单位、常见反模式；
 - 任务 → 接口 → 示例的映射与验证清单。
+
+### 快速开发prompt示例
+    目标：在目标控制状态下以预期的速度走到目标关节角度
+    prompt: 参考DEMO_PYTHON\showcase_position.py 以百分之20的速度和加速度将双臂移动到关节角度全为10.
 
 ---
 

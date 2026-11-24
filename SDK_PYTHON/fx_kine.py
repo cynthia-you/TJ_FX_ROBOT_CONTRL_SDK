@@ -1411,7 +1411,9 @@ class Marvin_Kine:
                 return "ret=3,配置文件被修改"
             elif ret_int==4:
                 return 'ret=4, 采集时间不够，缺少有效数据'
-
+            elif ret_int==5:
+                return 'ret=5, 读写文件失败'
+            
     def identify_tool_dyn_m20(self, ipath_ini: str, robot_type: int, ipath: str):
         '''M20 工具动力学参数辨识
         :param ipath_ini: string, 配置文件（.ini）路径
@@ -1491,6 +1493,8 @@ class Marvin_Kine:
                 return "ret=3,配置文件被修改"
             elif ret_int==4:
                 return 'ret=4, 采集时间不够，缺少有效数据'
+            elif ret_int==5:
+                return 'ret=5, 读写文件失败'
 
     def jnt_tau_to_ee_tau(self, q: list, joint_torque: list):
         '''关节力矩映射到末端力矩

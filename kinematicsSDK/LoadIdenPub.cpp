@@ -752,7 +752,6 @@ LoadIdenErrCode OnCalLoadTor_7_MarvinCCS(LoadTor* tor, FX_INT32 isNoLoad, const 
 				}
 				i++;
 			}
-			//
 			while (i < LoadDataNum - 1) {
 				dtemp = stod(vecLoadData.at(2).at(i));
 				dtemp2 = stod(vecLoadData.at(2).at(i + 1));
@@ -873,12 +872,12 @@ LoadIdenErrCode OnCalLoadTor_7_MarvinCCS(LoadTor* tor, FX_INT32 isNoLoad, const 
 		ofstream ofsConFile(strIdenCfgName, ios::out);
 		if (!ofsConFile.is_open()) {
 			cout << "ERROR: open cfg file failed, pls check LoadIdenCfg" << endl;
-			return LOAD_IDEN_DataSmpErr;
+			return LOAD_IDEN_WRFileErr;
 		}
 		for (size_t i = 0; i + 1 < vecCon.size(); i++) {
 			if (!(ofsConFile << vecCon.at(i) << ",")) {
 				cout << "ERROR: write cfg file failed, pls check LoadIdenCfg" << endl;
-				return LOAD_IDEN_DataSmpErr;
+				return LOAD_IDEN_WRFileErr;
 			}
 		}
 		ofsConFile << vecCon.at(vecCon.size() - 1) << "\n";
